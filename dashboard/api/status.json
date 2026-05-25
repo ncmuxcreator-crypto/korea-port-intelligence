@@ -2,8 +2,8 @@
   "version": "17.7.0",
   "build_name": "Backend Stability Batch",
   "status": "success",
-  "started_at": "2026-05-25T13:33:41.387Z",
-  "completed_at": "2026-05-25T13:33:41.390Z",
+  "started_at": "2026-05-25T14:01:07.491Z",
+  "completed_at": "2026-05-25T14:01:07.494Z",
   "record_count": 3,
   "critical_count": 2,
   "high_risk_count": 2,
@@ -485,6 +485,157 @@
       "Keep paid AIS integrations disabled unless a customer requires global real-time coverage"
     ]
   },
+  "collector_diagnostics": {
+    "generated_at": "2026-05-25T14:01:07.493Z",
+    "attempted_count": 0,
+    "success_count": 0,
+    "failed_count": 0,
+    "skipped_count": 14,
+    "real_row_count": 0,
+    "fallback_used": true,
+    "sources": [
+      {
+        "key": "port_operation",
+        "label": "PORT-MIS port operation",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "port_facility",
+        "label": "Port facility",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ulsan_core",
+        "label": "Ulsan core",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ulsan_berth_detail",
+        "label": "Ulsan berth detail",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ulsan_cargo_plan",
+        "label": "Ulsan cargo plan",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ulsan_berth_operation",
+        "label": "Ulsan berth operation",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ulsan_terminal_process",
+        "label": "Ulsan terminal process",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ygpa_arrival",
+        "label": "YGPA arrival",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ygpa_departure",
+        "label": "YGPA departure",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "ygpa_vts",
+        "label": "YGPA VTS",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "mof_ais_dynamic",
+        "label": "MOF AIS dynamic",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "mof_ais_info",
+        "label": "MOF AIS info",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "mof_ais_stat",
+        "label": "MOF AIS stat",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      },
+      {
+        "key": "korea_public_data",
+        "label": "Korea public data fallback",
+        "attempted": false,
+        "skipped": true,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "reason": "missing_url"
+      }
+    ]
+  },
   "data_quality": {
     "score": 80,
     "grade": "Watch",
@@ -931,7 +1082,7 @@
     "version": "17.7.0",
     "build_name": "Backend Stability Batch",
     "backend_stage": "actual_collector_backend_ready",
-    "generated_at": "2026-05-25T13:33:41.392Z",
+    "generated_at": "2026-05-25T14:01:07.497Z",
     "collector_execution_mode": "fallback_sample_snapshot",
     "supabase_status": "not_configured",
     "record_count": 3,
@@ -1015,7 +1166,7 @@
     ]
   },
   "candidate_changes": {
-    "generated_at": "2026-05-25T13:33:41.392Z",
+    "generated_at": "2026-05-25T14:01:07.497Z",
     "tracker_version": "candidate-change-tracker-v16.5",
     "total_tracked": 3,
     "changed_count": 0,
@@ -1048,7 +1199,7 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-25T00:30:45.030Z",
-        "last_seen_at": "2026-05-25T13:33:41.388Z"
+        "last_seen_at": "2026-05-25T14:01:07.493Z"
       },
       {
         "snapshot_key": "IMO-7000001|YEOSU",
@@ -1074,7 +1225,7 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-25T00:30:45.030Z",
-        "last_seen_at": "2026-05-25T13:33:41.388Z"
+        "last_seen_at": "2026-05-25T14:01:07.493Z"
       }
     ]
   },

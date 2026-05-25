@@ -81,6 +81,9 @@ if (!status.candidate_ops || !status.backend_health || !status.seven_pack_summar
 if (!status.backend_stability_batch || !status.runtime_budget || !status.master_db_roadmap) {
   throw new Error("Missing v17.7 backend stability batch outputs");
 }
+if (!status.collector_diagnostics || typeof status.collector_diagnostics.attempted_count !== "number") {
+  throw new Error("Missing collector diagnostics");
+}
 
 const workflow = fs.readFileSync(".github/workflows/longterm-update.yml", "utf8");
 if (!/on:\s*[\s\S]*workflow_dispatch:/.test(workflow) || !/schedule:/.test(workflow)) {

@@ -1,5 +1,5 @@
 import fs from "fs";
-import { collectKoreaData } from "./collectors/korea.js";
+import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
 import { saveToSupabase } from "./lib/db.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
@@ -926,6 +926,7 @@ try {
     api_sources: detectSecrets(),
     api_registry_version: "korea-port-secret-registry-v12-backend-stability",
     data_strategy: buildDataStrategy(detectSecrets()),
+    collector_diagnostics: getCollectorDiagnostics(),
     data_quality: buildDataQuality(vessels, detectSecrets()),
     collector_readiness: buildCollectorReadiness(detectSecrets()),
     collector_manifest: buildCollectorManifest(detectSecrets()),
@@ -961,6 +962,7 @@ try {
     immediate_candidate_count: vessels.filter(v => v.is_immediate_candidate).length,
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
     backend_ops: snapshotOutputs.backendOps,
+    collector_diagnostics: getCollectorDiagnostics(),
     candidate_changes: snapshotOutputs.candidateChanges,
     backend_stability_batch: buildBackendStabilityBatch(vessels, detectSecrets(), baseReport),
     candidate_ops: buildCandidateOps(vessels, baseReport),
