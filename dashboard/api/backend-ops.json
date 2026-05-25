@@ -2,9 +2,9 @@
   "version": "17.7.0",
   "build_name": "Backend Stability Batch",
   "backend_stage": "actual_collector_backend_ready",
-  "generated_at": "2026-05-25T10:59:07.341Z",
-  "collector_execution_mode": "configured_sources_detected_with_fallback",
-  "supabase_status": "synced",
+  "generated_at": "2026-05-25T13:05:36.960Z",
+  "collector_execution_mode": "fallback_sample_snapshot",
+  "supabase_status": "not_configured",
   "record_count": 3,
   "candidate_count": 2,
   "immediate_candidate_count": 2,
@@ -20,13 +20,9 @@
         "ygpa_core",
         "ulsan_core"
       ],
-      "active_sources": [
-        "port_operation",
-        "berth_sources",
-        "ulsan_core"
-      ],
-      "readiness_percent": 60,
-      "status": "partial"
+      "active_sources": [],
+      "readiness_percent": 0,
+      "status": "waiting"
     },
     {
       "tier": "movement",
@@ -36,12 +32,9 @@
         "mof_ais_info",
         "mof_vts"
       ],
-      "active_sources": [
-        "mof_ais_dynamic",
-        "mof_ais_info"
-      ],
-      "readiness_percent": 67,
-      "status": "partial"
+      "active_sources": [],
+      "readiness_percent": 0,
+      "status": "waiting"
     },
     {
       "tier": "identity",
@@ -51,13 +44,9 @@
         "port_facility",
         "mof_ais_info"
       ],
-      "active_sources": [
-        "vessel_spec",
-        "port_facility",
-        "mof_ais_info"
-      ],
-      "readiness_percent": 100,
-      "status": "ready"
+      "active_sources": [],
+      "readiness_percent": 0,
+      "status": "waiting"
     },
     {
       "tier": "storage",
@@ -66,12 +55,9 @@
         "supabase",
         "google_drive"
       ],
-      "active_sources": [
-        "supabase",
-        "google_drive"
-      ],
-      "readiness_percent": 100,
-      "status": "ready"
+      "active_sources": [],
+      "readiness_percent": 0,
+      "status": "waiting"
     },
     {
       "tier": "paid_optional",
