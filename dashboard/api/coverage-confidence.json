@@ -1,0 +1,66 @@
+{
+  "version": "17.7.0",
+  "generated_at": "2026-05-25T01:59:39Z",
+  "national_coverage_model": "tiered_priority",
+  "tier_1": [
+    {
+      "port": "Busan",
+      "weight": 32,
+      "coverage_target": "cruise/container/repair/anchorage",
+      "status": "priority"
+    },
+    {
+      "port": "Yeosu/Gwangyang",
+      "weight": 34,
+      "coverage_target": "bulk/tanker/resource anchorage",
+      "status": "priority"
+    },
+    {
+      "port": "Ulsan",
+      "weight": 28,
+      "coverage_target": "tanker/industrial berth operations",
+      "status": "priority"
+    },
+    {
+      "port": "Pyeongtaek-Dangjin",
+      "weight": 25,
+      "coverage_target": "resource/PCTC/bulk",
+      "status": "priority"
+    },
+    {
+      "port": "Hadong/Samcheonpo",
+      "weight": 24,
+      "coverage_target": "coal/resource",
+      "status": "priority"
+    },
+    {
+      "port": "Pohang",
+      "weight": 23,
+      "coverage_target": "steel/resource",
+      "status": "priority"
+    }
+  ],
+  "tier_2": [
+    {
+      "port": "Incheon",
+      "weight": 16
+    },
+    {
+      "port": "Daesan",
+      "weight": 15
+    },
+    {
+      "port": "Mokpo",
+      "weight": 12
+    },
+    {
+      "port": "Gunsan",
+      "weight": 12
+    },
+    {
+      "port": "Masan/Jinhae",
+      "weight": 12
+    }
+  ],
+  "candidate_accuracy_note": "Port weight is only one input. Idle duration, vessel segment, destination, and data confidence decide final priority."
+}

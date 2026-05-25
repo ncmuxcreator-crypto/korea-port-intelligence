@@ -1,0 +1,57 @@
+{
+  "version": "17.7.0",
+  "generated_at": "2026-05-25T10:01:19Z",
+  "batch_name": "Collector Operations & Candidate Reporting Batch",
+  "goal": "Make backend operation predictable while keeping the service focused on fastest cleaning candidate detection.",
+  "collector_sequence": [
+    {
+      "step": 1,
+      "collector": "source_health",
+      "purpose": "confirm secrets and source readiness",
+      "timeout_seconds": 10,
+      "required": true
+    },
+    {
+      "step": 2,
+      "collector": "vessel_spec",
+      "purpose": "normalize vessel identity and size/type",
+      "timeout_seconds": 15,
+      "required": false
+    },
+    {
+      "step": 3,
+      "collector": "port_operation",
+      "purpose": "detect port stay and berth/anchorage status",
+      "timeout_seconds": 20,
+      "required": false
+    },
+    {
+      "step": 4,
+      "collector": "mof_ais_dynamic",
+      "purpose": "detect movement, idle, and current port signals",
+      "timeout_seconds": 20,
+      "required": false
+    },
+    {
+      "step": 5,
+      "collector": "candidate_engine",
+      "purpose": "score hull-cleaning candidates",
+      "timeout_seconds": 10,
+      "required": true
+    },
+    {
+      "step": 6,
+      "collector": "snapshot_guard",
+      "purpose": "avoid publishing empty/broken output",
+      "timeout_seconds": 5,
+      "required": true
+    }
+  ],
+  "runtime_budget": {
+    "fast_update_target_seconds": 90,
+    "hard_update_timeout_seconds": 360,
+    "install_timeout_minutes": 30,
+    "job_timeout_minutes": 45
+  },
+  "failure_policy": "Skip failed optional sources, keep last valid snapshot, and mark stale/source_failed."
+}

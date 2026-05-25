@@ -1,0 +1,33 @@
+{
+  "version": "17.7.0",
+  "master_db": "Supabase",
+  "raw_archive": "GDrive/Object Storage",
+  "git_policy": "Keep GitHub light: code, small snapshots, generated API JSON only.",
+  "tables": [
+    {
+      "table": "vessels",
+      "purpose": "latest normalized vessel master"
+    },
+    {
+      "table": "vessel_snapshots",
+      "purpose": "time-series position/status snapshots"
+    },
+    {
+      "table": "port_calls",
+      "purpose": "ETA/ETB/ETD, berth, anchorage, port history"
+    },
+    {
+      "table": "candidate_events",
+      "purpose": "candidate score changes and priority transitions"
+    },
+    {
+      "table": "pipeline_runs",
+      "purpose": "collector health, runtime, source status"
+    },
+    {
+      "table": "source_health",
+      "purpose": "API coverage, last success, latency, failure reason"
+    }
+  ],
+  "rls_policy": "Enable RLS before customer/internal sensitive notes are stored. Service role remains write path."
+}

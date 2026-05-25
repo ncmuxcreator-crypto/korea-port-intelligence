@@ -1,0 +1,30 @@
+{
+  "name": "korea-port-hull-intelligence",
+  "version": "17.7.0",
+  "type": "module",
+  "scripts": {
+    "update": "node scripts/update.js",
+    "validate": "node scripts/validate.js",
+    "build": "npm run update && npm run validate",
+    "doctor": "node scripts/doctor.js",
+    "candidate:audit": "node scripts/candidate-audit.js",
+    "coverage:audit": "node scripts/coverage-audit.js",
+    "health": "npm run doctor && npm run candidate:audit && npm run coverage:audit && npm run risk:calibrate && npm run candidate:explain && npm run snapshot:guard && npm run source:health && npm run candidate:dedupe && npm run candidate:window && npm run collector:plan && npm run pipeline:sla && npm run candidate:daily && npm run readiness:gate && npm run candidate:confidence && npm run snapshot:diff",
+    "risk:calibrate": "node scripts/risk-calibrate.js",
+    "candidate:explain": "node scripts/candidate-explain.js",
+    "snapshot:guard": "node scripts/snapshot-guard.js",
+    "source:health": "node scripts/source-health.js",
+    "candidate:dedupe": "node scripts/candidate-dedupe.js",
+    "candidate:window": "node scripts/contact-window.js",
+    "collector:plan": "node scripts/collector-plan.js",
+    "pipeline:sla": "node scripts/pipeline-sla.js",
+    "candidate:daily": "node scripts/daily-candidate-report.js",
+    "readiness:gate": "node scripts/readiness-gate.js",
+    "candidate:confidence": "node scripts/candidate-confidence.js",
+    "snapshot:diff": "node scripts/snapshot-diff.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "ws": "^8.18.0"
+  }
+}

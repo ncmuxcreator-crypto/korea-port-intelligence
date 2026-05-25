@@ -1,0 +1,13 @@
+{
+  "version": "17.7.0",
+  "generated_at": "2026-05-25T01:59:39Z",
+  "status": "action_required_before_sensitive_data",
+  "public_tables_seen": [
+    "vessels",
+    "vessel_snapshots",
+    "port_calls",
+    "pipeline_runs"
+  ],
+  "recommendation": "Enable RLS before storing customer notes, contact logs, quote values, or commercial scoring.",
+  "safe_current_assumption": "Public/sample vessel data only is lower risk; service role can remain backend write path."
+}

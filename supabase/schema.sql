@@ -1,0 +1,57 @@
+create table if not exists vessels (
+  vessel_id text primary key,
+  imo text,
+  vessel_name text not null,
+  vessel_type text,
+  operator text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists port_calls (
+  id bigserial primary key,
+  vessel_id text references vessels(vessel_id),
+  vessel_name text not null,
+  imo text,
+  port text not null,
+  berth text,
+  eta timestamptz,
+  etd timestamptz,
+  status text,
+  source text not null,
+  collected_at timestamptz not null,
+  risk_score int default 0,
+  sales_reason jsonb default '[]'::jsonb,
+  raw_payload jsonb,
+  unique_key text unique
+);
+
+create table if not exists vessel_snapshots (
+  id bigserial primary key,
+  snapshot_date date not null,
+  vessel_id text not null,
+  port text,
+  status text,
+  berth text,
+  eta timestamptz,
+  etd timestamptz,
+  risk_score int default 0,
+  sales_reason jsonb default '[]'::jsonb,
+  collected_at timestamptz not null,
+  unique(snapshot_date, vessel_id, port)
+);
+
+create table if not exists pipeline_runs (
+  id bigserial primary key,
+  run_started_at timestamptz not null,
+  run_finished_at timestamptz,
+  status text not null,
+  records_collected int default 0,
+  records_saved int default 0,
+  errors jsonb default '[]'::jsonb
+);
+
+create index if not exists idx_port_calls_collected_at on port_calls(collected_at desc);
+create index if not exists idx_port_calls_port on port_calls(port);
+create index if not exists idx_port_calls_risk_score on port_calls(risk_score desc);
+create index if not exists idx_vessel_snapshots_date on vessel_snapshots(snapshot_date desc);
