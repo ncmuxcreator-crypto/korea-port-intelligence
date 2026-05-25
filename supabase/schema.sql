@@ -30,13 +30,17 @@ create table if not exists vessel_snapshots (
   id bigserial primary key,
   snapshot_date date not null,
   vessel_id text not null,
+  vessel_name text,
   port text,
   status text,
+  operator text,
   berth text,
   eta timestamptz,
   etd timestamptz,
+  source text,
   risk_score int default 0,
   sales_reason jsonb default '[]'::jsonb,
+  updated_at timestamptz,
   collected_at timestamptz not null,
   unique(snapshot_date, vessel_id, port)
 );
@@ -55,3 +59,8 @@ create index if not exists idx_port_calls_collected_at on port_calls(collected_a
 create index if not exists idx_port_calls_port on port_calls(port);
 create index if not exists idx_port_calls_risk_score on port_calls(risk_score desc);
 create index if not exists idx_vessel_snapshots_date on vessel_snapshots(snapshot_date desc);
+
+alter table vessel_snapshots add column if not exists vessel_name text;
+alter table vessel_snapshots add column if not exists operator text;
+alter table vessel_snapshots add column if not exists source text;
+alter table vessel_snapshots add column if not exists updated_at timestamptz;

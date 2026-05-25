@@ -89,7 +89,7 @@ const workflow = fs.readFileSync(".github/workflows/longterm-update.yml", "utf8"
 if (!/on:\s*[\s\S]*workflow_dispatch:/.test(workflow) || !/schedule:/.test(workflow)) {
   throw new Error("Workflow trigger configuration is incomplete");
 }
-if (!workflow.includes("ULSAN_BERTH_DETAIL_API_KEY") || !workflow.includes("YGPA_ARRIVAL_API_KEY")) {
+if (!workflow.includes("ULSAN_BERTH_DETAIL_API_KEY") || workflow.includes("YGPA_ARRIVAL_API_KEY") || workflow.includes("YGPA_SERVICE_KEY")) {
   throw new Error("Workflow public API secret coverage is incomplete");
 }
 

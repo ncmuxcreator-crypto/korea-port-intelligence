@@ -110,7 +110,7 @@ export function buildCandidateChanges(current = [], previous = []) {
 export function buildBackendOpsReport({ version, buildName, records = [], apiSources = [], supabaseStatus = "not_configured" }) {
   const enabled = apiSources.filter(s => s.enabled).map(s => s.key);
   const collectorTiers = [
-    { tier: "base", name: "Port-call / berth signals", sources: ["port_operation", "berth_sources", "pilot_sources", "ygpa_core", "ulsan_core"] },
+    { tier: "base", name: "Port-call / berth signals", sources: ["port_operation", "berth_sources", "pilot_sources", "ulsan_core"] },
     { tier: "movement", name: "AIS / VTS movement signals", sources: ["mof_ais_dynamic", "mof_ais_info", "mof_vts"] },
     { tier: "identity", name: "Vessel master enrichment", sources: ["vessel_spec", "port_facility", "mof_ais_info"] },
     { tier: "storage", name: "Accumulation storage", sources: ["supabase", "google_drive"] },

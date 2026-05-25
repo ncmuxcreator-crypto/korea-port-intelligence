@@ -1,6 +1,7 @@
 import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
 import { saveToSupabase } from "./lib/db.js";
+import { archiveRawToGDrive } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
 
@@ -74,6 +75,8 @@ const startedAt = new Date().toISOString();
 let status = "success";
 let errorMessage = null;
 let supabaseStatus = "not_configured";
+let supabaseWrite = { status: "not_configured" };
+let gdriveArchive = { status: "not_configured" };
 let vessels = [];
 
 function ensureDirs() {
@@ -304,7 +307,7 @@ function enrichSalesSignals(records) {
 
 function buildDataStrategy(apiSources = []) {
   const enabled = new Set(apiSources.filter(s => s.enabled).map(s => s.key));
-  const publicGroups = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "ygpa_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
+  const publicGroups = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
   const paidGroups = ["marine_traffic", "vesselfinder", "aisstream"];
   const publicEnabled = publicGroups.filter(k => enabled.has(k));
   const paidEnabled = paidGroups.filter(k => enabled.has(k));
@@ -427,7 +430,7 @@ function buildCollectorReadiness(apiSources = []) {
     {
       phase: "Phase 3",
       name: "Movement / idle-time signals",
-      sources: ["mof_vts", "mof_ais_dynamic", "ulsan_core", "ygpa_core"],
+      sources: ["mof_vts", "mof_ais_dynamic", "ulsan_core"],
       goal: "Detect anchorage, low speed, long stay, berth shifts, and port congestion signals."
     },
     {
@@ -471,7 +474,7 @@ function buildCollectorManifest(apiSources = []) {
     {
       collector: "berth-and-pilot-watch",
       priority: 2,
-      source_keys: ["berth_sources", "pilot_sources", "ygpa_core", "ulsan_core"],
+      source_keys: ["berth_sources", "pilot_sources", "ulsan_core"],
       output: "berth_watch",
       weight: "light_to_medium",
       business_use: "Berth assignment, waiting status, terminal movement, and short-window outreach timing."
@@ -531,7 +534,7 @@ function buildCollectorManifest(apiSources = []) {
 function buildSourceRegistry(apiSources = []) {
   const enabled = apiSources.filter(s => s.enabled);
   const partial = apiSources.filter(s => s.partial);
-  const publicKeys = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "ygpa_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
+  const publicKeys = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
   const storageKeys = ["supabase", "google_drive"];
   const paidKeys = ["marine_traffic", "vesselfinder", "aisstream"];
   const groupCount = keys => enabled.filter(s => keys.includes(s.key)).length;
@@ -606,7 +609,7 @@ function buildNextDevelopmentPlan(reportBase, apiSources = []) {
   const sampleOnly = reportBase.data_mode_detail?.mode === "sample_only";
   const plan = [];
   plan.push({ step: 1, title: "Keep build lightweight", detail: "Do not add heavy raw archives to GitHub. Keep dashboard JSON small and push raw/history data to Supabase or GDrive." });
-  plan.push({ step: 2, title: "Connect public collectors first", detail: "Prioritize PORT_OPERATION, BERTH/PILOT URLs, MOF AIS/VTS, YGPA and Ulsan sources before paid AIS." });
+  plan.push({ step: 2, title: "Connect public collectors first", detail: "Prioritize PORT_OPERATION, BERTH/PILOT URLs, MOF AIS/VTS and Ulsan sources before paid AIS." });
   plan.push({ step: 3, title: "Replace sample rows gradually", detail: sampleOnly ? "Current output is still sample-mode; next work is collector smoke tests and field mapping." : "At least one source group is configured; next work is normalization and duplicate control." });
   plan.push({ step: 4, title: "Build cloud master DB", detail: enabled.includes("supabase") ? "Supabase is available; next step is normalized master tables and append-only daily snapshots." : "Add/verify Supabase credentials before relying on accumulated DB history." });
   plan.push({ step: 5, title: "Separate master DB from raw archive", detail: "Supabase should store queryable normalized data; Google Drive/Object Storage should hold heavy raw payloads and source files." });
@@ -693,7 +696,7 @@ function buildBackendHealth(records = [], apiSources = [], reportBase = {}) {
   if (!records.length) blockers.push("No vessel rows generated");
   if (sampleRows === records.length) warnings.push("All rows are sample data");
   if (!enabled.some(s => s.key === "supabase")) warnings.push("Supabase master DB is not enabled");
-  if (!enabled.some(s => ["mof_ais_dynamic","mof_ais_info","mof_vts","port_operation","ygpa_core","ulsan_core"].includes(s.key))) warnings.push("No primary public movement/port source enabled");
+  if (!enabled.some(s => ["mof_ais_dynamic","mof_ais_info","mof_vts","port_operation","ulsan_core"].includes(s.key))) warnings.push("No primary public movement/port source enabled");
   const sourceScore = Math.min(100, Math.round((enabled.length / Math.max(apiSources.length, 1)) * 100));
   const liveScore = Math.max(0, Math.round(((records.length - sampleRows) / Math.max(records.length,1)) * 100));
   const dataQualityScore = reportBase?.data_quality?.score || 0;
@@ -726,7 +729,7 @@ function buildSevenPackSummary() {
       "Candidate operations center: 24h queue, confidence buckets, port focus",
       "Backend health score: source coverage, sample/live ratio, blockers and warnings",
       "Candidate priority rank and stale-data guard per vessel",
-      "Workflow secret coverage expanded for detailed Ulsan/YGPA/MOF public API keys",
+      "Workflow secret coverage expanded for detailed Ulsan/MOF public API keys",
       "Validation strengthened for candidate, backend and workflow outputs",
       "Release cadence updated from three-patch bundles to seven-pack stability releases",
       "Dashboard labeling updated so the user can distinguish operating candidates from sample-mode tests"
@@ -741,7 +744,7 @@ function buildBackendStabilityBatch(records = [], apiSources = [], reportBase = 
   const sampleRows = records.filter(v => String(v.source_mode || "").includes("sample")).length;
   const candidateRows = records.filter(v => v.is_cleaning_candidate).length;
   const immediateRows = records.filter(v => v.is_immediate_candidate).length;
-  const publicReady = enabled.filter(k => ["port_operation", "berth_sources", "pilot_sources", "ygpa_core", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "vessel_spec"].includes(k));
+  const publicReady = enabled.filter(k => ["port_operation", "berth_sources", "pilot_sources", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "vessel_spec"].includes(k));
   const storageReady = enabled.filter(k => ["supabase", "google_drive"].includes(k));
   const paidReady = enabled.filter(k => ["marine_traffic", "vesselfinder", "aisstream"].includes(k));
   const stabilityScore = Math.round(
@@ -891,7 +894,9 @@ try {
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    await saveToSupabase(vessels);
+    supabaseWrite = { status: "syncing" };
+    const result = await saveToSupabase(vessels);
+    supabaseWrite = { status: "synced", ...result };
     supabaseStatus = "synced";
   }
 } catch (error) {
@@ -920,6 +925,8 @@ try {
     ports: [...new Set(vessels.map(v => v.port))],
     port_summary: portSummary,
     supabase_status: supabaseStatus,
+    supabase_write: supabaseWrite,
+    gdrive_archive: gdriveArchive,
     refresh_interval_seconds: 30,
     data_mode: buildDataMode(vessels, detectSecrets(), supabaseStatus).mode,
     data_mode_detail: buildDataMode(vessels, detectSecrets(), supabaseStatus),
@@ -964,10 +971,28 @@ try {
     backend_ops: snapshotOutputs.backendOps,
     collector_diagnostics: getCollectorDiagnostics(),
     candidate_changes: snapshotOutputs.candidateChanges,
+    supabase_write: supabaseWrite,
+    gdrive_archive: gdriveArchive,
     backend_stability_batch: buildBackendStabilityBatch(vessels, detectSecrets(), baseReport),
     candidate_ops: buildCandidateOps(vessels, baseReport),
     backend_health: buildBackendHealth(vessels, detectSecrets(), baseReport),
     deployment_readiness: buildDeploymentReadiness(baseReport, vessels, detectSecrets())
+  };
+
+  try {
+    gdriveArchive = await archiveRawToGDrive({
+      generated_at: completedAt,
+      records: vessels,
+      report,
+      collector_diagnostics: getCollectorDiagnostics()
+    }, { namePrefix: "hwk-port-raw" });
+  } catch (archiveError) {
+    gdriveArchive = { status: "failed", error: archiveError?.message || String(archiveError) };
+  }
+  report.gdrive_archive = gdriveArchive;
+  report.storage_status = {
+    supabase: supabaseWrite,
+    gdrive: gdriveArchive
   };
 
   fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(buildCandidateSummary(vessels), null, 2));

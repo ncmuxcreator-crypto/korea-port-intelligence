@@ -25,13 +25,21 @@ export async function saveToSupabase(records) {
     vessel_id: r.vessel_id,
     vessel_name: r.vessel_name,
     port: r.port,
+    berth: r.berth || null,
+    eta: r.eta || null,
+    etd: r.etd || null,
     status: r.status,
     operator: r.operator || null,
     risk_score: r.risk_score || 0,
+    sales_reason: r.sales_reason || r.reason_codes || [],
     updated_at: r.updated_at || now,
     collected_at: now,
-    source: "v15.4-korea-port-secret-registry"
+    source: r.source || r.source_mode || "korea-port-hull-intelligence"
   }));
+
+  if (!rows.length) {
+    return { recordsSaved: 0, table: "vessel_snapshots", mode: "empty" };
+  }
 
   const { error } = await supabase
     .from("vessel_snapshots")
@@ -40,4 +48,5 @@ export async function saveToSupabase(records) {
     });
 
   if (error) throw error;
+  return { recordsSaved: rows.length, table: "vessel_snapshots", mode: "upsert" };
 }

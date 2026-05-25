@@ -2,8 +2,8 @@
   "version": "17.7.0",
   "build_name": "Backend Stability Batch",
   "status": "success",
-  "started_at": "2026-05-25T14:01:07.491Z",
-  "completed_at": "2026-05-25T14:01:07.494Z",
+  "started_at": "2026-05-25T14:16:14.871Z",
+  "completed_at": "2026-05-25T14:16:14.873Z",
   "record_count": 3,
   "critical_count": 2,
   "high_risk_count": 2,
@@ -112,6 +112,13 @@
     }
   ],
   "supabase_status": "not_configured",
+  "supabase_write": {
+    "status": "not_configured"
+  },
+  "gdrive_archive": {
+    "status": "not_configured",
+    "reason": "missing_or_invalid_service_account_json"
+  },
   "refresh_interval_seconds": 30,
   "data_mode": "sample_only",
   "data_mode_detail": {
@@ -241,23 +248,6 @@
         "ULSAN_TERMINAL_PROCESS_API_KEY"
       ],
       "use": "Ulsan berth detail, cargo plan, berth operation, and terminal process feeds."
-    },
-    {
-      "key": "ygpa_core",
-      "label": "YGPA / Yeosu-Gwangyang API",
-      "type": "ygpa",
-      "enabled": false,
-      "partial": false,
-      "status": "not_configured",
-      "using": [],
-      "masked": {},
-      "missing": [
-        "YGPA_SERVICE_KEY",
-        "YGPA_ARRIVAL_API_KEY",
-        "YGPA_DEPARTURE_API_KEY",
-        "YGPA_VTS_API_KEY"
-      ],
-      "use": "Yeosu/Gwangyang arrival, departure, VTS, and anchorage intelligence."
     },
     {
       "key": "mof_vts",
@@ -486,11 +476,11 @@
     ]
   },
   "collector_diagnostics": {
-    "generated_at": "2026-05-25T14:01:07.493Z",
+    "generated_at": "2026-05-25T14:16:14.872Z",
     "attempted_count": 0,
     "success_count": 0,
     "failed_count": 0,
-    "skipped_count": 14,
+    "skipped_count": 11,
     "real_row_count": 0,
     "fallback_used": true,
     "sources": [
@@ -557,36 +547,6 @@
       {
         "key": "ulsan_terminal_process",
         "label": "Ulsan terminal process",
-        "attempted": false,
-        "skipped": true,
-        "success": false,
-        "row_count": 0,
-        "normalized_count": 0,
-        "reason": "missing_url"
-      },
-      {
-        "key": "ygpa_arrival",
-        "label": "YGPA arrival",
-        "attempted": false,
-        "skipped": true,
-        "success": false,
-        "row_count": 0,
-        "normalized_count": 0,
-        "reason": "missing_url"
-      },
-      {
-        "key": "ygpa_departure",
-        "label": "YGPA departure",
-        "attempted": false,
-        "skipped": true,
-        "success": false,
-        "row_count": 0,
-        "normalized_count": 0,
-        "reason": "missing_url"
-      },
-      {
-        "key": "ygpa_vts",
-        "label": "YGPA VTS",
         "attempted": false,
         "skipped": true,
         "success": false,
@@ -703,16 +663,14 @@
       "sources": [
         "mof_vts",
         "mof_ais_dynamic",
-        "ulsan_core",
-        "ygpa_core"
+        "ulsan_core"
       ],
       "goal": "Detect anchorage, low speed, long stay, berth shifts, and port congestion signals.",
       "active_sources": [],
       "missing_sources": [
         "mof_vts",
         "mof_ais_dynamic",
-        "ulsan_core",
-        "ygpa_core"
+        "ulsan_core"
       ],
       "readiness_percent": 0,
       "status": "waiting"
@@ -779,7 +737,6 @@
       "source_keys": [
         "berth_sources",
         "pilot_sources",
-        "ygpa_core",
         "ulsan_core"
       ],
       "output": "berth_watch",
@@ -790,12 +747,11 @@
       "missing_sources": [
         "berth_sources",
         "pilot_sources",
-        "ygpa_core",
         "ulsan_core"
       ],
       "readiness_percent": 0,
       "status": "waiting",
-      "next_action": "Configure or validate: berth_sources, pilot_sources, ygpa_core, ulsan_core"
+      "next_action": "Configure or validate: berth_sources, pilot_sources, ulsan_core"
     },
     {
       "collector": "mof-ais-snapshot",
@@ -886,7 +842,7 @@
   ],
   "source_registry": {
     "registry_version": "source-registry-v16.5",
-    "total_groups": 21,
+    "total_groups": 20,
     "enabled_groups": 0,
     "partial_groups": 0,
     "public_enabled_groups": 0,
@@ -1000,7 +956,7 @@
       "Candidate operations center: 24h queue, confidence buckets, port focus",
       "Backend health score: source coverage, sample/live ratio, blockers and warnings",
       "Candidate priority rank and stale-data guard per vessel",
-      "Workflow secret coverage expanded for detailed Ulsan/YGPA/MOF public API keys",
+      "Workflow secret coverage expanded for detailed Ulsan/MOF public API keys",
       "Validation strengthened for candidate, backend and workflow outputs",
       "Release cadence updated from three-patch bundles to seven-pack stability releases",
       "Dashboard labeling updated so the user can distinguish operating candidates from sample-mode tests"
@@ -1054,7 +1010,7 @@
     {
       "step": 2,
       "title": "Connect public collectors first",
-      "detail": "Prioritize PORT_OPERATION, BERTH/PILOT URLs, MOF AIS/VTS, YGPA and Ulsan sources before paid AIS."
+      "detail": "Prioritize PORT_OPERATION, BERTH/PILOT URLs, MOF AIS/VTS and Ulsan sources before paid AIS."
     },
     {
       "step": 3,
@@ -1082,7 +1038,7 @@
     "version": "17.7.0",
     "build_name": "Backend Stability Batch",
     "backend_stage": "actual_collector_backend_ready",
-    "generated_at": "2026-05-25T14:01:07.497Z",
+    "generated_at": "2026-05-25T14:16:14.877Z",
     "collector_execution_mode": "fallback_sample_snapshot",
     "supabase_status": "not_configured",
     "record_count": 3,
@@ -1097,7 +1053,6 @@
           "port_operation",
           "berth_sources",
           "pilot_sources",
-          "ygpa_core",
           "ulsan_core"
         ],
         "active_sources": [],
@@ -1166,7 +1121,7 @@
     ]
   },
   "candidate_changes": {
-    "generated_at": "2026-05-25T14:01:07.497Z",
+    "generated_at": "2026-05-25T14:16:14.877Z",
     "tracker_version": "candidate-change-tracker-v16.5",
     "total_tracked": 3,
     "changed_count": 0,
@@ -1199,7 +1154,7 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-25T00:30:45.030Z",
-        "last_seen_at": "2026-05-25T14:01:07.493Z"
+        "last_seen_at": "2026-05-25T14:16:14.872Z"
       },
       {
         "snapshot_key": "IMO-7000001|YEOSU",
@@ -1225,7 +1180,7 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-25T00:30:45.030Z",
-        "last_seen_at": "2026-05-25T14:01:07.493Z"
+        "last_seen_at": "2026-05-25T14:16:14.872Z"
       }
     ]
   },
@@ -1352,5 +1307,14 @@
         "detail": "2 critical and 2 high-risk targets detected."
       }
     ]
+  },
+  "storage_status": {
+    "supabase": {
+      "status": "not_configured"
+    },
+    "gdrive": {
+      "status": "not_configured",
+      "reason": "missing_or_invalid_service_account_json"
+    }
   }
 }

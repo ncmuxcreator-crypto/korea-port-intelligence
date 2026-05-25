@@ -56,14 +56,6 @@ const SECRET_CATALOG = [
     use: "Ulsan berth detail, cargo plan, berth operation, and terminal process feeds."
   },
   {
-    key: "ygpa_core",
-    label: "YGPA / Yeosu-Gwangyang API",
-    type: "ygpa",
-    requiredAny: ["YGPA_SERVICE_KEY", "YGPA_ARRIVAL_API_KEY", "YGPA_DEPARTURE_API_KEY", "YGPA_VTS_API_KEY"],
-    optional: ["YGPA_ARRIVAL_API_URL", "YGPA_DEPARTURE_API_URL", "YGPA_VTS_API_URL"],
-    use: "Yeosu/Gwangyang arrival, departure, VTS, and anchorage intelligence."
-  },
-  {
     key: "mof_vts",
     label: "MOF VTS API",
     type: "vts",
