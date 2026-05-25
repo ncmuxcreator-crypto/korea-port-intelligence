@@ -20,6 +20,7 @@ for (const file of required) {
 
 const data = JSON.parse(fs.readFileSync("data/latest-lite.json", "utf8"));
 const report = JSON.parse(fs.readFileSync("data/pipeline-report.json", "utf8"));
+const vessels = JSON.parse(fs.readFileSync("dashboard/api/vessels.json", "utf8"));
 
 if (!Array.isArray(data)) {
   throw new Error("Invalid latest-lite.json");
@@ -32,6 +33,28 @@ if (!report.status || typeof report.record_count !== "number") {
 for (const item of data) {
   if (!item.vessel_id || !item.vessel_name || !item.port) {
     throw new Error("Missing required vessel fields");
+  }
+}
+
+const priorityPorts = report?.data_strategy?.priority_ports || [];
+const requiredPriorityPorts = ["Busan", "Yeosu/Gwangyang", "Ulsan", "Pyeongtaek-Dangjin", "Hadong/Samcheonpo", "Pohang"];
+for (const port of requiredPriorityPorts) {
+  if (!priorityPorts.includes(port)) {
+    throw new Error(`Missing priority port in data strategy: ${port}`);
+  }
+}
+
+if (report.data_mode === "sample_only" && report?.candidate_ops?.current_candidate_count !== 0) {
+  throw new Error("Sample-only mode must not expose operating candidates");
+}
+
+for (const vessel of vessels) {
+  const isSample = String(vessel.source_mode || "").includes("sample");
+  if (isSample && vessel.commercial_use_status !== "do_not_use_for_outreach") {
+    throw new Error(`Sample vessel is not blocked from outreach: ${vessel.vessel_name || vessel.vessel_id}`);
+  }
+  if (isSample && (vessel.is_operating_candidate || vessel.is_operating_immediate_candidate)) {
+    throw new Error(`Sample vessel is exposed as operating candidate: ${vessel.vessel_name || vessel.vessel_id}`);
   }
 }
 

@@ -21,6 +21,8 @@ The backend is public-data-first. Paid AIS providers such as MarineTraffic, Vess
 - Keep GitHub Actions reliable for scheduled updates.
 - Keep generated dashboard JSON compact; do not commit `node_modules` or bulky raw archives.
 
+See [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md) for the full product direction and Codex working rules.
+
 ## Local Checks
 
 Run these before proposing changes:
@@ -29,6 +31,7 @@ Run these before proposing changes:
 npm install
 npm run update
 npm run validate
+npm run health
 ```
 
 `npm run update` can run without API secrets, but the output will stay in `sample_only` mode until public data collectors and secrets are configured.
