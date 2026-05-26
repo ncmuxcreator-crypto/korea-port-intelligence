@@ -14,6 +14,7 @@ const required = [
   "dashboard/api/backend-ops.json",
   "dashboard/api/candidate-changes.json",
   ".github/workflows/longterm-update.yml",
+  ".github/workflows/actions-health-check.yml",
   "wrangler.jsonc",
   "src/worker.js"
 ];
@@ -106,6 +107,18 @@ const workflow = fs.readFileSync(".github/workflows/longterm-update.yml", "utf8"
 if (!/on:\s*[\s\S]*workflow_dispatch:/.test(workflow) || !/schedule:/.test(workflow)) {
   throw new Error("Workflow trigger configuration is incomplete");
 }
+if (!workflow.includes("runs-on: ubuntu-latest") || workflow.includes("runs-on: self-hosted")) {
+  throw new Error("Longterm workflow must use ubuntu-latest and must not use self-hosted runners");
+}
+if (!workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}") || !workflow.includes("cancel-in-progress: true")) {
+  throw new Error("Longterm workflow concurrency must be isolated by workflow and ref");
+}
+if (!workflow.includes("timeout-minutes: 12")) {
+  throw new Error("Longterm workflow job timeout must be 12 minutes");
+}
+for (const marker of ["github.run_id", "github.ref", "runner.os", "github.workflow", "timestamp=$(date -u"]) {
+  if (!workflow.includes(marker)) throw new Error(`Missing workflow start diagnostic: ${marker}`);
+}
 if (!workflow.includes("SOURCE_CSV_URL") || !workflow.includes("ULSAN_BERTH_DETAIL_API_KEY") || workflow.includes("YGPA_ARRIVAL_API_KEY") || workflow.includes("YGPA_SERVICE_KEY")) {
   throw new Error("Workflow public API secret coverage is incomplete");
 }
@@ -137,6 +150,10 @@ if (wrangler.assets?.directory !== "./dashboard" || wrangler.assets?.binding !==
 const worker = fs.readFileSync("src/worker.js", "utf8");
 if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || !worker.includes("env.ASSETS.fetch")) {
   throw new Error("Worker must serve dashboard assets and live Supabase API routes");
+}
+const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
+if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
+  throw new Error("Actions health-check workflow is incomplete");
 }
 
 console.log("[HWK] validation success");

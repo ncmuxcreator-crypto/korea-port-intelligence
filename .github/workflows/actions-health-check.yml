@@ -1,0 +1,28 @@
+name: Actions Health Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runner-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Runner diagnostics
+        run: |
+          echo "workflow=${{ github.workflow }}"
+          echo "run_id=${{ github.run_id }}"
+          echo "ref=${{ github.ref }}"
+          echo "runner_os=${{ runner.os }}"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          uname -a
+          node --version
+          npm --version

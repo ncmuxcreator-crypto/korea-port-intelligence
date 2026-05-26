@@ -13,13 +13,13 @@ on:
     - cron: "0 */6 * * *"
 
 concurrency:
-  group: hwk-longterm-update
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 12
 
     permissions:
       contents: write
@@ -74,6 +74,14 @@ jobs:
       PNC_SOURCE_URLS: ${{ secrets.PNC_SOURCE_URLS }}
 
     steps:
+      - name: Workflow start diagnostics
+        run: |
+          echo "workflow=${{ github.workflow }}"
+          echo "run_id=${{ github.run_id }}"
+          echo "ref=${{ github.ref }}"
+          echo "runner_os=${{ runner.os }}"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -98,12 +106,12 @@ jobs:
           npm config get registry
 
       - name: Install dependencies (npm safe path)
-        timeout-minutes: 30
+        timeout-minutes: 4
         run: |
           npm ci --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/ || npm install --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/
 
       - name: Collect public port data and build dashboard
-        timeout-minutes: 12
+        timeout-minutes: 4
         run: |
           echo "Starting HWK public-data collection pipeline"
           echo "Collectors are executed inside scripts/update.js -> collectKoreaData()"
@@ -147,7 +155,7 @@ jobs:
         run: npm run validate
 
       - name: Run health audit
-        timeout-minutes: 7
+        timeout-minutes: 2
         run: npm run health
 
       - name: Deploy Cloudflare Worker
