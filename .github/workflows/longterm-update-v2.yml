@@ -1,0 +1,158 @@
+name: Longterm Update V2
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    permissions:
+      contents: read
+
+    env:
+      CI: true
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+      UPDATE_MODE: scheduled
+      UPDATE_TIMEOUT_MS: 600000
+      SOURCE_TIMEOUT_MS: 25000
+      MAX_OUTPUT_ROWS: 1000
+      SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      VESSEL_SPEC_SERVICE_KEY: ${{ secrets.VESSEL_SPEC_SERVICE_KEY }}
+      VESSEL_SPEC_API_URL: ${{ secrets.VESSEL_SPEC_API_URL }}
+      PILOT_SOURCE_URLS: ${{ secrets.PILOT_SOURCE_URLS }}
+      BERTH_SOURCE_URLS: ${{ secrets.BERTH_SOURCE_URLS }}
+      PORT_FACILITY_SERVICE_KEY: ${{ secrets.PORT_FACILITY_SERVICE_KEY }}
+      PORT_FACILITY_API_URL: ${{ secrets.PORT_FACILITY_API_URL }}
+      PORT_OPERATION_SERVICE_KEY: ${{ secrets.PORT_OPERATION_SERVICE_KEY }}
+      PORT_OPERATION_API_URL: ${{ secrets.PORT_OPERATION_API_URL }}
+      ULSAN_API_URL: ${{ secrets.ULSAN_API_URL }}
+      ULSAN_API_KEY: ${{ secrets.ULSAN_API_KEY }}
+      ULSAN_BERTH_DETAIL_API_URL: ${{ secrets.ULSAN_BERTH_DETAIL_API_URL }}
+      ULSAN_CARGO_PLAN_API_URL: ${{ secrets.ULSAN_CARGO_PLAN_API_URL }}
+      ULSAN_BERTH_OPERATION_API_URL: ${{ secrets.ULSAN_BERTH_OPERATION_API_URL }}
+      ULSAN_TERMINAL_PROCESS_API_URL: ${{ secrets.ULSAN_TERMINAL_PROCESS_API_URL }}
+      ULSAN_BERTH_DETAIL_API_KEY: ${{ secrets.ULSAN_BERTH_DETAIL_API_KEY }}
+      ULSAN_CARGO_PLAN_API_KEY: ${{ secrets.ULSAN_CARGO_PLAN_API_KEY }}
+      ULSAN_BERTH_OPERATION_API_KEY: ${{ secrets.ULSAN_BERTH_OPERATION_API_KEY }}
+      ULSAN_TERMINAL_PROCESS_API_KEY: ${{ secrets.ULSAN_TERMINAL_PROCESS_API_KEY }}
+      MOF_VTS_API_BASE: ${{ secrets.MOF_VTS_API_BASE }}
+      MOF_VTS_SERVICE_KEY: ${{ secrets.MOF_VTS_SERVICE_KEY }}
+      MOF_VTS_PORT_CODES: ${{ secrets.MOF_VTS_PORT_CODES }}
+      MOF_AIS_DYNAMIC_API_URL: ${{ secrets.MOF_AIS_DYNAMIC_API_URL }}
+      MOF_AIS_DYNAMIC_SERVICE_KEY: ${{ secrets.MOF_AIS_DYNAMIC_SERVICE_KEY }}
+      MOF_AIS_DYNAMIC_PER_PAGE: ${{ secrets.MOF_AIS_DYNAMIC_PER_PAGE }}
+      MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}
+      MOF_AIS_INFO_SERVICE_KEY: ${{ secrets.MOF_AIS_INFO_SERVICE_KEY }}
+      MOF_AIS_INFO_PER_PAGE: ${{ secrets.MOF_AIS_INFO_PER_PAGE }}
+      MOF_AIS_STAT_API_URL: ${{ secrets.MOF_AIS_STAT_API_URL }}
+      MOF_AIS_STAT_SERVICE_KEY: ${{ secrets.MOF_AIS_STAT_SERVICE_KEY }}
+      MOF_AIS_STAT_PER_PAGE: ${{ secrets.MOF_AIS_STAT_PER_PAGE }}
+      GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+      GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+      PNC_SOURCE_URLS: ${{ secrets.PNC_SOURCE_URLS }}
+
+    steps:
+      - name: Workflow start diagnostics
+        run: |
+          echo "workflow=${{ github.workflow }}"
+          echo "run_id=${{ github.run_id }}"
+          echo "ref=${{ github.ref }}"
+          echo "runner_os=${{ runner.os }}"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        timeout-minutes: 4
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/
+
+      - name: Collect public port data and build dashboard
+        timeout-minutes: 4
+        run: npm run update
+
+      - name: Print collector diagnostics
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+          const path = "dashboard/api/status.json";
+          if (!fs.existsSync(path)) {
+            console.log("status.json was not generated.");
+            process.exit(0);
+          }
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          const diag = status.collector_diagnostics || {};
+          console.log("=== HWK Collector Diagnostics V2 ===");
+          console.log(`data_mode=${status.data_mode}`);
+          console.log(`records=${status.record_count}`);
+          console.log(`attempted=${diag.attempted_count || 0}`);
+          console.log(`success=${diag.success_count || 0}`);
+          console.log(`failed=${diag.failed_count || 0}`);
+          console.log(`skipped=${diag.skipped_count || 0}`);
+          console.log(`real_rows=${diag.real_row_count || 0}`);
+          console.log(`actionable_rows=${diag.actionable_row_count || status.actionable_rows || 0}`);
+          console.log(`fallback_used=${Boolean(diag.fallback_used)}`);
+          for (const source of diag.sources || []) {
+            const state = source.success ? "success" : source.skipped ? `skipped:${source.reason || "unknown"}` : source.error ? `failed:${source.error}` : "pending";
+            console.log(`${source.key}: ${state}; rows=${source.row_count || 0}; normalized=${source.normalized_count || 0}; actionable=${source.actionable_count || 0}; profile=${source.source_profile || "unknown"}`);
+            if (source.warning) console.log(`  warning=${source.warning}`);
+            if (source.sample_keys?.length) console.log(`  sample_keys=${source.sample_keys.join(",")}`);
+            if (source.child_enrichment) console.log(`  child_enrichment=${JSON.stringify(source.child_enrichment)}`);
+          }
+          console.log("storage.supabase=", status.storage_status?.supabase?.status || status.supabase_write?.status || "unknown");
+          console.log("storage.gdrive=", status.storage_status?.gdrive?.status || status.gdrive_archive?.status || "unknown");
+          NODE
+
+      - name: Validate output
+        timeout-minutes: 2
+        run: npm run validate
+
+      - name: Run health audit
+        timeout-minutes: 2
+        run: npm run health
+
+      - name: Deploy Cloudflare Worker
+        timeout-minutes: 5
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Upload generated snapshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hwk-generated-snapshot-v2
+          retention-days: 14
+          path: |
+            data/latest-lite.json
+            data/pipeline-report.json
+            data/reports/
+            data/history/
+            dashboard/api/
+            public/

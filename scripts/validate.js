@@ -14,6 +14,7 @@ const required = [
   "dashboard/api/backend-ops.json",
   "dashboard/api/candidate-changes.json",
   ".github/workflows/longterm-update.yml",
+  ".github/workflows/longterm-update-v2.yml",
   ".github/workflows/actions-health-check.yml",
   "wrangler.jsonc",
   "src/worker.js"
@@ -154,6 +155,13 @@ if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || 
 const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
 if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
   throw new Error("Actions health-check workflow is incomplete");
+}
+const workflowV2 = fs.readFileSync(".github/workflows/longterm-update-v2.yml", "utf8");
+if (!workflowV2.includes("name: Longterm Update V2") || !workflowV2.includes("runs-on: ubuntu-latest") || !workflowV2.includes("group: ${{ github.workflow }}-${{ github.ref }}")) {
+  throw new Error("Longterm Update V2 bypass workflow is incomplete");
+}
+if (/git push origin HEAD:main|git commit -m "auto: refresh|runs-on: self-hosted/.test(workflowV2)) {
+  throw new Error("Longterm Update V2 must not use self-hosted runners or auto-commit generated files");
 }
 
 console.log("[HWK] validation success");
