@@ -991,9 +991,9 @@ function buildBackendStabilityBatch(records = [], apiSources = [], reportBase = 
 }
 
 function buildRuntimeBudget() {
-  const updateMode = process.env.UPDATE_MODE || "fast";
-  const updateTimeoutMs = Number(process.env.UPDATE_TIMEOUT_MS || 120000);
-  const sourceTimeoutMs = Number(process.env.SOURCE_TIMEOUT_MS || 10000);
+  const updateMode = process.env.UPDATE_MODE || "scheduled";
+  const updateTimeoutMs = Number(process.env.UPDATE_TIMEOUT_MS || 600000);
+  const sourceTimeoutMs = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
   const maxRows = Number(process.env.MAX_OUTPUT_ROWS || 500);
   return {
     policy_version: "runtime-budget-v17.7",
@@ -1003,7 +1003,7 @@ function buildRuntimeBudget() {
     max_output_rows: maxRows,
     collector_policy: updateMode === "fast"
       ? "Run lightweight public-data collectors first; skip slow optional sources; never block dashboard generation."
-      : "Allow broader source checks but keep each source bounded by SOURCE_TIMEOUT_MS.",
+      : "Run scheduled public-data collection with a realistic per-source timeout; never block dashboard generation if one source fails.",
     paid_ais_policy: "MarineTraffic/VesselFinder/AISStream stay optional and should not block Korea candidate detection.",
     failure_policy: "If a collector fails or times out, preserve latest generated snapshot/fallback data and write the error into pipeline-report/status."
   };
@@ -1139,7 +1139,13 @@ try {
     supabase_status: supabaseStatus,
     supabase_write: supabaseWrite,
     gdrive_archive: gdriveArchive,
-    refresh_interval_seconds: 30,
+    frontend_poll_interval_seconds: 900,
+    collection_schedule: {
+      github_actions_cron: "0 */6 * * *",
+      meaning: "GitHub Actions collects public data every 6 hours or when manually triggered. The dashboard reads generated JSON files; it does not collect APIs every 30 seconds.",
+      expected_collection_runtime_minutes: "3-12",
+      per_source_timeout_seconds: Math.round(Number(process.env.SOURCE_TIMEOUT_MS || 25000) / 1000)
+    },
     data_mode: buildDataMode(vessels, detectSecrets(), supabaseStatus).mode,
     data_mode_detail: buildDataMode(vessels, detectSecrets(), supabaseStatus),
     api_sources: detectSecrets(),

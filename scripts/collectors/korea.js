@@ -1,4 +1,4 @@
-const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 10000);
+const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 500);
 
 let diagnostics = {
