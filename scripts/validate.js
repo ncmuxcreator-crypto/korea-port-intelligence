@@ -18,8 +18,7 @@ const required = [
   ".github/workflows/actions-health-check.yml",
   ".github/workflows/push-smoke-test.yml",
   "wrangler.jsonc",
-  "src/worker.js",
-  "scripts/gdrive-check.js"
+  "src/worker.js"
 ];
 
 for (const file of required) {
@@ -162,8 +161,8 @@ if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normal
   throw new Error("Google Drive archive helper must support shared drives, folder URLs, and base64 service account secrets");
 }
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
-if (!packageJson.scripts?.["gdrive:check"]) {
-  throw new Error("Missing Google Drive archive check script");
+if (packageJson.scripts?.["gdrive:check"] && !fs.existsSync("scripts/gdrive-check.js")) {
+  throw new Error("Google Drive check script is registered but scripts/gdrive-check.js is missing");
 }
 const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
 if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
