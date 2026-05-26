@@ -68,6 +68,6 @@ Prefer starting a new `Run workflow` on `main` rather than re-running an old que
 
 ## Dispatch Button Bypass
 
-If GitHub shows `Failed to queue workflow run` when pressing the manual button, use `Longterm Update V2` through a normal `main` push instead. The V2 workflow listens to safe project paths, including `.github/workflows/**`, `scripts/**`, `src/**`, `dashboard/**`, `supabase/**`, and `wrangler.jsonc`.
+If GitHub shows `Failed to queue workflow run` when pressing the manual button, use `Longterm Update V2` through a normal `main` push instead. The V2 workflow intentionally has no path filter, so even an empty commit can trigger it.
 
 This bypass avoids the manual `workflow_dispatch` path. If a push to `main` also does not create a run, the issue is outside the workflow YAML and is likely repository Actions availability, billing/minutes, organization policy, or a temporary GitHub Actions queue problem.

@@ -160,8 +160,11 @@ const workflowV2 = fs.readFileSync(".github/workflows/longterm-update-v2.yml", "
 if (!workflowV2.includes("name: Longterm Update V2") || !workflowV2.includes("runs-on: ubuntu-latest") || !workflowV2.includes("group: ${{ github.workflow }}-${{ github.ref }}")) {
   throw new Error("Longterm Update V2 bypass workflow is incomplete");
 }
-if (!workflowV2.includes("push:") || !workflowV2.includes(".github/workflows/**") || !workflowV2.includes("dashboard/**")) {
-  throw new Error("Longterm Update V2 must support push-triggered bypass runs");
+if (!workflowV2.includes("push:") || !workflowV2.includes("branches:") || !workflowV2.includes("- main")) {
+  throw new Error("Longterm Update V2 must support push-triggered bypass runs on main");
+}
+if (/paths:|paths-ignore:/.test(workflowV2)) {
+  throw new Error("Longterm Update V2 push bypass must not use path filters");
 }
 if (/git push origin HEAD:main|git commit -m "auto: refresh|runs-on: self-hosted/.test(workflowV2)) {
   throw new Error("Longterm Update V2 must not use self-hosted runners or auto-commit generated files");
