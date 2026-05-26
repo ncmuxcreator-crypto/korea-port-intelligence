@@ -16,6 +16,7 @@ const required = [
   ".github/workflows/longterm-update.yml",
   ".github/workflows/longterm-update-v2.yml",
   ".github/workflows/actions-health-check.yml",
+  ".github/workflows/push-smoke-test.yml",
   "wrangler.jsonc",
   "src/worker.js"
 ];
@@ -155,6 +156,10 @@ if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || 
 const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
 if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
   throw new Error("Actions health-check workflow is incomplete");
+}
+const pushSmokeWorkflow = fs.readFileSync(".github/workflows/push-smoke-test.yml", "utf8");
+if (!pushSmokeWorkflow.includes("name: Push Smoke Test") || !pushSmokeWorkflow.includes("push:") || !pushSmokeWorkflow.includes("runs-on: ubuntu-latest")) {
+  throw new Error("Push smoke test workflow is incomplete");
 }
 const workflowV2 = fs.readFileSync(".github/workflows/longterm-update-v2.yml", "utf8");
 if (!workflowV2.includes("name: Longterm Update V2") || !workflowV2.includes("runs-on: ubuntu-latest") || !workflowV2.includes("group: ${{ github.workflow }}-${{ github.ref }}")) {

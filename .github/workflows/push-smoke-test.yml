@@ -1,0 +1,28 @@
+name: Push Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - name: Print push diagnostics
+        run: |
+          echo "workflow=${{ github.workflow }}"
+          echo "event=${{ github.event_name }}"
+          echo "run_id=${{ github.run_id }}"
+          echo "ref=${{ github.ref }}"
+          echo "sha=${{ github.sha }}"
+          echo "runner_os=${{ runner.os }}"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
