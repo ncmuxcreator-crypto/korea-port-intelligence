@@ -18,7 +18,8 @@ const required = [
   ".github/workflows/actions-health-check.yml",
   ".github/workflows/push-smoke-test.yml",
   "wrangler.jsonc",
-  "src/worker.js"
+  "src/worker.js",
+  "scripts/gdrive-check.js"
 ];
 
 for (const file of required) {
@@ -149,9 +150,20 @@ const wrangler = JSON.parse(fs.readFileSync("wrangler.jsonc", "utf8"));
 if (wrangler.assets?.directory !== "./dashboard" || wrangler.assets?.binding !== "ASSETS") {
   throw new Error("Cloudflare Workers assets must point to ./dashboard with ASSETS binding");
 }
+if (!Array.isArray(wrangler.assets?.run_worker_first) || !wrangler.assets.run_worker_first.includes("/api/*")) {
+  throw new Error("Cloudflare Worker must run before static assets for /api/* routes");
+}
 const worker = fs.readFileSync("src/worker.js", "utf8");
 if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || !worker.includes("env.ASSETS.fetch")) {
   throw new Error("Worker must serve dashboard assets and live Supabase API routes");
+}
+const gdriveLib = fs.readFileSync("scripts/lib/gdrive.js", "utf8");
+if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normalizeFolderId") || !gdriveLib.includes("Buffer.from(value, \"base64\")")) {
+  throw new Error("Google Drive archive helper must support shared drives, folder URLs, and base64 service account secrets");
+}
+const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+if (!packageJson.scripts?.["gdrive:check"]) {
+  throw new Error("Missing Google Drive archive check script");
 }
 const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
 if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
