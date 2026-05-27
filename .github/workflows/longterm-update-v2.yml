@@ -36,6 +36,7 @@ jobs:
       MAX_CHILD_ENRICHMENT_ROWS: 4
       COLLECTOR_RUNTIME_BUDGET_MS: 300000
       ENABLE_SOURCE_CSV: "false"
+      COLLECTOR_DEBUG_ONLY: port_operation_busan
       SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

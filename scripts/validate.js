@@ -121,7 +121,7 @@ if (!workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}") || !wo
 if (!workflow.includes("timeout-minutes: 12")) {
   throw new Error("Longterm workflow job timeout must be 12 minutes");
 }
-if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
+if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
   throw new Error("Longterm workflow must bound collector runtime and child enrichment");
 }
 for (const marker of ["github.run_id", "github.ref", "runner.os", "github.workflow", "timestamp=$(date -u"]) {
@@ -137,6 +137,9 @@ if (!koreaCollector.includes("VsslEtrynd5/Info5") || !koreaCollector.includes("C
 if (!koreaCollector.includes("PORT_OPERATION_API_URL") || !koreaCollector.includes("PORT_FACILITY_API_URL")) {
   throw new Error("Collector must allow env overrides for PORT_OPERATION_API_URL and PORT_FACILITY_API_URL");
 }
+for (const envMarker of ["PORT_OPERATION_API_KEY", "SERVICEKEY", "runtimeEnvDiagnostics", "COLLECTOR_DEBUG_ONLY"]) {
+  if (!koreaCollector.includes(envMarker)) throw new Error(`Collector must debug env naming mismatch: ${envMarker}`);
+}
 if (/key:\s*["']port_facility["']/.test(koreaCollector)) {
   throw new Error("CargHarborUse2 must not be used as a standalone port_facility collector");
 }
@@ -148,6 +151,9 @@ for (const portCode of ["020", "030", "620", "820", "031", "810", "622"]) {
 }
 for (const param of ["sde", "ede", "deGb", "numOfRows", "requested_url_without_service_key", "resultCode", "resultMsg", "totalCount", "http_status"]) {
   if (!koreaCollector.includes(param)) throw new Error(`Missing PORT-MIS request/diagnostic field: ${param}`);
+}
+for (const param of ["raw_response_preview", "service_key_variant", "serviceKeyVariants"]) {
+  if (!koreaCollector.includes(param)) throw new Error(`Missing PORT-MIS debug field: ${param}`);
 }
 if (!koreaCollector.includes("MAX_CHILD_ENRICHMENT_ROWS") || !koreaCollector.includes("skipped_by_limit")) {
   throw new Error("CargHarborUse2 enrichment must be bounded to keep update runtime under control");
@@ -216,7 +222,7 @@ if (/git push origin HEAD:main|git commit -m "auto: refresh|runs-on: self-hosted
 if (!workflowV2.includes("continue-on-error: true") || !workflowV2.includes("Skip Cloudflare deploy notice")) {
   throw new Error("Longterm Update V2 must keep bypass diagnostics running even when optional checks fail");
 }
-if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
+if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
   throw new Error("Longterm Update V2 must bound collector runtime and child enrichment");
 }
 

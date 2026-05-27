@@ -68,6 +68,21 @@ function envAny(...names) {
   return "";
 }
 
+function runtimeEnvDiagnostics() {
+  return {
+    PORT_OPERATION_API_URL: Boolean(process.env.PORT_OPERATION_API_URL),
+    PORT_OPERATION_SERVICE_KEY: Boolean(process.env.PORT_OPERATION_SERVICE_KEY),
+    PORT_OPERATION_API_KEY: Boolean(process.env.PORT_OPERATION_API_KEY),
+    PORT_FACILITY_API_URL: Boolean(process.env.PORT_FACILITY_API_URL),
+    PORT_FACILITY_SERVICE_KEY: Boolean(process.env.PORT_FACILITY_SERVICE_KEY),
+    PORT_FACILITY_API_KEY: Boolean(process.env.PORT_FACILITY_API_KEY),
+    SERVICE_KEY: Boolean(process.env.SERVICE_KEY),
+    SERVICEKEY: Boolean(process.env.SERVICEKEY),
+    DATA_GO_KR_API_KEY: Boolean(process.env.DATA_GO_KR_API_KEY),
+    COLLECTOR_DEBUG_ONLY: process.env.COLLECTOR_DEBUG_ONLY || ""
+  };
+}
+
 function hasEmbeddedKey(urlValue) {
   try {
     const url = new URL(urlValue);
@@ -109,6 +124,19 @@ function maskServiceKey(url) {
     if (copy.searchParams.has(key)) copy.searchParams.set(key, "***");
   }
   return copy.toString();
+}
+
+function serviceKeyVariants(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return [];
+  const variants = [{ name: "as_provided", value: raw }];
+  try {
+    const decoded = decodeURIComponent(raw);
+    if (decoded && decoded !== raw) variants.push({ name: "decoded", value: decoded });
+  } catch {
+    // Keep only the provided key.
+  }
+  return variants;
 }
 
 function resultMeta(text) {
@@ -218,12 +246,13 @@ function allSourceConfigs() {
   const sde = env("PORT_OPERATION_START_DATE") || today;
   const ede = env("PORT_OPERATION_END_DATE") || sde;
   const portOperationUrl = env("PORT_OPERATION_API_URL") || DEFAULT_PORT_OPERATION_API_URL;
-  const portOperationKey = envAny("PORT_OPERATION_SERVICE_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY");
+  const portOperationKey = envAny("PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY", "SERVICEKEY");
   const portOperationSources = Object.entries(configuredPortOperationCodes()).map(([name, code]) => ({
     key: `port_operation_${name}`,
     label: `PORT-MIS VsslEtrynd5 ${name}`,
     url: portOperationUrl,
     serviceKey: portOperationKey,
+    serviceKeyVariants: serviceKeyVariants(portOperationKey),
     portName: name,
     prtAgCd: code,
     noTypeParam: true,
@@ -252,7 +281,7 @@ function allSourceConfigs() {
     { key: "mof_ais_dynamic", label: "MOF AIS dynamic", url: env("MOF_AIS_DYNAMIC_API_URL"), serviceKey: env("MOF_AIS_DYNAMIC_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_DYNAMIC_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     { key: "mof_ais_info", label: "MOF AIS info", url: env("MOF_AIS_INFO_API_URL"), serviceKey: env("MOF_AIS_INFO_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_INFO_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     { key: "mof_ais_stat", label: "MOF AIS stat", url: env("MOF_AIS_STAT_API_URL"), serviceKey: env("MOF_AIS_STAT_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_STAT_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
-    { key: "korea_public_data", label: "Korea public data fallback", url: env("KOREA_PORTMIS_BASE_URL"), serviceKey: env("PORTMIS_API_KEY") || env("PORT_MIS_API_KEY") || env("DATA_GO_KR_API_KEY") || env("SERVICE_KEY") },
+    { key: "korea_public_data", label: "Korea public data fallback", url: env("KOREA_PORTMIS_BASE_URL"), serviceKey: env("PORTMIS_API_KEY") || env("PORT_MIS_API_KEY") || env("DATA_GO_KR_API_KEY") || env("SERVICE_KEY") || env("SERVICEKEY") },
     ...((vtsBase && vtsKey) ? vtsCodes.map(code => ({ key: `mof_vts_${code.toLowerCase()}`, label: `Integrated VTS ${code}`, url: vtsBase, serviceKey: vtsKey, portCode: code })) : [])
   ];
 }
@@ -294,6 +323,22 @@ function decodeResponse(buffer, contentType = "") {
 }
 
 async function fetchText(source, extraParams = {}) {
+  const variants = source.serviceKeyVariants?.length ? source.serviceKeyVariants : [{ name: "default", value: source.serviceKey }];
+  let lastError = null;
+  for (const variant of variants) {
+    const sourceVariant = { ...source, serviceKey: variant.value };
+    try {
+      const result = await fetchTextOnce(sourceVariant, extraParams);
+      return { ...result, service_key_variant: variant.name };
+    } catch (error) {
+      lastError = error;
+      if (!source.serviceKeyVariants?.length) break;
+    }
+  }
+  throw lastError || new Error("request_failed");
+}
+
+async function fetchTextOnce(source, extraParams = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS);
   try {
@@ -536,7 +581,7 @@ async function enrichWithCargoHarborUse(rawRow, record, now) {
     key: "port_facility_enrichment",
     label: "CargHarborUse2 child enrichment",
     url: env("PORT_FACILITY_API_URL") || DEFAULT_CARGO_HARBOR_USE_API_URL,
-    serviceKey: envAny("PORT_FACILITY_SERVICE_KEY", "PORT_OPERATION_SERVICE_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY"),
+    serviceKey: envAny("PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY", "SERVICEKEY"),
     noTypeParam: true
   };
   if (!canAttempt(source)) return { record, status: "missing_service_key_or_embedded_key", row_count: 0, normalized_count: 0 };
@@ -566,9 +611,11 @@ async function collectRealRows() {
   const deadline = Date.now() + COLLECTOR_RUNTIME_BUDGET_MS;
   const records = [];
   let totalChildEnrichmentAttempts = 0;
-  diagnostics = { generated_at: now, attempted_count: 0, success_count: 0, failed_count: 0, skipped_count: 0, real_row_count: 0, actionable_row_count: 0, fallback_used: false, sources: [] };
+  diagnostics = { generated_at: now, attempted_count: 0, success_count: 0, failed_count: 0, skipped_count: 0, real_row_count: 0, actionable_row_count: 0, fallback_used: false, env_presence: runtimeEnvDiagnostics(), sources: [] };
+  console.log("[HWK] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
 
-  for (const source of allSourceConfigs()) {
+  const debugOnly = env("COLLECTOR_DEBUG_ONLY");
+  for (const source of allSourceConfigs().filter(source => !debugOnly || source.key === debugOnly)) {
     const diag = {
       key: source.key,
       label: source.label,
@@ -607,13 +654,15 @@ async function collectRealRows() {
     diag.attempted = true;
     diagnostics.attempted_count += 1;
     try {
-      const { text, url, http_status, latency_ms, result_meta } = await fetchText(source);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant } = await fetchText(source);
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
       const rows = parseRows(text, rowLimit);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
       diag.requested_url_without_service_key = maskServiceKey(url);
+      diag.service_key_variant = service_key_variant;
+      diag.raw_response_preview = text.slice(0, 500);
       diag.resultCode = result_meta?.resultCode || null;
       diag.resultMsg = result_meta?.resultMsg || null;
       diag.totalCount = result_meta?.totalCount !== undefined ? Number(result_meta.totalCount) || result_meta.totalCount : null;
@@ -695,6 +744,12 @@ function sampleRows(apiSources = []) {
 export async function collectKoreaData({ apiSources = [] } = {}) {
   const realRows = await collectRealRows();
   diagnostics.fallback_used = realRows.length === 0;
+  if (process.env.CI && diagnostics.attempted_count === 0) {
+    throw new Error(`No collectors attempted. Runtime env presence: ${JSON.stringify(runtimeEnvDiagnostics())}`);
+  }
+  if (process.env.CI && process.env.COLLECTOR_DEBUG_ONLY && realRows.length === 0) {
+    throw new Error(`Debug collector produced no real rows. Runtime env presence: ${JSON.stringify(runtimeEnvDiagnostics())}`);
+  }
   return realRows.length ? realRows : sampleRows(apiSources);
 }
 
