@@ -1,5 +1,6 @@
 const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 500);
+const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.MAX_CHILD_ENRICHMENT_ROWS || 10);
 const DEFAULT_PORT_OPERATION_API_URL = "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5";
 const DEFAULT_CARGO_HARBOR_USE_API_URL = "http://apis.data.go.kr/1192000/CargHarborUse2/Info";
 const DEFAULT_PORT_OPERATION_CODES = {
@@ -557,6 +558,7 @@ async function enrichWithCargoHarborUse(rawRow, record, now) {
 async function collectRealRows() {
   const now = new Date().toISOString();
   const records = [];
+  let totalChildEnrichmentAttempts = 0;
   diagnostics = { generated_at: now, attempted_count: 0, success_count: 0, failed_count: 0, skipped_count: 0, real_row_count: 0, actionable_row_count: 0, fallback_used: false, sources: [] };
 
   for (const source of allSourceConfigs()) {
@@ -607,11 +609,19 @@ async function collectRealRows() {
       let childSuccess = 0;
       let childRows = 0;
       let childNormalized = 0;
+      let childSkippedByLimit = 0;
       const childStatuses = new Map();
       for (const row of rows) {
         let normalized = normalizeRow(row, source, now);
         if (normalized && String(source.key || "").startsWith("port_operation_")) {
+          if (totalChildEnrichmentAttempts >= MAX_CHILD_ENRICHMENT_ROWS) {
+            childSkippedByLimit += 1;
+            childStatuses.set("skipped:enrichment_limit", (childStatuses.get("skipped:enrichment_limit") || 0) + 1);
+            records.push(normalized);
+            continue;
+          }
           childAttempted += 1;
+          totalChildEnrichmentAttempts += 1;
           const child = await enrichWithCargoHarborUse(row, normalized, now);
           normalized = child.record;
           childRows += child.row_count || 0;
@@ -632,6 +642,8 @@ async function collectRealRows() {
           success: childSuccess,
           rows: childRows,
           normalized: childNormalized,
+          skipped_by_limit: childSkippedByLimit,
+          max_total_attempts: MAX_CHILD_ENRICHMENT_ROWS,
           statuses: Object.fromEntries(childStatuses)
         };
       }
