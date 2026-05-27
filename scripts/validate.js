@@ -144,8 +144,16 @@ if (!workflow.includes("SOURCE_CSV_URL") || !workflow.includes("ULSAN_BERTH_DETA
   throw new Error("Workflow public API secret coverage is incomplete");
 }
 const koreaCollector = fs.readFileSync("scripts/collectors/korea.js", "utf8");
-if (/MV HF ZHOUSHAN|MAERSK DEMO|YEOSU TARGET|function sampleRows/.test(koreaCollector) || fs.existsSync("scripts/collectors/sample.js") || fs.existsSync("scripts/collectors/busan.js")) {
-  throw new Error("Sample/demo collectors and fallback vessels must be removed");
+const sampleCollectorBlockers = [
+  /MV HF ZHOUSHAN/.test(koreaCollector) ? "MV HF ZHOUSHAN marker in scripts/collectors/korea.js" : null,
+  /MAERSK DEMO/.test(koreaCollector) ? "MAERSK DEMO marker in scripts/collectors/korea.js" : null,
+  /YEOSU TARGET/.test(koreaCollector) ? "YEOSU TARGET marker in scripts/collectors/korea.js" : null,
+  /function sampleRows/.test(koreaCollector) ? "function sampleRows in scripts/collectors/korea.js" : null,
+  fs.existsSync("scripts/collectors/sample.js") ? "scripts/collectors/sample.js still exists" : null,
+  fs.existsSync("scripts/collectors/busan.js") ? "scripts/collectors/busan.js still exists" : null
+].filter(Boolean);
+if (sampleCollectorBlockers.length) {
+  throw new Error(`Sample/demo collectors and fallback vessels must be removed: ${sampleCollectorBlockers.join("; ")}`);
 }
 if (!koreaCollector.includes("VsslEtrynd5/Info5") || !koreaCollector.includes("CargHarborUse2/Info")) {
   throw new Error("Collector must use VsslEtrynd5 parent records and CargHarborUse2 enrichment endpoint");
