@@ -12,7 +12,15 @@ const DEFAULT_PORT_OPERATION_CODES = {
   ulsan: "820",
   pyeongtaek_dangjin: "031",
   pohang: "810",
-  masan_jinhae: "622"
+  masan_jinhae: "622",
+  samcheonpo_hadong: "622",
+  mokpo: "070",
+  gunsan: "080",
+  daesan: "621",
+  donghae_mukho: "120",
+  jeju: "940",
+  tongyeong: "622",
+  geoje_okpo: "622"
 };
 
 let diagnostics = {
@@ -285,7 +293,7 @@ function allSourceConfigs() {
     { key: "mof_ais_dynamic", label: "MOF AIS dynamic", url: env("MOF_AIS_DYNAMIC_API_URL"), serviceKey: env("MOF_AIS_DYNAMIC_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_DYNAMIC_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     { key: "mof_ais_info", label: "MOF AIS info", url: env("MOF_AIS_INFO_API_URL"), serviceKey: env("MOF_AIS_INFO_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_INFO_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     { key: "mof_ais_stat", label: "MOF AIS stat", url: env("MOF_AIS_STAT_API_URL"), serviceKey: env("MOF_AIS_STAT_SERVICE_KEY"), maxRows: Math.min(Number(env("MOF_AIS_STAT_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
-    { key: "korea_public_data", label: "Korea public data fallback", url: env("KOREA_PORTMIS_BASE_URL"), serviceKey: env("PORTMIS_API_KEY") || env("PORT_MIS_API_KEY") || env("DATA_GO_KR_API_KEY") || env("SERVICE_KEY") || env("SERVICEKEY") },
+    { key: "korea_public_data", label: "Korea public data auxiliary source", url: env("KOREA_PORTMIS_BASE_URL"), serviceKey: env("PORTMIS_API_KEY") || env("PORT_MIS_API_KEY") || env("DATA_GO_KR_API_KEY") || env("SERVICE_KEY") || env("SERVICEKEY") },
     ...((vtsBase && vtsKey) ? vtsCodes.map(code => ({ key: `mof_vts_${code.toLowerCase()}`, label: `Integrated VTS ${code}`, url: vtsBase, serviceKey: vtsKey, portCode: code })) : [])
   ];
 }
@@ -736,17 +744,6 @@ async function collectRealRows() {
   return deduped;
 }
 
-function sampleRows(apiSources = []) {
-  const enabled = new Set(apiSources.filter(s => s.enabled).map(s => s.key));
-  const sourceMode = enabled.size ? "api_ready_sample_snapshot" : "sample_snapshot";
-  const now = new Date().toISOString();
-  return [
-    { vessel_id: "IMO-9876543", vessel_name: "MV HF ZHOUSHAN", port: "Busan", berth: "Outer Anchorage", anchorage_zone: "Busan OPL", status: "Waiting", operator: "Sample Operator", destination: "Australia", previous_port: "Port Hedland", next_port: "Brisbane", vessel_type: "Capesize", gt: 93000, eta: "2026-05-04 08:00", etb: "2026-05-27 10:00", ata: "2026-05-04 07:40", atb: "", etd: "2026-05-29 18:00", atd: "", days_in_korea: 21, speed: 2, risk_score: 95, source: "integrated_vts_sample", updated_at: now, source_mode: sourceMode, api_ready: [...enabled] },
-    { vessel_id: "IMO-8111222", vessel_name: "MAERSK DEMO", port: "Ulsan", berth: "Industrial Berth", anchorage_zone: "", status: "At Berth", operator: "Maersk", destination: "Singapore", previous_port: "Shanghai", next_port: "Singapore", vessel_type: "Container", gt: 76000, eta: "2026-05-20 09:00", etb: "2026-05-20 16:00", ata: "2026-05-20 08:45", atb: "2026-05-20 16:20", etd: "2026-05-25 21:00", atd: "", days_in_korea: 5, speed: 10, risk_score: 35, source: "ulsan_port_schedule_sample", updated_at: now, source_mode: sourceMode, api_ready: [...enabled] },
-    { vessel_id: "IMO-7000001", vessel_name: "YEOSU TARGET", port: "Yeosu", berth: "Outer Anchorage", anchorage_zone: "D", status: "Waiting", operator: "Demo Operator", destination: "Brazil", previous_port: "Singapore", next_port: "Brazil", vessel_type: "VLCC", gt: 160000, eta: "2026-05-09 03:00", etb: "", ata: "2026-05-09 02:35", atb: "", etd: "2026-05-31 12:00", atd: "", days_in_korea: 16, speed: 1, risk_score: 90, source: "integrated_vts_sample", updated_at: now, source_mode: sourceMode, api_ready: [...enabled] }
-  ];
-}
-
 export async function collectKoreaData({ apiSources = [] } = {}) {
   const realRows = await collectRealRows();
   diagnostics.fallback_used = realRows.length === 0;
@@ -756,7 +753,7 @@ export async function collectKoreaData({ apiSources = [] } = {}) {
   if (process.env.CI && process.env.COLLECTOR_DEBUG_ONLY && realRows.length === 0) {
     throw new Error(`Debug collector produced no real rows. Runtime env presence: ${JSON.stringify(runtimeEnvDiagnostics())}`);
   }
-  return realRows.length ? realRows : sampleRows(apiSources);
+  return realRows;
 }
 
 export function getCollectorDiagnostics() {

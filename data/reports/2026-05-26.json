@@ -1,9 +1,9 @@
 {
   "version": "17.7.0",
   "build_name": "Backend Stability Batch",
-  "status": "success",
-  "started_at": "2026-05-26T08:55:43.964Z",
-  "completed_at": "2026-05-26T08:55:43.969Z",
+  "status": "failed",
+  "started_at": "2026-05-26T13:41:57.379Z",
+  "completed_at": "2026-05-26T13:41:57.386Z",
   "record_count": 3,
   "actionable_rows": 0,
   "critical_count": 2,
@@ -114,7 +114,7 @@
   ],
   "supabase_status": "not_configured",
   "supabase_write": {
-    "status": "not_configured"
+    "status": "syncing"
   },
   "gdrive_archive": {
     "status": "not_configured",
@@ -135,7 +135,12 @@
     "sample_rows": 3,
     "real_rows": 0,
     "actionable_rows": 0,
-    "enabled_source_groups": [],
+    "enabled_source_groups": [
+      "supabase",
+      "mof_vts",
+      "mof_ais_dynamic",
+      "mof_ais_info"
+    ],
     "supabase_status": "not_configured",
     "message": "Dashboard is render-ready but currently using sample vessels. Connect public/API collectors to replace sample rows.",
     "weight_policy": {
@@ -172,15 +177,18 @@
       "key": "supabase",
       "label": "Supabase Database",
       "type": "database",
-      "enabled": false,
+      "enabled": true,
       "partial": false,
-      "status": "not_configured",
-      "using": [],
-      "masked": {},
-      "missing": [
+      "status": "enabled",
+      "using": [
         "SUPABASE_URL",
         "SUPABASE_SERVICE_ROLE_KEY"
       ],
+      "masked": {
+        "SUPABASE_URL": "configured",
+        "SUPABASE_SERVICE_ROLE_KEY": "configured"
+      },
+      "missing": [],
       "use": "Store vessel snapshots, pipeline reports, dashboard history, and future lead intelligence tables."
     },
     {
@@ -275,42 +283,54 @@
       "key": "mof_vts",
       "label": "MOF VTS API",
       "type": "vts",
-      "enabled": false,
+      "enabled": true,
       "partial": false,
-      "status": "not_configured",
-      "using": [],
-      "masked": {},
-      "missing": [
-        "MOF_VTS_SERVICE_KEY"
+      "status": "enabled",
+      "using": [
+        "MOF_VTS_SERVICE_KEY",
+        "MOF_VTS_API_BASE"
       ],
+      "masked": {
+        "MOF_VTS_SERVICE_KEY": "configured",
+        "MOF_VTS_API_BASE": "configured"
+      },
+      "missing": [],
       "use": "VTS-based port movement and port-code scoped vessel traffic monitoring."
     },
     {
       "key": "mof_ais_dynamic",
       "label": "MOF AIS Dynamic API",
       "type": "ais",
-      "enabled": false,
+      "enabled": true,
       "partial": false,
-      "status": "not_configured",
-      "using": [],
-      "masked": {},
-      "missing": [
-        "MOF_AIS_DYNAMIC_SERVICE_KEY"
+      "status": "enabled",
+      "using": [
+        "MOF_AIS_DYNAMIC_SERVICE_KEY",
+        "MOF_AIS_DYNAMIC_API_URL"
       ],
+      "masked": {
+        "MOF_AIS_DYNAMIC_SERVICE_KEY": "configured",
+        "MOF_AIS_DYNAMIC_API_URL": "configured"
+      },
+      "missing": [],
       "use": "Dynamic AIS position, speed, heading, and recent vessel movement snapshots."
     },
     {
       "key": "mof_ais_info",
       "label": "MOF AIS Vessel Info API",
       "type": "ais_master",
-      "enabled": false,
+      "enabled": true,
       "partial": false,
-      "status": "not_configured",
-      "using": [],
-      "masked": {},
-      "missing": [
-        "MOF_AIS_INFO_SERVICE_KEY"
+      "status": "enabled",
+      "using": [
+        "MOF_AIS_INFO_SERVICE_KEY",
+        "MOF_AIS_INFO_API_URL"
       ],
+      "masked": {
+        "MOF_AIS_INFO_SERVICE_KEY": "configured",
+        "MOF_AIS_INFO_API_URL": "configured"
+      },
+      "missing": [],
       "use": "AIS vessel info enrichment including vessel identity and static particulars."
     },
     {
@@ -471,9 +491,13 @@
   "data_strategy": {
     "mode": "public_data_first",
     "principle": "Use Korean public/port/MOF sources as the operating base. Treat MarineTraffic/VesselFinder/AISStream as optional paid enrichment, not a blocker.",
-    "public_enabled_count": 0,
+    "public_enabled_count": 3,
     "paid_enabled_count": 0,
-    "public_enabled": [],
+    "public_enabled": [
+      "mof_vts",
+      "mof_ais_dynamic",
+      "mof_ais_info"
+    ],
     "paid_enabled": [],
     "priority_ports": [
       "Busan",
@@ -498,11 +522,11 @@
     ]
   },
   "collector_diagnostics": {
-    "generated_at": "2026-05-26T08:55:43.967Z",
-    "attempted_count": 0,
+    "generated_at": "2026-05-26T13:41:57.381Z",
+    "attempted_count": 11,
     "success_count": 0,
-    "failed_count": 0,
-    "skipped_count": 12,
+    "failed_count": 11,
+    "skipped_count": 9,
     "real_row_count": 0,
     "actionable_row_count": 0,
     "fallback_used": true,
@@ -521,7 +545,7 @@
       },
       {
         "key": "port_operation",
-        "label": "PORT-MIS port operation",
+        "label": "PORT-MIS VsslEtrynd5 port entry/departure",
         "source_profile": "schedule_or_berth",
         "attempted": false,
         "skipped": true,
@@ -529,19 +553,7 @@
         "row_count": 0,
         "normalized_count": 0,
         "actionable_count": 0,
-        "reason": "missing_url"
-      },
-      {
-        "key": "port_facility",
-        "label": "Port facility",
-        "source_profile": "public_api",
-        "attempted": false,
-        "skipped": true,
-        "success": false,
-        "row_count": 0,
-        "normalized_count": 0,
-        "actionable_count": 0,
-        "reason": "missing_url"
+        "reason": "missing_service_key_or_embedded_key"
       },
       {
         "key": "ulsan_core",
@@ -607,25 +619,25 @@
         "key": "mof_ais_dynamic",
         "label": "MOF AIS dynamic",
         "source_profile": "movement_only",
-        "attempted": false,
-        "skipped": true,
+        "attempted": true,
+        "skipped": false,
         "success": false,
         "row_count": 0,
         "normalized_count": 0,
         "actionable_count": 0,
-        "reason": "missing_url"
+        "error": "Invalid URL"
       },
       {
         "key": "mof_ais_info",
         "label": "MOF AIS info",
         "source_profile": "identity",
-        "attempted": false,
-        "skipped": true,
+        "attempted": true,
+        "skipped": false,
         "success": false,
         "row_count": 0,
         "normalized_count": 0,
         "actionable_count": 0,
-        "reason": "missing_url"
+        "error": "Invalid URL"
       },
       {
         "key": "mof_ais_stat",
@@ -650,17 +662,125 @@
         "normalized_count": 0,
         "actionable_count": 0,
         "reason": "missing_url"
+      },
+      {
+        "key": "mof_vts_busan",
+        "label": "Integrated VTS BUSAN",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_yeosu",
+        "label": "Integrated VTS YEOSU",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_gwangyang",
+        "label": "Integrated VTS GWANGYANG",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_ulsan",
+        "label": "Integrated VTS ULSAN",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_pyeongtaek",
+        "label": "Integrated VTS PYEONGTAEK",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_pohang",
+        "label": "Integrated VTS POHANG",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_hadong",
+        "label": "Integrated VTS HADONG",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_masan",
+        "label": "Integrated VTS MASAN",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
+      },
+      {
+        "key": "mof_vts_incheon",
+        "label": "Integrated VTS INCHEON",
+        "source_profile": "vts_movement",
+        "attempted": true,
+        "skipped": false,
+        "success": false,
+        "row_count": 0,
+        "normalized_count": 0,
+        "actionable_count": 0,
+        "error": "Invalid URL"
       }
     ]
   },
   "data_quality": {
-    "score": 80,
-    "grade": "Watch",
+    "score": 90,
+    "grade": "Good",
     "record_count": 3,
-    "enabled_source_groups": 0,
+    "enabled_source_groups": 4,
     "completeness_percent": 100,
     "risk_coverage_percent": 100,
-    "source_coverage_percent": 0,
+    "source_coverage_percent": 50,
     "duplicate_count": 0,
     "missing_fields": {
       "vessel_name": 0,
@@ -670,11 +790,11 @@
       "updated_at": 0,
       "risk_score": 0
     },
-    "issues": [
-      "Low configured source coverage; public API keys may still be missing"
-    ],
+    "issues": [],
     "next_cleanup_focus": [
-      "Low configured source coverage; public API keys may still be missing"
+      "Start historical trend comparison",
+      "Add vessel identity merge rules",
+      "Validate port-stay duration with AIS/VTS snapshots"
     ]
   },
   "collector_readiness": [
@@ -705,14 +825,15 @@
         "port_facility"
       ],
       "goal": "Normalize IMO/MMSI, vessel type, size class, operator, and target segment.",
-      "active_sources": [],
+      "active_sources": [
+        "mof_ais_info"
+      ],
       "missing_sources": [
         "vessel_spec",
-        "mof_ais_info",
         "port_facility"
       ],
-      "readiness_percent": 0,
-      "status": "waiting"
+      "readiness_percent": 33,
+      "status": "partial"
     },
     {
       "phase": "Phase 3",
@@ -723,14 +844,15 @@
         "ulsan_core"
       ],
       "goal": "Detect anchorage, low speed, long stay, berth shifts, and port congestion signals.",
-      "active_sources": [],
-      "missing_sources": [
+      "active_sources": [
         "mof_vts",
-        "mof_ais_dynamic",
+        "mof_ais_dynamic"
+      ],
+      "missing_sources": [
         "ulsan_core"
       ],
-      "readiness_percent": 0,
-      "status": "waiting"
+      "readiness_percent": 67,
+      "status": "partial"
     },
     {
       "phase": "Phase 4",
@@ -740,13 +862,14 @@
         "google_drive"
       ],
       "goal": "Accumulate daily snapshots for sales timing, repeat calls, and pipeline reporting.",
-      "active_sources": [],
+      "active_sources": [
+        "supabase"
+      ],
       "missing_sources": [
-        "supabase",
         "google_drive"
       ],
-      "readiness_percent": 0,
-      "status": "waiting"
+      "readiness_percent": 50,
+      "status": "partial"
     },
     {
       "phase": "Optional",
@@ -821,16 +944,16 @@
       "output": "ais_snapshot",
       "weight": "medium",
       "business_use": "Low-speed, anchorage, idle-time and movement confirmation without paid AIS dependency.",
-      "enabled_sources": [],
-      "partial_sources": [],
-      "missing_sources": [
+      "enabled_sources": [
         "mof_ais_dynamic",
         "mof_ais_info",
         "mof_vts"
       ],
-      "readiness_percent": 0,
-      "status": "waiting",
-      "next_action": "Configure or validate: mof_ais_dynamic, mof_ais_info, mof_vts"
+      "partial_sources": [],
+      "missing_sources": [],
+      "readiness_percent": 100,
+      "status": "ready",
+      "next_action": "Run a smoke test and inspect normalized output rows."
     },
     {
       "collector": "vessel-master-enrichment",
@@ -843,16 +966,17 @@
       "output": "vessel_master",
       "weight": "light",
       "business_use": "Vessel type, size class, identity merge, and opportunity segmentation.",
-      "enabled_sources": [],
+      "enabled_sources": [
+        "mof_ais_info"
+      ],
       "partial_sources": [],
       "missing_sources": [
         "vessel_spec",
-        "mof_ais_info",
         "port_facility"
       ],
-      "readiness_percent": 0,
-      "status": "waiting",
-      "next_action": "Configure or validate: vessel_spec, mof_ais_info, port_facility"
+      "readiness_percent": 33,
+      "status": "partial",
+      "next_action": "Configure or validate: vessel_spec, port_facility"
     },
     {
       "collector": "history-archive",
@@ -864,15 +988,16 @@
       "output": "daily_history",
       "weight": "external_storage",
       "business_use": "Keep GitHub light while accumulating repeated snapshots for port-stay and lead history.",
-      "enabled_sources": [],
+      "enabled_sources": [
+        "supabase"
+      ],
       "partial_sources": [],
       "missing_sources": [
-        "supabase",
         "google_drive"
       ],
-      "readiness_percent": 0,
-      "status": "waiting",
-      "next_action": "Configure or validate: supabase, google_drive"
+      "readiness_percent": 50,
+      "status": "partial",
+      "next_action": "Configure or validate: google_drive"
     },
     {
       "collector": "paid-ais-enrichment",
@@ -900,18 +1025,18 @@
   "source_registry": {
     "registry_version": "source-registry-v16.5",
     "total_groups": 21,
-    "enabled_groups": 0,
+    "enabled_groups": 4,
     "partial_groups": 0,
-    "public_enabled_groups": 0,
-    "storage_enabled_groups": 0,
+    "public_enabled_groups": 3,
+    "storage_enabled_groups": 1,
     "paid_enabled_groups": 0,
-    "operating_posture": "sample_first",
+    "operating_posture": "public_data_ready",
     "weight_guidance": "Keep collector outputs small in GitHub. Store raw/heavy archive data in Supabase or Google Drive.",
-    "immediate_focus": "Add or verify Korean public/port/MOF API secrets before expanding UI features."
+    "immediate_focus": "Start collector smoke tests and normalization rules."
   },
   "cloud_master_db": {
     "strategy_version": "cloud-master-db-v16.5",
-    "current_mode": "local_snapshot_only",
+    "current_mode": "supabase_ready",
     "supabase_status": "not_configured",
     "record_count_this_run": 3,
     "principle": "Use GitHub only for code and small dashboard snapshots. Use Supabase as the queryable master DB and Google Drive/Object Storage as the raw archive layer.",
@@ -981,9 +1106,9 @@
       "Backfill history gradually from existing data/history snapshots"
     ],
     "readiness": {
-      "supabase_ready": false,
+      "supabase_ready": true,
       "archive_ready": false,
-      "can_accumulate_history": false,
+      "can_accumulate_history": true,
       "github_weight_safe": true
     }
   },
@@ -1032,7 +1157,7 @@
   },
   "master_db_roadmap": {
     "roadmap_version": "master-db-roadmap-v17.7",
-    "current_master": "static_json_until_supabase_verified",
+    "current_master": "supabase_configured",
     "storage_layers": [
       {
         "layer": "dashboard_json",
@@ -1077,7 +1202,7 @@
     {
       "step": 4,
       "title": "Build cloud master DB",
-      "detail": "Add/verify Supabase credentials before relying on accumulated DB history."
+      "detail": "Supabase is available; next step is normalized master tables and append-only daily snapshots."
     },
     {
       "step": 5,
@@ -1090,13 +1215,13 @@
     "output_directory": "public",
     "node_version": ">=18"
   },
-  "error": null,
+  "error": "Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL.",
   "backend_ops": {
     "version": "17.7.0",
     "build_name": "Backend Stability Batch",
     "backend_stage": "actual_collector_backend_ready",
-    "generated_at": "2026-05-26T08:55:43.974Z",
-    "collector_execution_mode": "fallback_sample_snapshot",
+    "generated_at": "2026-05-26T13:41:57.392Z",
+    "collector_execution_mode": "configured_sources_detected_with_fallback",
     "supabase_status": "not_configured",
     "record_count": 3,
     "candidate_count": 2,
@@ -1124,9 +1249,13 @@
           "mof_ais_info",
           "mof_vts"
         ],
-        "active_sources": [],
-        "readiness_percent": 0,
-        "status": "waiting"
+        "active_sources": [
+          "mof_ais_dynamic",
+          "mof_ais_info",
+          "mof_vts"
+        ],
+        "readiness_percent": 100,
+        "status": "ready"
       },
       {
         "tier": "identity",
@@ -1136,9 +1265,11 @@
           "port_facility",
           "mof_ais_info"
         ],
-        "active_sources": [],
-        "readiness_percent": 0,
-        "status": "waiting"
+        "active_sources": [
+          "mof_ais_info"
+        ],
+        "readiness_percent": 33,
+        "status": "partial"
       },
       {
         "tier": "storage",
@@ -1147,9 +1278,11 @@
           "supabase",
           "google_drive"
         ],
-        "active_sources": [],
-        "readiness_percent": 0,
-        "status": "waiting"
+        "active_sources": [
+          "supabase"
+        ],
+        "readiness_percent": 50,
+        "status": "partial"
       },
       {
         "tier": "paid_optional",
@@ -1178,7 +1311,7 @@
     ]
   },
   "candidate_changes": {
-    "generated_at": "2026-05-26T08:55:43.974Z",
+    "generated_at": "2026-05-26T13:41:57.392Z",
     "tracker_version": "candidate-change-tracker-v16.5",
     "total_tracked": 3,
     "changed_count": 0,
@@ -1211,7 +1344,7 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z"
+        "last_seen_at": "2026-05-26T13:41:57.383Z"
       },
       {
         "snapshot_key": "IMO-7000001|YEOSU",
@@ -1237,17 +1370,23 @@
         ],
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z"
+        "last_seen_at": "2026-05-26T13:41:57.383Z"
       }
     ]
   },
   "backend_stability_batch": {
     "batch_version": "backend-stability-batch-v17.7",
     "release_policy": "Accumulate up to seven backend/data improvements and ship one validated ZIP instead of many tiny patches.",
-    "stability_score": 29,
+    "stability_score": 49,
     "status": "foundation_mode",
-    "public_source_groups_ready": [],
-    "storage_groups_ready": [],
+    "public_source_groups_ready": [
+      "mof_vts",
+      "mof_ais_dynamic",
+      "mof_ais_info"
+    ],
+    "storage_groups_ready": [
+      "supabase"
+    ],
     "paid_source_groups_detected": [],
     "sample_rows": 3,
     "real_rows": 0,
@@ -1280,17 +1419,15 @@
   },
   "backend_health": {
     "health_version": "backend-health-v17.7",
-    "score": 32,
+    "score": 41,
     "status": "limited",
-    "enabled_source_groups": 0,
+    "enabled_source_groups": 4,
     "partial_source_groups": 0,
     "sample_rows": 3,
     "real_rows": 0,
     "blockers": [],
     "warnings": [
-      "All rows are sample data",
-      "Supabase master DB is not enabled",
-      "No primary public movement/port source enabled"
+      "All rows are sample data"
     ],
     "next_backend_moves": [
       "Run collectors in smoke-test mode before replacing sample rows",
@@ -1300,7 +1437,7 @@
     ]
   },
   "commercial_command_center": {
-    "generated_at": "2026-05-26T08:55:43.976Z",
+    "generated_at": "2026-05-26T13:41:57.399Z",
     "focus_question": "Which vessel should HullWiper Korea contact now, and why?",
     "hot_count": 2,
     "full_count": 3,
@@ -1328,9 +1465,14 @@
         "speed": 1,
         "risk_score": 90,
         "source": "integrated_vts_sample",
-        "updated_at": "2026-05-26T08:55:43.967Z",
-        "source_mode": "sample_snapshot",
-        "api_ready": [],
+        "updated_at": "2026-05-26T13:41:57.383Z",
+        "source_mode": "api_ready_sample_snapshot",
+        "api_ready": [
+          "supabase",
+          "mof_vts",
+          "mof_ais_dynamic",
+          "mof_ais_info"
+        ],
         "stay_hours": 537.4,
         "berth_hours": 537.4,
         "anchorage_hours": 537.4,
@@ -1417,10 +1559,10 @@
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "opportunity_usd": 42000,
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z",
+        "last_seen_at": "2026-05-26T13:41:57.383Z",
         "previous_candidate_score": 100,
         "candidate_score_delta": 0,
-        "observation_count": 3,
+        "observation_count": 5,
         "snapshot_key": "IMO-7000001|YEOSU"
       },
       {
@@ -1446,9 +1588,14 @@
         "speed": 2,
         "risk_score": 95,
         "source": "integrated_vts_sample",
-        "updated_at": "2026-05-26T08:55:43.967Z",
-        "source_mode": "sample_snapshot",
-        "api_ready": [],
+        "updated_at": "2026-05-26T13:41:57.383Z",
+        "source_mode": "api_ready_sample_snapshot",
+        "api_ready": [
+          "supabase",
+          "mof_vts",
+          "mof_ais_dynamic",
+          "mof_ais_info"
+        ],
         "stay_hours": 610.3,
         "berth_hours": 56,
         "anchorage_hours": 554.3,
@@ -1535,10 +1682,10 @@
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "opportunity_usd": 42000,
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z",
+        "last_seen_at": "2026-05-26T13:41:57.383Z",
         "previous_candidate_score": 100,
         "candidate_score_delta": 0,
-        "observation_count": 3,
+        "observation_count": 5,
         "snapshot_key": "IMO-9876543|BUSAN"
       }
     ],
@@ -1566,9 +1713,14 @@
         "speed": 1,
         "risk_score": 90,
         "source": "integrated_vts_sample",
-        "updated_at": "2026-05-26T08:55:43.967Z",
-        "source_mode": "sample_snapshot",
-        "api_ready": [],
+        "updated_at": "2026-05-26T13:41:57.383Z",
+        "source_mode": "api_ready_sample_snapshot",
+        "api_ready": [
+          "supabase",
+          "mof_vts",
+          "mof_ais_dynamic",
+          "mof_ais_info"
+        ],
         "stay_hours": 537.4,
         "berth_hours": 537.4,
         "anchorage_hours": 537.4,
@@ -1655,10 +1807,10 @@
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "opportunity_usd": 42000,
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z",
+        "last_seen_at": "2026-05-26T13:41:57.383Z",
         "previous_candidate_score": 100,
         "candidate_score_delta": 0,
-        "observation_count": 3,
+        "observation_count": 5,
         "snapshot_key": "IMO-7000001|YEOSU"
       },
       {
@@ -1684,9 +1836,14 @@
         "speed": 2,
         "risk_score": 95,
         "source": "integrated_vts_sample",
-        "updated_at": "2026-05-26T08:55:43.967Z",
-        "source_mode": "sample_snapshot",
-        "api_ready": [],
+        "updated_at": "2026-05-26T13:41:57.383Z",
+        "source_mode": "api_ready_sample_snapshot",
+        "api_ready": [
+          "supabase",
+          "mof_vts",
+          "mof_ais_dynamic",
+          "mof_ais_info"
+        ],
         "stay_hours": 610.3,
         "berth_hours": 56,
         "anchorage_hours": 554.3,
@@ -1773,10 +1930,10 @@
         "recommended_action": "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.",
         "opportunity_usd": 42000,
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z",
+        "last_seen_at": "2026-05-26T13:41:57.383Z",
         "previous_candidate_score": 100,
         "candidate_score_delta": 0,
-        "observation_count": 3,
+        "observation_count": 5,
         "snapshot_key": "IMO-9876543|BUSAN"
       },
       {
@@ -1802,9 +1959,14 @@
         "speed": 10,
         "risk_score": 35,
         "source": "ulsan_port_schedule_sample",
-        "updated_at": "2026-05-26T08:55:43.967Z",
-        "source_mode": "sample_snapshot",
-        "api_ready": [],
+        "updated_at": "2026-05-26T13:41:57.383Z",
+        "source_mode": "api_ready_sample_snapshot",
+        "api_ready": [
+          "supabase",
+          "mof_vts",
+          "mof_ais_dynamic",
+          "mof_ais_info"
+        ],
         "stay_hours": 132.3,
         "berth_hours": 124.7,
         "anchorage_hours": 7.6,
@@ -1866,10 +2028,10 @@
         "recommended_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
         "opportunity_usd": 6480,
         "first_seen_at": "2026-05-26T02:40:10.430Z",
-        "last_seen_at": "2026-05-26T08:55:43.967Z",
+        "last_seen_at": "2026-05-26T13:41:57.383Z",
         "previous_candidate_score": 24,
         "candidate_score_delta": 0,
-        "observation_count": 3,
+        "observation_count": 5,
         "snapshot_key": "IMO-8111222|ULSAN"
       }
     ],
@@ -1997,7 +2159,7 @@
   ],
   "deployment_readiness": {
     "blocking": 0,
-    "warnings": 5,
+    "warnings": 1,
     "checks": [
       {
         "key": "static_build",
@@ -2014,8 +2176,8 @@
       {
         "key": "supabase",
         "label": "Supabase credentials",
-        "status": "warn",
-        "detail": "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY; static data still builds."
+        "status": "pass",
+        "detail": "Supabase sync enabled."
       },
       {
         "key": "hosting",
@@ -2026,26 +2188,26 @@
       {
         "key": "api_secret_detection",
         "label": "Existing API secrets detected",
-        "status": "warn",
-        "detail": "0 API group(s) enabled. The pipeline will use configured sources and keep fallback data for missing sources."
+        "status": "pass",
+        "detail": "4 API group(s) enabled. The pipeline will use configured sources and keep fallback data for missing sources."
       },
       {
         "key": "collector_readiness",
         "label": "Collector readiness roadmap",
-        "status": "warn",
-        "detail": "Keep using sample/fallback mode while public collectors are wired one by one."
+        "status": "pass",
+        "detail": "Enough source groups are configured for the next collector connection pass."
       },
       {
         "key": "ais_source",
         "label": "AIS / vessel tracking source",
-        "status": "warn",
-        "detail": "No AIS source detected yet; dashboard remains in static/enriched snapshot mode. Add MOF_AIS_* or external AIS keys for live enrichment."
+        "status": "pass",
+        "detail": "AIS source detected for vessel movement enrichment."
       },
       {
         "key": "data_quality",
         "label": "Data quality score",
         "status": "pass",
-        "detail": "Quality score 80/100 · Watch."
+        "detail": "Quality score 90/100 · Good."
       },
       {
         "key": "data_mode_guard",
@@ -2063,7 +2225,7 @@
   },
   "storage_status": {
     "supabase": {
-      "status": "not_configured"
+      "status": "syncing"
     },
     "gdrive": {
       "status": "not_configured",

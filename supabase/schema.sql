@@ -40,10 +40,10 @@ create table if not exists vessel_snapshots (
   source text,
   risk_score int default 0,
   sales_reason jsonb default '[]'::jsonb,
+  hybrid_entity_key text,
   payload jsonb default '{}'::jsonb,
   updated_at timestamptz,
-  collected_at timestamptz not null,
-  unique(snapshot_date, vessel_id, port)
+  collected_at timestamptz not null
 );
 
 create table if not exists pipeline_runs (
@@ -66,3 +66,43 @@ alter table vessel_snapshots add column if not exists operator text;
 alter table vessel_snapshots add column if not exists source text;
 alter table vessel_snapshots add column if not exists updated_at timestamptz;
 alter table vessel_snapshots add column if not exists payload jsonb default '{}'::jsonb;
+alter table vessel_snapshots add column if not exists hybrid_entity_key text;
+alter table vessel_snapshots drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key;
+create index if not exists idx_vessel_snapshots_hybrid_entity_key on vessel_snapshots(hybrid_entity_key);
+create index if not exists idx_vessel_snapshots_collected_at on vessel_snapshots(collected_at desc);
+
+create table if not exists vessel_entities (
+  hybrid_entity_key text primary key,
+  vessel_id text,
+  vessel_name text,
+  imo text,
+  mmsi text,
+  call_sign text,
+  vessel_type text,
+  gt numeric,
+  operator text,
+  first_seen_at timestamptz default now(),
+  last_seen_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists vessel_events (
+  id bigserial primary key,
+  hybrid_entity_key text,
+  vessel_id text,
+  event_type text not null,
+  port text,
+  event_at timestamptz not null default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists risk_history (
+  id bigserial primary key,
+  hybrid_entity_key text,
+  vessel_id text,
+  port text,
+  total_sales_priority_score int default 0,
+  biofouling_risk_score int default 0,
+  collected_at timestamptz not null default now(),
+  payload jsonb default '{}'::jsonb
+);

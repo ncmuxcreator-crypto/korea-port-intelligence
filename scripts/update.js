@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
 import { saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive } from "./lib/gdrive.js";
@@ -123,7 +123,7 @@ function deriveFleetBadges(v) {
   const text = `${operator} ${vesselName}`;
   const badges = [];
   if (v.operator) badges.push("operator_known");
-  if (/hmm|hyundai|glovis|pan ocean|panocean|kss|sk shipping|sinokor|kmtc|korea|대한|현대|팬오션|고려|흥아|장금/.test(text)) {
+  if (/hmm|hyundai|glovis|pan ocean|panocean|kss|sk shipping|sinokor|kmtc|korea|현대|글로비스|팬오션|고려|흥아|장금/.test(text)) {
     badges.push("korea_linked_operator");
   }
   if (v.operator && (v.observation_count || 0) >= 2) badges.push("repeat_observed_fleet");
@@ -190,6 +190,11 @@ function ensureDirs() {
   fs.mkdirSync("data/history", { recursive: true });
   fs.mkdirSync("data/reports", { recursive: true });
   fs.mkdirSync("public", { recursive: true });
+  for (const entry of fs.readdirSync("dashboard/api", { withFileTypes: true })) {
+    const target = `dashboard/api/${entry.name}`;
+    if (entry.isFile() && /\.(json|csv)$/i.test(entry.name)) fs.rmSync(target, { force: true });
+    if (entry.isDirectory() && entry.name === "ports") fs.rmSync(target, { recursive: true, force: true });
+  }
 }
 
 function riskLevel(score = 0) {
@@ -333,6 +338,81 @@ function buildCandidateSummary(records) {
     port_candidate_summary: [...byPort.values()].sort((a, b) => b.immediate - a.immediate || b.top_score - a.top_score || b.total - a.total),
     operating_rule: "Candidate score prioritizes immediate sales action: waiting/anchorage + long idle + high-value vessel + regulated destination + known operator."
   };
+}
+
+function portCodeFromName(port = "") {
+  const text = String(port || "").toLowerCase();
+  if (/busan|부산/.test(text)) return "020";
+  if (/incheon|인천/.test(text)) return "030";
+  if (/yeosu|gwangyang|여수|광양/.test(text)) return "620";
+  if (/ulsan|울산/.test(text)) return "820";
+  if (/pyeongtaek|dangjin|평택|당진/.test(text)) return "031";
+  if (/pohang|포항/.test(text)) return "810";
+  if (/masan|jinhae|마산|진해/.test(text)) return "622";
+  if (/samcheonpo|hadong|삼천포|하동/.test(text)) return "622";
+  if (/mokpo|목포/.test(text)) return "070";
+  if (/gunsan|군산/.test(text)) return "080";
+  if (/daesan|대산/.test(text)) return "621";
+  if (/donghae|mukho|동해|묵호/.test(text)) return "120";
+  if (/jeju|제주/.test(text)) return "940";
+  if (/tongyeong|통영/.test(text)) return "622";
+  if (/geoje|okpo|거제|옥포/.test(text)) return "622";
+  return "unknown";
+}
+function buildPortIntelligence(records) {
+  const byPort = new Map();
+  for (const v of records) {
+    const portName = v.port || v.port_name || "Unknown";
+    const portCode = v.port_code || portCodeFromName(portName);
+    const key = portCode !== "unknown" ? portCode : portName;
+    const current = byPort.get(key) || {
+      port_code: portCode,
+      port_name: portName,
+      vessel_count: 0,
+      scored_count: 0,
+      candidate_count: 0,
+      immediate_target_count: 0,
+      all_vessels: [],
+      scored_vessels: [],
+      sales_candidates: [],
+      immediate_targets: [],
+      berths: []
+    };
+    current.vessel_count += 1;
+    current.all_vessels.push(v);
+    if (typeof v.total_sales_priority_score === "number") {
+      current.scored_count += 1;
+      current.scored_vessels.push(v);
+    }
+    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60) {
+      current.candidate_count += 1;
+      current.sales_candidates.push(v);
+    }
+    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80) {
+      current.immediate_target_count += 1;
+      current.immediate_targets.push(v);
+    }
+    if (v.berth) current.berths.push({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd });
+    byPort.set(key, current);
+  }
+  return [...byPort.values()].map(port => ({
+    ...port,
+    all_vessels: sortCommercialPriority(port.all_vessels),
+    scored_vessels: sortCommercialPriority(port.scored_vessels),
+    sales_candidates: sortCommercialPriority(port.sales_candidates),
+    immediate_targets: sortCommercialPriority(port.immediate_targets),
+    berths: port.berths.slice(0, 100)
+  })).sort((a, b) => b.immediate_target_count - a.immediate_target_count || b.candidate_count - a.candidate_count || b.vessel_count - a.vessel_count);
+}
+
+function buildCandidateList(records = []) {
+  return records
+    .filter(v => v.actionable_source_row !== false && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60))
+    .slice()
+    .sort((a, b) =>
+      Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
+      (b.total_sales_priority_score || b.cleaning_candidate_score || b.risk_score || 0) - (a.total_sales_priority_score || a.cleaning_candidate_score || a.risk_score || 0)
+    );
 }
 
 function buildPortSummary(records) {
@@ -617,9 +697,10 @@ function buildDataMode(records, apiSources = [], supabaseStatus = "not_configure
   const sampleRows = records.filter(v => String(v.source_mode || "").includes("sample")).length;
   const actionableRows = records.filter(v => v.actionable_source_row && !String(v.source_mode || "").includes("sample")).length;
   const apiReadyRows = records.filter(v => Array.isArray(v.api_ready) && v.api_ready.length > 0).length;
-  const mode = fallbackUsed || sampleRows === records.length ? "sample_only" : apiReadyRows > 0 ? "api_ready_snapshot" : "static_snapshot";
-  const label = mode === "sample_only" ? "SAMPLE DATA" : mode === "api_ready_snapshot" ? "API READY SNAPSHOT" : "STATIC SNAPSHOT";
+  const mode = !records.length ? "no_live_data" : fallbackUsed ? "degraded_sample_only" : apiReadyRows > 0 ? "api_ready_snapshot" : "static_snapshot";
+  const label = mode === "no_live_data" ? "NO LIVE DATA" : mode === "degraded_sample_only" ? "DEGRADED SAMPLE ONLY" : mode === "api_ready_snapshot" ? "API READY SNAPSHOT" : "STATIC SNAPSHOT";
   const liveReady = !fallbackUsed && enabledSources.length > 0 && sampleRows < records.length && supabaseStatus === "synced";
+  const commercialUseStatus = !records.length ? "not_ready" : actionableRows > 0 ? "review_required" : "not_ready";
   return {
     mode,
     label,
@@ -630,11 +711,16 @@ function buildDataMode(records, apiSources = [], supabaseStatus = "not_configure
     enabled_source_groups: enabledSources.map(s => s.key),
     supabase_status: supabaseStatus,
     fallback_used: fallbackUsed,
-    message: mode === "sample_only"
-      ? "Dashboard is render-ready but currently using sample vessels. Connect public/API collectors to replace sample rows."
-      : "Dashboard has at least one configured source group. Verify collector output before treating it as live operating data.",
+    commercial_use_status: commercialUseStatus,
+    message: mode === "no_live_data"
+      ? "No live vessel rows were collected. Showing diagnostics only; no synthetic vessels or sales candidates are generated."
+      : mode === "degraded_sample_only"
+        ? "Collector fallback was triggered. Synthetic candidates are disabled; investigate collector diagnostics."
+      : actionableRows > 0
+        ? "Live public source rows were collected. Verify freshness and source diagnostics before outreach."
+        : "Rows were collected, but none are commercially actionable yet. Show diagnostics and continue normalization.",
     weight_policy: {
-      current_track: "lightweight_static_first",
+      current_track: "live_public_data_first",
       keep_repository_light: ["Do not commit node_modules", "Do not commit heavy raw archives", "Keep daily JSON snapshots small", "Archive bulky raw data to Google Drive/Supabase"],
       next_build_focus: ["collector normalization", "public API smoke tests", "Supabase history accumulation"]
     }
@@ -775,7 +861,7 @@ function buildSourceRegistry(apiSources = []) {
     public_enabled_groups: groupCount(publicKeys),
     storage_enabled_groups: groupCount(storageKeys),
     paid_enabled_groups: groupCount(paidKeys),
-    operating_posture: groupCount(publicKeys) >= 3 ? "public_data_ready" : groupCount(publicKeys) > 0 ? "public_data_partial" : "sample_first",
+    operating_posture: groupCount(publicKeys) >= 3 ? "public_data_ready" : groupCount(publicKeys) > 0 ? "public_data_partial" : "no_live_data",
     weight_guidance: "Keep collector outputs small in GitHub. Store raw/heavy archive data in Supabase or Google Drive.",
     immediate_focus: groupCount(publicKeys) >= 3
       ? "Start collector smoke tests and normalization rules."
@@ -835,11 +921,10 @@ function buildCloudMasterDbStrategy(records = [], apiSources = [], supabaseStatu
 
 function buildNextDevelopmentPlan(reportBase, apiSources = []) {
   const enabled = apiSources.filter(s => s.enabled).map(s => s.key);
-  const sampleOnly = reportBase.data_mode_detail?.mode === "sample_only";
   const plan = [];
   plan.push({ step: 1, title: "Keep build lightweight", detail: "Do not add heavy raw archives to GitHub. Keep dashboard JSON small and push raw/history data to Supabase or GDrive." });
   plan.push({ step: 2, title: "Connect public collectors first", detail: "Prioritize PORT_OPERATION, BERTH/PILOT URLs, MOF AIS/VTS and Ulsan sources before paid AIS." });
-  plan.push({ step: 3, title: "Replace sample rows gradually", detail: sampleOnly ? "Current output is still sample-mode; next work is collector smoke tests and field mapping." : "At least one source group is configured; next work is normalization and duplicate control." });
+  plan.push({ step: 3, title: "Normalize live rows", detail: "No synthetic vessels are allowed. Next work is source-specific normalization, duplicate control, and actionable-field coverage." });
   plan.push({ step: 4, title: "Build cloud master DB", detail: enabled.includes("supabase") ? "Supabase is available; next step is normalized master tables and append-only daily snapshots." : "Add/verify Supabase credentials before relying on accumulated DB history." });
   plan.push({ step: 5, title: "Separate master DB from raw archive", detail: "Supabase should store queryable normalized data; Google Drive/Object Storage should hold heavy raw payloads and source files." });
   return plan;
@@ -860,7 +945,7 @@ function buildReleaseCadence() {
       "Keep node_modules out of GitHub",
       "Keep heavy raw data out of GitHub",
       "Use public/MOF/port APIs before paid AIS",
-      "Do not trust candidate counts when data_mode is sample_only",
+      "Do not publish synthetic/sample vessels as commercial candidates",
       "Show candidate numbers only with source and freshness context"
     ]
   };
@@ -894,7 +979,7 @@ function buildCandidateOps(records = [], reportBase = {}) {
       ? `Contact ${immediate.length} immediate candidate(s) within 24 hours; verify port window before quoting.`
       : candidates.length
         ? `Review ${Math.min(candidates.length, 5)} top candidate(s) today; no immediate 24h blocker detected.`
-        : "No live cleaning candidate signal yet; check collector status and sample/live data mode.",
+        : "No live cleaning candidate signal yet; check collector status and no-live-data diagnostics.",
     confidence_buckets: confidenceBuckets,
     top_24h_queue: immediate.slice(0, 7).map((v, index) => ({
       rank: index + 1,
@@ -910,8 +995,8 @@ function buildCandidateOps(records = [], reportBase = {}) {
       commercial_use_status: v.commercial_use_status
     })),
     port_focus: Object.values(portFocus).sort((a,b) => b.immediate - a.immediate || b.top_score - a.top_score || b.opportunity_usd - a.opportunity_usd).slice(0, 8),
-    live_data_warning: reportBase?.data_mode_detail?.mode === "sample_only"
-      ? "Candidate count is sample-mode only. Use it to test UI, not for real outreach."
+    live_data_warning: reportBase?.data_mode_detail?.mode === "no_live_data"
+      ? "No live vessels are available. Candidate count is intentionally zero."
       : "Candidate count can be used as an operating signal after checking freshness/source health."
   };
 }
@@ -923,7 +1008,7 @@ function buildBackendHealth(records = [], apiSources = [], reportBase = {}) {
   const blockers = [];
   const warnings = [];
   if (!records.length) blockers.push("No vessel rows generated");
-  if (sampleRows === records.length) warnings.push("All rows are sample data");
+  if (records.length && sampleRows === records.length) warnings.push("All rows are blocked synthetic data");
   if (!enabled.some(s => s.key === "supabase")) warnings.push("Supabase master DB is not enabled");
   if (!enabled.some(s => ["mof_ais_dynamic","mof_ais_info","mof_vts","port_operation","ulsan_core"].includes(s.key))) warnings.push("No primary public movement/port source enabled");
   const sourceScore = Math.min(100, Math.round((enabled.length / Math.max(apiSources.length, 1)) * 100));
@@ -941,7 +1026,7 @@ function buildBackendHealth(records = [], apiSources = [], reportBase = {}) {
     blockers,
     warnings,
     next_backend_moves: [
-      "Run collectors in smoke-test mode before replacing sample rows",
+      "Run collectors in smoke-test mode before publishing commercial candidates",
       "Write normalized snapshots to Supabase using idempotent upsert/append rules",
       "Generate candidate counts from the latest successful snapshot only",
       "Keep GitHub output compact and archive heavy raw payloads externally"
@@ -956,12 +1041,12 @@ function buildSevenPackSummary() {
     delivery_policy: "Ship one stable ZIP after grouping five to seven validated improvements.",
     improvements: [
       "Candidate operations center: 24h queue, confidence buckets, port focus",
-      "Backend health score: source coverage, sample/live ratio, blockers and warnings",
+      "Backend health score: source coverage, live row ratio, blockers and warnings",
       "Candidate priority rank and stale-data guard per vessel",
       "Workflow secret coverage expanded for detailed Ulsan/MOF public API keys",
       "Validation strengthened for candidate, backend and workflow outputs",
       "Release cadence updated from three-patch bundles to seven-pack stability releases",
-      "Dashboard labeling updated so the user can distinguish operating candidates from sample-mode tests"
+      "Dashboard labeling updated so the user can distinguish operating candidates from no-live-data diagnostics"
     ],
     stability_guard: "No schema-breaking DB migration is required in this release; it remains compatible with existing data JSON outputs."
   };
@@ -1003,7 +1088,7 @@ function buildBackendStabilityBatch(records = [], apiSources = [], reportBase = 
       "Master DB evolution path clarified before heavy data ingestion",
       "Validation now checks backend stability batch outputs"
     ],
-    operating_note: "Use current candidate counts as operational candidates only after data_mode is not sample_only and freshness is acceptable."
+    operating_note: "Use current candidate counts as operational candidates only after data_mode is live/public and freshness is acceptable."
   };
 }
 
@@ -1022,7 +1107,7 @@ function buildRuntimeBudget() {
       ? "Run lightweight public-data collectors first; skip slow optional sources; never block dashboard generation."
       : "Run scheduled public-data collection with a realistic per-source timeout; never block dashboard generation if one source fails.",
     paid_ais_policy: "MarineTraffic/VesselFinder/AISStream stay optional and should not block Korea candidate detection.",
-    failure_policy: "If a collector fails or times out, preserve latest generated snapshot/fallback data and write the error into pipeline-report/status."
+    failure_policy: "If collectors fail or time out, publish empty live outputs with diagnostics. Do not synthesize vessels."
   };
 }
 
@@ -1078,13 +1163,13 @@ function buildDeploymentReadiness(reportBase, records, apiSources = []) {
       key: "api_secret_detection",
       label: "Existing API secrets detected",
       status: activeApiCount > 0 ? "pass" : "warn",
-      detail: `${activeApiCount} API group(s) enabled. The pipeline will use configured sources and keep fallback data for missing sources.`
+      detail: `${activeApiCount} API group(s) enabled. The pipeline will use configured sources and publish diagnostics for missing sources.`
     },
     {
       key: "collector_readiness",
       label: "Collector readiness roadmap",
       status: activeApiCount >= 3 ? "pass" : activeApiCount > 0 ? "warn" : "warn",
-      detail: activeApiCount >= 3 ? "Enough source groups are configured for the next collector connection pass." : "Keep using sample/fallback mode while public collectors are wired one by one."
+      detail: activeApiCount >= 3 ? "Enough source groups are configured for the next collector connection pass." : "Keep no-live-data mode until public collectors return usable rows."
     },
     {
       key: "ais_source",
@@ -1096,12 +1181,12 @@ function buildDeploymentReadiness(reportBase, records, apiSources = []) {
       key: "data_quality",
       label: "Data quality score",
       status: (reportBase.data_quality?.score || 0) >= 70 ? "pass" : "warn",
-      detail: `Quality score ${reportBase.data_quality?.score || 0}/100 · ${reportBase.data_quality?.grade || "Needs Cleanup"}.`
+      detail: `Quality score ${reportBase.data_quality?.score || 0}/100 쨌 ${reportBase.data_quality?.grade || "Needs Cleanup"}.`
     },
     {
       key: "data_mode_guard",
       label: "Sample/live data guard",
-      status: reportBase.data_mode_detail?.mode === "sample_only" ? "warn" : "pass",
+      status: reportBase.data_mode_detail?.mode === "no_live_data" ? "warn" : "pass",
       detail: reportBase.data_mode_detail?.message || "Data mode not evaluated."
     },
     {
@@ -1138,6 +1223,9 @@ try {
   const today = completedAt.slice(0, 10);
   const portSummary = buildPortSummary(vessels);
   const collectorDiagnostics = getCollectorDiagnostics();
+  if (collectorDiagnostics.fallback_used && status === "success") {
+    status = "degraded_sample_only";
+  }
   const actionableRows = vessels.filter(v => v.actionable_source_row && !String(v.source_mode || "").includes("sample")).length;
   const baseReport = {
     version: VERSION,
@@ -1204,6 +1292,8 @@ try {
   const commercialCommandCenter = buildCommercialCommandCenter(vessels);
   const portCongestionHeatmap = buildPortCongestionHeatmap(vessels);
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
+  const portIntelligence = buildPortIntelligence(vessels);
+  const candidateList = buildCandidateList(vessels);
 
   const report = {
     ...baseReport,
@@ -1222,6 +1312,7 @@ try {
     backend_health: buildBackendHealth(vessels, detectSecrets(), baseReport),
     commercial_command_center: commercialCommandCenter,
     hot_vessel_count: hotVessels.length,
+    port_intelligence: portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
     port_congestion_heatmap: portCongestionHeatmap,
     biofouling_timeline: biofoulingTimeline,
     deployment_readiness: buildDeploymentReadiness(baseReport, vessels, detectSecrets())
@@ -1243,8 +1334,17 @@ try {
     gdrive: gdriveArchive
   };
 
-  fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(buildCandidateSummary(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));
+  fs.writeFileSync("dashboard/api/hot-candidates.json", JSON.stringify(candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80).slice(0, 40), null, 2));
   fs.writeFileSync("dashboard/api/hot-vessels.json", JSON.stringify(hotVessels, null, 2));
+  fs.writeFileSync("dashboard/api/ports.json", JSON.stringify(portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), null, 2));
+  for (const port of portIntelligence) {
+    const dir = `dashboard/api/ports/${port.port_code}`;
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(`${dir}/vessels.json`, JSON.stringify(port.all_vessels, null, 2));
+    fs.writeFileSync(`${dir}/candidates.json`, JSON.stringify(port.sales_candidates, null, 2));
+    fs.writeFileSync(`${dir}/berths.json`, JSON.stringify(port.berths, null, 2));
+  }
   fs.writeFileSync("dashboard/api/commercial-command-center.json", JSON.stringify(commercialCommandCenter, null, 2));
   fs.writeFileSync("dashboard/api/port-congestion-heatmap.json", JSON.stringify(portCongestionHeatmap, null, 2));
   fs.writeFileSync("dashboard/api/biofouling-timeline.json", JSON.stringify(biofoulingTimeline, null, 2));

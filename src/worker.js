@@ -198,12 +198,46 @@ function buildCommandCenter(records) {
   };
 }
 
+function portCodeFromName(port = "") {
+  const text = String(port || "").toLowerCase();
+  if (/busan|부산/.test(text)) return "020";
+  if (/incheon|인천/.test(text)) return "030";
+  if (/yeosu|gwangyang|여수|광양/.test(text)) return "620";
+  if (/ulsan|울산/.test(text)) return "820";
+  if (/pyeongtaek|dangjin|평택|당진/.test(text)) return "031";
+  if (/pohang|포항/.test(text)) return "810";
+  if (/masan|jinhae|samcheonpo|hadong|마산|진해|삼천포|하동/.test(text)) return "622";
+  return "unknown";
+}
+
+function buildPorts(records) {
+  const map = new Map();
+  for (const v of records) {
+    const portName = v.port || "Unknown";
+    const portCode = v.port_code || portCodeFromName(portName);
+    const key = portCode !== "unknown" ? portCode : portName;
+    const p = map.get(key) || { port_code: portCode, port_name: portName, vessel_count: 0, scored_count: 0, candidate_count: 0, immediate_target_count: 0 };
+    p.vessel_count += 1;
+    if (typeof v.total_sales_priority_score === "number") p.scored_count += 1;
+    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60) p.candidate_count += 1;
+    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80) p.immediate_target_count += 1;
+    map.set(key, p);
+  }
+  return [...map.values()].sort((a, b) => b.immediate_target_count - a.immediate_target_count || b.candidate_count - a.candidate_count || b.vessel_count - a.vessel_count);
+}
+
+function recordsForPort(records, portCode) {
+  return records.filter(v => String(v.port_code || portCodeFromName(v.port)) === String(portCode));
+}
+
 function buildStatus(records, source) {
   const high = records.filter(v => (v.risk_score || 0) >= 70);
+  const dataMode = records.length ? "supabase_live_snapshot" : "no_live_data";
   return {
     version: "worker-live-api-v1",
     status: source.error && !records.length ? "degraded" : "success",
-    data_mode: source.configured && records.length ? "supabase_live_snapshot" : "static_or_empty",
+    data_mode: dataMode,
+    commercial_use_status: records.length ? "review_required" : "not_ready",
     completed_at: new Date().toISOString(),
     record_count: records.length,
     actionable_rows: records.filter(v => v.actionable_source_row !== false).length,
@@ -221,6 +255,7 @@ function buildStatus(records, source) {
       row_count: records.length
     },
     commercial_command_center: buildCommandCenter(records),
+    port_intelligence: buildPorts(records),
     port_congestion_heatmap: buildPortHeatmap(records),
     biofouling_timeline: buildBioTimeline(records)
   };
@@ -231,6 +266,16 @@ async function apiResponse(pathname, env) {
   const records = latestPerVesselPort(source.rows);
   if (pathname.endsWith("/status.json")) return json(buildStatus(records, source), { headers: corsHeaders() });
   if (pathname.endsWith("/vessels.json")) return json(records, { headers: corsHeaders() });
+  if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60), { headers: corsHeaders() });
+  if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/ports.json")) return json(buildPorts(records), { headers: corsHeaders() });
+  const portMatch = pathname.match(/\/api\/ports\/([^/]+)\/(vessels|candidates|berths)\.json$/);
+  if (portMatch) {
+    const rows = recordsForPort(records, decodeURIComponent(portMatch[1]));
+    if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
+    if (portMatch[2] === "candidates") return json(buildHot(rows), { headers: corsHeaders() });
+    return json(rows.filter(v => v.berth).map(v => ({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd })), { headers: corsHeaders() });
+  }
   if (pathname.endsWith("/hot-vessels.json")) return json(buildHot(records), { headers: corsHeaders() });
   if (pathname.endsWith("/commercial-command-center.json")) return json(buildCommandCenter(records), { headers: corsHeaders() });
   if (pathname.endsWith("/port-congestion-heatmap.json")) return json(buildPortHeatmap(records), { headers: corsHeaders() });

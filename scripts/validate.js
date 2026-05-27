@@ -11,6 +11,8 @@ const required = [
   "dashboard/api/port-congestion-heatmap.json",
   "dashboard/api/biofouling-timeline.json",
   "dashboard/api/candidates.json",
+  "dashboard/api/hot-candidates.json",
+  "dashboard/api/ports.json",
   "dashboard/api/backend-ops.json",
   "dashboard/api/candidate-changes.json",
   ".github/workflows/longterm-update.yml",
@@ -72,8 +74,11 @@ if (!String(report?.data_strategy?.vts_architecture || "").includes("Integrated 
   throw new Error("VTS architecture must be integrated/national, not Yeosu-only");
 }
 
-if (report.data_mode === "sample_only" && report?.candidate_ops?.current_candidate_count !== 0) {
-  throw new Error("Sample-only mode must not expose operating candidates");
+if (["sample_only", "degraded_sample_only"].includes(report.data_mode)) {
+  throw new Error("Sample/demo data modes are not allowed in generated outputs");
+}
+if (report.data_mode === "no_live_data" && (report.record_count !== 0 || report.actionable_rows !== 0 || report?.candidate_ops?.current_candidate_count !== 0)) {
+  throw new Error("No-live-data mode must expose zero vessels, zero actionable rows, and zero candidates");
 }
 
 for (const vessel of vessels) {
@@ -104,8 +109,15 @@ if (!status.commercial_command_center || !Array.isArray(status.port_congestion_h
 if (typeof status.actionable_rows !== "number" || typeof status.collector_diagnostics?.actionable_row_count !== "number") {
   throw new Error("Missing actionable_rows collector metric");
 }
-if (status.collector_diagnostics?.fallback_used && status.data_mode !== "sample_only") {
-  throw new Error("Data mode must be sample_only when collector fallback is used");
+if (status.collector_diagnostics?.fallback_used && (status.data_mode !== "no_live_data" || status.status !== "degraded_sample_only")) {
+  throw new Error("Collector fallback must publish no_live_data with degraded_sample_only status");
+}
+for (const forbidden of ["MV HF ZHOUSHAN", "MAERSK DEMO", "YEOSU TARGET", "integrated_vts_sample", "sample_snapshot"]) {
+  const haystack = [
+    JSON.stringify(vessels),
+    fs.existsSync("dashboard/api/status.json") ? fs.readFileSync("dashboard/api/status.json", "utf8") : ""
+  ].join("\n");
+  if (haystack.includes(forbidden)) throw new Error(`Forbidden sample/demo vessel marker found: ${forbidden}`);
 }
 
 const workflow = fs.readFileSync(".github/workflows/longterm-update.yml", "utf8");
@@ -118,8 +130,8 @@ if (!workflow.includes("runs-on: ubuntu-latest") || workflow.includes("runs-on: 
 if (!workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}") || !workflow.includes("cancel-in-progress: true")) {
   throw new Error("Longterm workflow concurrency must be isolated by workflow and ref");
 }
-if (!workflow.includes("timeout-minutes: 12")) {
-  throw new Error("Longterm workflow job timeout must be 12 minutes");
+if (!workflow.includes("timeout-minutes: 30")) {
+  throw new Error("Longterm workflow job timeout must be 30 minutes");
 }
 if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
   throw new Error("Longterm workflow must bound collector runtime and child enrichment");
@@ -131,6 +143,9 @@ if (!workflow.includes("SOURCE_CSV_URL") || !workflow.includes("ULSAN_BERTH_DETA
   throw new Error("Workflow public API secret coverage is incomplete");
 }
 const koreaCollector = fs.readFileSync("scripts/collectors/korea.js", "utf8");
+if (/MV HF ZHOUSHAN|MAERSK DEMO|YEOSU TARGET|function sampleRows/.test(koreaCollector) || fs.existsSync("scripts/collectors/sample.js") || fs.existsSync("scripts/collectors/busan.js")) {
+  throw new Error("Sample/demo collectors and fallback vessels must be removed");
+}
 if (!koreaCollector.includes("VsslEtrynd5/Info5") || !koreaCollector.includes("CargHarborUse2/Info")) {
   throw new Error("Collector must use VsslEtrynd5 parent records and CargHarborUse2 enrichment endpoint");
 }
@@ -146,7 +161,7 @@ if (/key:\s*["']port_facility["']/.test(koreaCollector)) {
 if (!koreaCollector.includes("prtAgCd") || !koreaCollector.includes("etryptYear") || !koreaCollector.includes("etryptCo") || !koreaCollector.includes("clsgn")) {
   throw new Error("CargHarborUse2 enrichment must use prtAgCd, etryptYear, etryptCo and clsgn parent keys");
 }
-for (const portCode of ["020", "030", "620", "820", "031", "810", "622"]) {
+for (const portCode of ["020", "030", "620", "820", "031", "810", "622", "070", "080", "621", "120", "940"]) {
   if (!koreaCollector.includes(`"${portCode}"`)) throw new Error(`Missing Korean port authority code: ${portCode}`);
 }
 for (const param of ["sde", "ede", "deGb", "numOfRows", "requested_url_without_service_key", "resultCode", "resultMsg", "totalCount", "http_status"]) {
@@ -186,6 +201,9 @@ const worker = fs.readFileSync("src/worker.js", "utf8");
 if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || !worker.includes("env.ASSETS.fetch")) {
   throw new Error("Worker must serve dashboard assets and live Supabase API routes");
 }
+for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "\\/api\\/ports\\/"]) {
+  if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
+}
 const gdriveLib = fs.readFileSync("scripts/lib/gdrive.js", "utf8");
 if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normalizeFolderId") || !gdriveLib.includes("Buffer.from(value, \"base64\")")) {
   throw new Error("Google Drive archive helper must support shared drives, folder URLs, and base64 service account secrets");
@@ -193,6 +211,16 @@ if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normal
 const dbLib = fs.readFileSync("scripts/lib/db.js", "utf8");
 if (!dbLib.includes("SUPABASE_BATCH_SIZE") || !dbLib.includes("batchSize")) {
   throw new Error("Supabase writes must be batched to avoid long single upserts");
+}
+if (!dbLib.includes('.from("vessel_snapshots")') || !dbLib.includes(".insert(batch)") || dbLib.includes("onConflict: \"snapshot_date,vessel_id,port\"")) {
+  throw new Error("Supabase vessel_snapshots must be append-only, not latest-state upsert only");
+}
+if (!dbLib.includes('.from("vessel_entities")') || !dbLib.includes('.from("risk_history")') || !dbLib.includes('.from("vessel_events")')) {
+  throw new Error("Supabase persistence must update vessel_entities, risk_history, and vessel_events");
+}
+const schema = fs.readFileSync("supabase/schema.sql", "utf8");
+for (const marker of ["vessel_entities", "vessel_events", "risk_history", "payload jsonb", "hybrid_entity_key", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
+  if (!schema.includes(marker)) throw new Error(`Supabase schema missing historical persistence marker: ${marker}`);
 }
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 if (packageJson.scripts?.["gdrive:check"] && !fs.existsSync("scripts/gdrive-check.js")) {
@@ -209,6 +237,9 @@ if (!pushSmokeWorkflow.includes("name: Push Smoke Test") || !pushSmokeWorkflow.i
 const workflowV2 = fs.readFileSync(".github/workflows/longterm-update-v2.yml", "utf8");
 if (!workflowV2.includes("name: Longterm Update V2") || !workflowV2.includes("runs-on: ubuntu-latest") || !workflowV2.includes("group: ${{ github.workflow }}-${{ github.ref }}")) {
   throw new Error("Longterm Update V2 bypass workflow is incomplete");
+}
+if (!workflowV2.includes("timeout-minutes: 30")) {
+  throw new Error("Longterm Update V2 job timeout must be 30 minutes");
 }
 if (!workflowV2.includes("push:") || !workflowV2.includes("branches:") || !workflowV2.includes("- main")) {
   throw new Error("Longterm Update V2 must support push-triggered bypass runs on main");
