@@ -514,7 +514,7 @@ function parseRows(text, limit = MAX_SOURCE_ROWS) {
   return parseXmlRows(trimmed).slice(0, limit);
 }
 
-async function fetchPagedRows(source, rowLimit) {
+async function fetchPagedRows(source, rowLimit, deadline = Infinity) {
   const firstPage = await fetchText(source);
   const rows = parseRows(firstPage.text, rowLimit);
   const pageSize = Number(source.defaultParams?.numOfRows || 0) || rowLimit;
@@ -537,6 +537,7 @@ async function fetchPagedRows(source, rowLimit) {
   if (shouldPage) {
     for (let pageNo = 2; pageNo <= totalPagesToCollect; pageNo += 1) {
       if (rows.length >= rowLimit) break;
+      if (Date.now() + Math.min(SOURCE_TIMEOUT_MS, 10000) > deadline) break;
       const page = await fetchText(source, { pageNo });
       const pageRows = parseRows(page.text, Math.max(1, rowLimit - rows.length));
       rows.push(...pageRows);
@@ -571,6 +572,7 @@ async function fetchPagedRows(source, rowLimit) {
     pagination_truncated: Boolean(
       (totalCount && rows.length < totalCount) ||
       (isPortOperation && totalPagesExpected > maxPages) ||
+      (isPortOperation && pageSummaries.length < totalPagesToCollect) ||
       rows.length >= rowLimit
     )
   };
@@ -930,7 +932,7 @@ async function collectRealRows() {
     diagnostics.attempted_count += 1;
     try {
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit, deadline);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;

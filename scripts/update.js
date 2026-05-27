@@ -1,6 +1,6 @@
 ﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
-import { createRunId, saveToSupabase } from "./lib/db.js";
+import { createRunId, enrichWithVesselMasterCache, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
@@ -682,6 +682,7 @@ let gdriveArchive = { status: "not_configured" };
 let vessels = [];
 let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
+let vesselMasterCacheDiagnostics = {};
 
 function ensureDirs() {
   fs.mkdirSync("dashboard/api", { recursive: true });
@@ -2068,7 +2069,10 @@ try {
   const dictionaries = loadReferenceDictionaries();
   collectedRows = await collectKoreaData({ apiSources });
   collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
-  vessels = enrichSalesSignals(enrichWithReferenceDictionaries(collectedRows, dictionaries));
+  const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
+  const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
+  vesselMasterCacheDiagnostics = cacheResult.diagnostics;
+  vessels = enrichSalesSignals(cacheResult.records);
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -2130,6 +2134,7 @@ try {
     api_registry_version: "korea-port-secret-registry-v12-backend-stability",
     data_strategy: buildDataStrategy(detectSecrets()),
     collector_diagnostics: { ...collectorDiagnostics, actionable_row_count: collectorDiagnostics.actionable_row_count ?? actionableRows },
+    vessel_master_cache: vesselMasterCacheDiagnostics,
     data_quality: buildDataQuality(vessels, detectSecrets()),
     collector_readiness: buildCollectorReadiness(detectSecrets()),
     collector_manifest: buildCollectorManifest(detectSecrets()),
@@ -2216,6 +2221,7 @@ try {
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
     backend_ops: snapshotOutputs.backendOps,
     collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
+    vessel_master_cache: vesselMasterCacheDiagnostics,
     candidate_changes: snapshotOutputs.candidateChanges,
     supabase_write: supabaseWrite,
     gdrive_archive: gdriveArchive,

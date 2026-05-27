@@ -32,6 +32,170 @@ function fallbackMasterId(record = {}) {
   return record.master_vessel_id || record.hybrid_entity_key || record.vessel_id;
 }
 
+function unique(values = []) {
+  return [...new Set(values.filter(value => value !== null && value !== undefined && String(value).trim() !== "").map(value => String(value).trim()))];
+}
+
+function chunk(values = [], size = 100) {
+  const out = [];
+  for (let index = 0; index < values.length; index += size) out.push(values.slice(index, index + size));
+  return out;
+}
+
+function pickStaticFields(record = {}) {
+  return {
+    imo: record.imo || null,
+    mmsi: record.mmsi || null,
+    call_sign: record.call_sign || null,
+    vessel_name: record.canonical_name || record.vessel_name || null,
+    normalized_vessel_name: record.normalized_name || normalizeVesselName(record.canonical_name || record.vessel_name),
+    vessel_type: record.vessel_type || null,
+    vessel_type_group: record.vessel_type_group || null,
+    gt: record.gt || null,
+    dwt: record.dwt || null,
+    loa: record.loa || null,
+    beam: record.beam || null,
+    operator: record.operator || null,
+    operator_normalized: record.operator_normalized || null,
+    flag: record.flag || null,
+    master_vessel_id: record.master_vessel_id || null,
+    identity_confidence: Number(record.identity_confidence || 0),
+    imo_status: record.imo_status || (record.imo ? "present" : null)
+  };
+}
+
+function mergeCachedStaticInfo(record = {}, cached = {}, strategy = "unknown") {
+  const beforeHadImo = Boolean(record.imo);
+  const merged = {
+    ...record,
+    imo: record.imo || cached.imo || "",
+    mmsi: record.mmsi || cached.mmsi || "",
+    call_sign: record.call_sign || cached.call_sign || "",
+    vessel_name: record.vessel_name || cached.vessel_name || "",
+    normalized_vessel_name: record.normalized_vessel_name || cached.normalized_vessel_name || normalizeVesselName(record.vessel_name || cached.vessel_name),
+    vessel_type: record.vessel_type || cached.vessel_type || "",
+    vessel_type_group: record.vessel_type_group || cached.vessel_type_group || "",
+    gt: record.gt || cached.gt || 0,
+    dwt: record.dwt || cached.dwt || 0,
+    loa: record.loa || cached.loa || 0,
+    beam: record.beam || cached.beam || 0,
+    operator: record.operator || cached.operator || "",
+    operator_normalized: record.operator_normalized || cached.operator_normalized || "",
+    flag: record.flag || cached.flag || "",
+    master_vessel_id: cached.master_vessel_id || record.master_vessel_id,
+    vessel_master_cache_match: true,
+    vessel_master_cache_strategy: strategy,
+    vessel_master_cache_confidence: cached.identity_confidence || record.identity_confidence || 0,
+    reference_enriched: true,
+    imo_status: record.imo_status || cached.imo_status || (cached.imo ? "present" : undefined),
+    reason_codes: [...new Set([...(record.reason_codes || []), "MASTER_DB_MATCH_FOUND"])]
+  };
+  if (!beforeHadImo && cached.imo) {
+    merged.imo_recovered_from_cache = true;
+    merged.imo_recovery_source = "vessel_master_cache";
+  }
+  return merged;
+}
+
+async function selectIn(supabase, table, columns, field, values) {
+  const rows = [];
+  for (const part of chunk(unique(values), 100)) {
+    if (!part.length) continue;
+    const { data, error } = await supabase.from(table).select(columns).in(field, part);
+    if (error) throw error;
+    rows.push(...(data || []));
+  }
+  return rows;
+}
+
+export async function enrichWithVesselMasterCache(records = []) {
+  const diagnostics = {
+    enabled: false,
+    status: "not_configured",
+    input_rows: records.length,
+    master_rows_loaded: 0,
+    alias_rows_loaded: 0,
+    matched_rows: 0,
+    imo_recovered_count: 0,
+    strategies: {}
+  };
+  if (!records.length || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { records, diagnostics };
+  }
+
+  try {
+    diagnostics.enabled = true;
+    diagnostics.status = "loading";
+    const supabase = getSupabase();
+    const normalizedRecords = records.map(record => ({
+      ...record,
+      normalized_vessel_name: record.normalized_vessel_name || normalizeVesselName(record.vessel_name)
+    }));
+    const imos = unique(normalizedRecords.map(record => record.imo));
+    const mmsis = unique(normalizedRecords.map(record => record.mmsi));
+    const callSigns = unique(normalizedRecords.map(record => record.call_sign));
+    const names = unique(normalizedRecords.map(record => record.normalized_vessel_name));
+    const columns = "master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,loa,beam,operator,operator_normalized,flag,identity_confidence,imo_status";
+
+    const masterRows = [
+      ...(await selectIn(supabase, "vessel_master", columns, "imo", imos)),
+      ...(await selectIn(supabase, "vessel_master", columns, "mmsi", mmsis)),
+      ...(await selectIn(supabase, "vessel_master", columns, "call_sign", callSigns)),
+      ...(await selectIn(supabase, "vessel_master", columns, "normalized_name", names))
+    ];
+    const byMasterId = new Map();
+    for (const row of masterRows) if (row.master_vessel_id) byMasterId.set(row.master_vessel_id, pickStaticFields(row));
+
+    const aliasRows = await selectIn(supabase, "vessel_aliases", "master_vessel_id,alias_name,normalized_alias_name,confidence", "normalized_alias_name", names);
+    const aliasMasterRows = await selectIn(supabase, "vessel_master", columns, "master_vessel_id", aliasRows.map(row => row.master_vessel_id));
+    for (const row of aliasMasterRows) if (row.master_vessel_id) byMasterId.set(row.master_vessel_id, pickStaticFields(row));
+
+    diagnostics.master_rows_loaded = byMasterId.size;
+    diagnostics.alias_rows_loaded = aliasRows.length;
+
+    const byImo = new Map();
+    const byMmsi = new Map();
+    const byCallSign = new Map();
+    const byNameGtType = new Map();
+    const byAlias = new Map();
+    for (const row of byMasterId.values()) {
+      if (row.imo) byImo.set(String(row.imo), row);
+      if (row.mmsi) byMmsi.set(String(row.mmsi), row);
+      if (row.call_sign) byCallSign.set(String(row.call_sign), row);
+      const key = `${row.normalized_vessel_name || ""}|${Number(row.gt || 0)}|${row.vessel_type_group || row.vessel_type || ""}`.toUpperCase();
+      if (row.normalized_vessel_name && Number(row.gt || 0) > 0) byNameGtType.set(key, row);
+    }
+    for (const alias of aliasRows) {
+      const master = byMasterId.get(alias.master_vessel_id);
+      if (master && alias.normalized_alias_name) byAlias.set(String(alias.normalized_alias_name), master);
+    }
+
+    const enriched = normalizedRecords.map(record => {
+      const nameGtTypeKey = `${record.normalized_vessel_name || ""}|${Number(record.gt || 0)}|${record.vessel_type_group || record.vessel_type || ""}`.toUpperCase();
+      const candidates = [
+        ["imo_exact_cache", record.imo && byImo.get(String(record.imo))],
+        ["mmsi_exact_cache", record.mmsi && byMmsi.get(String(record.mmsi))],
+        ["call_sign_exact_cache", record.call_sign && byCallSign.get(String(record.call_sign))],
+        ["name_gt_type_cache", byNameGtType.get(nameGtTypeKey)],
+        ["alias_name_cache", record.normalized_vessel_name && byAlias.get(String(record.normalized_vessel_name))]
+      ];
+      const [strategy, cached] = candidates.find(([, value]) => value) || [];
+      if (!cached) return record;
+      diagnostics.matched_rows += 1;
+      diagnostics.strategies[strategy] = (diagnostics.strategies[strategy] || 0) + 1;
+      if (!record.imo && cached.imo) diagnostics.imo_recovered_count += 1;
+      return mergeCachedStaticInfo(record, cached, strategy);
+    });
+
+    diagnostics.status = "loaded";
+    return { records: enriched, diagnostics };
+  } catch (error) {
+    diagnostics.status = "failed";
+    diagnostics.error = error?.message || String(error);
+    return { records, diagnostics };
+  }
+}
+
 function identityConfidence(record = {}) {
   if (typeof record.identity_confidence === "number") return record.identity_confidence;
   if (record.identification_method === "IMO") return 100;

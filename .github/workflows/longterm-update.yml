@@ -33,7 +33,7 @@ jobs:
       NPM_CONFIG_LEGACY_PEER_DEPS: "true"
       UPDATE_MODE: scheduled
       UPDATE_TIMEOUT_MS: 900000
-      SOURCE_TIMEOUT_MS: 60000
+      SOURCE_TIMEOUT_MS: 30000
       MAX_OUTPUT_ROWS: 10000
       MAX_SOURCE_ROWS: 5000
       MAX_TARGET_VESSELS: 5000
@@ -42,7 +42,7 @@ jobs:
       PORT_OPERATION_NUM_OF_ROWS: 50
       PORT_OPERATION_MAX_PAGES: 20
       PORT_OPERATION_DEGB_VALUES: "I,O"
-      COLLECTOR_RUNTIME_BUDGET_MS: 900000
+      COLLECTOR_RUNTIME_BUDGET_MS: 720000
       ENABLE_SOURCE_CSV: "false"
       COLLECTOR_DEBUG_VERBOSE: "false"
       SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
@@ -133,7 +133,7 @@ jobs:
           npm ci --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/ || npm install --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/
 
       - name: Collect public port data and build dashboard
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           echo "Starting HWK public-data collection pipeline"
           echo "Collectors are executed inside scripts/update.js -> collectKoreaData()"
