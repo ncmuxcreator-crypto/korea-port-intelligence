@@ -199,11 +199,13 @@ function deriveCommercialScoreParts(v, metrics) {
   if (/australia|brazil/.test(route)) reasonCodes.push("AUSTRALIA_BRAZIL_EXPOSURE");
   if (Number(metrics.work_window_hours || 0) >= 24) reasonCodes.push("BERTH_WINDOW_AVAILABLE");
   return {
+    vessel_value_score: Math.min(20, Math.round((isHighGt ? 8 : meetsCommercialGtThreshold ? 5 : 0) + (isVeryHighGt ? 4 : 0) + (isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + (v.operator || v.agent ? 2 : 0) + (sensitiveRoute ? 1 : 0))),
     biofouling_risk_score: biofoulingRiskScore,
     performance_proxy_score: performanceProxyScore,
     congestion_exposure_score: congestionExposureScore,
     cleaning_window_score: cleaningWindowScore,
     compliance_pressure_score: compliancePressureScore,
+    sales_accessibility_score: Math.min(5, Math.round((v.agent ? 2 : 0) + (v.operator ? 2 : 0) + (v.operator_normalized || v.agent_normalized ? 1 : 0))),
     commercial_fit_score: commercialFitScore,
     total_sales_priority_score: Math.min(100, total),
     sales_priority_band: total >= 80 ? "immediate_target" : total >= 60 ? "high_potential" : total >= 40 ? "monitor" : "low_priority",
@@ -219,6 +221,51 @@ function deriveCommercialScoreParts(v, metrics) {
     high_value_target: Boolean(isHighGt && isBulkTankerPctc),
     commercial_signal_strength: Math.min(100, Math.round(total + (isHighGt ? 8 : 0) + (isAnchorageWaiting ? 8 : 0) + (isBulkTankerPctc ? 5 : 0))),
     score_reason_codes: reasonCodes
+  };
+}
+
+function commercialValueBand(score, gtStatus) {
+  if (gtStatus === "unknown_gt_review" && score >= 40) return "unknown_gt_review";
+  if (score >= 80) return "immediate_commercial_target";
+  if (score >= 60) return "high_potential_target";
+  if (score >= 40) return "monitor";
+  return "low_priority";
+}
+
+function deriveCommercialValue(v = {}, scoreParts = {}) {
+  const commercialValueScore = Math.min(100, Math.round(
+    Number(scoreParts.vessel_value_score || 0) +
+    Number(scoreParts.congestion_exposure_score || 0) +
+    Number(scoreParts.biofouling_risk_score || 0) +
+    Number(scoreParts.cleaning_window_score || 0) +
+    Number(scoreParts.performance_proxy_score || 0) +
+    Number(scoreParts.compliance_pressure_score || 0) +
+    Number(scoreParts.sales_accessibility_score || 0)
+  ));
+  return {
+    commercial_value_score: commercialValueScore,
+    commercial_value_band: commercialValueBand(commercialValueScore, v.gt_status),
+    total_sales_priority_score: commercialValueScore,
+    sales_priority_band: commercialValueScore >= 80 ? "immediate_target" : commercialValueScore >= 60 ? "high_potential" : commercialValueScore >= 40 ? "monitor" : "low_priority"
+  };
+}
+
+function deriveDataConfidence(v = {}) {
+  let score = 0;
+  if (Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0) score += 16;
+  if (v.call_sign) score += 12;
+  if (v.imo || v.mmsi) score += 16;
+  if (v.berth_name || v.berth || v.anchorage_name || v.anchorage_zone) score += 12;
+  if (v.eta || v.ata) score += 10;
+  if (v.etd || v.atd) score += 10;
+  if (v.agent || v.operator) score += 10;
+  if (v.vessel_master_seed_match) score += 8;
+  if (v.reference_enriched) score += 8;
+  if (v.cargo_harbor_use_enriched || v.source_children?.length) score += 8;
+  const bounded = Math.min(100, score);
+  return {
+    data_confidence_score: bounded,
+    data_confidence_band: bounded >= 80 ? "high" : bounded >= 60 ? "medium" : bounded >= 40 ? "low" : "review"
   };
 }
 
@@ -294,12 +341,19 @@ function buildCommercialSignals(v = {}, metrics = {}) {
   if (gt >= 30000) flags.push("GT_30000_PLUS");
   if (gt >= 80000) flags.push("GT_80000_PLUS");
   if (/bulk|bulk_carrier|tanker|pctc/.test(typeGroup)) flags.push("HIGH_VALUE_VESSEL_TYPE");
+  if (/bulk|bulk_carrier/.test(typeGroup)) flags.push("LARGE_BULK_CARRIER");
+  if (/tanker/.test(typeGroup)) flags.push("TANKER_TARGET");
+  if (/pctc/.test(typeGroup)) flags.push("PCTC_TARGET");
+  if (/cruise|passenger/.test(typeGroup)) flags.push("CRUISE_TARGET");
   if (v.is_anchorage_waiting || v.berth_class === "anchorage") flags.push("ANCHORAGE_WAITING_CLASSIFIED");
   if ((metrics.stay_hours || 0) >= 48) flags.push("STAY_48H_PLUS");
   if ((metrics.stay_hours || 0) >= 720) flags.push("CUMULATIVE_STAY_30D_PLUS");
   if ((metrics.anchorage_hours || 0) >= 24) flags.push("ANCHORAGE_24H_PLUS");
   if ((v.congestion_exposure_score || 0) >= 14 || (v.port_congestion_score || 0) >= 60) flags.push("CONGESTION_EXPOSED");
   if (v.berth_class && v.berth_class !== "general") flags.push(`BERTH_CLASS_${String(v.berth_class).toUpperCase()}`);
+  if (v.agent) flags.push("AGENT_IDENTIFIED");
+  if (v.operator) flags.push("OPERATOR_IDENTIFIED");
+  if (v.reference_enriched) flags.push("KNOWN_COMMERCIAL_SEGMENT");
   return {
     commercial_signal_flags: [...new Set(flags)],
     high_value_target: flags.includes("GT_30000_PLUS") && flags.includes("HIGH_VALUE_VESSEL_TYPE"),
@@ -638,6 +692,8 @@ function enrichSalesSignals(records) {
     const ciiPressureScore = deriveCiiPressureScore(v, scheduleMetrics, biofoulingScore);
     const scoringInput = { ...v, gt: gtProfile.gt, grtg: gtProfile.grtg, intrlGrtg: gtProfile.intrlGrtg };
     const scoreParts = deriveCommercialScoreParts(scoringInput, scheduleMetrics);
+    const commercialValue = deriveCommercialValue({ ...scoringInput, gt_status: gtProfile.gt_status }, scoreParts);
+    const dataConfidence = deriveDataConfidence({ ...v, ...gtProfile, ...scoreParts });
     const candidateProfile = buildCandidateProfile({ ...v, ...scheduleMetrics, risk_score: biofoulingScore, compliance_watch: complianceWatch });
     const identity = deriveIdentity(v);
     const isSample = String(v.source_mode || "").includes("sample");
@@ -663,6 +719,8 @@ function enrichSalesSignals(records) {
       biofouling_score: biofoulingScore,
       cii_pressure_score: ciiPressureScore,
       ...scoreParts,
+      ...commercialValue,
+      ...dataConfidence,
       risk_level: riskLevel(biofoulingScore),
       sales_priority: candidateProfile.is_immediate_candidate ? "Immediate Candidate" : biofoulingScore >= 85 ? "Critical" : biofoulingScore >= 70 ? "High" : "Normal",
       ...identity,
@@ -694,8 +752,8 @@ function enrichSalesSignals(records) {
       enriched.sales_reason = enriched.reason_codes;
       enriched.total_sales_priority_score = 0;
     } else {
-      enriched.is_cleaning_candidate = isMainCommercialVessel(enriched) && enriched.meets_commercial_gt_threshold && enriched.total_sales_priority_score >= 60;
-      enriched.is_immediate_candidate = isMainCommercialVessel(enriched) && enriched.meets_commercial_gt_threshold && enriched.total_sales_priority_score >= 80;
+      enriched.is_cleaning_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= 60;
+      enriched.is_immediate_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= 80;
       enriched.is_operating_candidate = enriched.is_cleaning_candidate;
       enriched.is_operating_immediate_candidate = enriched.is_immediate_candidate;
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
@@ -717,6 +775,8 @@ function enrichSalesSignals(records) {
     Object.assign(enriched, buildImoRecovery(enriched, scheduleMetrics));
     if (enriched.high_value_target && (enriched.congestion_exposed_target || (scheduleMetrics.stay_hours || 0) >= 48)) {
       enriched.total_sales_priority_score = Math.max(enriched.total_sales_priority_score || 0, enriched.congestion_exposed_target ? 80 : 60);
+      enriched.commercial_value_score = Math.max(enriched.commercial_value_score || 0, enriched.total_sales_priority_score);
+      enriched.commercial_value_band = commercialValueBand(enriched.commercial_value_score, enriched.gt_status);
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
       enriched.sales_priority_band = enriched.total_sales_priority_score >= 80 ? "immediate_target" : "high_potential";
       enriched.is_cleaning_candidate = enriched.commercial_relevance_status === "target_vessel" && enriched.total_sales_priority_score >= 60;
@@ -819,6 +879,84 @@ function buildHighValueTargets(records = []) {
       is_anchorage_waiting: Boolean(v.is_anchorage_waiting),
       total_sales_priority_score: v.total_sales_priority_score || 0,
       commercial_signal_strength: v.commercial_signal_strength || 0,
+      reason_codes: v.reason_codes || []
+    }));
+}
+
+function buildUnknownGtReview(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => v.gt_status === "unknown_gt_review" && v.commercial_relevance_status === "unknown_gt_review")
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      call_sign: v.call_sign || "",
+      vessel_type: v.vessel_type,
+      vessel_type_group: v.vessel_type_group,
+      status_bucket: v.status_bucket,
+      berth_name: v.berth_name || "",
+      anchorage_name: v.anchorage_name || "",
+      commercial_value_score: v.commercial_value_score || 0,
+      data_confidence_score: v.data_confidence_score || 0,
+      reason_codes: v.reason_codes || []
+    }));
+}
+
+function buildHighValueLowConfidence(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => (v.commercial_value_score || 0) >= 60 && (v.data_confidence_score || 0) < 60)
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      gt: v.gt,
+      imo: v.imo || "",
+      call_sign: v.call_sign || "",
+      vessel_type: v.vessel_type,
+      vessel_type_group: v.vessel_type_group,
+      commercial_value_score: v.commercial_value_score || 0,
+      commercial_value_band: v.commercial_value_band,
+      data_confidence_score: v.data_confidence_score || 0,
+      data_confidence_band: v.data_confidence_band,
+      review_reason: !v.imo ? "missing_imo" : !v.gt ? "missing_gt" : "weak_identity",
+      reason_codes: v.reason_codes || []
+    }));
+}
+
+function buildCongestionWatchlist(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => v.is_anchorage_waiting || v.congestion_exposed_target || (v.congestion_exposure_score || 0) >= 12 || (v.anchorage_hours || 0) >= 12)
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      gt: v.gt,
+      vessel_type: v.vessel_type,
+      berth_class: v.berth_class || "",
+      anchorage_name: v.anchorage_name || "",
+      anchorage_hours: v.anchorage_hours || 0,
+      estimated_waiting_time: v.estimated_waiting_time || 0,
+      congestion_exposure_score: v.congestion_exposure_score || 0,
+      port_congestion_score: v.port_congestion_score || 0,
+      commercial_value_score: v.commercial_value_score || 0,
+      reason_codes: v.reason_codes || []
+    }));
+}
+
+function buildAgentFollowupQueue(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => v.agent && (!v.operator || !v.imo || (v.data_confidence_score || 0) < 70))
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      agent: v.agent,
+      operator: v.operator || "",
+      imo: v.imo || "",
+      call_sign: v.call_sign || "",
+      commercial_value_score: v.commercial_value_score || 0,
+      data_confidence_score: v.data_confidence_score || 0,
+      next_action: "Confirm IMO/operator and cleaning decision path via local agent.",
       reason_codes: v.reason_codes || []
     }));
 }
@@ -1610,6 +1748,9 @@ try {
   const portIntelligence = buildPortIntelligence(vessels);
   const candidateList = buildCandidateList(vessels);
 
+  const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
+  const salesCandidates = vessels.filter(v => (v.commercial_value_score || 0) >= 60 && v.commercial_relevance_status === "target_vessel");
+  const immediateTargets = vessels.filter(v => (v.commercial_value_score || 0) >= 80 && v.commercial_relevance_status === "target_vessel");
   const report = {
     ...baseReport,
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
@@ -1620,8 +1761,15 @@ try {
     },
     all_collected_vessel_count: allCollectedVessels.length,
     target_vessel_count: targetVessels.length,
+    gt_5000_plus_count: targetVessels.filter(v => v.gt_status === "target_vessel").length,
     staying_vessel_count: stayingVessels.length,
     arrival_pipeline_count: arrivalPipeline.length,
+    scored_vessel_count: scoredVessels.length,
+    sales_candidate_count: salesCandidates.length,
+    immediate_target_count: immediateTargets.length,
+    imo_missing_count: vessels.filter(v => !v.imo).length,
+    imo_recovered_count: vessels.filter(v => v.vessel_master_seed_match && v.imo).length,
+    high_value_low_confidence_count: buildHighValueLowConfidence(vessels).length,
     unknown_gt_review_count: targetVessels.filter(v => v.gt_status === "unknown_gt_review").length,
     non_target_small_vessel_count: allCollectedVessels.filter(v => v.gt_status === "non_target_small_vessel").length,
     record_count: vessels.length,
@@ -1667,6 +1815,10 @@ try {
   fs.writeFileSync("dashboard/api/arrival-pipeline.json", JSON.stringify(arrivalPipeline, null, 2));
   fs.writeFileSync("dashboard/api/imo-recovery-queue.json", JSON.stringify(buildImoRecoveryQueue(vessels), null, 2));
   fs.writeFileSync("dashboard/api/high-value-targets.json", JSON.stringify(buildHighValueTargets(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/unknown-gt-review.json", JSON.stringify(buildUnknownGtReview(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/high-value-low-confidence.json", JSON.stringify(buildHighValueLowConfidence(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/congestion-watchlist.json", JSON.stringify(buildCongestionWatchlist(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/agent-followup-queue.json", JSON.stringify(buildAgentFollowupQueue(vessels), null, 2));
   fs.writeFileSync("dashboard/api/vessels.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("data/latest-lite.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));

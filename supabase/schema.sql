@@ -51,6 +51,9 @@ create table if not exists vessel_snapshots (
   anchorage_hours numeric default 0,
   data_quality_tier text,
   total_sales_priority_score int default 0,
+  commercial_value_score int default 0,
+  commercial_value_band text,
+  data_confidence_score int default 0,
   candidate_band text,
   reason_codes jsonb default '[]'::jsonb,
   vessel_id text not null,
@@ -87,11 +90,23 @@ create table if not exists data_collection_runs (
   status text not null,
   source_summary jsonb default '{}'::jsonb,
   total_rows int default 0,
+  raw_collected_rows int default 0,
+  normalized_rows int default 0,
   all_vessels_count int default 0,
+  target_vessels_count int default 0,
+  gt_5000_plus_count int default 0,
+  unknown_gt_review_count int default 0,
+  staying_vessels_count int default 0,
+  arrival_pipeline_count int default 0,
   scored_vessels_count int default 0,
   candidates_count int default 0,
+  sales_candidates_count int default 0,
   immediate_targets_count int default 0,
+  imo_missing_count int default 0,
+  imo_recovered_count int default 0,
+  high_value_low_confidence_count int default 0,
   actionable_rows int default 0,
+  validation_status text,
   error_summary jsonb default '{}'::jsonb,
   promoted_at timestamptz
 );
@@ -137,6 +152,9 @@ alter table vessel_snapshots add column if not exists berth_hours numeric defaul
 alter table vessel_snapshots add column if not exists anchorage_hours numeric default 0;
 alter table vessel_snapshots add column if not exists data_quality_tier text;
 alter table vessel_snapshots add column if not exists total_sales_priority_score int default 0;
+alter table vessel_snapshots add column if not exists commercial_value_score int default 0;
+alter table vessel_snapshots add column if not exists commercial_value_band text;
+alter table vessel_snapshots add column if not exists data_confidence_score int default 0;
 alter table vessel_snapshots add column if not exists candidate_band text;
 alter table vessel_snapshots add column if not exists reason_codes jsonb default '[]'::jsonb;
 alter table vessel_snapshots drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key;
@@ -247,6 +265,8 @@ create table if not exists risk_history (
   vessel_id text,
   port text,
   total_sales_priority_score int default 0,
+  commercial_value_score int default 0,
+  data_confidence_score int default 0,
   biofouling_risk_score int default 0,
   performance_proxy_score int default 0,
   congestion_exposure_score int default 0,
@@ -310,3 +330,18 @@ create index if not exists idx_vessel_identity_candidates_collected_at on vessel
 create index if not exists idx_port_congestion_snapshots_collected_at on port_congestion_snapshots(collected_at desc);
 create index if not exists idx_data_collection_runs_status on data_collection_runs(status);
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
+
+alter table data_collection_runs add column if not exists raw_collected_rows int default 0;
+alter table data_collection_runs add column if not exists normalized_rows int default 0;
+alter table data_collection_runs add column if not exists target_vessels_count int default 0;
+alter table data_collection_runs add column if not exists gt_5000_plus_count int default 0;
+alter table data_collection_runs add column if not exists unknown_gt_review_count int default 0;
+alter table data_collection_runs add column if not exists staying_vessels_count int default 0;
+alter table data_collection_runs add column if not exists arrival_pipeline_count int default 0;
+alter table data_collection_runs add column if not exists sales_candidates_count int default 0;
+alter table data_collection_runs add column if not exists imo_missing_count int default 0;
+alter table data_collection_runs add column if not exists imo_recovered_count int default 0;
+alter table data_collection_runs add column if not exists high_value_low_confidence_count int default 0;
+alter table data_collection_runs add column if not exists validation_status text;
+alter table risk_history add column if not exists commercial_value_score int default 0;
+alter table risk_history add column if not exists data_confidence_score int default 0;

@@ -30,7 +30,7 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
   const totalFinished = Number(diagnostics.success_count || 0) + parseFailures;
   const parseErrorRate = totalFinished ? parseFailures / totalFinished : 0;
   return {
-    promotable: attempted > 0 && portOperationSuccess >= 1 && records.length > 0 && parseErrorRate < 0.5,
+    promotable: attempted > 0 && portOperationSuccess >= 1 && records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length > 0 && parseErrorRate < 0.5,
     attempted,
     portOperationSuccess,
     parseErrorRate
@@ -52,11 +52,23 @@ export async function saveToSupabase(records, options = {}) {
     status: runStatus,
     source_summary: diagnostics,
     total_rows: Number(diagnostics.real_row_count || records.length || 0),
+    raw_collected_rows: Number(diagnostics.real_row_count || records.length || 0),
+    normalized_rows: records.length,
     all_vessels_count: records.length,
+    target_vessels_count: records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length,
+    gt_5000_plus_count: records.filter(r => r.gt_status === "target_vessel").length,
+    unknown_gt_review_count: records.filter(r => r.gt_status === "unknown_gt_review").length,
+    staying_vessels_count: records.filter(r => r.status_bucket === "staying_vessels").length,
+    arrival_pipeline_count: records.filter(r => r.status_bucket === "arrival_pipeline").length,
     scored_vessels_count: records.filter(r => typeof r.total_sales_priority_score === "number").length,
-    candidates_count: records.filter(r => (r.total_sales_priority_score || 0) >= 60 || r.is_cleaning_candidate).length,
-    immediate_targets_count: records.filter(r => (r.total_sales_priority_score || 0) >= 80 || r.is_immediate_candidate).length,
+    candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 60 || r.is_cleaning_candidate).length,
+    sales_candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 60 || r.is_cleaning_candidate).length,
+    immediate_targets_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 80 || r.is_immediate_candidate).length,
+    imo_missing_count: records.filter(r => !r.imo).length,
+    imo_recovered_count: records.filter(r => r.vessel_master_seed_match && r.imo).length,
+    high_value_low_confidence_count: records.filter(r => (r.commercial_value_score || 0) >= 60 && (r.data_confidence_score || 0) < 60).length,
     actionable_rows: records.filter(r => r.actionable_source_row !== false).length,
+    validation_status: promotion.promotable ? "passed" : "not_promoted",
     error_summary: { error: options.error || null, promotion }
   });
 
@@ -91,6 +103,9 @@ export async function saveToSupabase(records, options = {}) {
     data_quality_tier: r.data_quality_tier || null,
     risk_score: r.risk_score || 0,
     total_sales_priority_score: r.total_sales_priority_score || 0,
+    commercial_value_score: r.commercial_value_score || r.total_sales_priority_score || 0,
+    commercial_value_band: r.commercial_value_band || r.sales_priority_band || "low_priority",
+    data_confidence_score: r.data_confidence_score || 0,
     candidate_band: r.sales_priority_band || "low_priority",
     sales_reason: r.sales_reason || r.reason_codes || [],
     reason_codes: r.reason_codes || [],
@@ -259,6 +274,8 @@ export async function saveToSupabase(records, options = {}) {
     vessel_id: r.vessel_id,
     port: r.port || null,
     total_sales_priority_score: r.total_sales_priority_score || r.cleaning_candidate_score || r.risk_score || 0,
+    commercial_value_score: r.commercial_value_score || r.total_sales_priority_score || r.cleaning_candidate_score || r.risk_score || 0,
+    data_confidence_score: r.data_confidence_score || 0,
     biofouling_risk_score: r.biofouling_risk_score || r.biofouling_score || r.risk_score || 0,
     performance_proxy_score: r.performance_proxy_score || 0,
     congestion_exposure_score: r.congestion_exposure_score || 0,

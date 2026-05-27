@@ -17,6 +17,10 @@ const required = [
   "dashboard/api/arrival-pipeline.json",
   "dashboard/api/imo-recovery-queue.json",
   "dashboard/api/high-value-targets.json",
+  "dashboard/api/unknown-gt-review.json",
+  "dashboard/api/high-value-low-confidence.json",
+  "dashboard/api/congestion-watchlist.json",
+  "dashboard/api/agent-followup-queue.json",
   "dashboard/api/candidate-summary.json",
   "dashboard/api/contact-queue.json",
   "dashboard/api/hot-candidates.json",
@@ -82,6 +86,11 @@ for (const item of data) {
   for (const field of ["vessel_type_group", "commercial_signal_flags", "commercial_signal_strength", "imo_recovery_score", "imo_recovery_priority"]) {
     if (!(field in item)) {
       throw new Error(`Missing commercial enrichment field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
+  for (const field of ["commercial_value_score", "commercial_value_band", "data_confidence_score", "data_confidence_band", "vessel_value_score", "sales_accessibility_score"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing commercial value field ${field} for ${item.vessel_name || item.vessel_id}`);
     }
   }
 }
@@ -240,7 +249,7 @@ if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || 
 if (!worker.includes("cumulative_stay_hours") || !worker.includes("CUMULATIVE_STAY_90D_PLUS")) {
   throw new Error("Worker must preserve cumulative stay beyond short port-call windows");
 }
-for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
+for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/review/unknown-gt.json", "/review/high-value-low-confidence.json", "/review/congestion-watchlist.json", "target-vessels|staying-vessels|arrivals", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
   if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
 }
 const referenceDictionaries = fs.readFileSync("scripts/lib/reference-dictionaries.js", "utf8");
@@ -262,7 +271,7 @@ if (!dbLib.includes('.from("vessel_entities")') || !dbLib.includes('.from("risk_
   throw new Error("Supabase persistence must update collection runs, active pointer, vessel_entities, risk_history, and vessel_events");
 }
 const schema = fs.readFileSync("supabase/schema.sql", "utf8");
-for (const marker of ["data_collection_runs", "active_dataset_pointer", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
+for (const marker of ["data_collection_runs", "active_dataset_pointer", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "commercial_value_score", "data_confidence_score", "target_vessels_count", "validation_status", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
   if (!schema.includes(marker)) throw new Error(`Supabase schema missing historical persistence marker: ${marker}`);
 }
 for (const file of ["data/reference/ports.csv", "data/reference/berths.csv", "data/reference/anchorages.csv", "data/reference/vessel_types.csv", "data/reference/operators.csv", "data/reference/agents.csv", "data/reference/vessel_master_seed.csv"]) {
