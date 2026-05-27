@@ -199,26 +199,29 @@ function deriveStatusBucket(v = {}) {
   const status = String(v.status || "").toLowerCase();
   const now = Date.now();
   const parse = value => {
-    const date = value ? new Date(String(value).replace(" ", "T")) : null;
+    if (!value) return null;
+    const raw = String(value).trim().replace(" ", "T");
+    const date = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw : `${raw}+09:00`);
     return date && !Number.isNaN(date.getTime()) ? date.getTime() : null;
   };
   const eta = parse(v.eta);
   const ata = parse(v.ata);
   const etd = parse(v.etd);
   const atd = parse(v.atd);
-  if (atd && atd < now && !/waiting|anchorage|anchor|berth|moored|alongside|idle/.test(status)) return "completed_departure";
-  if (ata && !atd) return "staying_vessels";
-  if (/waiting|anchorage|anchor|idle|drifting/.test(status) || Number(v.anchorage_hours || 0) > 0) return "staying_vessels";
-  if (/berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) return "staying_vessels";
-  if (eta && eta >= now) return "arrival_pipeline";
-  if (etd && etd >= now) return "staying_vessels";
-  return "port_call_review";
+  const facilityType = String(v.facility_type || v.berth_class || "").toLowerCase();
+  if ((facilityType === "anchorage" || /waiting|anchorage|anchor|idle|drifting|묘박|정박|박지|외항|대기/i.test(status) || Number(v.anchorage_hours || 0) > 0) && !atd) return "anchorage_waiting";
+  if ((facilityType === "berth" || /berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) && !atd) return "berthed";
+  if (ata && !atd) return "arrived_staying";
+  if (eta && !ata && eta >= now) return "arriving_soon";
+  if (atd) return "departed";
+  if (etd && etd >= now) return "arrived_staying";
+  return "unknown";
 }
 
 function deriveCommercialRelevance(v = {}) {
   const typeText = `${v.vessel_type || ""} ${v.vessel_name || ""}`.toLowerCase();
   if (/fishing|fishery|trawler|tug|pilot|patrol|government|navy|coast guard|workboat|barge|dredger|어선|예선|관공선|작업선|준설|순찰|해경/.test(typeText)) return "excluded_non_commercial_type";
-  if ((v.status_bucket || deriveStatusBucket(v)) === "completed_departure") return "excluded_departure_only";
+  if ((v.status_bucket || deriveStatusBucket(v)) === "departed") return "excluded_departure_only";
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
   if ((v.gt_status || "") === "target_vessel" || gt >= Number(v.commercial_gt_threshold || 5000)) return "target_vessel";
   if ((v.gt_status || "") === "unknown_gt_review" || gt <= 0) return "unknown_gt_review";
@@ -353,7 +356,7 @@ function latestPerVesselPort(records) {
 
 function buildHot(records) {
   return sortCommercialPriority(records)
-    .filter(v => v.actionable_source_row !== false && isMainCommercialVessel(v) && (v.is_cleaning_candidate || v.status_bucket === "staying_vessels" || v.status_bucket === "arrival_pipeline" || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
+    .filter(v => v.actionable_source_row !== false && isMainCommercialVessel(v) && (v.is_cleaning_candidate || ["arrived_staying", "berthed", "anchorage_waiting", "arriving_soon"].includes(v.status_bucket) || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
     .slice(0, 40);
 }
 
@@ -638,8 +641,8 @@ function buildVisibilityBuckets(records) {
   const targetVessels = records.filter(isMainCommercialVessel);
   return {
     target_vessels: targetVessels,
-    staying_vessels: targetVessels.filter(v => v.status_bucket === "staying_vessels"),
-    arrival_pipeline: targetVessels.filter(v => v.status_bucket === "arrival_pipeline"),
+    staying_vessels: targetVessels.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)),
+    arrival_pipeline: targetVessels.filter(v => v.status_bucket === "arriving_soon"),
     sales_candidates: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)),
     immediate_targets: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD))
   };
@@ -763,8 +766,8 @@ async function apiResponse(pathname, env) {
     const rows = recordsForPort(records, decodeURIComponent(portMatch[1]));
     if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
     if (portMatch[2] === "target-vessels") return json(rows.filter(isMainCommercialVessel), { headers: corsHeaders() });
-    if (portMatch[2] === "staying-vessels") return json(rows.filter(v => v.status_bucket === "staying_vessels"), { headers: corsHeaders() });
-    if (portMatch[2] === "arrivals") return json(rows.filter(v => v.status_bucket === "arrival_pipeline"), { headers: corsHeaders() });
+    if (portMatch[2] === "staying-vessels") return json(rows.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)), { headers: corsHeaders() });
+    if (portMatch[2] === "arrivals") return json(rows.filter(v => v.status_bucket === "arriving_soon"), { headers: corsHeaders() });
     if (portMatch[2] === "candidates") return json(buildHot(rows).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });
     if (portMatch[2] === "congestion") return json(buildPortCongestion(records, decodeURIComponent(portMatch[1])), { headers: corsHeaders() });
     if (portMatch[2] === "anchorage") return json(buildAnchorage(rows), { headers: corsHeaders() });
