@@ -56,6 +56,8 @@ function normalizeSnapshot(row = {}) {
     next_port: merged.next_port || "",
     vessel_type: merged.vessel_type || "",
     gt: Number(merged.gt || 0),
+    commercial_gt_threshold: Number(merged.commercial_gt_threshold || 5000),
+    meets_commercial_gt_threshold: Boolean(merged.meets_commercial_gt_threshold ?? Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000)),
     eta: merged.eta || "",
     etb: merged.etb || "",
     ata: merged.ata || "",
@@ -72,8 +74,8 @@ function normalizeSnapshot(row = {}) {
     cii_pressure_score: Number(merged.cii_pressure_score || 0),
     total_sales_priority_score: Number(merged.total_sales_priority_score || candidateScore),
     cleaning_candidate_score: candidateScore,
-    is_cleaning_candidate: Boolean(merged.is_cleaning_candidate ?? candidateScore >= 45),
-    is_immediate_candidate: Boolean(merged.is_immediate_candidate ?? candidateScore >= 82),
+    is_cleaning_candidate: Boolean(merged.is_cleaning_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= 60)),
+    is_immediate_candidate: Boolean(merged.is_immediate_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= 80)),
     reason_codes: merged.reason_codes || merged.sales_reason || [],
     sales_reason: merged.sales_reason || merged.reason_codes || [],
     hybrid_entity_key: merged.hybrid_entity_key || merged.vessel_id,
@@ -99,38 +101,116 @@ function normalizeSnapshot(row = {}) {
   };
 }
 
-async function fetchActivePointer(env) {
+function supabaseBase(env) {
   const url = env.SUPABASE_URL;
   const key = env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return { configured: false, active_run_id: null, error: "missing_supabase_binding" };
-  const endpoint = `${url.replace(/\/$/, "")}/rest/v1/active_dataset_pointer?select=*&id=eq.current&limit=1`;
-  const res = await fetch(endpoint, {
-    headers: { apikey: key, authorization: `Bearer ${key}`, accept: "application/json" }
+  if (!url || !key) return null;
+  return { url: url.replace(/\/$/, ""), key };
+}
+
+async function supabaseGet(env, path) {
+  const base = supabaseBase(env);
+  if (!base) {
+    return { ok: false, status: 0, rows: [], error: "missing_supabase_binding" };
+  }
+  const res = await fetch(`${base.url}${path}`, {
+    headers: { apikey: base.key, authorization: `Bearer ${base.key}`, accept: "application/json" }
   });
-  if (!res.ok) return { configured: true, active_run_id: null, error: `active_pointer_http_${res.status}` };
+  if (!res.ok) {
+    let detail = "";
+    try {
+      detail = await res.text();
+    } catch {
+      detail = "";
+    }
+    return { ok: false, status: res.status, rows: [], error: `supabase_http_${res.status}`, detail: detail.slice(0, 240) };
+  }
   const rows = await res.json();
-  const pointer = Array.isArray(rows) ? rows[0] : null;
-  return { configured: true, ...(pointer || {}), error: null };
+  return { ok: true, status: res.status, rows: Array.isArray(rows) ? rows : [], error: null };
+}
+
+async function fetchActivePointer(env) {
+  if (!supabaseBase(env)) return { configured: false, active_run_id: null, error: "missing_supabase_binding" };
+
+  const diagnostics = [];
+  const active = await supabaseGet(env, "/rest/v1/active_dataset_pointer?select=*&id=eq.current&limit=1");
+  diagnostics.push({ source: "active_dataset_pointer", ok: active.ok, status: active.status, row_count: active.rows.length, error: active.error });
+  const pointer = active.rows[0] || null;
+  if (pointer?.active_run_id) {
+    return { configured: true, ...pointer, pointer_source: "active_dataset_pointer", pointer_diagnostics: diagnostics, error: null };
+  }
+
+  const promoted = await supabaseGet(env, "/rest/v1/data_collection_runs?select=run_id,promoted_at,finished_at,status,total_rows,all_vessels_count,candidates_count,immediate_targets_count&status=eq.promoted&order=promoted_at.desc.nullslast&order=finished_at.desc.nullslast&limit=1");
+  diagnostics.push({ source: "latest_promoted_run", ok: promoted.ok, status: promoted.status, row_count: promoted.rows.length, error: promoted.error });
+  const run = promoted.rows[0] || null;
+  if (run?.run_id) {
+    return {
+      configured: true,
+      active_run_id: run.run_id,
+      active_collected_at: run.finished_at || null,
+      promoted_at: run.promoted_at || null,
+      is_stale: false,
+      pointer_source: "latest_promoted_run",
+      pointer_diagnostics: diagnostics,
+      fallback_pointer: true,
+      error: null
+    };
+  }
+
+  const latestRun = await supabaseGet(env, "/rest/v1/vessel_snapshots?select=run_id,collected_at&run_id=not.is.null&order=collected_at.desc&limit=1");
+  diagnostics.push({ source: "latest_snapshot_run", ok: latestRun.ok, status: latestRun.status, row_count: latestRun.rows.length, error: latestRun.error });
+  const snapshotRun = latestRun.rows[0] || null;
+  if (snapshotRun?.run_id) {
+    return {
+      configured: true,
+      active_run_id: snapshotRun.run_id,
+      active_collected_at: snapshotRun.collected_at || null,
+      promoted_at: null,
+      is_stale: true,
+      pointer_source: "latest_snapshot_run",
+      pointer_diagnostics: diagnostics,
+      fallback_pointer: true,
+      error: null
+    };
+  }
+
+  const legacy = await supabaseGet(env, "/rest/v1/vessel_snapshots?select=collected_at&order=collected_at.desc&limit=1");
+  diagnostics.push({ source: "legacy_latest_snapshots", ok: legacy.ok, status: legacy.status, row_count: legacy.rows.length, error: legacy.error });
+  if (legacy.rows.length) {
+    return {
+      configured: true,
+      active_run_id: null,
+      active_collected_at: legacy.rows[0]?.collected_at || null,
+      promoted_at: null,
+      is_stale: true,
+      legacy_latest: true,
+      pointer_source: "legacy_latest_snapshots",
+      pointer_diagnostics: diagnostics,
+      fallback_pointer: true,
+      error: null
+    };
+  }
+
+  return {
+    configured: true,
+    active_run_id: null,
+    error: active.error || promoted.error || latestRun.error || legacy.error || "missing_active_dataset",
+    pointer_source: "none",
+    pointer_diagnostics: diagnostics
+  };
 }
 
 async function fetchSupabaseRows(env) {
-  const url = env.SUPABASE_URL;
-  const key = env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return { rows: [], configured: false, error: "missing_supabase_binding" };
+  if (!supabaseBase(env)) return { rows: [], configured: false, error: "missing_supabase_binding" };
   const pointer = await fetchActivePointer(env);
-  if (!pointer.active_run_id) return { rows: [], configured: pointer.configured, error: pointer.error || "missing_active_dataset", pointer };
+  if (!pointer.active_run_id && !pointer.legacy_latest) return { rows: [], configured: pointer.configured, error: pointer.error || "missing_active_dataset", pointer };
 
-  const endpoint = `${url.replace(/\/$/, "")}/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
-  const res = await fetch(endpoint, {
-    headers: {
-      apikey: key,
-      authorization: `Bearer ${key}`,
-      accept: "application/json"
-    }
-  });
-  if (!res.ok) return { rows: [], configured: true, error: `supabase_http_${res.status}`, pointer };
-  const rows = await res.json();
-  return { rows: Array.isArray(rows) ? rows.map(normalizeSnapshot) : [], configured: true, error: null, pointer };
+  const query = pointer.legacy_latest
+    ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000"
+    : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
+  const response = await supabaseGet(env, query);
+  if (!response.ok) return { rows: [], configured: true, error: response.error, pointer };
+  return { rows: response.rows.map(normalizeSnapshot), configured: true, error: null, pointer };
 }
 
 function latestPerVesselPort(records) {
@@ -145,7 +225,7 @@ function latestPerVesselPort(records) {
 
 function buildHot(records) {
   return sortCommercialPriority(records)
-    .filter(v => v.actionable_source_row !== false && (v.is_cleaning_candidate || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
+    .filter(v => v.actionable_source_row !== false && v.meets_commercial_gt_threshold && (v.is_cleaning_candidate || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
     .slice(0, 40);
 }
 
@@ -338,7 +418,13 @@ function buildStatus(records, source) {
       active_run_id: source.pointer?.active_run_id || null,
       active_collected_at: source.pointer?.active_collected_at || null,
       promoted_at: source.pointer?.promoted_at || null,
-      is_stale: Boolean(source.pointer?.is_stale)
+      is_stale: Boolean(source.pointer?.is_stale),
+      pointer_source: source.pointer?.pointer_source || "none",
+      fallback_pointer: Boolean(source.pointer?.fallback_pointer),
+      pointer_diagnostics: source.pointer?.pointer_diagnostics || [],
+      stale_warning: source.pointer?.fallback_pointer
+        ? "Active dataset pointer is missing or empty; showing latest available Supabase snapshot run."
+        : null
     },
     commercial_command_center: buildCommandCenter(records),
     port_intelligence: buildPorts(records),
