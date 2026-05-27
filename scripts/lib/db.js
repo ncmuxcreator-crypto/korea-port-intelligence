@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
 import { randomUUID } from "node:crypto";
 
@@ -19,6 +19,27 @@ export function getSupabase() {
 
 export function createRunId() {
   return `run_${new Date().toISOString().replace(/[-:.TZ]/g, "")}_${randomUUID().slice(0, 8)}`;
+}
+
+function normalizeVesselName(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "");
+}
+
+function fallbackMasterId(record = {}) {
+  return record.master_vessel_id || record.hybrid_entity_key || record.vessel_id;
+}
+
+function identityConfidence(record = {}) {
+  if (typeof record.identity_confidence === "number") return record.identity_confidence;
+  if (record.identification_method === "IMO") return 100;
+  if (record.identification_method === "MMSI") return 88;
+  if (record.identification_method === "CALLSIGN_EXACT") return 85;
+  if (record.identification_method === "NORMALIZED_NAME_GT_TYPE") return 65;
+  if (record.identification_method === "FUZZY_NAME_PORT") return 45;
+  return 25;
 }
 
 function shouldPromoteRun(records = [], diagnostics = {}) {
@@ -61,12 +82,12 @@ export async function saveToSupabase(records, options = {}) {
     staying_vessels_count: records.filter(r => r.status_bucket === "staying_vessels").length,
     arrival_pipeline_count: records.filter(r => r.status_bucket === "arrival_pipeline").length,
     scored_vessels_count: records.filter(r => typeof r.total_sales_priority_score === "number").length,
-    candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 60 || r.is_cleaning_candidate).length,
-    sales_candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 60 || r.is_cleaning_candidate).length,
-    immediate_targets_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 80 || r.is_immediate_candidate).length,
+    candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 50 || r.is_cleaning_candidate).length,
+    sales_candidates_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 50 || r.is_cleaning_candidate).length,
+    immediate_targets_count: records.filter(r => (r.commercial_value_score || r.total_sales_priority_score || 0) >= 75 || r.is_immediate_candidate).length,
     imo_missing_count: records.filter(r => !r.imo).length,
     imo_recovered_count: records.filter(r => r.vessel_master_seed_match && r.imo).length,
-    high_value_low_confidence_count: records.filter(r => (r.commercial_value_score || 0) >= 60 && (r.data_confidence_score || 0) < 60).length,
+    high_value_low_confidence_count: records.filter(r => (r.commercial_value_score || 0) >= 35 && ((r.data_confidence_score || 0) < 60 || !r.imo)).length,
     actionable_rows: records.filter(r => r.actionable_source_row !== false).length,
     validation_status: promotion.promotable ? "passed" : "not_promoted",
     error_summary: { error: options.error || null, promotion }
@@ -75,7 +96,7 @@ export async function saveToSupabase(records, options = {}) {
   const rows = records.map(r => ({
     run_id: runId,
     snapshot_date: now.slice(0, 10),
-    master_vessel_id: r.hybrid_entity_key || r.vessel_id,
+    master_vessel_id: fallbackMasterId(r),
     vessel_id: r.vessel_id,
     vessel_name: r.vessel_name,
     port: r.port,
@@ -155,12 +176,12 @@ export async function saveToSupabase(records, options = {}) {
   }
 
   let masterRows = records.map(r => ({
-    master_vessel_id: r.hybrid_entity_key || r.vessel_id,
+    master_vessel_id: fallbackMasterId(r),
     imo: r.imo || null,
     mmsi: r.mmsi || null,
     call_sign: r.call_sign || null,
     canonical_name: r.vessel_name,
-    normalized_name: String(r.vessel_name || "").trim().toUpperCase(),
+    normalized_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
     vessel_type: r.vessel_type || null,
     vessel_type_group: r.vessel_type_group || null,
     gt: r.gt || null,
@@ -170,7 +191,7 @@ export async function saveToSupabase(records, options = {}) {
     operator: r.operator || null,
     operator_normalized: String(r.operator || "").trim().toUpperCase() || null,
     flag: r.flag || null,
-    identity_confidence: r.identification_method === "IMO" ? 95 : r.identification_method === "MMSI" ? 85 : r.identification_method === "HYBRID_CALLSIGN_NAME_GT" ? 70 : 40,
+    identity_confidence: identityConfidence(r),
     imo_status: r.imo_status || (r.imo ? "present" : "missing"),
     last_seen: now,
     updated_at: now,
@@ -227,10 +248,10 @@ export async function saveToSupabase(records, options = {}) {
     .filter(r => r.vessel_name && (r.hybrid_entity_key || r.vessel_id))
     .map(r => ({
       alias_name: r.vessel_name,
-      normalized_alias_name: String(r.vessel_name || "").trim().toUpperCase(),
-      master_vessel_id: r.hybrid_entity_key || r.vessel_id,
+      normalized_alias_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
+      master_vessel_id: fallbackMasterId(r),
       source: r.source || "collector",
-      confidence: r.identification_method === "IMO" ? 95 : r.identification_method === "MMSI" ? 85 : 60,
+      confidence: identityConfidence(r),
       last_seen: now
     }));
 
@@ -247,17 +268,17 @@ export async function saveToSupabase(records, options = {}) {
       hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
       vessel_id: r.vessel_id,
       raw_vessel_name: r.vessel_name,
-      normalized_name: String(r.vessel_name || "").trim().toUpperCase(),
+      normalized_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
       call_sign: r.call_sign || null,
       mmsi: r.mmsi || null,
       gt: r.gt || null,
       port_code: r.port_code || null,
-      likely_master_vessel_id: null,
-      confidence: Number(r.gt || 0) >= 5000 || (r.total_sales_priority_score || 0) >= 60 ? 60 : 40,
-      resolution_status: Number(r.gt || 0) >= 5000 || (r.total_sales_priority_score || 0) >= 60 ? "manual_review_priority" : "unresolved",
+      likely_master_vessel_id: fallbackMasterId(r),
+      confidence: identityConfidence(r),
+      resolution_status: (r.commercial_value_score || r.total_sales_priority_score || 0) >= 35 || Number(r.gt || 0) >= 5000 || r.is_anchorage_waiting ? "manual_review_priority" : "unresolved",
       likely_imo_candidates: [],
-      confidence_band: Number(r.gt || 0) >= 5000 || (r.total_sales_priority_score || 0) >= 60 ? "manual_review_priority" : "unresolved",
-      manual_review_required: Number(r.gt || 0) >= 5000 || (r.total_sales_priority_score || 0) >= 60,
+      confidence_band: r.identity_confidence_band || (identityConfidence(r) >= 80 ? "strong_identifier" : identityConfidence(r) >= 60 ? "context_match" : identityConfidence(r) >= 40 ? "weak_fuzzy" : "unresolved"),
+      manual_review_required: (r.commercial_value_score || r.total_sales_priority_score || 0) >= 35 || Number(r.gt || 0) >= 5000 || r.is_anchorage_waiting,
       payload: r
     }));
 
@@ -269,7 +290,7 @@ export async function saveToSupabase(records, options = {}) {
 
   const riskRows = records.map(r => ({
     run_id: runId,
-    master_vessel_id: r.hybrid_entity_key || r.vessel_id,
+    master_vessel_id: fallbackMasterId(r),
     hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
     vessel_id: r.vessel_id,
     port: r.port || null,
@@ -298,7 +319,7 @@ export async function saveToSupabase(records, options = {}) {
     .filter(r => r.is_cleaning_candidate || r.is_immediate_candidate || (r.total_sales_priority_score || 0) >= 60)
     .map(r => ({
       hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
-      master_vessel_id: r.hybrid_entity_key || r.vessel_id,
+      master_vessel_id: fallbackMasterId(r),
       run_id: runId,
       vessel_id: r.vessel_id,
       event_type: r.is_immediate_candidate ? "SCORE_INCREASED" : "LONG_IDLE_DETECTED",

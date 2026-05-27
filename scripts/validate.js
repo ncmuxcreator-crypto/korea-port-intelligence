@@ -73,6 +73,11 @@ for (const item of data) {
       throw new Error(`Missing commercial command-center field ${field} for ${item.vessel_name || item.vessel_id}`);
     }
   }
+  for (const field of ["master_vessel_id", "normalized_vessel_name", "identity_match_strategy", "identity_confidence", "identity_confidence_band"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing vessel identity resolution field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
   for (const field of ["commercial_gt_threshold", "meets_commercial_gt_threshold"]) {
     if (!(field in item)) {
       throw new Error(`Missing commercial GT field ${field} for ${item.vessel_name || item.vessel_id}`);

@@ -107,47 +107,113 @@ function deriveCiiPressureScore(v, metrics, biofoulingScore) {
 
 function normalizeIdentityToken(value) {
   return String(value || "")
+    .normalize("NFKC")
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9가-힣]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeVesselName(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[^A-Z0-9가-힣]+/g, "");
+}
+
+function identityConfidenceBand(score = 0) {
+  if (score >= 95) return "imo_exact";
+  if (score >= 80) return "strong_identifier";
+  if (score >= 60) return "context_match";
+  if (score >= 40) return "weak_fuzzy";
+  return "unresolved";
+}
+
+function contextualIdentityBonus(v = {}) {
+  let bonus = 0;
+  if (Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0) bonus += 4;
+  if (v.vessel_type_group && v.vessel_type_group !== "unknown") bonus += 3;
+  if (v.operator || v.agent) bonus += 3;
+  if (v.port_code || v.port) bonus += 2;
+  if (v.observation_count && Number(v.observation_count) > 1) bonus += 3;
+  return bonus;
+}
+
 function deriveIdentity(v) {
   const imo = normalizeIdentityToken(v.imo);
   const mmsi = normalizeIdentityToken(v.mmsi);
   const callSign = normalizeIdentityToken(v.call_sign || v.callsign);
-  const vesselName = normalizeIdentityToken(v.vessel_name);
-  const gt = normalizeIdentityToken(v.gt);
+  const vesselName = normalizeVesselName(v.vessel_name);
+  const gt = normalizeIdentityToken(v.gt || v.grtg || v.intrlGrtg);
+  const vesselType = normalizeIdentityToken(v.vessel_type_group || v.vessel_type);
   const port = normalizeIdentityToken(v.port);
+  const contextBonus = contextualIdentityBonus(v);
 
   if (imo) {
+    const confidence = 100;
     return {
       hybrid_entity_key: `IMO-${imo}`,
+      master_vessel_id: `MASTER-IMO-${imo}`,
       identification_method: "IMO",
+      identity_match_strategy: "imo_exact",
+      identity_confidence: confidence,
+      identity_confidence_band: identityConfidenceBand(confidence),
+      normalized_vessel_name: vesselName,
       imo_status: "present",
       imo_recovery_priority: "none"
     };
   }
   if (mmsi) {
+    const confidence = Math.min(94, 85 + contextBonus);
     return {
       hybrid_entity_key: `MMSI-${mmsi}`,
+      master_vessel_id: `MASTER-MMSI-${mmsi}`,
       identification_method: "MMSI",
+      identity_match_strategy: "mmsi_exact",
+      identity_confidence: confidence,
+      identity_confidence_band: identityConfidenceBand(confidence),
+      normalized_vessel_name: vesselName,
       imo_status: "missing",
       imo_recovery_priority: "medium"
     };
   }
-  if (callSign && vesselName && gt) {
+  if (callSign) {
+    const confidence = Math.min(94, 82 + contextBonus);
     return {
-      hybrid_entity_key: `HYBRID-${callSign}-${vesselName}-${gt}`,
-      identification_method: "HYBRID_CALLSIGN_NAME_GT",
+      hybrid_entity_key: `HYBRID-${callSign}-${vesselName || "UNKNOWN"}-${gt || "GTUNKNOWN"}`,
+      master_vessel_id: `MASTER-CALLSIGN-${callSign}`,
+      identification_method: "CALLSIGN_EXACT",
+      identity_match_strategy: "call_sign_exact",
+      identity_confidence: confidence,
+      identity_confidence_band: identityConfidenceBand(confidence),
+      normalized_vessel_name: vesselName,
       imo_status: "missing_recoverable",
       imo_recovery_priority: "high"
     };
   }
+  if (vesselName && gt && vesselType && vesselType !== "UNKNOWN") {
+    const confidence = Math.min(79, 62 + contextBonus);
+    return {
+      hybrid_entity_key: `HYBRID-NAME-GT-TYPE-${vesselName}-${gt}-${vesselType}`,
+      master_vessel_id: `MASTER-NAMEGT-${vesselName}-${gt}-${vesselType}`,
+      identification_method: "NORMALIZED_NAME_GT_TYPE",
+      identity_match_strategy: "normalized_name_gt_type",
+      identity_confidence: confidence,
+      identity_confidence_band: identityConfidenceBand(confidence),
+      normalized_vessel_name: vesselName,
+      imo_status: "missing_recoverable",
+      imo_recovery_priority: "high"
+    };
+  }
+  const confidence = vesselName ? Math.min(59, 42 + contextBonus) : 20;
   return {
     hybrid_entity_key: `NAME_PORT-${vesselName || "UNKNOWN"}-${port || "UNKNOWN"}`,
-    identification_method: "NAME_PORT_FALLBACK",
+    master_vessel_id: `PROVISIONAL-NAMEPORT-${vesselName || "UNKNOWN"}-${port || "UNKNOWN"}`,
+    identification_method: vesselName ? "FUZZY_NAME_PORT" : "UNRESOLVED",
+    identity_match_strategy: vesselName ? "fuzzy_name_context" : "unresolved",
+    identity_confidence: confidence,
+    identity_confidence_band: identityConfidenceBand(confidence),
+    normalized_vessel_name: vesselName,
     imo_status: "missing_low_confidence",
     imo_recovery_priority: "review"
   };
@@ -770,7 +836,6 @@ function enrichSalesSignals(records) {
       risk_level: riskLevel(biofoulingScore),
       sales_priority: candidateProfile.is_immediate_candidate ? "Immediate Candidate" : biofoulingScore >= 85 ? "Critical" : biofoulingScore >= 70 ? "High" : "Normal",
       ...identity,
-      master_vessel_id: identity.hybrid_entity_key,
       data_quality_tier: dataQualityTier({ ...v, ...scheduleMetrics }),
       compliance_band: complianceWatch ? "biosecurity_watch" : "standard",
       port_code: v.port_code || portCodeFromName(v.port),

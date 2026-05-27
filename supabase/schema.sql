@@ -186,6 +186,7 @@ create table if not exists vessel_master (
   canonical_name text,
   normalized_name text,
   vessel_type text,
+  vessel_type_group text,
   gt numeric,
   dwt numeric,
   loa numeric,
@@ -194,6 +195,8 @@ create table if not exists vessel_master (
   operator_normalized text,
   flag text,
   identity_confidence int default 0,
+  identity_confidence_band text,
+  identity_match_strategy text,
   imo_status text,
   first_seen timestamptz default now(),
   last_seen timestamptz default now(),
@@ -345,3 +348,11 @@ alter table data_collection_runs add column if not exists high_value_low_confide
 alter table data_collection_runs add column if not exists validation_status text;
 alter table risk_history add column if not exists commercial_value_score int default 0;
 alter table risk_history add column if not exists data_confidence_score int default 0;
+alter table vessel_master add column if not exists vessel_type_group text;
+alter table vessel_master add column if not exists identity_confidence_band text;
+alter table vessel_master add column if not exists identity_match_strategy text;
+alter table vessel_snapshots add column if not exists identity_confidence int default 0;
+alter table vessel_snapshots add column if not exists identity_confidence_band text;
+alter table vessel_snapshots add column if not exists identity_match_strategy text;
+alter table vessel_identity_candidates add column if not exists identity_match_strategy text;
+alter table vessel_identity_candidates add column if not exists commercial_value_score int default 0;
