@@ -62,12 +62,15 @@ function deriveScheduleMetrics(v) {
   const now = nowDate.toISOString();
   const ataDate = parseScheduleTime(v.ata);
   const atdDate = parseScheduleTime(v.atd);
-  const etaDate = parseScheduleTime(v.eta);
-  const etdDate = parseScheduleTime(v.etd);
-  const arrival = v.ata || v.eta;
-  const berthStart = v.atb || v.etb;
-  const departure = v.atd || v.etd;
-  const plannedStayHours = hoursBetween(v.eta, v.etd);
+  const etaValue = v.eta || v.eta_candidate || v.pilot_time || v.movement_time;
+  const etbValue = v.etb || v.etb_candidate;
+  const etdValue = v.etd || v.etd_candidate;
+  const etaDate = parseScheduleTime(etaValue);
+  const etdDate = parseScheduleTime(etdValue);
+  const arrival = v.ata || etaValue;
+  const berthStart = v.atb || etbValue;
+  const departure = v.atd || etdValue;
+  const plannedStayHours = hoursBetween(etaValue, etdValue);
   const stayHours = ataDate && atdDate
     ? hoursBetween(v.ata, v.atd)
     : ataDate && !atdDate
@@ -84,13 +87,17 @@ function deriveScheduleMetrics(v) {
   const workWindowHours = etdDate && nowDate.getTime() < etdDate.getTime()
     ? Math.round(((etdDate.getTime() - nowDate.getTime()) / 36e5) * 10) / 10
     : null;
+  const pilotDirection = String(v.pilot_direction || v.movement_type || "").toLowerCase();
+  const outboundPilotSoon = pilotDirection === "outbound" && etdDate && nowDate.getTime() < etdDate.getTime();
   const workWindowStatus = atdDate
     ? "closed"
-    : ataDate
-      ? "open_or_ongoing"
-      : workWindowHours !== null
-        ? "scheduled"
-        : "unknown";
+    : outboundPilotSoon
+      ? "closing_by_pilot_schedule"
+      : ataDate
+        ? "open_or_ongoing"
+        : workWindowHours !== null
+          ? "scheduled"
+          : "unknown";
 
   return {
     stay_hours: stayHours,
@@ -102,7 +109,11 @@ function deriveScheduleMetrics(v) {
     anchorage_hours: waitingHours,
     work_window_hours: workWindowHours,
     work_window_status: workWindowStatus,
-    schedule_confidence: [v.eta, v.etb, v.ata, v.atb, v.etd, v.atd].filter(Boolean).length
+    eta_candidate: v.eta_candidate || null,
+    etb_candidate: v.etb_candidate || null,
+    etd_candidate: v.etd_candidate || null,
+    pilot_time: v.pilot_time || v.movement_time || null,
+    schedule_confidence: Math.min(100, [v.eta, v.etb, v.ata, v.atb, v.etd, v.atd].filter(Boolean).length * 12 + (v.pilot_schedule_matched ? 24 : 0) + (v.pilot_only_arrival_review ? 12 : 0))
   };
 }
 
@@ -431,10 +442,15 @@ function deriveCommercialScoreParts(v, metrics) {
   const berthOccupancyProxy = Number(v.berth_occupancy_proxy || 0);
   const enrichmentMatched = Boolean(v.secondary_enrichment_matched || v.cargo_harbor_use_enriched);
   const terminalActive = /active|working|cargo|loading|discharging|작업|하역|운영|진행/.test(berthStatus);
+  const pilotMatched = Boolean(v.pilot_schedule_matched);
+  const pilotOnly = v.source_origin === "pilot_schedule" || v.pilot_only_arrival_review;
+  const pilotInbound = String(v.pilot_direction || v.movement_type || "").toLowerCase() === "inbound";
+  const pilotOutbound = String(v.pilot_direction || v.movement_type || "").toLowerCase() === "outbound";
+  const outboundPilotSoon = pilotOutbound && parseScheduleTime(v.pilot_time || v.movement_time || v.etd_candidate)?.getTime() > Date.now();
   const biofoulingRiskScore = Math.min(30, Math.round(Math.min(14, stayDays * 1.4) + Math.min(8, anchorageDays * 2) + (isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + Math.round(routeProfile.biosecurity_exposure_score / 20) + (isVeryHighGt ? 2 : 0)));
   const performanceProxyScore = Math.min(20, Math.round(Math.min(9, anchorageDays * 2) + Math.min(6, stayDays * 0.7) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 3 : 0) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + Math.round(routeProfile.fuel_efficiency_sensitivity_score / 25)));
   const congestionExposureScore = Math.min(20, Math.round((isAnchorageWaiting ? 10 : 0) + Math.min(8, anchorageDays * 2) + (isLongIdle ? 4 : 0) + (v.berth_class === "anchorage" ? 2 : 0) + Math.min(4, berthOccupancyProxy / 25) + (enrichmentMatched ? 1 : 0)));
-  const cleaningWindowScore = Math.min(15, Math.max(0, Math.round(Math.min(9, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 4 : 0) + (v.berth || v.berth_name ? 2 : 0) + (enrichmentMatched ? 1 : 0) - (terminalActive ? 2 : 0))));
+  const cleaningWindowScore = Math.min(15, Math.max(0, Math.round(Math.min(9, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 4 : 0) + (v.berth || v.berth_name ? 2 : 0) + (enrichmentMatched ? 1 : 0) + (pilotMatched && !outboundPilotSoon ? 2 : 0) - (outboundPilotSoon ? 4 : 0) - (terminalActive ? 2 : 0))));
   const compliancePressureScore = Math.min(10, Math.round(Math.round(routeProfile.biosecurity_exposure_score / 20) + Math.round(routeProfile.esg_sensitivity_score / 35) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + (isBulkTankerPctc ? 1 : 0)));
   const commercialFitScore = Math.min(5, Math.round(Math.max(configuredCommercialFit, (isBulkTankerPctc ? 3 : isCommercialType ? 2 : 0)) + (isHighGt ? 1 : 0) + (v.operator || v.agent ? 1 : 0) + (v.port_code ? 1 : 0) - (isExcludedType ? 4 : 0)));
   const routeMultiplierBonus = routeProfile.high_regulation_route && (isAnchorageWaiting || isLongIdle || isHighGt || isCommercialType)
@@ -452,6 +468,10 @@ function deriveCommercialScoreParts(v, metrics) {
   if (isCommercialType && !isExcludedType) reasonCodes.push("VESSEL_TYPE_COMMERCIAL_TARGET");
   if (v.berth_class === "anchorage") reasonCodes.push("ANCHORAGE_CLASSIFIED");
   if (enrichmentMatched) reasonCodes.push("BERTH_ENRICHMENT_MATCHED");
+  if (pilotMatched) reasonCodes.push("PILOT_SCHEDULE_MATCHED");
+  if (pilotOnly) reasonCodes.push("PILOT_ONLY_ARRIVAL_REVIEW");
+  if (pilotInbound) reasonCodes.push("PILOT_INBOUND_SCHEDULED");
+  if (outboundPilotSoon) reasonCodes.push("OUTBOUND_PILOT_WINDOW_CLOSING");
   if (berthOccupancyProxy >= 50) reasonCodes.push("BERTH_OCCUPANCY_SIGNAL");
   if (terminalActive) reasonCodes.push("TERMINAL_ACTIVITY_ACTIVE");
   if (stayDays >= 7) reasonCodes.push("LONG_PORT_STAY");
@@ -482,6 +502,10 @@ function deriveCommercialScoreParts(v, metrics) {
     high_value_target: Boolean(isHighGt && isBulkTankerPctc),
     berth_occupancy_proxy: berthOccupancyProxy,
     terminal_activity_active: terminalActive,
+    pilot_schedule_matched: pilotMatched,
+    candidate_urgency_score: Math.min(100, Math.round(total + (pilotMatched ? 8 : 0) + (pilotInbound ? 5 : 0) - (outboundPilotSoon ? 10 : 0))),
+    arrival_pipeline_score: Math.min(100, Math.round((pilotInbound ? 40 : 0) + (isHighGt ? 20 : meetsCommercialGtThreshold ? 12 : 0) + (isCommercialType ? 15 : 0) + (sensitiveRoute ? 10 : 0))),
+    berth_timing_confidence: Math.max(Number(v.berth_timing_confidence || 0), pilotMatched ? Number(v.pilot_match_confidence || 0) : 0),
     commercial_signal_strength: Math.min(100, Math.round(total + routeProfile.route_commercial_weight + (isHighGt ? 8 : 0) + (isAnchorageWaiting ? 8 : 0) + (isBulkTankerPctc ? 5 : 0))),
     ...routeProfile,
     score_reason_codes: [...new Set(reasonCodes)]
@@ -523,6 +547,7 @@ function deriveDataConfidence(v = {}) {
   if (v.berth_name || v.berth || v.anchorage_name || v.anchorage_zone) score += 12;
   if (v.eta || v.ata) score += 10;
   if (v.etd || v.atd) score += 10;
+  if (v.pilot_schedule_matched || v.source_origin === "pilot_schedule") score += 10;
   if (v.agent || v.operator) score += 10;
   if (v.vessel_master_seed_match) score += 8;
   if (v.reference_enriched) score += 8;
@@ -585,16 +610,19 @@ function excludedCommercialType(v = {}) {
 
 function deriveStatusBucket(v = {}, metrics = {}) {
   const now = new Date();
-  const eta = parseScheduleTime(v.eta);
+  const eta = parseScheduleTime(v.eta || v.eta_candidate);
   const ata = parseScheduleTime(v.ata);
   const atd = parseScheduleTime(v.atd);
+  const etdCandidate = parseScheduleTime(v.etd_candidate);
   const status = String(v.status || "").toLowerCase();
   const facilityType = String(v.facility_type || v.berth_class || "").toLowerCase();
+  if (v.pilot_only_arrival_review && eta && eta.getTime() >= now.getTime()) return "arriving_soon";
   if ((facilityType === "anchorage" || hasAnchorageSignal(v) || /waiting|anchorage|anchor|idle|drifting/.test(status) || (metrics.anchorage_hours || 0) > 0) && !atd) return "anchorage_waiting";
   if ((facilityType === "berth" || /berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) && !atd) return "berthed";
   if (ata && !atd) return "arrived_staying";
   if (eta && !ata && eta.getTime() >= now.getTime()) return "arriving_soon";
   if (atd) return "departed";
+  if (etdCandidate && !atd) return "arrived_staying";
   return "unknown";
 }
 

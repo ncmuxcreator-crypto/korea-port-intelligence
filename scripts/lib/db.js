@@ -503,6 +503,33 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  const pilotEvents = records
+    .filter(r => r.pilot_schedule_matched || r.pilot_only_arrival_review || r.source_origin === "pilot_schedule" || r.pilot_time)
+    .map(r => ({
+      run_id: runId,
+      port_code: r.port_code || null,
+      port_name: r.port_name || r.port || null,
+      vessel_name: r.vessel_name || null,
+      normalized_vessel_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
+      call_sign: r.call_sign || null,
+      pilot_time: r.pilot_time || r.movement_time || r.eta_candidate || r.etb_candidate || null,
+      pilot_direction: r.pilot_direction || r.movement_type || null,
+      pilot_station: r.pilot_station || null,
+      berth_name: r.berth_name || r.berth || null,
+      movement_type: r.movement_type || r.pilot_direction || null,
+      status: r.pilot_only_arrival_review ? "pilot_only_pending_port_operation" : "matched_to_port_operation",
+      raw_payload: r,
+      matched_snapshot_id: null,
+      matched_master_vessel_id: r.pilot_only_arrival_review ? null : fallbackMasterId(r),
+      match_confidence: Number(r.pilot_match_confidence || r.schedule_confidence || 0)
+    }));
+
+  for (let index = 0; index < pilotEvents.length; index += batchSize) {
+    const batch = pilotEvents.slice(index, index + batchSize);
+    const { error } = await supabase.from("pilot_schedule_events").insert(batch);
+    if (error) throw error;
+  }
+
   const byPort = new Map();
   for (const r of records) {
     const key = r.port_code || r.port || "unknown";
@@ -552,5 +579,5 @@ export async function saveToSupabase(records, options = {}) {
     promoted = true;
   }
 
-  return { runId, recordsSaved, table: "vessel_snapshots", mode: "append_only", promoted, promotion, batchSize, entitiesSaved: entities.length, masterRowsSaved: masterRows.length, identityCandidatesSaved: identityCandidates.length, riskRowsSaved: riskRows.length, eventsSaved: events.length, congestionRowsSaved: congestionRows.length };
+  return { runId, recordsSaved, table: "vessel_snapshots", mode: "append_only", promoted, promotion, batchSize, entitiesSaved: entities.length, masterRowsSaved: masterRows.length, identityCandidatesSaved: identityCandidates.length, riskRowsSaved: riskRows.length, eventsSaved: events.length, pilotScheduleEventsSaved: pilotEvents.length, congestionRowsSaved: congestionRows.length };
 }

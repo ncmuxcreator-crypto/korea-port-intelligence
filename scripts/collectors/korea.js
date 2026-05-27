@@ -75,6 +75,9 @@ const FIELD_ALIASES = {
 const TERMINAL_ALIASES = ["terminal_name", "terminal", "terminalNm", "tmnlNm", "TERMINAL_NM", "터미널", "터미널명"];
 const BERTH_STATUS_ALIASES = ["berth_status", "berthStatus", "berthSttus", "operationStatus", "oprSttus", "작업상태", "선석상태", "운영상태"];
 const CARGO_WORKLOAD_ALIASES = ["cargo_workload_proxy", "cargoQty", "cargoTon", "cargoVolume", "작업물량", "화물량", "하역량"];
+const PILOT_TIME_ALIASES = ["pilot_time", "pilotTime", "pilotDt", "pilotDate", "도선시간", "도선일시", "예정시간", "movement_time", "movementTime", "시간"];
+const PILOT_DIRECTION_ALIASES = ["pilot_direction", "direction", "inout", "inOut", "io", "입출항", "구분", "도선구분", "movement_type"];
+const PILOT_STATION_ALIASES = ["pilot_station", "station", "pilotStation", "도선점", "도선구", "승선지", "하선지"];
 function env(name) {
   return process.env[name] && String(process.env[name]).trim();
 }
@@ -223,6 +226,7 @@ function toNumber(value) {
 }
 
 function sourceType(source = {}) {
+  if (String(source.key || "").startsWith("pilot_source_")) return "pilot_schedule";
   if (source.key === "mof_ais_dynamic") return "movement_only";
   if (source.key === "mof_ais_info") return "identity";
   if (source.key === "mof_ais_stat") return "traffic_stat";
@@ -233,7 +237,7 @@ function sourceType(source = {}) {
 }
 
 function hasScheduleSignal(record = {}) {
-  return Boolean(record.eta || record.etb || record.ata || record.atb || record.etd || record.atd || record.berth);
+  return Boolean(record.eta || record.etb || record.ata || record.atb || record.etd || record.atd || record.eta_candidate || record.etb_candidate || record.etd_candidate || record.pilot_time || record.berth);
 }
 
 function isMovementOnlyRecord(record = {}) {
@@ -264,6 +268,10 @@ function adaptSourceRecord(row, source) {
   }
   if (type === "traffic_stat") {
     adapted.status = firstValue(row, FIELD_ALIASES.status) || "Traffic statistic";
+  }
+  if (type === "pilot_schedule") {
+    adapted.status = firstValue(row, FIELD_ALIASES.status) || "Pilot schedule";
+    adapted.port = firstValue(row, FIELD_ALIASES.port) || source.portName || source.portCode || "";
   }
   return adapted;
 }
@@ -314,10 +322,22 @@ function allSourceConfigs() {
       maxRows: Math.min(MAX_SOURCE_ROWS, 500)
     } : null)
     .filter(Boolean);
+  const pilotSources = (env("PILOT_SOURCE_URLS") || "")
+    .split(/[,\n]+/)
+    .map((url, index) => url.trim() ? {
+      key: `pilot_source_${index + 1}`,
+      label: `Pilot schedule ${index + 1}`,
+      url: url.trim(),
+      serviceKey: null,
+      noKeyRequired: true,
+      maxRows: Math.min(MAX_SOURCE_ROWS, 1000)
+    } : null)
+    .filter(Boolean);
 
   return [
     { key: "source_csv", label: "Core external snapshot CSV", url: sourceCsvEnabled() ? env("SOURCE_CSV_URL") : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
     ...portOperationSources,
+    ...pilotSources,
     { key: "ulsan_core", label: "Ulsan core", url: env("ULSAN_API_URL"), serviceKey: env("ULSAN_API_KEY") },
     { key: "ulsan_berth_detail", label: "Ulsan berth detail", url: env("ULSAN_BERTH_DETAIL_API_URL"), serviceKey: envAny("ULSAN_BERTH_DETAIL_API_KEY", "ULSAN_API_KEY") },
     { key: "ulsan_cargo_plan", label: "Ulsan cargo plan", url: env("ULSAN_CARGO_PLAN_API_URL"), serviceKey: envAny("ULSAN_CARGO_PLAN_API_KEY", "ULSAN_API_KEY") },
@@ -695,6 +715,10 @@ function isPortOperationRecord(record = {}) {
   return String(record.source || "").startsWith("port_operation_");
 }
 
+function isPilotScheduleRecord(record = {}) {
+  return String(record.source || "").startsWith("pilot_source_") || record.source_origin === "pilot_schedule";
+}
+
 function isPncRecord(record = {}) {
   return String(record.source || "").startsWith("pnc_source_");
 }
@@ -714,6 +738,172 @@ function timeWindowScore(left = {}, right = {}) {
     }
   }
   return -10;
+}
+
+function pilotDirection(value = "") {
+  const text = String(value || "").trim().toLowerCase();
+  if (/inbound|arrival|arrive|입항|입선|도착|착/.test(text)) return "inbound";
+  if (/outbound|departure|depart|출항|출선|출발|이안/.test(text)) return "outbound";
+  return text || "unknown";
+}
+
+function pilotTimeWindowScore(ledger = {}, pilot = {}) {
+  const pilotTime = parseDateMs(pilot.pilot_time || pilot.movement_time || pilot.eta_candidate || pilot.etb_candidate);
+  if (!pilotTime) return 0;
+  const direction = pilotDirection(pilot.pilot_direction || pilot.movement_type);
+  const ledgerTimes = direction === "outbound"
+    ? [ledger.etd, ledger.atd, ledger.etd_candidate]
+    : [ledger.eta, ledger.ata, ledger.etb, ledger.eta_candidate, ledger.etb_candidate];
+  const parsed = ledgerTimes.map(parseDateMs).filter(Boolean);
+  if (!parsed.length) return 6;
+  const bestDiff = Math.min(...parsed.map(value => Math.abs(value - pilotTime)));
+  if (bestDiff <= 24 * 36e5) return 18;
+  if (bestDiff <= 48 * 36e5) return 10;
+  return -10;
+}
+
+function pilotMatchScore(ledger = {}, pilot = {}) {
+  let score = 0;
+  const methods = [];
+  const ledgerCall = normalizeMatchText(ledger.call_sign);
+  const pilotCall = normalizeMatchText(pilot.call_sign);
+  const ledgerName = normalizeMatchText(ledger.vessel_name);
+  const pilotName = normalizeMatchText(pilot.vessel_name);
+  const ledgerPort = String(ledger.port_code || portCodeFromName(ledger.port || ledger.port_name) || "");
+  const pilotPort = String(pilot.port_code || portCodeFromName(pilot.port || pilot.port_name) || "");
+  const ledgerBerth = normalizeMatchText(ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
+  const pilotBerth = normalizeMatchText(pilot.berth_name || pilot.berth || pilot.pilot_station || pilot.terminal_name);
+  if (ledgerCall && pilotCall && ledgerCall === pilotCall) {
+    score += 62;
+    methods.push("call_sign_exact");
+  }
+  if (ledgerName && pilotName && ledgerName === pilotName) {
+    score += 42;
+    methods.push("normalized_vessel_name");
+  } else if (ledgerName && pilotName && (ledgerName.includes(pilotName) || pilotName.includes(ledgerName)) && Math.min(ledgerName.length, pilotName.length) >= 4) {
+    score += 24;
+    methods.push("vessel_name_partial");
+  }
+  if (ledgerPort && pilotPort && ledgerPort === pilotPort) {
+    score += 15;
+    methods.push("port_code");
+  }
+  if (ledgerBerth && pilotBerth && (ledgerBerth.includes(pilotBerth) || pilotBerth.includes(ledgerBerth))) {
+    score += 10;
+    methods.push("berth_or_pilot_station");
+  }
+  const timeScore = pilotTimeWindowScore(ledger, pilot);
+  if (timeScore >= 18) methods.push("time_window_24h");
+  else if (timeScore > 0) methods.push("time_window_48h");
+  score += timeScore;
+  return { score: Math.max(0, Math.min(100, score)), method: methods.join("+") || "no_match" };
+}
+
+function mergePilotSchedule(record = {}, matches = []) {
+  if (!matches.length) return record;
+  const best = matches[0];
+  const pilot = best.record;
+  const direction = pilotDirection(pilot.pilot_direction || pilot.movement_type);
+  const pilotTime = pilot.pilot_time || pilot.movement_time || "";
+  const outboundSoon = direction === "outbound" && parseDateMs(pilotTime) && parseDateMs(pilotTime) > Date.now();
+  const next = {
+    ...record,
+    pilot_schedule_matched: true,
+    pilot_match_method: best.method,
+    pilot_match_confidence: best.score,
+    pilot_source_url: pilot.source_url || "",
+    pilot_last_seen_at: pilot.updated_at || new Date().toISOString(),
+    pilot_time: record.pilot_time || pilotTime,
+    pilot_direction: record.pilot_direction || direction,
+    pilot_station: record.pilot_station || pilot.pilot_station,
+    movement_time: record.movement_time || pilotTime,
+    movement_type: record.movement_type || direction,
+    schedule_confidence: Math.max(Number(record.schedule_confidence || 0), best.score),
+    berth_timing_confidence: Math.max(Number(record.berth_timing_confidence || 0), best.score),
+    pilot_source_origin: "pilot_schedule",
+    source_children: [...new Set([...(record.source_children || []), pilot.source])],
+    reason_codes: [...new Set([...(record.reason_codes || []), "PILOT_SCHEDULE_MATCHED"])]
+  };
+  if (direction === "inbound" && pilotTime) {
+    next.eta_candidate = next.eta_candidate || pilotTime;
+    next.etb_candidate = next.etb_candidate || pilotTime;
+    next.eta_source = next.eta_source || "pilot_schedule";
+    next.etb_source = next.etb_source || "pilot_schedule";
+    next.arrival_timing_confidence = Math.max(Number(next.arrival_timing_confidence || 0), best.score);
+  }
+  if (direction === "outbound" && pilotTime) {
+    next.etd_candidate = next.etd_candidate || pilotTime;
+    next.etd_source = next.etd_source || "pilot_schedule";
+    next.departure_timing_confidence = Math.max(Number(next.departure_timing_confidence || 0), best.score);
+    next.outbound_pilot_scheduled = true;
+    if (outboundSoon) next.work_window_status = "closing_by_pilot_schedule";
+  }
+  return next;
+}
+
+function makePilotOnlyRecord(record = {}) {
+  const direction = pilotDirection(record.pilot_direction || record.movement_type);
+  return {
+    ...record,
+    source_origin: "pilot_schedule",
+    ledger_status: "pilot_only_pending_port_operation",
+    status_bucket: direction === "outbound" ? "unknown" : "arriving_soon",
+    pilot_only_arrival_review: true,
+    eta_candidate: direction === "inbound" ? record.pilot_time || record.movement_time || record.eta_candidate : record.eta_candidate,
+    etb_candidate: direction === "inbound" ? record.etb_candidate || record.pilot_time || record.movement_time : record.etb_candidate,
+    eta_source: direction === "inbound" ? "pilot_schedule" : record.eta_source,
+    etb_source: direction === "inbound" ? "pilot_schedule" : record.etb_source,
+    schedule_confidence: Math.max(Number(record.schedule_confidence || 0), 45),
+    data_confidence: "pilot_only_schedule_review",
+    actionable_source_row: true,
+    sales_ready_input: true,
+    reason_codes: [...new Set([...(record.reason_codes || []), "PILOT_ONLY_ARRIVAL_REVIEW"])]
+  };
+}
+
+function buildPilotDiagnostics(pilotRows = [], matchedPilotKeys = new Set(), pilotOnlyRows = []) {
+  const sources = new Set(pilotRows.map(row => row.source).filter(Boolean));
+  const matchedCount = pilotRows.filter(row => matchedPilotKeys.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.pilot_time}`)).length;
+  return {
+    pilot_sources_attempted: sources.size,
+    pilot_sources_success: sources.size,
+    pilot_rows_collected: pilotRows.length,
+    pilot_rows_normalized: pilotRows.length,
+    pilot_rows_matched_to_port_operation: matchedCount,
+    pilot_only_rows: pilotOnlyRows.length,
+    pilot_match_rate: pilotRows.length ? Math.round((matchedCount / pilotRows.length) * 100) : 0,
+    eta_filled_from_pilot_count: pilotRows.filter(row => pilotDirection(row.pilot_direction) === "inbound").length,
+    etb_filled_from_pilot_count: pilotRows.filter(row => pilotDirection(row.pilot_direction) === "inbound").length,
+    atb_filled_from_pilot_count: pilotRows.filter(row => row.atb_source === "pilot_schedule").length,
+    cleaning_window_updated_by_pilot_count: pilotRows.filter(row => pilotDirection(row.pilot_direction) === "outbound").length
+  };
+}
+
+function applyPilotSchedule(records = []) {
+  const ledgerRecords = records.filter(isPortOperationRecord);
+  const pilotRows = records.filter(isPilotScheduleRecord);
+  const otherRows = records.filter(record => !isPortOperationRecord(record) && !isPilotScheduleRecord(record));
+  if (!pilotRows.length) {
+    diagnostics.pilot_schedule = buildPilotDiagnostics([], new Set(), []);
+    Object.assign(diagnostics, diagnostics.pilot_schedule);
+    return records;
+  }
+  const matchedPilotKeys = new Set();
+  const enrichedLedger = ledgerRecords.map(record => {
+    const matches = pilotRows
+      .map(pilot => ({ ...pilotMatchScore(record, pilot), record: pilot }))
+      .filter(match => match.score >= 55)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 2);
+    for (const match of matches) matchedPilotKeys.add(match.record.raw_row_identity || `${match.record.source}|${match.record.vessel_name}|${match.record.pilot_time}`);
+    return mergePilotSchedule(record, matches);
+  });
+  const pilotOnlyRows = pilotRows
+    .filter(row => !matchedPilotKeys.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.pilot_time}`))
+    .map(makePilotOnlyRecord);
+  diagnostics.pilot_schedule = buildPilotDiagnostics(pilotRows, matchedPilotKeys, pilotOnlyRows);
+  Object.assign(diagnostics, diagnostics.pilot_schedule);
+  return [...enrichedLedger, ...pilotOnlyRows, ...otherRows];
 }
 
 function enrichmentMatchScore(ledger = {}, enrichment = {}) {
@@ -896,6 +1086,12 @@ function normalizeRow(row, source, now) {
     berth_status: rawValue(adapted, BERTH_STATUS_ALIASES),
     terminal_activity: rawValue(adapted, ["terminal_activity", "terminalActivity", "작업구분", "작업내용", "하역상태", ...BERTH_STATUS_ALIASES]),
     cargo_workload_proxy: toNumber(firstValue(adapted, CARGO_WORKLOAD_ALIASES)),
+    pilot_time: normalizeDate(firstValue(adapted, PILOT_TIME_ALIASES)),
+    movement_time: normalizeDate(firstValue(adapted, PILOT_TIME_ALIASES)),
+    pilot_direction: pilotDirection(firstValue(adapted, PILOT_DIRECTION_ALIASES)),
+    movement_type: pilotDirection(firstValue(adapted, PILOT_DIRECTION_ALIASES)),
+    pilot_station: rawValue(adapted, PILOT_STATION_ALIASES),
+    pilot_source_url: source.url || "",
     eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.eta)),
     etb: normalizeDate(firstValue(adapted, FIELD_ALIASES.etb)),
     ata: normalizeDate(firstValue(adapted, FIELD_ALIASES.ata)),
@@ -959,6 +1155,21 @@ function normalizeRow(row, source, now) {
         ? `CALL-${record.call_sign}`
         : [record.vessel_name, record.gt || record.grtg || record.intrlGrtg || "", record.vessel_type || ""].map(value => String(value || "").trim().toUpperCase()).join("|");
   record.gt = record.gt || record.grtg || record.intrlGrtg || 0;
+  if (sourceProfile === "pilot_schedule") {
+    record.source_origin = "pilot_schedule";
+    record.ledger_status = "pilot_schedule_pending_match";
+    if (record.pilot_direction === "inbound" && record.pilot_time) {
+      record.eta_candidate = record.pilot_time;
+      record.etb_candidate = record.pilot_time;
+      record.eta_source = "pilot_schedule";
+      record.etb_source = "pilot_schedule";
+      record.status_bucket = "arriving_soon";
+    }
+    if (record.pilot_direction === "outbound" && record.pilot_time) {
+      record.etd_candidate = record.pilot_time;
+      record.etd_source = "pilot_schedule";
+    }
+  }
   record.actionable_source_row = isActionableRecord(record);
   record.sales_ready_input = record.actionable_source_row;
   if (!record.actionable_source_row && isMovementOnlyRecord(record)) {
@@ -1258,12 +1469,16 @@ async function collectRealRows() {
     }
     diagnostics.sources.push(diag);
   }
-  const enrichedRecords = applySecondaryEnrichment(records);
+  const pilotAppliedRecords = applyPilotSchedule(records);
+  const enrichedRecords = applySecondaryEnrichment(pilotAppliedRecords);
   const deduped = dedupe(enrichedRecords);
   diagnostics.real_row_count = deduped.length;
   diagnostics.actionable_row_count = deduped.filter(record => record.actionable_source_row).length;
   diagnostics.count_funnel = {
     ...(diagnostics.count_funnel || {}),
+    pilot_schedule_rows: records.filter(isPilotScheduleRecord).length,
+    pilot_only_arrival_review: deduped.filter(record => record.pilot_only_arrival_review).length,
+    pilot_matched_port_calls: deduped.filter(record => record.pilot_schedule_matched).length,
     tier2_enrichment_rows: records.filter(isTier2EnrichmentRecord).length,
     secondary_enrichment_matched_port_calls: deduped.filter(record => record.secondary_enrichment_matched).length,
     target_vessels_5000gt_plus: deduped.filter(record => Number(record.gt || record.grtg || record.intrlGrtg || 0) >= 5000).length,

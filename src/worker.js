@@ -105,10 +105,17 @@ function normalizeSnapshot(row = {}) {
     commercial_gt_threshold: Number(merged.commercial_gt_threshold || 5000),
     meets_commercial_gt_threshold: Boolean(merged.meets_commercial_gt_threshold ?? Number(merged.gt || merged.grtg || merged.intrlGrtg || 0) >= Number(merged.commercial_gt_threshold || 5000)),
     eta: merged.eta || "",
+    eta_candidate: merged.eta_candidate || "",
+    eta_source: merged.eta_source || "",
     etb: merged.etb || "",
+    etb_candidate: merged.etb_candidate || "",
+    etb_source: merged.etb_source || "",
     ata: merged.ata || "",
     atb: merged.atb || "",
+    atb_source: merged.atb_source || "",
     etd: merged.etd || "",
+    etd_candidate: merged.etd_candidate || "",
+    etd_source: merged.etd_source || "",
     atd: merged.atd || "",
     stay_hours: Number(merged.stay_hours || 0),
     current_call_stay_hours: Number(merged.current_call_stay_hours || merged.stay_hours || 0),
@@ -129,6 +136,24 @@ function normalizeSnapshot(row = {}) {
     berth_data_source: merged.berth_data_source || "",
     berth_match_method: merged.berth_match_method || "",
     berth_match_confidence: Number(merged.berth_match_confidence || 0),
+    source_origin: merged.source_origin || "",
+    ledger_status: merged.ledger_status || "",
+    pilot_schedule_matched: Boolean(merged.pilot_schedule_matched),
+    pilot_only_arrival_review: Boolean(merged.pilot_only_arrival_review),
+    pilot_match_method: merged.pilot_match_method || "",
+    pilot_match_confidence: Number(merged.pilot_match_confidence || 0),
+    pilot_source_url: merged.pilot_source_url || "",
+    pilot_last_seen_at: merged.pilot_last_seen_at || "",
+    pilot_time: merged.pilot_time || "",
+    pilot_direction: merged.pilot_direction || "",
+    pilot_station: merged.pilot_station || "",
+    movement_time: merged.movement_time || "",
+    movement_type: merged.movement_type || "",
+    arrival_timing_confidence: Number(merged.arrival_timing_confidence || 0),
+    departure_timing_confidence: Number(merged.departure_timing_confidence || 0),
+    schedule_confidence: Number(merged.schedule_confidence || 0),
+    outbound_pilot_scheduled: Boolean(merged.outbound_pilot_scheduled),
+    berth_timing_confidence: Number(merged.berth_timing_confidence || 0),
     risk_score: riskScore,
     risk_level: merged.risk_level || scoreLevel(riskScore),
     biofouling_score: Number(merged.biofouling_score || riskScore),
@@ -228,11 +253,12 @@ function deriveStatusBucket(v = {}) {
     const date = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw) ? raw : `${raw}+09:00`);
     return date && !Number.isNaN(date.getTime()) ? date.getTime() : null;
   };
-  const eta = parse(v.eta);
+  const eta = parse(v.eta || v.eta_candidate || v.pilot_time || v.movement_time);
   const ata = parse(v.ata);
-  const etd = parse(v.etd);
+  const etd = parse(v.etd || v.etd_candidate);
   const atd = parse(v.atd);
   const facilityType = String(v.facility_type || v.berth_class || "").toLowerCase();
+  if (v.pilot_only_arrival_review || v.ledger_status === "pilot_only_pending_port_operation") return "arriving_soon";
   if ((facilityType === "anchorage" || /waiting|anchorage|anchor|idle|drifting|묘박|정박|박지|외항|대기/i.test(status) || Number(v.anchorage_hours || 0) > 0) && !atd) return "anchorage_waiting";
   if ((facilityType === "berth" || /berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) && !atd) return "berthed";
   if (ata && !atd) return "arrived_staying";
@@ -672,6 +698,7 @@ function buildVisibilityBuckets(records) {
     target_vessels: targetVessels,
     staying_vessels: targetVessels.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)),
     arrival_pipeline: targetVessels.filter(v => v.status_bucket === "arriving_soon"),
+    pilot_only_arrival_review: targetVessels.filter(v => v.pilot_only_arrival_review || v.ledger_status === "pilot_only_pending_port_operation"),
     sales_candidates: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)),
     immediate_targets: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD))
   };
@@ -760,6 +787,7 @@ function buildStatus(records, source) {
     target_vessel_count: buckets.target_vessels.length,
     staying_vessel_count: buckets.staying_vessels.length,
     arrival_pipeline_count: buckets.arrival_pipeline.length,
+    pilot_only_arrival_review_count: buckets.pilot_only_arrival_review.length,
     unknown_gt_review_count: buckets.target_vessels.filter(v => v.gt_status === "unknown_gt_review").length,
     non_target_small_vessel_count: records.filter(v => v.gt_status === "non_target_small_vessel").length,
     actionable_rows: buckets.target_vessels.filter(v => v.actionable_source_row !== false).length,
@@ -819,6 +847,7 @@ async function apiResponse(pathname, env) {
   if (pathname.endsWith("/target-vessels.json")) return json(buckets.target_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/staying-vessels.json")) return json(buckets.staying_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/arrival-pipeline.json")) return json(buckets.arrival_pipeline, { headers: corsHeaders() });
+  if (pathname.endsWith("/pilot-only-arrival-review.json") || pathname.endsWith("/review/pilot-only-arrivals.json")) return json(buckets.pilot_only_arrival_review, { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-queue.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-priority.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/high-value-targets.json")) return json(buildHighValueTargets(records), { headers: corsHeaders() });
@@ -862,4 +891,3 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
-

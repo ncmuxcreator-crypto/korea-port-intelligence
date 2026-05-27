@@ -327,12 +327,36 @@ create table if not exists berth_occupancy_history (
   payload jsonb default '{}'::jsonb
 );
 
+create table if not exists pilot_schedule_events (
+  id bigserial primary key,
+  event_id bigserial,
+  run_id text,
+  port_code text,
+  port_name text,
+  vessel_name text,
+  normalized_vessel_name text,
+  call_sign text,
+  pilot_time timestamptz,
+  pilot_direction text,
+  pilot_station text,
+  berth_name text,
+  movement_type text,
+  status text,
+  raw_payload jsonb default '{}'::jsonb,
+  matched_snapshot_id bigint,
+  matched_master_vessel_id text,
+  match_confidence int default 0,
+  created_at timestamptz default now()
+);
+
 create index if not exists idx_vessel_master_imo on vessel_master(imo);
 create index if not exists idx_vessel_master_mmsi on vessel_master(mmsi);
 create index if not exists idx_vessel_identity_candidates_collected_at on vessel_identity_candidates(collected_at desc);
 create index if not exists idx_port_congestion_snapshots_collected_at on port_congestion_snapshots(collected_at desc);
 create index if not exists idx_data_collection_runs_status on data_collection_runs(status);
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
+create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
+create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
 
 alter table data_collection_runs add column if not exists raw_collected_rows int default 0;
 alter table data_collection_runs add column if not exists normalized_rows int default 0;
