@@ -1,25 +1,45 @@
-vessel_type,alias,vessel_type_group
-Bulk Carrier,bulk,bulk_carrier
-Bulk Carrier,bulker,bulk_carrier
-Bulk Carrier,산물선,bulk_carrier
-Bulk Carrier,벌크선,bulk_carrier
-Bulk Carrier,광석선,bulk_carrier
-Tanker,tanker,tanker
-Tanker,vlcc,tanker
-Tanker,원유운반선,tanker
-Tanker,유조선,tanker
-Tanker,석유제품운반선,tanker
-Tanker,케미컬운반선,tanker
-PCTC,자동차운반선,pctc
-PCTC,car carrier,pctc
-PCTC,pctc,pctc
-Container Ship,container,container
-Container Ship,컨테이너선,container
-LNG Carrier,lng,lng_lpg
-LPG Carrier,lpg,lng_lpg
-Gas Carrier,가스운반선,lng_lpg
-Cruise Ship,cruise,passenger
-Non-commercial small craft,예선,excluded_small_craft
-Non-commercial small craft,어선,excluded_small_craft
-Non-commercial small craft,관공선,excluded_small_craft
-Non-commercial small craft,작업선,excluded_small_craft
+vessel_type,alias,vessel_type_group,commercial_segment,commercial_fit_score,target_eligibility,biofouling_relevance
+Bulk Carrier,bulk,bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,bulker,bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,산물선,bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,산물선(벌크선),bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,벌크선,bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,광석선,bulk_carrier,dry_bulk,5,target,high
+Bulk Carrier,ore carrier,bulk_carrier,dry_bulk,5,target,high
+Crude Tanker,원유운반선,crude_tanker,energy_tanker,5,target,high
+Crude Tanker,crude tanker,crude_tanker,energy_tanker,5,target,high
+Tanker,tanker,tanker,energy_tanker,5,target,high
+Tanker,vlcc,tanker,energy_tanker,5,target,high
+Product Tanker,석유제품운반선,product_tanker,energy_tanker,5,target,high
+Product Tanker,product tanker,product_tanker,energy_tanker,5,target,high
+Chemical Tanker,케미컬운반선,chemical_tanker,energy_tanker,5,target,high
+Chemical Tanker,chemical tanker,chemical_tanker,energy_tanker,5,target,high
+PCTC,자동차운반선,pctc,vehicle_carrier,5,target,medium_high
+PCTC,차량운반선,pctc,vehicle_carrier,5,target,medium_high
+PCTC,car carrier,pctc,vehicle_carrier,5,target,medium_high
+PCTC,pctc,pctc,vehicle_carrier,5,target,medium_high
+PCTC,pcc,pctc,vehicle_carrier,5,target,medium_high
+Container Ship,container,container,liner_container,4,target,medium_high
+Container Ship,컨테이너선,container,liner_container,4,target,medium_high
+Container Ship,풀컨테이너선,container,liner_container,4,target,medium_high
+LNG Carrier,lng,lng_lpg,gas_carrier,4,target,medium_high
+LNG Carrier,LNG운반선,lng_lpg,gas_carrier,4,target,medium_high
+LPG Carrier,lpg,lng_lpg,gas_carrier,4,target,medium_high
+LPG Carrier,LPG운반선,lng_lpg,gas_carrier,4,target,medium_high
+Gas Carrier,가스운반선,lng_lpg,gas_carrier,4,target,medium_high
+Cruise Ship,cruise,cruise,passenger_cruise,4,target,medium
+Cruise Ship,크루즈선,cruise,passenger_cruise,4,target,medium
+Passenger Ship,여객선,passenger,passenger_cruise,2,review,medium
+Ro-Ro Ship,ro-ro,pctc,vehicle_carrier,4,target,medium_high
+Ro-Ro Ship,roro,pctc,vehicle_carrier,4,target,medium_high
+General Cargo,general cargo,general_cargo,general_cargo,3,review,medium
+General Cargo,일반화물선,general_cargo,general_cargo,3,review,medium
+Non-commercial small craft,예선,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,tug,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,어선,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,fishing,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,관공선,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,작업선,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,workboat,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,준설선,excluded_small_craft,low_priority,0,excluded,low
+Non-commercial small craft,dredger,excluded_small_craft,low_priority,0,excluded,low

@@ -410,27 +410,33 @@ function deriveOperationalRisk(v, metrics, biofoulingScore) {
 }
 
 function deriveCommercialScoreParts(v, metrics) {
-  const type = String([v.vessel_type, v.vessel_type_group].filter(Boolean).join(" ")).toLowerCase();
+  const type = String([v.vessel_type, v.vessel_type_group, v.vsslKndNm, v.vsslKndCd, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
   const route = [v.destination, v.previous_port, v.next_port].join(" ").toLowerCase();
   const routeProfile = deriveRouteCommercialProfile(v);
   const status = String(v.status || "").toLowerCase();
+  const berthStatus = String([v.berth_status, v.terminal_activity].filter(Boolean).join(" ")).toLowerCase();
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
   const meetsCommercialGtThreshold = gt >= COMMERCIAL_GT_THRESHOLD;
   const anchorageDays = Number(metrics.anchorage_hours || 0) / 24;
   const stayDays = Number(metrics.stay_hours || 0) / 24;
-  const isCommercialType = /vlcc|cape|capesize|bulk|bulker|bulk_carrier|tanker|pctc|lng|lpg|cruise|container/.test(type);
+  const configuredCommercialFit = Number(v.commercial_fit_score || 0);
+  const isExcludedType = /excluded|low_priority|예선|어선|관공선|작업선|tug|fishing|workboat|patrol|dredger/.test(type) || v.target_eligibility === "excluded";
+  const isCommercialType = !isExcludedType && (/vlcc|cape|capesize|bulk|bulker|bulk_carrier|crude_tanker|product_tanker|chemical_tanker|tanker|pctc|lng|lpg|cruise|container/.test(type) || configuredCommercialFit >= 3);
   const sensitiveRoute = routeProfile.high_regulation_route || /australia|brazil|new zealand|california|usa|canada|port hedland|ponta da madeira/.test(route);
   const isAnchorageWaiting = Boolean(v.is_anchorage_waiting) || anchorageDays >= 0.5 || hasAnchorageSignal(v) || /waiting|anchorage|anchor|idle|drifting/.test(status);
   const isLongIdle = stayDays >= 7 || anchorageDays >= 3;
   const isHighGt = gt >= 30000;
   const isVeryHighGt = gt >= 80000;
-  const isBulkTankerPctc = /bulk|bulker|bulk_carrier|tanker|vlcc|pctc|car carrier/.test(type);
+  const isBulkTankerPctc = /bulk|bulker|bulk_carrier|tanker|vlcc|crude_tanker|product_tanker|chemical_tanker|pctc|car carrier/.test(type);
+  const berthOccupancyProxy = Number(v.berth_occupancy_proxy || 0);
+  const enrichmentMatched = Boolean(v.secondary_enrichment_matched || v.cargo_harbor_use_enriched);
+  const terminalActive = /active|working|cargo|loading|discharging|작업|하역|운영|진행/.test(berthStatus);
   const biofoulingRiskScore = Math.min(30, Math.round(Math.min(14, stayDays * 1.4) + Math.min(8, anchorageDays * 2) + (isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + Math.round(routeProfile.biosecurity_exposure_score / 20) + (isVeryHighGt ? 2 : 0)));
   const performanceProxyScore = Math.min(20, Math.round(Math.min(9, anchorageDays * 2) + Math.min(6, stayDays * 0.7) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 3 : 0) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + Math.round(routeProfile.fuel_efficiency_sensitivity_score / 25)));
-  const congestionExposureScore = Math.min(20, Math.round((isAnchorageWaiting ? 10 : 0) + Math.min(8, anchorageDays * 2) + (isLongIdle ? 4 : 0) + (v.berth_class === "anchorage" ? 2 : 0)));
-  const cleaningWindowScore = Math.min(15, Math.round(Math.min(9, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 4 : 0) + (v.berth || v.berth_name ? 2 : 0)));
+  const congestionExposureScore = Math.min(20, Math.round((isAnchorageWaiting ? 10 : 0) + Math.min(8, anchorageDays * 2) + (isLongIdle ? 4 : 0) + (v.berth_class === "anchorage" ? 2 : 0) + Math.min(4, berthOccupancyProxy / 25) + (enrichmentMatched ? 1 : 0)));
+  const cleaningWindowScore = Math.min(15, Math.max(0, Math.round(Math.min(9, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 4 : 0) + (v.berth || v.berth_name ? 2 : 0) + (enrichmentMatched ? 1 : 0) - (terminalActive ? 2 : 0))));
   const compliancePressureScore = Math.min(10, Math.round(Math.round(routeProfile.biosecurity_exposure_score / 20) + Math.round(routeProfile.esg_sensitivity_score / 35) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + (isBulkTankerPctc ? 1 : 0)));
-  const commercialFitScore = Math.min(5, Math.round((isBulkTankerPctc ? 3 : isCommercialType ? 2 : 0) + (isHighGt ? 1 : 0) + (v.operator || v.agent ? 1 : 0) + (v.port_code ? 1 : 0)));
+  const commercialFitScore = Math.min(5, Math.round(Math.max(configuredCommercialFit, (isBulkTankerPctc ? 3 : isCommercialType ? 2 : 0)) + (isHighGt ? 1 : 0) + (v.operator || v.agent ? 1 : 0) + (v.port_code ? 1 : 0) - (isExcludedType ? 4 : 0)));
   const routeMultiplierBonus = routeProfile.high_regulation_route && (isAnchorageWaiting || isLongIdle || isHighGt || isCommercialType)
     ? Math.round(routeProfile.route_commercial_weight * 0.45)
     : Math.round(routeProfile.route_commercial_weight * 0.25);
@@ -443,13 +449,17 @@ function deriveCommercialScoreParts(v, metrics) {
   if (meetsCommercialGtThreshold) reasonCodes.push("HIGH_GT_VESSEL");
   if (isHighGt) reasonCodes.push("HIGH_VALUE_GT_30000_PLUS");
   if (isBulkTankerPctc) reasonCodes.push(/pctc|car carrier/.test(type) ? "PCTC_HIGH_VALUE_TYPE" : "BULK_OR_TANKER");
+  if (isCommercialType && !isExcludedType) reasonCodes.push("VESSEL_TYPE_COMMERCIAL_TARGET");
   if (v.berth_class === "anchorage") reasonCodes.push("ANCHORAGE_CLASSIFIED");
+  if (enrichmentMatched) reasonCodes.push("BERTH_ENRICHMENT_MATCHED");
+  if (berthOccupancyProxy >= 50) reasonCodes.push("BERTH_OCCUPANCY_SIGNAL");
+  if (terminalActive) reasonCodes.push("TERMINAL_ACTIVITY_ACTIVE");
   if (stayDays >= 7) reasonCodes.push("LONG_PORT_STAY");
   if (/australia|brazil/.test(route)) reasonCodes.push("AUSTRALIA_BRAZIL_EXPOSURE");
   reasonCodes.push(...routeProfile.route_reason_codes);
   if (Number(metrics.work_window_hours || 0) >= 24) reasonCodes.push("BERTH_WINDOW_AVAILABLE");
   return {
-    vessel_value_score: Math.min(20, Math.round((isHighGt ? 8 : meetsCommercialGtThreshold ? 5 : 0) + (isVeryHighGt ? 4 : 0) + (isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + (v.operator || v.agent ? 2 : 0) + (sensitiveRoute ? 1 : 0))),
+    vessel_value_score: Math.min(20, Math.round((isHighGt ? 8 : meetsCommercialGtThreshold ? 5 : 0) + (isVeryHighGt ? 4 : 0) + Math.max(configuredCommercialFit, isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + (v.operator || v.agent ? 2 : 0) + (sensitiveRoute ? 1 : 0) - (isExcludedType ? 8 : 0))),
     biofouling_risk_score: biofoulingRiskScore,
     performance_proxy_score: performanceProxyScore,
     congestion_exposure_score: congestionExposureScore,
@@ -470,6 +480,8 @@ function deriveCommercialScoreParts(v, metrics) {
     anchorage_density_score: Math.min(100, Math.round(anchorageDays * 12 + (isAnchorageWaiting ? 20 : 0))),
     idle_risk_score: Math.min(100, Math.round(stayDays * 8 + anchorageDays * 10)),
     high_value_target: Boolean(isHighGt && isBulkTankerPctc),
+    berth_occupancy_proxy: berthOccupancyProxy,
+    terminal_activity_active: terminalActive,
     commercial_signal_strength: Math.min(100, Math.round(total + routeProfile.route_commercial_weight + (isHighGt ? 8 : 0) + (isAnchorageWaiting ? 8 : 0) + (isBulkTankerPctc ? 5 : 0))),
     ...routeProfile,
     score_reason_codes: [...new Set(reasonCodes)]
@@ -532,7 +544,7 @@ function gtGroup(gt) {
 }
 
 function defaultVesselTypeGroup(v = {}) {
-  const text = String([v.vessel_type_group, v.vessel_type, v.ship_type, v.kind].filter(Boolean).join(" ")).toLowerCase();
+  const text = String([v.vessel_type_group, v.vessel_type, v.vsslKndNm, v.vsslKndCd, v.ship_type, v.kind, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
   if (/bulk|bulker|cape|ore|산물|벌크|광석/.test(text)) return "bulk_carrier";
   if (/tanker|vlcc|crude|chemical|product|원유|유조|석유|케미컬/.test(text)) return "tanker";
   if (/pctc|pcc|car carrier|ro-?ro|roro|자동차|차량/.test(text)) return "pctc";
@@ -1303,7 +1315,13 @@ function buildScoringDiagnostics(records = []) {
     atd_detected_count: records.filter(v => v.atd).length,
     detail_rows_flattened_count: records.filter(v => v.detail_rows_flattened).length,
     detail_rows_missing_time_count: records.filter(v => v.detail_rows_flattened && !v.eta && !v.etd && !v.ata && !v.atd && !v.etb && !v.atb).length,
-    vessel_type_group_detected_count: records.filter(v => v.vessel_type_group && v.vessel_type_group !== "unknown").length
+    vessel_type_group_detected_count: records.filter(v => v.vessel_type_group && v.vessel_type_group !== "unknown").length,
+    vsslKndCd_coverage: coverageRatio(records, v => hasValue(v.vsslKndCd)),
+    vsslKndNm_coverage: coverageRatio(records, v => hasValue(v.vsslKndNm)),
+    vessel_type_unknown_count: records.filter(v => !v.vessel_type_group || v.vessel_type_group === "unknown" || !v.vessel_type || String(v.vessel_type).toLowerCase() === "unknown").length,
+    commercial_segment_coverage: coverageRatio(records, v => hasValue(v.commercial_segment)),
+    secondary_enrichment_matched_count: records.filter(v => v.secondary_enrichment_matched || v.cargo_harbor_use_enriched).length,
+    berth_enrichment_match_rate: coverageRatio(records, v => v.secondary_enrichment_matched || v.cargo_harbor_use_enriched)
   };
 }
 

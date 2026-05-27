@@ -116,16 +116,16 @@ function classifyBerth(record = {}) {
 }
 
 function normalizeVesselType(record = {}) {
-  const text = normalize([record.vessel_type, record.vessel_type_group].filter(Boolean).join(" "));
+  const text = normalize([record.vessel_type, record.vessel_type_group, record.vsslKndNm, record.vsslKndCd, record.commercial_segment].filter(Boolean).join(" "));
   if (!text) return null;
   const rules = [
-    { vessel_type: "Bulk Carrier", vessel_type_group: "bulk_carrier", pattern: /\uC0B0\uBB3C|\uBC8C\uD06C|BULK|BULKER|CAPE|CAPESIZE|ORE|\uAD11\uC11D/ },
-    { vessel_type: "Tanker", vessel_type_group: "tanker", pattern: /\uC6D0\uC720|\uC720\uC870|\uC11D\uC720|\uCF00\uBBF8\uCEEC|\uC81C\uD488|TANKER|VLCC|CRUDE|CHEMICAL|PRODUCT/ },
-    { vessel_type: "PCTC", vessel_type_group: "pctc", pattern: /\uC790\uB3D9\uCC28|\uCC28\uB7C9|PCTC|PCC|CAR CARRIER|RO RO|RORO/ },
-    { vessel_type: "Container Ship", vessel_type_group: "container", pattern: /\uCEE8\uD14C\uC774\uB108|CONTAINER/ },
-    { vessel_type: "Gas Carrier", vessel_type_group: "lng_lpg", pattern: /LNG|LPG|\uAC00\uC2A4|GAS/ },
-    { vessel_type: "Passenger/Cruise", vessel_type_group: "passenger", pattern: /CRUISE|PASSENGER|\uC5EC\uAC1D|\uD06C\uB8E8\uC988/ },
-    { vessel_type: record.vessel_type || "Non-commercial small craft", vessel_type_group: "excluded_small_craft", pattern: /\uC5B4\uC120|\uC608\uC120|TUG|FISH|\uAD00\uACF5\uC120|\uC791\uC5C5\uC120|WORKBOAT|PATROL|\uC900\uC124|DREDGER/ }
+    { vessel_type: "Bulk Carrier", vessel_type_group: "bulk_carrier", commercial_segment: "dry_bulk", commercial_fit_score: 5, target_eligibility: "target", biofouling_relevance: "high", pattern: /\uC0B0\uBB3C|\uBC8C\uD06C|BULK|BULKER|CAPE|CAPESIZE|ORE|\uAD11\uC11D/ },
+    { vessel_type: "Tanker", vessel_type_group: "tanker", commercial_segment: "energy_tanker", commercial_fit_score: 5, target_eligibility: "target", biofouling_relevance: "high", pattern: /\uC6D0\uC720|\uC720\uC870|\uC11D\uC720|\uCF00\uBBF8\uCEEC|\uC81C\uD488|TANKER|VLCC|CRUDE|CHEMICAL|PRODUCT/ },
+    { vessel_type: "PCTC", vessel_type_group: "pctc", commercial_segment: "vehicle_carrier", commercial_fit_score: 5, target_eligibility: "target", biofouling_relevance: "medium_high", pattern: /\uC790\uB3D9\uCC28|\uCC28\uB7C9|PCTC|PCC|CAR CARRIER|RO RO|RORO/ },
+    { vessel_type: "Container Ship", vessel_type_group: "container", commercial_segment: "liner_container", commercial_fit_score: 4, target_eligibility: "target", biofouling_relevance: "medium_high", pattern: /\uCEE8\uD14C\uC774\uB108|CONTAINER/ },
+    { vessel_type: "Gas Carrier", vessel_type_group: "lng_lpg", commercial_segment: "gas_carrier", commercial_fit_score: 4, target_eligibility: "target", biofouling_relevance: "medium_high", pattern: /LNG|LPG|\uAC00\uC2A4|GAS/ },
+    { vessel_type: "Passenger/Cruise", vessel_type_group: "passenger", commercial_segment: "passenger_cruise", commercial_fit_score: 3, target_eligibility: "target", biofouling_relevance: "medium", pattern: /CRUISE|PASSENGER|\uC5EC\uAC1D|\uD06C\uB8E8\uC988/ },
+    { vessel_type: record.vessel_type || "Non-commercial small craft", vessel_type_group: "excluded_small_craft", commercial_segment: "low_priority", commercial_fit_score: 0, target_eligibility: "excluded", biofouling_relevance: "low", pattern: /\uC5B4\uC120|\uC608\uC120|TUG|FISH|\uAD00\uACF5\uC120|\uC791\uC5C5\uC120|WORKBOAT|PATROL|\uC900\uC124|DREDGER/ }
   ];
   return rules.find(rule => rule.pattern.test(text)) || null;
 }
@@ -214,10 +214,14 @@ export function enrichWithReferenceDictionaries(records = [], dictionaries = loa
       enriched.berth_classification_source = "pattern";
     }
 
-    const typeRef = indexes.vesselTypes?.get(normalize(record.vessel_type));
+    const typeRef = indexes.vesselTypes?.get(normalize(record.vessel_type)) || indexes.vesselTypes?.get(normalize(record.vsslKndNm)) || indexes.vesselTypes?.get(normalize(record.vsslKndCd));
     if (typeRef) {
       enriched.vessel_type = typeRef.vessel_type || enriched.vessel_type;
       enriched.vessel_type_group = typeRef.vessel_type_group || enriched.vessel_type_group;
+      enriched.commercial_segment = typeRef.commercial_segment || enriched.commercial_segment;
+      enriched.commercial_fit_score = Number(typeRef.commercial_fit_score || enriched.commercial_fit_score || 0);
+      enriched.target_eligibility = typeRef.target_eligibility || enriched.target_eligibility;
+      enriched.biofouling_relevance = typeRef.biofouling_relevance || enriched.biofouling_relevance;
       enriched.vessel_type_normalization_source = "dictionary";
     }
 
@@ -225,6 +229,10 @@ export function enrichWithReferenceDictionaries(records = [], dictionaries = loa
     if (typePattern && (!enriched.vessel_type_group || enriched.vessel_type_group === "unknown")) {
       enriched.vessel_type = typePattern.vessel_type || enriched.vessel_type;
       enriched.vessel_type_group = typePattern.vessel_type_group;
+      enriched.commercial_segment = typePattern.commercial_segment || enriched.commercial_segment;
+      enriched.commercial_fit_score = Number(typePattern.commercial_fit_score || enriched.commercial_fit_score || 0);
+      enriched.target_eligibility = typePattern.target_eligibility || enriched.target_eligibility;
+      enriched.biofouling_relevance = typePattern.biofouling_relevance || enriched.biofouling_relevance;
       enriched.vessel_type_normalization_source = "pattern";
     }
 
