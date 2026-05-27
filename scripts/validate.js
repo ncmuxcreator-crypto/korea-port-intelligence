@@ -11,6 +11,10 @@ const required = [
   "dashboard/api/port-congestion-heatmap.json",
   "dashboard/api/biofouling-timeline.json",
   "dashboard/api/candidates.json",
+  "dashboard/api/all-collected-vessels.json",
+  "dashboard/api/target-vessels.json",
+  "dashboard/api/staying-vessels.json",
+  "dashboard/api/arrival-pipeline.json",
   "dashboard/api/candidate-summary.json",
   "dashboard/api/contact-queue.json",
   "dashboard/api/hot-candidates.json",
@@ -61,6 +65,16 @@ for (const item of data) {
   for (const field of ["hybrid_entity_key", "identification_method", "imo_status", "gt_group", "stay_days_group"]) {
     if (!(field in item)) {
       throw new Error(`Missing commercial command-center field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
+  for (const field of ["commercial_gt_threshold", "meets_commercial_gt_threshold"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing commercial GT field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
+  for (const field of ["grtg", "intrlGrtg", "gt_source", "gt_status", "status_bucket", "commercial_relevance_status"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing commercial visibility field ${field} for ${item.vessel_name || item.vessel_id}`);
     }
   }
 }
@@ -137,7 +151,7 @@ const longtermJobTimeouts = workflow.match(/^\s{4}timeout-minutes:\s*30\s*$/gm) 
 if (!longtermJobTimeouts.length) {
   throw new Error("Longterm workflow job timeout must be 30 minutes");
 }
-if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
+if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("MAX_OUTPUT_ROWS: 2700") || !workflow.includes("MAX_SOURCE_ROWS: 720") || !workflow.includes("MAX_CHILD_ENRICHMENT_ROWS: 24") || !workflow.includes("PORT_OPERATION_NUM_OF_ROWS: 150") || !workflow.includes("PORT_OPERATION_MAX_PAGES: 10") || !workflow.includes('PORT_OPERATION_DEGB_VALUES: "I,O"') || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
   throw new Error("Longterm workflow must bound collector runtime and child enrichment");
 }
 for (const marker of ["github.run_id", "github.ref", "runner.os", "github.workflow", "timestamp=$(date -u"]) {
@@ -176,7 +190,7 @@ if (!koreaCollector.includes("prtAgCd") || !koreaCollector.includes("etryptYear"
 for (const portCode of ["020", "030", "620", "820", "031", "810", "622", "070", "080", "621", "120", "940"]) {
   if (!koreaCollector.includes(`"${portCode}"`)) throw new Error(`Missing Korean port authority code: ${portCode}`);
 }
-for (const param of ["sde", "ede", "deGb", "numOfRows", "requested_url_without_service_key", "resultCode", "resultMsg", "totalCount", "http_status"]) {
+for (const param of ["sde", "ede", "deGb", "numOfRows", "requested_url_without_service_key", "resultCode", "resultMsg", "totalCount", "http_status", "pages_attempted", "page_summaries"]) {
   if (!koreaCollector.includes(param)) throw new Error(`Missing PORT-MIS request/diagnostic field: ${param}`);
 }
 for (const param of ["raw_response_preview", "service_key_variant", "serviceKeyVariants", "COLLECTOR_DEBUG_VERBOSE"]) {
@@ -187,6 +201,9 @@ if (!koreaCollector.includes("MAX_CHILD_ENRICHMENT_ROWS") || !koreaCollector.inc
 }
 if (!koreaCollector.includes("MAX_SOURCE_ROWS") || !koreaCollector.includes("COLLECTOR_RUNTIME_BUDGET_MS") || !koreaCollector.includes("ENABLE_SOURCE_CSV")) {
   throw new Error("Collector must bound per-source rows, runtime, and optional CSV ingestion");
+}
+if (!koreaCollector.includes("PORT_OPERATION_NUM_OF_ROWS") || !koreaCollector.includes('"150"') || !koreaCollector.includes("PORT_OPERATION_MAX_PAGES") || !koreaCollector.includes("PORT_OPERATION_DEGB_VALUES") || !koreaCollector.includes("addDaysCompact(-3)") || !koreaCollector.includes("addDaysCompact(7)") || !koreaCollector.includes("grtg") || !koreaCollector.includes("intrlGrtg")) {
+  throw new Error("Port Operation collector must support expanded 150-row page size");
 }
 if (!koreaCollector.includes("noTypeParam")) {
   throw new Error("PORT-MIS XML-capable APIs must not force _type=json");
@@ -213,7 +230,7 @@ const worker = fs.readFileSync("src/worker.js", "utf8");
 if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || !worker.includes("env.ASSETS.fetch")) {
   throw new Error("Worker must serve dashboard assets and live Supabase API routes");
 }
-for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
+for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
   if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
 }
 const gdriveLib = fs.readFileSync("scripts/lib/gdrive.js", "utf8");
@@ -269,7 +286,7 @@ if (/git push origin HEAD:main|git commit -m "auto: refresh|runs-on: self-hosted
 if (!workflowV2.includes("continue-on-error: true") || !workflowV2.includes("Skip Cloudflare deploy notice")) {
   throw new Error("Longterm Update V2 must keep bypass diagnostics running even when optional checks fail");
 }
-if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("COLLECTOR_DEBUG_VERBOSE") || workflowV2.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
+if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("MAX_OUTPUT_ROWS: 2700") || !workflowV2.includes("MAX_SOURCE_ROWS: 720") || !workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS: 24") || !workflowV2.includes("PORT_OPERATION_NUM_OF_ROWS: 150") || !workflowV2.includes("PORT_OPERATION_MAX_PAGES: 10") || !workflowV2.includes('PORT_OPERATION_DEGB_VALUES: "I,O"') || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("COLLECTOR_DEBUG_VERBOSE") || workflowV2.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
   throw new Error("Longterm Update V2 must bound collector runtime and child enrichment");
 }
 

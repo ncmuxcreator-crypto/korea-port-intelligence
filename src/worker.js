@@ -55,9 +55,13 @@ function normalizeSnapshot(row = {}) {
     previous_port: merged.previous_port || "",
     next_port: merged.next_port || "",
     vessel_type: merged.vessel_type || "",
-    gt: Number(merged.gt || 0),
+    gt: Number(merged.gt || merged.grtg || merged.intrlGrtg || 0),
+    grtg: Number(merged.grtg || 0),
+    intrlGrtg: Number(merged.intrlGrtg || 0),
+    gt_source: merged.gt_source || (Number(merged.grtg || 0) > 0 ? "grtg" : Number(merged.intrlGrtg || 0) > 0 ? "intrlGrtg" : Number(merged.gt || 0) > 0 ? "gt" : "unknown"),
+    gt_status: merged.gt_status || (Number(merged.gt || merged.grtg || merged.intrlGrtg || 0) >= Number(merged.commercial_gt_threshold || 5000) ? "target_vessel" : Number(merged.gt || merged.grtg || merged.intrlGrtg || 0) > 0 ? "non_target_small_vessel" : "unknown_gt_review"),
     commercial_gt_threshold: Number(merged.commercial_gt_threshold || 5000),
-    meets_commercial_gt_threshold: Boolean(merged.meets_commercial_gt_threshold ?? Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000)),
+    meets_commercial_gt_threshold: Boolean(merged.meets_commercial_gt_threshold ?? Number(merged.gt || merged.grtg || merged.intrlGrtg || 0) >= Number(merged.commercial_gt_threshold || 5000)),
     eta: merged.eta || "",
     etb: merged.etb || "",
     ata: merged.ata || "",
@@ -96,9 +100,45 @@ function normalizeSnapshot(row = {}) {
     run_id: merged.run_id || row.run_id || "",
     master_vessel_id: merged.master_vessel_id || merged.hybrid_entity_key || merged.vessel_id,
     data_quality_tier: merged.data_quality_tier || "",
+    status_bucket: merged.status_bucket || deriveStatusBucket(merged),
+    commercial_relevance_status: merged.commercial_relevance_status || deriveCommercialRelevance(merged),
     candidate_band: merged.candidate_band || merged.sales_priority_band || "low_priority",
     updated_at: merged.updated_at || merged.collected_at || row.collected_at || new Date().toISOString()
   };
+}
+
+function deriveStatusBucket(v = {}) {
+  const status = String(v.status || "").toLowerCase();
+  const now = Date.now();
+  const parse = value => {
+    const date = value ? new Date(String(value).replace(" ", "T")) : null;
+    return date && !Number.isNaN(date.getTime()) ? date.getTime() : null;
+  };
+  const eta = parse(v.eta);
+  const ata = parse(v.ata);
+  const etd = parse(v.etd);
+  const atd = parse(v.atd);
+  if (atd && atd < now && !/waiting|anchorage|anchor|berth|moored|alongside|idle/.test(status)) return "completed_departure";
+  if (ata && !atd) return "staying_vessels";
+  if (/waiting|anchorage|anchor|idle|drifting/.test(status) || Number(v.anchorage_hours || 0) > 0) return "staying_vessels";
+  if (/berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) return "staying_vessels";
+  if (eta && eta >= now) return "arrival_pipeline";
+  if (etd && etd >= now) return "staying_vessels";
+  return "port_call_review";
+}
+
+function deriveCommercialRelevance(v = {}) {
+  const typeText = `${v.vessel_type || ""} ${v.vessel_name || ""}`.toLowerCase();
+  if (/fishing|fishery|trawler|tug|pilot|patrol|government|navy|coast guard|workboat|barge|dredger|어선|예선|관공선|작업선|준설|순찰|해경/.test(typeText)) return "excluded_non_commercial_type";
+  if ((v.status_bucket || deriveStatusBucket(v)) === "completed_departure") return "excluded_departure_only";
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  if ((v.gt_status || "") === "target_vessel" || gt >= Number(v.commercial_gt_threshold || 5000)) return "target_vessel";
+  if ((v.gt_status || "") === "unknown_gt_review" || gt <= 0) return "unknown_gt_review";
+  return "non_target_small_vessel";
+}
+
+function isMainCommercialVessel(v = {}) {
+  return ["target_vessel", "unknown_gt_review"].includes(v.commercial_relevance_status || deriveCommercialRelevance(v));
 }
 
 function supabaseBase(env) {
@@ -225,7 +265,7 @@ function latestPerVesselPort(records) {
 
 function buildHot(records) {
   return sortCommercialPriority(records)
-    .filter(v => v.actionable_source_row !== false && v.meets_commercial_gt_threshold && (v.is_cleaning_candidate || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
+    .filter(v => v.actionable_source_row !== false && isMainCommercialVessel(v) && (v.is_cleaning_candidate || v.status_bucket === "staying_vessels" || v.status_bucket === "arrival_pipeline" || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
     .slice(0, 40);
 }
 
@@ -362,6 +402,17 @@ function recordsForPort(records, portCode) {
   return records.filter(v => String(v.port_code || portCodeFromName(v.port)) === String(portCode));
 }
 
+function buildVisibilityBuckets(records) {
+  const targetVessels = records.filter(isMainCommercialVessel);
+  return {
+    target_vessels: targetVessels,
+    staying_vessels: targetVessels.filter(v => v.status_bucket === "staying_vessels"),
+    arrival_pipeline: targetVessels.filter(v => v.status_bucket === "arrival_pipeline"),
+    sales_candidates: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60)),
+    immediate_targets: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80))
+  };
+}
+
 
 function buildPortCongestion(records, portCode) {
   return buildPortHeatmap(records).find(p => String(p.port_code || portCodeFromName(p.port)) === String(portCode)) || {
@@ -393,17 +444,24 @@ function buildAnchorage(records) {
     }));
 }
 function buildStatus(records, source) {
+  const buckets = buildVisibilityBuckets(records);
   const high = records.filter(v => (v.risk_score || 0) >= 70);
-  const dataMode = records.length ? "supabase_live_snapshot" : "no_live_data";
+  const dataMode = buckets.target_vessels.length ? "supabase_live_snapshot" : "no_live_data";
   return {
     version: "worker-live-api-v1",
     status: source.error && !records.length ? "degraded" : "success",
     data_mode: dataMode,
     commercial_use_status: records.length ? "review_required" : "not_ready",
     completed_at: new Date().toISOString(),
-    record_count: records.length,
-    actionable_rows: records.filter(v => v.actionable_source_row !== false).length,
-    hot_vessel_count: buildHot(records).length,
+    record_count: buckets.target_vessels.length,
+    all_collected_vessel_count: records.length,
+    target_vessel_count: buckets.target_vessels.length,
+    staying_vessel_count: buckets.staying_vessels.length,
+    arrival_pipeline_count: buckets.arrival_pipeline.length,
+    unknown_gt_review_count: buckets.target_vessels.filter(v => v.gt_status === "unknown_gt_review").length,
+    non_target_small_vessel_count: records.filter(v => v.gt_status === "non_target_small_vessel").length,
+    actionable_rows: buckets.target_vessels.filter(v => v.actionable_source_row !== false).length,
+    hot_vessel_count: buildHot(buckets.target_vessels).length,
     critical_count: records.filter(v => (v.risk_score || 0) >= 85).length,
     high_risk_count: high.length,
     cleaning_candidate_count: records.filter(v => v.is_cleaning_candidate).length,
@@ -426,27 +484,39 @@ function buildStatus(records, source) {
         ? "Active dataset pointer is missing or empty; showing latest available Supabase snapshot run."
         : null
     },
-    commercial_command_center: buildCommandCenter(records),
-    port_intelligence: buildPorts(records),
-    port_congestion_heatmap: buildPortHeatmap(records),
-    biofouling_timeline: buildBioTimeline(records)
+    visibility_goal: "commercially_relevant_vessels_not_raw_count",
+    target_definition: {
+      commercial_gt_threshold: 5000,
+      include: ["grtg >= 5000", "intrlGrtg >= 5000", "unknown GT requiring review"],
+      exclude_from_main_view: ["GT under 5000", "non-commercial vessel types", "completed departure-only rows"]
+    },
+    commercial_command_center: buildCommandCenter(buckets.target_vessels),
+    port_intelligence: buildPorts(buckets.target_vessels),
+    port_congestion_heatmap: buildPortHeatmap(buckets.target_vessels),
+    biofouling_timeline: buildBioTimeline(buckets.target_vessels)
   };
 }
 
 async function apiResponse(pathname, env) {
   const source = await fetchSupabaseRows(env);
-  const records = latestPerVesselPort(source.rows);
-  if (pathname.endsWith("/status.json")) return json(buildStatus(records, source), { headers: corsHeaders() });
+  const allRecords = latestPerVesselPort(source.rows);
+  const buckets = buildVisibilityBuckets(allRecords);
+  const records = buckets.target_vessels;
+  if (pathname.endsWith("/status.json")) return json(buildStatus(allRecords, source), { headers: corsHeaders() });
+  if (pathname.endsWith("/all-collected-vessels.json")) return json(allRecords, { headers: corsHeaders() });
+  if (pathname.endsWith("/target-vessels.json")) return json(buckets.target_vessels, { headers: corsHeaders() });
+  if (pathname.endsWith("/staying-vessels.json")) return json(buckets.staying_vessels, { headers: corsHeaders() });
+  if (pathname.endsWith("/arrival-pipeline.json")) return json(buckets.arrival_pipeline, { headers: corsHeaders() });
   if (pathname.endsWith("/vessels.json")) return json(records, { headers: corsHeaders() });
-  if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60), { headers: corsHeaders() });
-  if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60)), { headers: corsHeaders() });
+  if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });
   if (pathname.endsWith("/master/unknown-imo.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/ports.json")) return json(buildPorts(records), { headers: corsHeaders() });
   const portMatch = pathname.match(new RegExp("^/api/ports/([^/]+)/(vessels|candidates|berths|congestion|anchorage)\\.json$"));
   if (portMatch) {
     const rows = recordsForPort(records, decodeURIComponent(portMatch[1]));
     if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
-    if (portMatch[2] === "candidates") return json(buildHot(rows), { headers: corsHeaders() });
+    if (portMatch[2] === "candidates") return json(buildHot(rows).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });
     if (portMatch[2] === "congestion") return json(buildPortCongestion(records, decodeURIComponent(portMatch[1])), { headers: corsHeaders() });
     if (portMatch[2] === "anchorage") return json(buildAnchorage(rows), { headers: corsHeaders() });
     return json(rows.filter(v => v.berth).map(v => ({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd })), { headers: corsHeaders() });

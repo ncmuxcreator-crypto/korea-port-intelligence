@@ -16,6 +16,7 @@ const PRIORITY_PORTS = [
   "Hadong/Samcheonpo",
   "Pohang"
 ];
+const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 5000);
 
 function parseScheduleTime(value) {
   if (!value) return null;
@@ -162,7 +163,8 @@ function deriveCommercialScoreParts(v, metrics) {
   const type = String(v.vessel_type || "").toLowerCase();
   const route = [v.destination, v.previous_port, v.next_port].join(" ").toLowerCase();
   const status = String(v.status || "").toLowerCase();
-  const gt = Number(v.gt || 0);
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  const meetsCommercialGtThreshold = gt >= COMMERCIAL_GT_THRESHOLD;
   const anchorageDays = Number(metrics.anchorage_hours || 0) / 24;
   const stayDays = Number(metrics.stay_hours || 0) / 24;
   const isCommercialType = /vlcc|cape|capesize|bulk|bulker|tanker|lng|lpg|cruise|container/.test(type);
@@ -170,18 +172,18 @@ function deriveCommercialScoreParts(v, metrics) {
   const isAnchorageWaiting = anchorageDays >= 0.5 || /waiting|anchorage|anchor|idle|drifting/.test(status);
   const isLongIdle = stayDays >= 7 || anchorageDays >= 3;
   const biofoulingRiskScore = Math.min(30, Math.round(Math.min(14, stayDays * 1.4) + Math.min(8, anchorageDays * 2) + (isCommercialType ? 4 : 0) + (sensitiveRoute ? 4 : 0)));
-  const performanceProxyScore = Math.min(20, Math.round(Math.min(9, anchorageDays * 2) + Math.min(6, stayDays * 0.7) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 3 : 0) + (gt >= 5000 ? 2 : 0)));
+  const performanceProxyScore = Math.min(20, Math.round(Math.min(9, anchorageDays * 2) + Math.min(6, stayDays * 0.7) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 3 : 0) + (meetsCommercialGtThreshold ? 2 : 0)));
   const congestionExposureScore = Math.min(20, Math.round((isAnchorageWaiting ? 8 : 0) + Math.min(8, anchorageDays * 2) + (isLongIdle ? 4 : 0)));
   const cleaningWindowScore = Math.min(15, Math.round(Math.min(10, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 3 : 0) + (v.berth || v.berth_name ? 2 : 0)));
-  const compliancePressureScore = Math.min(10, Math.round((sensitiveRoute ? 5 : 0) + (gt >= 5000 ? 3 : 0) + (isCommercialType ? 2 : 0)));
-  const commercialFitScore = Math.min(5, Math.round((isCommercialType ? 2 : 0) + (gt >= 5000 ? 1 : 0) + (v.operator || v.agent ? 1 : 0) + (v.port_code ? 1 : 0)));
+  const compliancePressureScore = Math.min(10, Math.round((sensitiveRoute ? 5 : 0) + (meetsCommercialGtThreshold ? 3 : 0) + (isCommercialType ? 2 : 0)));
+  const commercialFitScore = Math.min(5, Math.round((isCommercialType ? 2 : 0) + (meetsCommercialGtThreshold ? 1 : 0) + (v.operator || v.agent ? 1 : 0) + (v.port_code ? 1 : 0)));
   const total = biofoulingRiskScore + performanceProxyScore + congestionExposureScore + cleaningWindowScore + compliancePressureScore + commercialFitScore;
   const reasonCodes = [];
   if (anchorageDays >= 1) reasonCodes.push("LONG_ANCHORAGE_WAIT");
   if (congestionExposureScore >= 14) reasonCodes.push("PORT_CONGESTION_HIGH");
   if (isLongIdle) reasonCodes.push("EXTENDED_IDLE_PERIOD");
   if (isAnchorageWaiting) reasonCodes.push("LOW_SPEED_CONGESTION_PATTERN");
-  if (gt >= 5000) reasonCodes.push("HIGH_GT_VESSEL");
+  if (meetsCommercialGtThreshold) reasonCodes.push("HIGH_GT_VESSEL");
   if (/bulk|bulker|tanker|vlcc/.test(type)) reasonCodes.push("BULK_OR_TANKER");
   if (stayDays >= 7) reasonCodes.push("LONG_PORT_STAY");
   if (/australia|brazil/.test(route)) reasonCodes.push("AUSTRALIA_BRAZIL_EXPOSURE");
@@ -195,6 +197,8 @@ function deriveCommercialScoreParts(v, metrics) {
     commercial_fit_score: commercialFitScore,
     total_sales_priority_score: Math.min(100, total),
     sales_priority_band: total >= 80 ? "immediate_target" : total >= 60 ? "high_potential" : total >= 40 ? "monitor" : "low_priority",
+    commercial_gt_threshold: COMMERCIAL_GT_THRESHOLD,
+    meets_commercial_gt_threshold: meetsCommercialGtThreshold,
     is_anchorage_waiting: isAnchorageWaiting,
     is_long_idle: isLongIdle,
     anchorage_days: Math.round(anchorageDays * 10) / 10,
@@ -213,6 +217,62 @@ function gtGroup(gt) {
   if (value >= 5000) return "gt_5000_29999";
   if (value > 0) return "gt_under_5000";
   return "gt_unknown";
+}
+
+function commercialGtProfile(v = {}) {
+  const grtg = Number(v.grtg || 0);
+  const intrlGrtg = Number(v.intrlGrtg || 0);
+  const fallbackGt = Number(v.gt || 0);
+  const gt = Math.max(grtg, intrlGrtg, fallbackGt);
+  const gtSource = grtg > 0 ? "grtg" : intrlGrtg > 0 ? "intrlGrtg" : fallbackGt > 0 ? "gt" : "unknown";
+  const gtStatus = gt >= COMMERCIAL_GT_THRESHOLD
+    ? "target_vessel"
+    : gt > 0
+      ? "non_target_small_vessel"
+      : "unknown_gt_review";
+  return {
+    gt,
+    grtg,
+    intrlGrtg,
+    gt_source: gtSource,
+    gt_status: gtStatus,
+    meets_commercial_gt_threshold: gt >= COMMERCIAL_GT_THRESHOLD,
+    target_vessel: gt >= COMMERCIAL_GT_THRESHOLD || gtStatus === "unknown_gt_review"
+  };
+}
+
+function excludedCommercialType(v = {}) {
+  const type = String(v.vessel_type || "").toLowerCase();
+  const name = String(v.vessel_name || "").toLowerCase();
+  return /fishing|fishery|trawler|tug|pilot|patrol|government|navy|coast guard|workboat|barge|dredger|어선|예선|관공선|작업선|준설|순찰|해경/.test(`${type} ${name}`);
+}
+
+function deriveStatusBucket(v = {}, metrics = {}) {
+  const now = new Date();
+  const eta = parseScheduleTime(v.eta);
+  const ata = parseScheduleTime(v.ata);
+  const etd = parseScheduleTime(v.etd);
+  const atd = parseScheduleTime(v.atd);
+  const status = String(v.status || "").toLowerCase();
+  if (atd && atd.getTime() < now.getTime() && !/waiting|anchorage|anchor|berth|moored|alongside|idle/.test(status)) return "completed_departure";
+  if (ata && !atd) return "staying_vessels";
+  if (/waiting|anchorage|anchor|idle|drifting/.test(status) || (metrics.anchorage_hours || 0) > 0) return "staying_vessels";
+  if (/berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) return "staying_vessels";
+  if (eta && eta.getTime() >= now.getTime()) return "arrival_pipeline";
+  if (etd && etd.getTime() >= now.getTime()) return "staying_vessels";
+  return "port_call_review";
+}
+
+function commercialRelevanceStatus(v = {}) {
+  if (v.excluded_commercial_type) return "excluded_non_commercial_type";
+  if (v.status_bucket === "completed_departure") return "excluded_departure_only";
+  if (v.gt_status === "target_vessel") return "target_vessel";
+  if (v.gt_status === "unknown_gt_review") return "unknown_gt_review";
+  return "non_target_small_vessel";
+}
+
+function isMainCommercialVessel(v = {}) {
+  return ["target_vessel", "unknown_gt_review"].includes(v.commercial_relevance_status);
 }
 
 function stayDaysGroup(hours) {
@@ -465,7 +525,7 @@ function dataQualityTier(v) {
 
 function buildCandidateList(records = []) {
   return records
-    .filter(v => v.actionable_source_row !== false && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60))
+    .filter(v => v.actionable_source_row !== false && v.commercial_relevance_status === "target_vessel" && v.meets_commercial_gt_threshold && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60))
     .slice()
     .sort((a, b) =>
       Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
@@ -514,9 +574,11 @@ function enrichSalesSignals(records) {
     if (complianceWatch) reasons.push("Biofouling-sensitive destination");
 
     const scheduleMetrics = deriveScheduleMetrics(v);
+    const gtProfile = commercialGtProfile(v);
     const biofoulingScore = deriveBiofoulingScore(v, scheduleMetrics);
     const ciiPressureScore = deriveCiiPressureScore(v, scheduleMetrics, biofoulingScore);
-    const scoreParts = deriveCommercialScoreParts(v, scheduleMetrics);
+    const scoringInput = { ...v, gt: gtProfile.gt, grtg: gtProfile.grtg, intrlGrtg: gtProfile.intrlGrtg };
+    const scoreParts = deriveCommercialScoreParts(scoringInput, scheduleMetrics);
     const candidateProfile = buildCandidateProfile({ ...v, ...scheduleMetrics, risk_score: biofoulingScore, compliance_watch: complianceWatch });
     const identity = deriveIdentity(v);
     const isSample = String(v.source_mode || "").includes("sample");
@@ -528,6 +590,7 @@ function enrichSalesSignals(records) {
     ].filter((value, index, arr) => value && arr.indexOf(value) === index);
     const enriched = {
       ...v,
+      ...gtProfile,
       ...scheduleMetrics,
       ...candidateProfile,
       version: VERSION,
@@ -551,12 +614,15 @@ function enrichSalesSignals(records) {
       port_name: v.port_name || v.port,
       berth_name: v.berth_name || v.berth || "",
       anchorage_name: v.anchorage_name || v.anchorage_zone || "",
-      gt_group: gtGroup(v.gt),
+      excluded_commercial_type: excludedCommercialType(v),
+      gt_group: gtGroup(gtProfile.gt),
       stay_days_group: stayDaysGroup(scheduleMetrics.stay_hours),
       reason_codes: reasonCodes,
       sales_reason: reasonCodes,
       compliance_watch: complianceWatch
     };
+    enriched.status_bucket = deriveStatusBucket(enriched, scheduleMetrics);
+    enriched.commercial_relevance_status = commercialRelevanceStatus(enriched);
     if (v.actionable_source_row === false) {
       enriched.is_cleaning_candidate = false;
       enriched.is_immediate_candidate = false;
@@ -569,11 +635,23 @@ function enrichSalesSignals(records) {
       enriched.sales_reason = enriched.reason_codes;
       enriched.total_sales_priority_score = 0;
     } else {
-      enriched.is_cleaning_candidate = enriched.total_sales_priority_score >= 60;
-      enriched.is_immediate_candidate = enriched.total_sales_priority_score >= 80;
+      enriched.is_cleaning_candidate = isMainCommercialVessel(enriched) && enriched.meets_commercial_gt_threshold && enriched.total_sales_priority_score >= 60;
+      enriched.is_immediate_candidate = isMainCommercialVessel(enriched) && enriched.meets_commercial_gt_threshold && enriched.total_sales_priority_score >= 80;
       enriched.is_operating_candidate = enriched.is_cleaning_candidate;
       enriched.is_operating_immediate_candidate = enriched.is_immediate_candidate;
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
+      if (!isMainCommercialVessel(enriched) || !enriched.meets_commercial_gt_threshold) {
+        const gtReason = enriched.gt_status === "unknown_gt_review"
+          ? "GT_UNKNOWN_NEEDS_VESSEL_SPEC_ENRICHMENT"
+          : enriched.commercial_relevance_status === "excluded_non_commercial_type"
+            ? "NON_COMMERCIAL_VESSEL_TYPE_EXCLUDED"
+            : enriched.commercial_relevance_status === "excluded_departure_only"
+              ? "COMPLETED_DEPARTURE_ONLY_EXCLUDED"
+              : "GT_BELOW_5000_NOT_COMMERCIAL_TARGET";
+        enriched.reason_codes = [...new Set([...(enriched.reason_codes || []), gtReason])];
+        enriched.sales_reason = enriched.reason_codes;
+        enriched.sales_priority_band = "monitor";
+      }
     }
     Object.assign(enriched, deriveOperationalRisk(enriched, scheduleMetrics, biofoulingScore));
     enriched.operator_fleet_badges = deriveFleetBadges(enriched);
@@ -594,7 +672,7 @@ function sortCommercialPriority(records) {
 
 function buildHotVessels(records) {
   return sortCommercialPriority(records)
-    .filter(v => v.is_cleaning_candidate || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60)
+    .filter(v => isMainCommercialVessel(v) && (v.is_cleaning_candidate || v.status_bucket === "staying_vessels" || v.status_bucket === "arrival_pipeline" || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
     .slice(0, 40);
 }
 
@@ -1400,7 +1478,11 @@ try {
     apiSources: detectSecrets(),
     supabaseStatus
   });
-  vessels = snapshotOutputs.merged;
+  const allCollectedVessels = snapshotOutputs.merged;
+  const targetVessels = allCollectedVessels.filter(isMainCommercialVessel);
+  const stayingVessels = targetVessels.filter(v => v.status_bucket === "staying_vessels");
+  const arrivalPipeline = targetVessels.filter(v => v.status_bucket === "arrival_pipeline");
+  vessels = targetVessels;
   const mergedActionableRows = vessels.filter(v => v.actionable_source_row && !String(v.source_mode || "").includes("sample")).length;
   const hotVessels = buildHotVessels(vessels);
   const commercialCommandCenter = buildCommercialCommandCenter(vessels);
@@ -1411,6 +1493,18 @@ try {
 
   const report = {
     ...baseReport,
+    visibility_goal: "commercially_relevant_vessels_not_raw_count",
+    target_definition: {
+      commercial_gt_threshold: COMMERCIAL_GT_THRESHOLD,
+      include: ["grtg >= 5000", "intrlGrtg >= 5000", "unknown GT requiring review", "arriving/calling/staying/berthed/anchorage waiting vessels"],
+      exclude_from_main_view: ["GT under 5000", "fishing vessels", "tugs", "government vessels", "workboats", "completed departure-only rows"]
+    },
+    all_collected_vessel_count: allCollectedVessels.length,
+    target_vessel_count: targetVessels.length,
+    staying_vessel_count: stayingVessels.length,
+    arrival_pipeline_count: arrivalPipeline.length,
+    unknown_gt_review_count: targetVessels.filter(v => v.gt_status === "unknown_gt_review").length,
+    non_target_small_vessel_count: allCollectedVessels.filter(v => v.gt_status === "non_target_small_vessel").length,
     record_count: vessels.length,
     actionable_rows: mergedActionableRows,
     candidate_summary: buildCandidateSummary(vessels),
@@ -1448,6 +1542,12 @@ try {
     gdrive: gdriveArchive
   };
 
+  fs.writeFileSync("dashboard/api/all-collected-vessels.json", JSON.stringify(allCollectedVessels, null, 2));
+  fs.writeFileSync("dashboard/api/target-vessels.json", JSON.stringify(targetVessels, null, 2));
+  fs.writeFileSync("dashboard/api/staying-vessels.json", JSON.stringify(stayingVessels, null, 2));
+  fs.writeFileSync("dashboard/api/arrival-pipeline.json", JSON.stringify(arrivalPipeline, null, 2));
+  fs.writeFileSync("dashboard/api/vessels.json", JSON.stringify(vessels, null, 2));
+  fs.writeFileSync("data/latest-lite.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));
   fs.writeFileSync("dashboard/api/candidate-summary.json", JSON.stringify(buildCandidateSummary(vessels), null, 2));
   fs.writeFileSync("dashboard/api/contact-queue.json", JSON.stringify(candidateList.slice(0, 50).map((v, index) => ({

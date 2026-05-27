@@ -50,7 +50,9 @@ const FIELD_ALIASES = {
   previous_port: ["previous_port", "prevPort", "last_port", "prevPortNm", "전항", "이전항"],
   next_port: ["next_port", "nextPort", "nextPortNm", "차항", "다음항", "예정항"],
   vessel_type: ["vessel_type", "ship_type", "shipType", "vsslKnd", "shipKnd", "TYPE", "vesselType", "선종", "선박종류"],
-  gt: ["gt", "gross_tonnage", "grt", "grossTon", "GT", "총톤수", "GRT"],
+  gt: ["gt", "gross_tonnage", "grt", "grossTon", "GT", "grtg", "intrlGrtg", "총톤수", "GRT"],
+  grtg: ["grtg", "grt", "gross_tonnage", "grossTon", "GT", "총톤수", "GRT"],
+  intrlGrtg: ["intrlGrtg", "internationalGrossTonnage", "intl_gt", "국제총톤수"],
   eta: ["eta", "ETA", "etaDate", "estimatedArrival", "arrPlanDt", "arrivalPlanDt", "etaDt", "입항예정일시", "입항예정"],
   etb: ["etb", "ETB", "estimatedBerthing", "berthPlanDt", "etbDt", "접안예정일시", "계선예정일시"],
   ata: ["ata", "ATA", "actualArrival", "arrDt", "arrivalDt", "입항일시", "입항일자", "입항시간"],
@@ -117,6 +119,12 @@ function formatDateCompact(date = new Date()) {
   const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
   const dd = String(date.getUTCDate()).padStart(2, "0");
   return `${yyyy}${mm}${dd}`;
+}
+
+function addDaysCompact(days) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return formatDateCompact(date);
 }
 
 function configuredPortOperationCodes() {
@@ -254,14 +262,17 @@ function adaptSourceRecord(row, source) {
 function allSourceConfigs() {
   const vtsBase = env("MOF_VTS_API_BASE");
   const vtsKey = env("MOF_VTS_SERVICE_KEY");
-  const today = formatDateCompact();
-  const sde = env("PORT_OPERATION_START_DATE") || today;
-  const ede = env("PORT_OPERATION_END_DATE") || sde;
+  const sde = env("PORT_OPERATION_START_DATE") || addDaysCompact(-3);
+  const ede = env("PORT_OPERATION_END_DATE") || addDaysCompact(7);
   const portOperationUrl = env("PORT_OPERATION_API_URL") || DEFAULT_PORT_OPERATION_API_URL;
   const portOperationKey = envAny("PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY", "SERVICEKEY");
-  const portOperationSources = Object.entries(configuredPortOperationCodes()).map(([name, code]) => ({
-    key: `port_operation_${name}`,
-    label: `PORT-MIS VsslEtrynd5 ${name}`,
+  const portOperationDirections = (env("PORT_OPERATION_DEGB_VALUES") || "I,O")
+    .split(/[,\s]+/)
+    .map(value => value.trim())
+    .filter(Boolean);
+  const portOperationSources = Object.entries(configuredPortOperationCodes()).flatMap(([name, code]) => portOperationDirections.map(deGb => ({
+    key: `port_operation_${name}_${deGb.toLowerCase()}`,
+    label: `PORT-MIS VsslEtrynd5 ${name} ${deGb}`,
     url: portOperationUrl,
     serviceKey: portOperationKey,
     serviceKeyVariants: serviceKeyVariants(portOperationKey),
@@ -272,11 +283,11 @@ function allSourceConfigs() {
       prtAgCd: code,
       sde,
       ede,
-      deGb: "I",
+      deGb,
       pageNo: "1",
-      numOfRows: "50"
+      numOfRows: env("PORT_OPERATION_NUM_OF_ROWS") || "150"
     }
-  }));
+  })));
   const vtsCodes = (env("MOF_VTS_PORT_CODES") || "BUSAN,YEOSU,GWANGYANG,ULSAN,PYEONGTAEK,POHANG,HADONG,MASAN,INCHEON")
     .split(/[,\s]+/)
     .map(code => code.trim())
@@ -456,6 +467,58 @@ function parseRows(text, limit = MAX_SOURCE_ROWS) {
   return parseXmlRows(trimmed).slice(0, limit);
 }
 
+async function fetchPagedRows(source, rowLimit) {
+  const firstPage = await fetchText(source);
+  const rows = parseRows(firstPage.text, rowLimit);
+  const pageSize = Number(source.defaultParams?.numOfRows || 0) || rowLimit;
+  const totalCount = Number(firstPage.result_meta?.totalCount || rows.length || 0);
+  const maxPages = Math.max(1, Number(env("PORT_OPERATION_MAX_PAGES") || 10));
+  const shouldPage = String(source.key || "").startsWith("port_operation_") && totalCount > rows.length && rowLimit > rows.length;
+  const pageSummaries = [{
+    pageNo: Number(source.defaultParams?.pageNo || 1),
+    row_count: rows.length,
+    http_status: firstPage.http_status,
+    resultCode: firstPage.result_meta?.resultCode || null,
+    totalCount: firstPage.result_meta?.totalCount || null,
+    requested_url_without_service_key: maskServiceKey(firstPage.url)
+  }];
+
+  let last = firstPage;
+  if (shouldPage) {
+    const totalPages = Math.min(maxPages, Math.ceil(totalCount / Math.max(1, pageSize)));
+    for (let pageNo = 2; pageNo <= totalPages && rows.length < rowLimit; pageNo += 1) {
+      const page = await fetchText(source, { pageNo });
+      const pageRows = parseRows(page.text, Math.max(1, rowLimit - rows.length));
+      rows.push(...pageRows);
+      pageSummaries.push({
+        pageNo,
+        row_count: pageRows.length,
+        http_status: page.http_status,
+        resultCode: page.result_meta?.resultCode || null,
+        totalCount: page.result_meta?.totalCount || null,
+        requested_url_without_service_key: maskServiceKey(page.url)
+      });
+      last = page;
+      if (!pageRows.length) break;
+    }
+  }
+
+  return {
+    ...last,
+    text: firstPage.text,
+    url: firstPage.url,
+    http_status: firstPage.http_status,
+    latency_ms: pageSummaries.reduce((sum, page) => sum + Number(page.latency_ms || 0), firstPage.latency_ms || 0),
+    result_meta: firstPage.result_meta,
+    service_key_variant: firstPage.service_key_variant || last.service_key_variant,
+    rows: rows.slice(0, rowLimit),
+    pages_attempted: pageSummaries.length,
+    page_summaries: pageSummaries,
+    pagination_total_count: totalCount || rows.length,
+    pagination_truncated: totalCount ? rows.length < totalCount : rows.length >= rowLimit
+  };
+}
+
 function normalizeStatus(value) {
   const text = String(value || "").trim();
   if (/berth|alongside|moored/i.test(text)) return "At Berth";
@@ -534,6 +597,8 @@ function normalizeRow(row, source, now) {
     next_port: String(firstValue(adapted, FIELD_ALIASES.next_port)).trim(),
     vessel_type: String(firstValue(adapted, FIELD_ALIASES.vessel_type)).trim() || "Unknown",
     gt: toNumber(firstValue(adapted, FIELD_ALIASES.gt)),
+    grtg: toNumber(firstValue(adapted, FIELD_ALIASES.grtg)),
+    intrlGrtg: toNumber(firstValue(adapted, FIELD_ALIASES.intrlGrtg)),
     eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.eta)),
     etb: normalizeDate(firstValue(adapted, FIELD_ALIASES.etb)),
     ata: normalizeDate(firstValue(adapted, FIELD_ALIASES.ata)),
@@ -555,8 +620,10 @@ function normalizeRow(row, source, now) {
     prt_ag_cd: rawValue(row, ["prtAgCd", "prt_ag_cd", "PRT_AG_CD"]),
     etrypt_year: rawValue(row, ["etryptYear", "etrypt_year", "ETRYPT_YEAR"]),
     etrypt_co: rawValue(row, ["etryptCo", "etrypt_co", "ETRYPT_CO"]),
+    de_gb: rawValue(row, ["deGb", "DE_GB"]) || source.defaultParams?.deGb || "",
     updated_at: now
   };
+  record.gt = record.gt || record.grtg || record.intrlGrtg || 0;
   record.actionable_source_row = isActionableRecord(record);
   record.sales_ready_input = record.actionable_source_row;
   if (!record.actionable_source_row && isMovementOnlyRecord(record)) {
@@ -690,9 +757,8 @@ async function collectRealRows() {
     diag.attempted = true;
     diagnostics.attempted_count += 1;
     try {
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant } = await fetchText(source);
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const rows = parseRows(text, rowLimit);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_truncated } = await fetchPagedRows(source, rowLimit);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
@@ -702,9 +768,12 @@ async function collectRealRows() {
       diag.resultCode = result_meta?.resultCode || null;
       diag.resultMsg = result_meta?.resultMsg || null;
       diag.totalCount = result_meta?.totalCount !== undefined ? Number(result_meta.totalCount) || result_meta.totalCount : null;
+      diag.pages_attempted = pages_attempted;
+      diag.page_summaries = page_summaries;
+      diag.pagination_total_count = pagination_total_count;
       diag.row_count = rows.length;
       diag.max_rows = rowLimit;
-      diag.truncated = rows.length >= rowLimit;
+      diag.truncated = pagination_truncated || rows.length >= rowLimit;
       diag.url_host = url.host;
       diag.sample_keys = rows[0] && typeof rows[0] === "object" ? Object.keys(rows[0]).slice(0, 30) : [];
       let childAttempted = 0;
