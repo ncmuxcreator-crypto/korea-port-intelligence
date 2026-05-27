@@ -20,6 +20,8 @@ const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 50
 const REVIEW_TARGET_THRESHOLD = Number(process.env.REVIEW_TARGET_THRESHOLD || 35);
 const SALES_CANDIDATE_THRESHOLD = Number(process.env.SALES_CANDIDATE_THRESHOLD || 50);
 const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 75);
+const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
+const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
 
 function parseScheduleTime(value) {
   if (!value) return null;
@@ -1226,6 +1228,31 @@ function buildScoringDiagnostics(records = []) {
   };
 }
 
+function buildCountFunnel({ rawRecords = [], allCollected = [], targetVessels = [], salesCandidates = [], immediateTargets = [], collectorDiagnostics = {} } = {}) {
+  const uniquePortCalls = new Set(allCollected.map(v => v.port_call_identity || v.snapshot_key || `${v.port_code || v.port}|${v.vessel_name}|${v.ata || v.eta || ""}`).filter(Boolean));
+  const uniqueVessels = new Set(allCollected.map(v => v.vessel_identity || v.master_vessel_id || v.imo || v.mmsi || v.call_sign || `${v.vessel_name}|${v.gt}|${v.vessel_type}`).filter(Boolean));
+  const collectorFunnel = collectorDiagnostics.count_funnel || {};
+  return {
+    raw_api_rows: collectorFunnel.raw_api_rows ?? rawRecords.length,
+    detail_rows_flattened: collectorFunnel.detail_rows_flattened ?? rawRecords.filter(v => v.detail_rows_flattened).length,
+    normalized_rows: collectorFunnel.normalized_rows ?? rawRecords.length,
+    duplicate_raw_rows: collectorFunnel.duplicate_raw_rows ?? 0,
+    unique_port_calls: collectorFunnel.unique_port_calls ?? uniquePortCalls.size,
+    unique_vessels: collectorFunnel.unique_vessels ?? uniqueVessels.size,
+    target_vessels_5000gt_plus: targetVessels.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD).length,
+    unknown_gt_review: targetVessels.filter(v => v.gt_status === "unknown_gt_review").length,
+    excluded_under_5000gt: allCollected.filter(v => {
+      const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+      return gt > 0 && gt < COMMERCIAL_GT_THRESHOLD;
+    }).length,
+    sales_candidates: salesCandidates.length,
+    immediate_targets: immediateTargets.length,
+    capped_by_limit: Boolean(collectorFunnel.capped_by_limit || targetVessels.length > MAX_TARGET_VESSELS || salesCandidates.length > MAX_CANDIDATES),
+    cap_name: collectorFunnel.cap_name || (targetVessels.length > MAX_TARGET_VESSELS ? "MAX_TARGET_VESSELS" : salesCandidates.length > MAX_CANDIDATES ? "MAX_CANDIDATES" : null),
+    cap_value: collectorFunnel.cap_value || (targetVessels.length > MAX_TARGET_VESSELS ? MAX_TARGET_VESSELS : salesCandidates.length > MAX_CANDIDATES ? MAX_CANDIDATES : null)
+  };
+}
+
 function coverageRatio(records = [], predicate = () => false) {
   if (!records.length) return 0;
   return Math.round((records.filter(predicate).length / records.length) * 100);
@@ -1962,6 +1989,7 @@ try {
   console.log(`[HWK] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
   const dictionaries = loadReferenceDictionaries();
   const collectedRows = await collectKoreaData({ apiSources });
+  const collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
   vessels = enrichSalesSignals(enrichWithReferenceDictionaries(collectedRows, dictionaries));
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
@@ -2051,7 +2079,8 @@ try {
     supabaseStatus
   });
   const allCollectedVessels = snapshotOutputs.merged;
-  const targetVessels = allCollectedVessels.filter(isMainCommercialVessel);
+  const targetVesselsRaw = allCollectedVessels.filter(isMainCommercialVessel);
+  const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
   const stayingVessels = targetVessels.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket));
   const arrivalPipeline = targetVessels.filter(v => v.status_bucket === "arriving_soon");
   vessels = targetVessels;
@@ -2061,12 +2090,20 @@ try {
   const portCongestionHeatmap = buildPortCongestionHeatmap(vessels);
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
   const portIntelligence = buildPortIntelligence(vessels);
-  const candidateList = buildCandidateList(vessels);
+  const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
   const salesCandidates = vessels.filter(v => (v.commercial_value_score || 0) >= SALES_CANDIDATE_THRESHOLD && v.commercial_relevance_status === "target_vessel");
   const immediateTargets = vessels.filter(v => (v.commercial_value_score || 0) >= IMMEDIATE_TARGET_THRESHOLD && v.commercial_relevance_status === "target_vessel");
   const scoringDiagnostics = buildScoringDiagnostics(vessels);
+  const countFunnel = buildCountFunnel({
+    rawRecords: collectedRows,
+    allCollected: allCollectedVessels,
+    targetVessels,
+    salesCandidates,
+    immediateTargets,
+    collectorDiagnostics: collectorDiagnosticsAfterCollection
+  });
   const report = {
     ...baseReport,
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
@@ -2076,7 +2113,9 @@ try {
       exclude_from_main_view: ["GT under 5000", "fishing vessels", "tugs", "government vessels", "workboats", "completed departure-only rows"]
     },
     all_collected_vessel_count: allCollectedVessels.length,
+    raw_collected_vessel_count: collectedRows.length,
     target_vessel_count: targetVessels.length,
+    target_vessel_uncapped_count: targetVesselsRaw.length,
     gt_5000_plus_count: targetVessels.filter(v => v.gt_status === "target_vessel").length,
     staying_vessel_count: stayingVessels.length,
     arrival_pipeline_count: arrivalPipeline.length,
@@ -2084,6 +2123,7 @@ try {
     sales_candidate_count: salesCandidates.length,
     immediate_target_count: immediateTargets.length,
     scoring_diagnostics: scoringDiagnostics,
+    count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
     imo_recovery_kpis: buildImoRecoveryKpis(vessels),
     imo_missing_count: vessels.filter(v => !v.imo).length,
@@ -2097,7 +2137,7 @@ try {
     immediate_candidate_count: vessels.filter(v => v.is_immediate_candidate).length,
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
     backend_ops: snapshotOutputs.backendOps,
-    collector_diagnostics: { ...getCollectorDiagnostics(), actionable_row_count: getCollectorDiagnostics().actionable_row_count ?? mergedActionableRows },
+    collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
     candidate_changes: snapshotOutputs.candidateChanges,
     supabase_write: supabaseWrite,
     gdrive_archive: gdriveArchive,

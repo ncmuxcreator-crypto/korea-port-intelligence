@@ -15,14 +15,16 @@ function safeReadJson(filePath, fallback) {
 }
 
 export function vesselKey(record = {}) {
-  return String(record.vessel_id || record.imo || record.mmsi || record.vessel_name || "unknown")
+  return String(record.vessel_identity || record.vessel_id || record.imo || record.mmsi || record.call_sign || record.vessel_name || "unknown")
     .trim()
     .toUpperCase()
     .replace(/\s+/g, "-");
 }
 
 export function snapshotKey(record = {}) {
-  return `${vesselKey(record)}|${String(record.port || "UNKNOWN").trim().toUpperCase()}`;
+  const portCall = String(record.port_call_identity || "").trim().toUpperCase();
+  if (portCall && portCall.replace(/\|/g, "")) return `PORTCALL|${portCall}`;
+  return `${vesselKey(record)}|${String(record.port_code || record.port || "UNKNOWN").trim().toUpperCase()}`;
 }
 
 function parseTime(value) {

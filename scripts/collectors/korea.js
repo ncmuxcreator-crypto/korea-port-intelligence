@@ -1,6 +1,6 @@
 ﻿const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
-const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 500);
-const MAX_SOURCE_ROWS = Number(process.env.MAX_SOURCE_ROWS || 100);
+const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
+const MAX_SOURCE_ROWS = Number(process.env.MAX_SOURCE_ROWS || 5000);
 const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.MAX_CHILD_ENRICHMENT_ROWS || 10);
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
 const DEFAULT_PORT_OPERATION_API_URL = "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5";
@@ -299,7 +299,7 @@ function allSourceConfigs() {
     .filter(Boolean);
 
   return [
-    { key: "source_csv", label: "Core external snapshot CSV", url: sourceCsvEnabled() ? env("SOURCE_CSV_URL") : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: Math.min(MAX_SOURCE_ROWS, 100) },
+    { key: "source_csv", label: "Core external snapshot CSV", url: sourceCsvEnabled() ? env("SOURCE_CSV_URL") : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
     ...portOperationSources,
     { key: "ulsan_core", label: "Ulsan core", url: env("ULSAN_API_URL"), serviceKey: env("ULSAN_API_KEY") },
     { key: "ulsan_berth_detail", label: "Ulsan berth detail", url: env("ULSAN_BERTH_DETAIL_API_URL"), serviceKey: env("ULSAN_BERTH_DETAIL_API_KEY") },
@@ -520,7 +520,10 @@ async function fetchPagedRows(source, rowLimit) {
   const pageSize = Number(source.defaultParams?.numOfRows || 0) || rowLimit;
   const totalCount = Number(firstPage.result_meta?.totalCount || rows.length || 0);
   const maxPages = Math.max(1, Number(env("PORT_OPERATION_MAX_PAGES") || 20));
-  const shouldPage = String(source.key || "").startsWith("port_operation_") && totalCount > rows.length && rowLimit > rows.length;
+  const isPortOperation = String(source.key || "").startsWith("port_operation_");
+  const totalPagesExpected = totalCount ? Math.ceil(totalCount / Math.max(1, pageSize)) : 1;
+  const totalPagesToCollect = isPortOperation ? Math.min(maxPages, totalPagesExpected) : 1;
+  const shouldPage = isPortOperation && totalPagesToCollect > 1;
   const pageSummaries = [{
     pageNo: Number(source.defaultParams?.pageNo || 1),
     row_count: rows.length,
@@ -532,8 +535,8 @@ async function fetchPagedRows(source, rowLimit) {
 
   let last = firstPage;
   if (shouldPage) {
-    const totalPages = Math.min(maxPages, Math.ceil(totalCount / Math.max(1, pageSize)));
-    for (let pageNo = 2; pageNo <= totalPages && rows.length < rowLimit; pageNo += 1) {
+    for (let pageNo = 2; pageNo <= totalPagesToCollect; pageNo += 1) {
+      if (rows.length >= rowLimit) break;
       const page = await fetchText(source, { pageNo });
       const pageRows = parseRows(page.text, Math.max(1, rowLimit - rows.length));
       rows.push(...pageRows);
@@ -562,7 +565,14 @@ async function fetchPagedRows(source, rowLimit) {
     pages_attempted: pageSummaries.length,
     page_summaries: pageSummaries,
     pagination_total_count: totalCount || rows.length,
-    pagination_truncated: totalCount ? rows.length < totalCount : rows.length >= rowLimit
+    pagination_total_pages_expected: totalPagesExpected,
+    pagination_pages_collected: pageSummaries.length,
+    pagination_rows_collected: rows.length,
+    pagination_truncated: Boolean(
+      (totalCount && rows.length < totalCount) ||
+      (isPortOperation && totalPagesExpected > maxPages) ||
+      rows.length >= rowLimit
+    )
   };
 }
 
@@ -679,8 +689,41 @@ function normalizeRow(row, source, now) {
     etrypt_year: rawValue(row, ["etryptYear", "etrypt_year", "ETRYPT_YEAR"]),
     etrypt_co: rawValue(row, ["etryptCo", "etrypt_co", "ETRYPT_CO"]),
     de_gb: rawValue(row, ["deGb", "DE_GB"]) || source.defaultParams?.deGb || "",
+    raw_row_identity: "",
+    port_call_identity: "",
+    vessel_identity: "",
     updated_at: now
   };
+  const eventTime = record.atd || record.etd || record.ata || record.eta || record.next_port_eta || "";
+  record.port_call_identity = [
+    record.prt_ag_cd || record.port_code,
+    record.etrypt_year,
+    record.etrypt_co,
+    record.call_sign
+  ].map(value => String(value || "").trim().toUpperCase()).join("|");
+  if (!record.port_call_identity.replace(/\|/g, "")) {
+    record.port_call_identity = [
+      record.port_code || record.port,
+      record.call_sign || record.vessel_name,
+      eventTime
+    ].map(value => String(value || "").trim().toUpperCase()).join("|");
+  }
+  record.raw_row_identity = [
+    record.prt_ag_cd || record.port_code,
+    record.etrypt_year,
+    record.etrypt_co,
+    record.call_sign,
+    record.de_gb,
+    record.detail_row_index || "",
+    eventTime
+  ].map(value => String(value || "").trim().toUpperCase()).join("|");
+  record.vessel_identity = record.imo
+    ? `IMO-${record.imo}`
+    : record.mmsi
+      ? `MMSI-${record.mmsi}`
+      : record.call_sign
+        ? `CALL-${record.call_sign}`
+        : [record.vessel_name, record.gt || record.grtg || record.intrlGrtg || "", record.vessel_type || ""].map(value => String(value || "").trim().toUpperCase()).join("|");
   record.gt = record.gt || record.grtg || record.intrlGrtg || 0;
   record.actionable_source_row = isActionableRecord(record);
   record.sales_ready_input = record.actionable_source_row;
@@ -690,16 +733,82 @@ function normalizeRow(row, source, now) {
   return record;
 }
 
-function dedupe(records) {
-  const seen = new Set();
-  const output = [];
-  for (const record of records) {
-    const key = [record.vessel_id, record.port, record.eta, record.ata, record.berth].join("|").toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    output.push(record);
+function mergeValue(current, next) {
+  return current !== undefined && current !== null && String(current).trim() !== "" && current !== 0 ? current : next;
+}
+
+function mergePortCallRecord(existing, incoming) {
+  const merged = { ...existing };
+  for (const [key, value] of Object.entries(incoming)) {
+    if (["source", "source_label", "source_profile", "de_gb", "raw_row_identity", "raw_source_references", "source_children"].includes(key)) continue;
+    merged[key] = mergeValue(merged[key], value);
   }
-  return output.slice(0, MAX_OUTPUT_ROWS);
+  merged.eta = mergeValue(merged.eta, incoming.eta);
+  merged.etb = mergeValue(merged.etb, incoming.etb);
+  merged.ata = mergeValue(merged.ata, incoming.ata);
+  merged.atb = mergeValue(merged.atb, incoming.atb);
+  merged.etd = mergeValue(merged.etd, incoming.etd);
+  merged.atd = mergeValue(merged.atd, incoming.atd);
+  merged.next_port_eta = mergeValue(merged.next_port_eta, incoming.next_port_eta);
+  merged.destination_eta = mergeValue(merged.destination_eta, incoming.destination_eta);
+  merged.gt = Math.max(Number(merged.gt || 0), Number(incoming.gt || 0));
+  merged.grtg = Math.max(Number(merged.grtg || 0), Number(incoming.grtg || 0));
+  merged.intrlGrtg = Math.max(Number(merged.intrlGrtg || 0), Number(incoming.intrlGrtg || 0));
+  merged.source = existing.source === incoming.source ? existing.source : "merged_port_operation";
+  merged.source_label = "Merged Port Operation port call";
+  merged.source_profile = existing.source_profile || incoming.source_profile;
+  merged.de_gb_values = [...new Set([...(existing.de_gb_values || [existing.de_gb].filter(Boolean)), incoming.de_gb].filter(Boolean))];
+  merged.raw_source_references = [
+    ...(existing.raw_source_references || [existing.raw_row_identity].filter(Boolean)),
+    incoming.raw_row_identity
+  ].filter(Boolean);
+  merged.source_children = [...new Set([...(existing.source_children || []), ...(incoming.source_children || [])])];
+  merged.raw_row_count = Number(existing.raw_row_count || 1) + 1;
+  merged.detail_rows_flattened_count = Number(existing.detail_rows_flattened_count || (existing.detail_rows_flattened ? 1 : 0)) + (incoming.detail_rows_flattened ? 1 : 0);
+  merged.detail_rows_flattened = Boolean(merged.detail_rows_flattened_count);
+  merged.actionable_source_row = Boolean(existing.actionable_source_row || incoming.actionable_source_row);
+  merged.sales_ready_input = Boolean(existing.sales_ready_input || incoming.sales_ready_input);
+  return merged;
+}
+
+function dedupe(records) {
+  const rawSeen = new Set();
+  const portCalls = new Map();
+  const vessels = new Set();
+  let duplicateRawRows = 0;
+
+  for (const record of records) {
+    if (record.raw_row_identity && rawSeen.has(record.raw_row_identity)) {
+      duplicateRawRows += 1;
+      continue;
+    }
+    if (record.raw_row_identity) rawSeen.add(record.raw_row_identity);
+    if (record.vessel_identity) vessels.add(record.vessel_identity);
+    const key = String(record.port_call_identity || [record.vessel_id, record.port, record.eta, record.ata, record.berth].join("|")).toLowerCase();
+    const existing = portCalls.get(key);
+    portCalls.set(key, existing ? mergePortCallRecord(existing, record) : {
+      ...record,
+      raw_row_count: 1,
+      de_gb_values: [record.de_gb].filter(Boolean),
+      raw_source_references: [record.raw_row_identity].filter(Boolean),
+      detail_rows_flattened_count: record.detail_rows_flattened ? 1 : 0
+    });
+  }
+
+  const merged = [...portCalls.values()];
+  const capped = merged.slice(0, MAX_OUTPUT_ROWS);
+  diagnostics.count_funnel = {
+    raw_api_rows: records.length,
+    detail_rows_flattened: records.filter(record => record.detail_rows_flattened).length,
+    normalized_rows: records.length,
+    duplicate_raw_rows: duplicateRawRows,
+    unique_port_calls: merged.length,
+    unique_vessels: vessels.size,
+    capped_by_limit: merged.length > MAX_OUTPUT_ROWS,
+    cap_name: merged.length > MAX_OUTPUT_ROWS ? "MAX_OUTPUT_ROWS" : null,
+    cap_value: MAX_OUTPUT_ROWS
+  };
+  return capped;
 }
 
 function cargoHarborUseParams(row = {}, record = {}) {
@@ -821,7 +930,7 @@ async function collectRealRows() {
     diagnostics.attempted_count += 1;
     try {
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_truncated } = await fetchPagedRows(source, rowLimit);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
@@ -832,11 +941,17 @@ async function collectRealRows() {
       diag.resultMsg = result_meta?.resultMsg || null;
       diag.totalCount = result_meta?.totalCount !== undefined ? Number(result_meta.totalCount) || result_meta.totalCount : null;
       diag.pages_attempted = pages_attempted;
+      diag.totalPages_expected = pagination_total_pages_expected;
+      diag.pages_collected = pagination_pages_collected;
+      diag.rows_collected = pagination_rows_collected;
       diag.page_summaries = page_summaries;
       diag.pagination_total_count = pagination_total_count;
       diag.row_count = rows.length;
       diag.max_rows = rowLimit;
       diag.truncated = pagination_truncated || rows.length >= rowLimit;
+      diag.capped_by_limit = rows.length >= rowLimit;
+      diag.cap_name = rows.length >= rowLimit ? "MAX_SOURCE_ROWS" : null;
+      diag.cap_value = rows.length >= rowLimit ? rowLimit : null;
       diag.url_host = url.host;
       diag.sample_keys = rows[0] && typeof rows[0] === "object" ? Object.keys(rows[0]).slice(0, 30) : [];
       let childAttempted = 0;
@@ -901,6 +1016,15 @@ async function collectRealRows() {
   const deduped = dedupe(records);
   diagnostics.real_row_count = deduped.length;
   diagnostics.actionable_row_count = deduped.filter(record => record.actionable_source_row).length;
+  diagnostics.count_funnel = {
+    ...(diagnostics.count_funnel || {}),
+    target_vessels_5000gt_plus: deduped.filter(record => Number(record.gt || record.grtg || record.intrlGrtg || 0) >= 5000).length,
+    unknown_gt_review: deduped.filter(record => !Number(record.gt || record.grtg || record.intrlGrtg || 0)).length,
+    excluded_under_5000gt: deduped.filter(record => {
+      const gt = Number(record.gt || record.grtg || record.intrlGrtg || 0);
+      return gt > 0 && gt < 5000;
+    }).length
+  };
   return deduped;
 }
 
