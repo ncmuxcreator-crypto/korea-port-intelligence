@@ -21,6 +21,8 @@ const required = [
   "dashboard/api/high-value-low-confidence.json",
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
+  "dashboard/api/quality/basic-info-coverage.json",
+  "dashboard/api/review/basic-info-missing.json",
   "dashboard/api/candidate-summary.json",
   "dashboard/api/contact-queue.json",
   "dashboard/api/hot-candidates.json",
@@ -96,6 +98,11 @@ for (const item of data) {
   for (const field of ["commercial_value_score", "commercial_value_band", "data_confidence_score", "data_confidence_band", "vessel_value_score", "sales_accessibility_score"]) {
     if (!(field in item)) {
       throw new Error(`Missing commercial value field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
+  for (const field of ["operator_normalized", "agent_normalized", "destination_port", "vessel_basic_info_completeness_score", "vessel_basic_info_missing_fields", "vessel_spec_enrichment_priority"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing basic vessel information field ${field} for ${item.vessel_name || item.vessel_id}`);
     }
   }
 }

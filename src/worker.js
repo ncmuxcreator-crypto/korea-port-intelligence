@@ -1,7 +1,12 @@
 ﻿const API_CACHE_SECONDS = 300;
 const SALES_CANDIDATE_THRESHOLD = 50;
 const IMMEDIATE_TARGET_THRESHOLD = 75;
-
+const BASIC_INFO_FIELDS = [
+  "vessel_name", "normalized_vessel_name", "call_sign", "imo", "mmsi", "vessel_type", "vessel_type_group",
+  "gt", "dwt", "loa", "beam", "flag", "operator", "operator_normalized", "agent", "agent_normalized",
+  "previous_port", "next_port", "destination_port", "port_code", "port_name", "berth_name", "anchorage_name",
+  "eta", "ata", "etd", "atd"
+];
 function json(data, init = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     ...init,
@@ -26,6 +31,17 @@ function scoreLevel(score = 0) {
   if (score >= 70) return "High";
   if (score >= 45) return "Medium";
   return "Low";
+}
+
+function hasValue(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "number") return Number.isFinite(value) && value > 0;
+  return String(value).trim() !== "";
+}
+
+function basicInfoCompleteness(record = {}) {
+  const present = BASIC_INFO_FIELDS.filter(field => hasValue(record[field]));
+  return Math.round((present.length / BASIC_INFO_FIELDS.length) * 100);
 }
 
 function sortCommercialPriority(records) {
@@ -62,6 +78,14 @@ function normalizeSnapshot(row = {}) {
     vessel_type: merged.vessel_type || "",
     vessel_type_group: merged.vessel_type_group || "",
     gt: Number(merged.gt || merged.grtg || merged.intrlGrtg || 0),
+    dwt: Number(merged.dwt || 0),
+    loa: Number(merged.loa || 0),
+    beam: Number(merged.beam || 0),
+    flag: merged.flag || "",
+    operator_normalized: merged.operator_normalized || "",
+    agent: merged.agent || "",
+    agent_normalized: merged.agent_normalized || "",
+    destination_port: merged.destination_port || merged.destination || merged.next_port || "",
     grtg: Number(merged.grtg || 0),
     intrlGrtg: Number(merged.intrlGrtg || 0),
     gt_source: merged.gt_source || (Number(merged.grtg || 0) > 0 ? "grtg" : Number(merged.intrlGrtg || 0) > 0 ? "intrlGrtg" : Number(merged.gt || 0) > 0 ? "gt" : "unknown"),
@@ -126,6 +150,9 @@ function normalizeSnapshot(row = {}) {
     first_seen_at: merged.first_seen_at || row.first_seen_at || "",
     last_seen_at: merged.last_seen_at || row.last_seen_at || "",
     data_quality_tier: merged.data_quality_tier || "",
+    vessel_basic_info_completeness_score: Number(merged.vessel_basic_info_completeness_score || basicInfoCompleteness(merged)),
+    vessel_basic_info_missing_fields: merged.vessel_basic_info_missing_fields || BASIC_INFO_FIELDS.filter(field => !hasValue(merged[field])),
+    vessel_spec_enrichment_priority: Boolean(merged.vessel_spec_enrichment_priority),
     status_bucket: merged.status_bucket || deriveStatusBucket(merged),
     commercial_relevance_status: merged.commercial_relevance_status || deriveCommercialRelevance(merged),
     candidate_band: merged.candidate_band || merged.sales_priority_band || "low_priority",
@@ -490,6 +517,53 @@ function buildHighValueLowConfidence(records) {
     }));
 }
 
+function coverageRatio(records = [], predicate = () => false) {
+  if (!records.length) return 0;
+  return Math.round((records.filter(predicate).length / records.length) * 100);
+}
+
+function buildBasicInfoCoverage(records = []) {
+  return {
+    generated_at: new Date().toISOString(),
+    total_vessels: records.length,
+    average_completeness_score: records.length ? Math.round(records.reduce((sum, v) => sum + Number(v.vessel_basic_info_completeness_score || basicInfoCompleteness(v)), 0) / records.length) : 0,
+    vessel_name_coverage: coverageRatio(records, v => hasValue(v.vessel_name)),
+    call_sign_coverage: coverageRatio(records, v => hasValue(v.call_sign)),
+    gt_coverage: coverageRatio(records, v => hasValue(v.gt)),
+    vessel_type_coverage: coverageRatio(records, v => hasValue(v.vessel_type_group) && v.vessel_type_group !== "unknown"),
+    imo_coverage: coverageRatio(records, v => hasValue(v.imo)),
+    mmsi_coverage: coverageRatio(records, v => hasValue(v.mmsi)),
+    operator_coverage: coverageRatio(records, v => hasValue(v.operator)),
+    agent_coverage: coverageRatio(records, v => hasValue(v.agent)),
+    loa_beam_coverage: coverageRatio(records, v => hasValue(v.loa) && hasValue(v.beam)),
+    dwt_coverage: coverageRatio(records, v => hasValue(v.dwt)),
+    prioritized_vessel_spec_enrichment_count: records.filter(v => v.vessel_spec_enrichment_priority).length,
+    field_weights: BASIC_INFO_FIELDS
+  };
+}
+
+function buildBasicInfoMissing(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => isMainCommercialVessel(v) && ((v.vessel_basic_info_completeness_score || basicInfoCompleteness(v)) < 75 || v.vessel_spec_enrichment_priority))
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      normalized_vessel_name: v.normalized_vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      gt: v.gt,
+      call_sign: v.call_sign || "",
+      imo: v.imo || "",
+      mmsi: v.mmsi || "",
+      vessel_type: v.vessel_type,
+      vessel_type_group: v.vessel_type_group,
+      commercial_value_score: v.commercial_value_score || 0,
+      vessel_basic_info_completeness_score: v.vessel_basic_info_completeness_score || basicInfoCompleteness(v),
+      missing_fields: v.vessel_basic_info_missing_fields || BASIC_INFO_FIELDS.filter(field => !hasValue(v[field])),
+      vessel_spec_enrichment_priority: Boolean(v.vessel_spec_enrichment_priority),
+      reason_codes: v.reason_codes || []
+    }));
+}
+
 function buildCongestionWatchlist(records) {
   return sortCommercialPriority(records)
     .filter(v => v.is_anchorage_waiting || v.congestion_exposed_target || (v.congestion_exposure_score || 0) >= 12 || (v.anchorage_hours || 0) >= 12)
@@ -662,6 +736,8 @@ async function apiResponse(pathname, env) {
   if (pathname.endsWith("/review/unknown-gt.json")) return json(buildUnknownGtReview(records), { headers: corsHeaders() });
   if (pathname.endsWith("/review/high-value-low-confidence.json")) return json(buildHighValueLowConfidence(records), { headers: corsHeaders() });
   if (pathname.endsWith("/review/congestion-watchlist.json")) return json(buildCongestionWatchlist(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/quality/basic-info-coverage.json")) return json(buildBasicInfoCoverage(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/review/basic-info-missing.json")) return json(buildBasicInfoMissing(records), { headers: corsHeaders() });
   if (pathname.endsWith("/vessels.json")) return json(records, { headers: corsHeaders() });
   if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)), { headers: corsHeaders() });
   if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });

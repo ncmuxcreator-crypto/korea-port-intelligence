@@ -121,6 +121,72 @@ function normalizeVesselName(value) {
     .replace(/[^A-Z0-9가-힣]+/g, "");
 }
 
+function normalizeCompanyName(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
+function hasValue(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "number") return Number.isFinite(value) && value > 0;
+  return String(value).trim() !== "";
+}
+
+const BASIC_INFO_FIELDS = [
+  "vessel_name",
+  "normalized_vessel_name",
+  "call_sign",
+  "imo",
+  "mmsi",
+  "vessel_type",
+  "vessel_type_group",
+  "gt",
+  "dwt",
+  "loa",
+  "beam",
+  "flag",
+  "operator",
+  "operator_normalized",
+  "agent",
+  "agent_normalized",
+  "previous_port",
+  "next_port",
+  "destination_port",
+  "port_code",
+  "port_name",
+  "berth_name",
+  "anchorage_name",
+  "eta",
+  "ata",
+  "etd",
+  "atd"
+];
+
+function basicInfoCompleteness(record = {}) {
+  const present = BASIC_INFO_FIELDS.filter(field => hasValue(record[field]));
+  const missing = BASIC_INFO_FIELDS.filter(field => !hasValue(record[field]));
+  return {
+    vessel_basic_info_completeness_score: Math.round((present.length / BASIC_INFO_FIELDS.length) * 100),
+    vessel_basic_info_present_fields: present,
+    vessel_basic_info_missing_fields: missing
+  };
+}
+
+function shouldPrioritizeVesselSpecEnrichment(record = {}) {
+  const type = String(record.vessel_type_group || record.vessel_type || "").toLowerCase();
+  return Number(record.gt || record.grtg || record.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD ||
+    !record.imo ||
+    record.gt_status === "unknown_gt_review" ||
+    (record.commercial_value_score || record.total_sales_priority_score || 0) >= REVIEW_TARGET_THRESHOLD ||
+    record.is_anchorage_waiting ||
+    record.status_bucket === "staying_vessels" ||
+    /bulk|tanker|container|pctc|cruise|passenger/.test(type) ||
+    (record.vessel_basic_info_completeness_score || 0) < 65;
+}
+
 function identityConfidenceBand(score = 0) {
   if (score >= 95) return "imo_exact";
   if (score >= 80) return "strong_identifier";
@@ -842,6 +908,13 @@ function enrichSalesSignals(records) {
       port_name: v.port_name || v.port,
       vessel_type: normalizedType,
       vessel_type_group: normalizedTypeGroup,
+      dwt: v.dwt || 0,
+      loa: v.loa || 0,
+      beam: v.beam || 0,
+      flag: v.flag || "",
+      operator_normalized: normalizeCompanyName(v.operator),
+      agent_normalized: normalizeCompanyName(v.agent),
+      destination_port: v.destination_port || v.destination || v.next_port || "",
       berth_name: v.berth_name || v.berth || "",
       anchorage_name: v.anchorage_name || v.anchorage_zone || "",
       excluded_commercial_type: excludedCommercialType(v),
@@ -853,6 +926,8 @@ function enrichSalesSignals(records) {
     };
     enriched.status_bucket = deriveStatusBucket(enriched, scheduleMetrics);
     enriched.commercial_relevance_status = commercialRelevanceStatus(enriched);
+    Object.assign(enriched, basicInfoCompleteness(enriched));
+    enriched.vessel_spec_enrichment_priority = shouldPrioritizeVesselSpecEnrichment(enriched);
     if (v.actionable_source_row === false) {
       enriched.is_cleaning_candidate = false;
       enriched.is_immediate_candidate = false;
@@ -1103,6 +1178,56 @@ function buildScoringDiagnostics(records = []) {
     stay_hours_detected_count: records.filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.planned_stay_hours || 0) > 0).length,
     vessel_type_group_detected_count: records.filter(v => v.vessel_type_group && v.vessel_type_group !== "unknown").length
   };
+}
+
+function coverageRatio(records = [], predicate = () => false) {
+  if (!records.length) return 0;
+  return Math.round((records.filter(predicate).length / records.length) * 100);
+}
+
+function buildBasicInfoCoverage(records = []) {
+  return {
+    generated_at: new Date().toISOString(),
+    total_vessels: records.length,
+    average_completeness_score: records.length
+      ? Math.round(records.reduce((sum, v) => sum + Number(v.vessel_basic_info_completeness_score || 0), 0) / records.length)
+      : 0,
+    vessel_name_coverage: coverageRatio(records, v => hasValue(v.vessel_name)),
+    call_sign_coverage: coverageRatio(records, v => hasValue(v.call_sign)),
+    gt_coverage: coverageRatio(records, v => hasValue(v.gt || v.grtg || v.intrlGrtg)),
+    vessel_type_coverage: coverageRatio(records, v => hasValue(v.vessel_type_group) && v.vessel_type_group !== "unknown"),
+    imo_coverage: coverageRatio(records, v => hasValue(v.imo)),
+    mmsi_coverage: coverageRatio(records, v => hasValue(v.mmsi)),
+    operator_coverage: coverageRatio(records, v => hasValue(v.operator)),
+    agent_coverage: coverageRatio(records, v => hasValue(v.agent)),
+    loa_beam_coverage: coverageRatio(records, v => hasValue(v.loa) && hasValue(v.beam)),
+    dwt_coverage: coverageRatio(records, v => hasValue(v.dwt)),
+    prioritized_vessel_spec_enrichment_count: records.filter(shouldPrioritizeVesselSpecEnrichment).length,
+    field_weights: BASIC_INFO_FIELDS
+  };
+}
+
+function buildBasicInfoMissingReview(records = []) {
+  return sortCommercialPriority(records)
+    .filter(v => isMainCommercialVessel(v) && ((v.vessel_basic_info_completeness_score || 0) < 75 || shouldPrioritizeVesselSpecEnrichment(v)))
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      normalized_vessel_name: v.normalized_vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      gt: v.gt,
+      call_sign: v.call_sign || "",
+      imo: v.imo || "",
+      mmsi: v.mmsi || "",
+      vessel_type: v.vessel_type,
+      vessel_type_group: v.vessel_type_group,
+      commercial_value_score: v.commercial_value_score || 0,
+      vessel_basic_info_completeness_score: v.vessel_basic_info_completeness_score || 0,
+      missing_fields: v.vessel_basic_info_missing_fields || [],
+      vessel_spec_enrichment_priority: Boolean(v.vessel_spec_enrichment_priority),
+      enrichment_reason: shouldPrioritizeVesselSpecEnrichment(v) ? "prioritized_for_vessel_spec_or_manual_identity_enrichment" : "basic_info_incomplete",
+      reason_codes: v.reason_codes || []
+    }));
 }
 
 function buildPortCongestionHeatmap(records) {
@@ -1913,6 +2038,7 @@ try {
     sales_candidate_count: salesCandidates.length,
     immediate_target_count: immediateTargets.length,
     scoring_diagnostics: scoringDiagnostics,
+    basic_info_coverage: buildBasicInfoCoverage(vessels),
     imo_missing_count: vessels.filter(v => !v.imo).length,
     imo_recovered_count: vessels.filter(v => v.vessel_master_seed_match && v.imo).length,
     high_value_low_confidence_count: buildHighValueLowConfidence(vessels).length,
@@ -1965,6 +2091,10 @@ try {
   fs.writeFileSync("dashboard/api/high-value-low-confidence.json", JSON.stringify(buildHighValueLowConfidence(vessels), null, 2));
   fs.writeFileSync("dashboard/api/congestion-watchlist.json", JSON.stringify(buildCongestionWatchlist(vessels), null, 2));
   fs.writeFileSync("dashboard/api/agent-followup-queue.json", JSON.stringify(buildAgentFollowupQueue(vessels), null, 2));
+  fs.mkdirSync("dashboard/api/quality", { recursive: true });
+  fs.mkdirSync("dashboard/api/review", { recursive: true });
+  fs.writeFileSync("dashboard/api/quality/basic-info-coverage.json", JSON.stringify(buildBasicInfoCoverage(vessels), null, 2));
+  fs.writeFileSync("dashboard/api/review/basic-info-missing.json", JSON.stringify(buildBasicInfoMissingReview(vessels), null, 2));
   fs.writeFileSync("dashboard/api/vessels.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("data/latest-lite.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));
