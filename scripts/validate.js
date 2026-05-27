@@ -15,6 +15,8 @@ const required = [
   "dashboard/api/target-vessels.json",
   "dashboard/api/staying-vessels.json",
   "dashboard/api/arrival-pipeline.json",
+  "dashboard/api/imo-recovery-queue.json",
+  "dashboard/api/high-value-targets.json",
   "dashboard/api/candidate-summary.json",
   "dashboard/api/contact-queue.json",
   "dashboard/api/hot-candidates.json",
@@ -75,6 +77,11 @@ for (const item of data) {
   for (const field of ["grtg", "intrlGrtg", "gt_source", "gt_status", "status_bucket", "commercial_relevance_status"]) {
     if (!(field in item)) {
       throw new Error(`Missing commercial visibility field ${field} for ${item.vessel_name || item.vessel_id}`);
+    }
+  }
+  for (const field of ["vessel_type_group", "commercial_signal_flags", "commercial_signal_strength", "imo_recovery_score", "imo_recovery_priority"]) {
+    if (!(field in item)) {
+      throw new Error(`Missing commercial enrichment field ${field} for ${item.vessel_name || item.vessel_id}`);
     }
   }
 }
@@ -233,8 +240,12 @@ if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || 
 if (!worker.includes("cumulative_stay_hours") || !worker.includes("CUMULATIVE_STAY_90D_PLUS")) {
   throw new Error("Worker must preserve cumulative stay beyond short port-call windows");
 }
-for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
+for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
   if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
+}
+const referenceDictionaries = fs.readFileSync("scripts/lib/reference-dictionaries.js", "utf8");
+for (const marker of ["classifyAnchorage", "classifyBerth", "normalizeVesselType", "남외항", "ANCH", "O A", "bulk_carrier", "pctc"]) {
+  if (!referenceDictionaries.includes(marker)) throw new Error(`Reference dictionary enrichment missing marker: ${marker}`);
 }
 const gdriveLib = fs.readFileSync("scripts/lib/gdrive.js", "utf8");
 if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normalizeFolderId") || !gdriveLib.includes("Buffer.from(value, \"base64\")")) {

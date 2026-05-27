@@ -49,12 +49,16 @@ function normalizeSnapshot(row = {}) {
     port: merged.port || "Korea",
     berth: merged.berth || "",
     anchorage_zone: merged.anchorage_zone || "",
+    anchorage_name: merged.anchorage_name || merged.anchorage_zone || "",
+    berth_class: merged.berth_class || "",
+    anchorage_class: merged.anchorage_class || "",
     status: merged.status || "Observed",
     operator: merged.operator || "",
     destination: merged.destination || "",
     previous_port: merged.previous_port || "",
     next_port: merged.next_port || "",
     vessel_type: merged.vessel_type || "",
+    vessel_type_group: merged.vessel_type_group || "",
     gt: Number(merged.gt || merged.grtg || merged.intrlGrtg || 0),
     grtg: Number(merged.grtg || 0),
     intrlGrtg: Number(merged.intrlGrtg || 0),
@@ -94,6 +98,13 @@ function normalizeSnapshot(row = {}) {
     stay_days_group: merged.stay_days_group || "stay_under_3d",
     operational_risk_flags: merged.operational_risk_flags || [],
     operational_risk_score: Number(merged.operational_risk_score || riskScore),
+    commercial_signal_flags: merged.commercial_signal_flags || [],
+    commercial_signal_strength: Number(merged.commercial_signal_strength || 0),
+    high_value_target: Boolean(merged.high_value_target),
+    congestion_exposed_target: Boolean(merged.congestion_exposed_target),
+    imo_recovery_required: Boolean(merged.imo_recovery_required),
+    imo_recovery_score: Number(merged.imo_recovery_score || 0),
+    imo_recovery_priority: merged.imo_recovery_priority || "review",
     operator_fleet_badges: merged.operator_fleet_badges || [],
     actionable_source_row: Boolean(merged.actionable_source_row ?? merged.sales_ready_input ?? true),
     sales_ready_input: Boolean(merged.sales_ready_input ?? merged.actionable_source_row ?? true),
@@ -372,27 +383,21 @@ function buildCommandCenter(records) {
     operational_risk_queue: sortCommercialPriority(records)
       .filter(v => (v.operational_risk_flags || []).length || (v.operational_risk_score || 0) >= 60)
       .slice(0, 12),
-    imo_recovery_board: records
-      .filter(v => v.imo_status && v.imo_status !== "present")
-      .sort((a, b) => (b.total_sales_priority_score || 0) - (a.total_sales_priority_score || 0))
-      .slice(0, 12)
-      .map(v => ({
-        vessel_name: v.vessel_name,
-        port: v.port,
-        gt: v.gt,
-        call_sign: v.call_sign || null,
-        hybrid_entity_key: v.hybrid_entity_key,
-        identification_method: v.identification_method,
-        imo_status: v.imo_status,
-        priority: v.imo_recovery_priority || "review",
-        score: v.total_sales_priority_score
-      })),
+    high_value_targets: buildHighValueTargets(records).slice(0, 12),
+    imo_recovery_board: buildUnknownImo(records).slice(0, 12),
     operating_rule: "Worker reads Supabase snapshots at request time; GitHub main is no longer mutated by generated JSON commits."
   };
 }
 
 function buildUnknownImo(records) {
-  return sortCommercialPriority(records.filter(v => !v.imo || v.imo_status !== "present"))
+  return records.filter(v => !v.imo || v.imo_status !== "present")
+    .slice()
+    .sort((a, b) =>
+      (b.imo_recovery_score || 0) - (a.imo_recovery_score || 0) ||
+      (b.gt || 0) - (a.gt || 0) ||
+      (b.stay_hours || 0) - (a.stay_hours || 0) ||
+      (b.total_sales_priority_score || 0) - (a.total_sales_priority_score || 0)
+    )
     .map(v => ({
       vessel_name: v.vessel_name,
       port_code: v.port_code || portCodeFromName(v.port),
@@ -400,10 +405,39 @@ function buildUnknownImo(records) {
       call_sign: v.call_sign || "",
       mmsi: v.mmsi || "",
       gt: v.gt || 0,
+      vessel_type: v.vessel_type || "",
+      vessel_type_group: v.vessel_type_group || "",
+      stay_hours: v.stay_hours || 0,
+      anchorage_hours: v.anchorage_hours || 0,
+      is_anchorage_waiting: Boolean(v.is_anchorage_waiting),
       hybrid_entity_key: v.hybrid_entity_key,
       master_vessel_id: v.master_vessel_id || v.hybrid_entity_key,
-      confidence_band: (v.total_sales_priority_score || 0) >= 80 ? "high_priority_review" : (v.gt || 0) >= 5000 ? "probable" : "unresolved",
-      score: v.total_sales_priority_score || 0
+      confidence_band: (v.imo_recovery_score || 0) >= 80 ? "urgent" : (v.imo_recovery_score || 0) >= 60 ? "high" : (v.gt || 0) >= 5000 ? "probable" : "unresolved",
+      priority: v.imo_recovery_priority || "review",
+      imo_recovery_score: v.imo_recovery_score || 0,
+      score: v.total_sales_priority_score || 0,
+      reason_codes: v.reason_codes || []
+    }));
+}
+
+function buildHighValueTargets(records) {
+  return sortCommercialPriority(records)
+    .filter(v => v.high_value_target || (Number(v.gt || 0) >= 30000 && /bulk|bulk_carrier|tanker|pctc/.test(String(v.vessel_type_group || v.vessel_type || "").toLowerCase())))
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code || portCodeFromName(v.port),
+      gt: v.gt,
+      vessel_type: v.vessel_type,
+      vessel_type_group: v.vessel_type_group,
+      berth_class: v.berth_class || null,
+      anchorage_name: v.anchorage_name || null,
+      stay_hours: v.stay_hours || 0,
+      anchorage_hours: v.anchorage_hours || 0,
+      is_anchorage_waiting: Boolean(v.is_anchorage_waiting),
+      total_sales_priority_score: v.total_sales_priority_score || 0,
+      commercial_signal_strength: v.commercial_signal_strength || 0,
+      reason_codes: v.reason_codes || []
     }));
 }
 
@@ -549,6 +583,8 @@ async function apiResponse(pathname, env) {
   if (pathname.endsWith("/target-vessels.json")) return json(buckets.target_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/staying-vessels.json")) return json(buckets.staying_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/arrival-pipeline.json")) return json(buckets.arrival_pipeline, { headers: corsHeaders() });
+  if (pathname.endsWith("/imo-recovery-queue.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/high-value-targets.json")) return json(buildHighValueTargets(records), { headers: corsHeaders() });
   if (pathname.endsWith("/vessels.json")) return json(records, { headers: corsHeaders() });
   if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60)), { headers: corsHeaders() });
   if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });
