@@ -278,6 +278,18 @@ function gtGroup(gt) {
   return "gt_unknown";
 }
 
+function defaultVesselTypeGroup(v = {}) {
+  const text = String([v.vessel_type_group, v.vessel_type, v.ship_type, v.kind].filter(Boolean).join(" ")).toLowerCase();
+  if (/bulk|bulker|cape|ore|산물|벌크|광석/.test(text)) return "bulk_carrier";
+  if (/tanker|vlcc|crude|chemical|product|원유|유조|석유|케미컬/.test(text)) return "tanker";
+  if (/pctc|pcc|car carrier|ro-?ro|roro|자동차|차량/.test(text)) return "pctc";
+  if (/container|컨테이너/.test(text)) return "container";
+  if (/lng|lpg|gas|가스/.test(text)) return "lng_lpg";
+  if (/cruise|passenger|여객|크루즈/.test(text)) return "passenger";
+  if (/tug|fish|fishing|patrol|workboat|dredger|어선|예선|관공선|작업선|준설/.test(text)) return "excluded_small_craft";
+  return "unknown";
+}
+
 function commercialGtProfile(v = {}) {
   const grtg = Number(v.grtg || 0);
   const intrlGrtg = Number(v.intrlGrtg || 0);
@@ -690,7 +702,9 @@ function enrichSalesSignals(records) {
     const gtProfile = commercialGtProfile(v);
     const biofoulingScore = deriveBiofoulingScore(v, scheduleMetrics);
     const ciiPressureScore = deriveCiiPressureScore(v, scheduleMetrics, biofoulingScore);
-    const scoringInput = { ...v, gt: gtProfile.gt, grtg: gtProfile.grtg, intrlGrtg: gtProfile.intrlGrtg };
+    const normalizedTypeGroup = v.vessel_type_group || defaultVesselTypeGroup(v);
+    const normalizedType = v.vessel_type || (normalizedTypeGroup === "unknown" ? "Unknown" : normalizedTypeGroup);
+    const scoringInput = { ...v, vessel_type: normalizedType, vessel_type_group: normalizedTypeGroup, gt: gtProfile.gt, grtg: gtProfile.grtg, intrlGrtg: gtProfile.intrlGrtg };
     const scoreParts = deriveCommercialScoreParts(scoringInput, scheduleMetrics);
     const commercialValue = deriveCommercialValue({ ...scoringInput, gt_status: gtProfile.gt_status }, scoreParts);
     const dataConfidence = deriveDataConfidence({ ...v, ...gtProfile, ...scoreParts });
@@ -729,6 +743,8 @@ function enrichSalesSignals(records) {
       compliance_band: complianceWatch ? "biosecurity_watch" : "standard",
       port_code: v.port_code || portCodeFromName(v.port),
       port_name: v.port_name || v.port,
+      vessel_type: normalizedType,
+      vessel_type_group: normalizedTypeGroup,
       berth_name: v.berth_name || v.berth || "",
       anchorage_name: v.anchorage_name || v.anchorage_zone || "",
       excluded_commercial_type: excludedCommercialType(v),
