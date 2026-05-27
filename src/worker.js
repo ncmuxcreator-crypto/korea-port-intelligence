@@ -833,6 +833,7 @@ function buildStatus(records, source) {
     commercial_command_center: buildCommandCenter(buckets.target_vessels),
     port_intelligence: buildPorts(buckets.target_vessels),
     port_congestion_heatmap: buildPortHeatmap(buckets.target_vessels),
+    all_port_congestion_heatmap: buildPortHeatmap(records),
     biofouling_timeline: buildBioTimeline(buckets.target_vessels)
   };
 }
