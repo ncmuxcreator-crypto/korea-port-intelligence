@@ -17,6 +17,9 @@ const PRIORITY_PORTS = [
   "Pohang"
 ];
 const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 5000);
+const REVIEW_TARGET_THRESHOLD = Number(process.env.REVIEW_TARGET_THRESHOLD || 35);
+const SALES_CANDIDATE_THRESHOLD = Number(process.env.SALES_CANDIDATE_THRESHOLD || 50);
+const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 75);
 
 function parseScheduleTime(value) {
   if (!value) return null;
@@ -31,17 +34,45 @@ function hoursBetween(start, end) {
   return Math.max(0, Math.round(((endDate.getTime() - startDate.getTime()) / 36e5) * 10) / 10);
 }
 
+function hasAnchorageSignal(v = {}) {
+  const text = [
+    v.status,
+    v.berth_name,
+    v.berth,
+    v.anchorage_name,
+    v.anchorage_zone,
+    v.laidupFcltyNm,
+    v.laidup_fclty_nm,
+    v.facility_name_raw,
+    v.facility_name_normalized,
+    v.facility_code,
+    v.berth_class,
+    v.anchorage_class
+  ].filter(Boolean).join(" ");
+  return /waiting|anchorage|anchor|idle|drifting|묘박|정박|박지|외항|남외항|북외항|대기|ANCH|O\/A|OUTER/i.test(text);
+}
+
 function deriveScheduleMetrics(v) {
   const arrival = v.ata || v.eta;
   const berthStart = v.atb || v.etb;
   const departure = v.atd || v.etd;
-  const stayHours = hoursBetween(arrival, departure);
-  const berthHours = hoursBetween(berthStart || arrival, departure);
-  const waitingHours = berthStart ? hoursBetween(arrival, berthStart) : (/waiting|anchorage|anchor|idle|drifting/i.test(v.status || "") ? stayHours : 0);
-  const workWindowHours = Math.max(0, Math.min(96, berthHours ?? stayHours ?? 0));
+  const now = new Date().toISOString();
+  const plannedStayHours = hoursBetween(v.eta, v.etd);
+  const activeDeparture = v.atd ? v.atd : v.ata ? now : departure;
+  const stayHours = hoursBetween(arrival, activeDeparture);
+  const berthEnd = v.atd ? v.atd : berthStart ? now : departure;
+  const berthHours = hoursBetween(berthStart || arrival, berthEnd);
+  const anchorageDetected = hasAnchorageSignal(v);
+  const waitingHours = berthStart
+    ? hoursBetween(arrival, berthStart)
+    : anchorageDetected
+      ? (stayHours ?? plannedStayHours ?? 0)
+      : 0;
+  const workWindowHours = Math.max(0, Math.min(96, berthHours ?? plannedStayHours ?? stayHours ?? 0));
 
   return {
     stay_hours: stayHours ?? Math.round(Number(v.days_in_korea || 0) * 24),
+    planned_stay_hours: plannedStayHours ?? 0,
     current_call_stay_hours: stayHours ?? Math.round(Number(v.days_in_korea || 0) * 24),
     cumulative_stay_hours: Number(v.cumulative_stay_hours || 0),
     cumulative_stay_days: Math.round((Number(v.cumulative_stay_hours || 0) / 24) * 10) / 10,
@@ -174,7 +205,7 @@ function deriveCommercialScoreParts(v, metrics) {
   const stayDays = Number(metrics.stay_hours || 0) / 24;
   const isCommercialType = /vlcc|cape|capesize|bulk|bulker|bulk_carrier|tanker|pctc|lng|lpg|cruise|container/.test(type);
   const sensitiveRoute = /australia|brazil|new zealand|california|usa|canada|port hedland|ponta da madeira/.test(route);
-  const isAnchorageWaiting = Boolean(v.is_anchorage_waiting) || anchorageDays >= 0.5 || /waiting|anchorage|anchor|idle|drifting/.test(status);
+  const isAnchorageWaiting = Boolean(v.is_anchorage_waiting) || anchorageDays >= 0.5 || hasAnchorageSignal(v) || /waiting|anchorage|anchor|idle|drifting/.test(status);
   const isLongIdle = stayDays >= 7 || anchorageDays >= 3;
   const isHighGt = gt >= 30000;
   const isVeryHighGt = gt >= 80000;
@@ -208,9 +239,10 @@ function deriveCommercialScoreParts(v, metrics) {
     sales_accessibility_score: Math.min(5, Math.round((v.agent ? 2 : 0) + (v.operator ? 2 : 0) + (v.operator_normalized || v.agent_normalized ? 1 : 0))),
     commercial_fit_score: commercialFitScore,
     total_sales_priority_score: Math.min(100, total),
-    sales_priority_band: total >= 80 ? "immediate_target" : total >= 60 ? "high_potential" : total >= 40 ? "monitor" : "low_priority",
+    sales_priority_band: total >= IMMEDIATE_TARGET_THRESHOLD ? "immediate_target" : total >= SALES_CANDIDATE_THRESHOLD ? "high_potential" : total >= REVIEW_TARGET_THRESHOLD ? "review_target" : "low_priority",
     commercial_gt_threshold: COMMERCIAL_GT_THRESHOLD,
     meets_commercial_gt_threshold: meetsCommercialGtThreshold,
+    review_target: total >= REVIEW_TARGET_THRESHOLD,
     is_anchorage_waiting: isAnchorageWaiting,
     is_long_idle: isLongIdle,
     anchorage_days: Math.round(anchorageDays * 10) / 10,
@@ -226,9 +258,9 @@ function deriveCommercialScoreParts(v, metrics) {
 
 function commercialValueBand(score, gtStatus) {
   if (gtStatus === "unknown_gt_review" && score >= 40) return "unknown_gt_review";
-  if (score >= 80) return "immediate_commercial_target";
-  if (score >= 60) return "high_potential_target";
-  if (score >= 40) return "monitor";
+  if (score >= IMMEDIATE_TARGET_THRESHOLD) return "immediate_commercial_target";
+  if (score >= SALES_CANDIDATE_THRESHOLD) return "high_potential_target";
+  if (score >= REVIEW_TARGET_THRESHOLD) return "review_target";
   return "low_priority";
 }
 
@@ -246,7 +278,7 @@ function deriveCommercialValue(v = {}, scoreParts = {}) {
     commercial_value_score: commercialValueScore,
     commercial_value_band: commercialValueBand(commercialValueScore, v.gt_status),
     total_sales_priority_score: commercialValueScore,
-    sales_priority_band: commercialValueScore >= 80 ? "immediate_target" : commercialValueScore >= 60 ? "high_potential" : commercialValueScore >= 40 ? "monitor" : "low_priority"
+    sales_priority_band: commercialValueScore >= IMMEDIATE_TARGET_THRESHOLD ? "immediate_target" : commercialValueScore >= SALES_CANDIDATE_THRESHOLD ? "high_potential" : commercialValueScore >= REVIEW_TARGET_THRESHOLD ? "review_target" : "low_priority"
   };
 }
 
@@ -325,9 +357,9 @@ function deriveStatusBucket(v = {}, metrics = {}) {
   const etd = parseScheduleTime(v.etd);
   const atd = parseScheduleTime(v.atd);
   const status = String(v.status || "").toLowerCase();
-  if (atd && atd.getTime() < now.getTime() && !/waiting|anchorage|anchor|berth|moored|alongside|idle/.test(status)) return "completed_departure";
+  if (atd && atd.getTime() < now.getTime() && !hasAnchorageSignal(v) && !/waiting|anchorage|anchor|berth|moored|alongside|idle/.test(status)) return "completed_departure";
   if (ata && !atd) return "staying_vessels";
-  if (/waiting|anchorage|anchor|idle|drifting/.test(status) || (metrics.anchorage_hours || 0) > 0) return "staying_vessels";
+  if (hasAnchorageSignal(v) || /waiting|anchorage|anchor|idle|drifting/.test(status) || (metrics.anchorage_hours || 0) > 0) return "staying_vessels";
   if (/berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) return "staying_vessels";
   if (eta && eta.getTime() >= now.getTime()) return "arrival_pipeline";
   if (etd && etd.getTime() >= now.getTime()) return "staying_vessels";
@@ -357,7 +389,7 @@ function buildCommercialSignals(v = {}, metrics = {}) {
   if (/tanker/.test(typeGroup)) flags.push("TANKER_TARGET");
   if (/pctc/.test(typeGroup)) flags.push("PCTC_TARGET");
   if (/cruise|passenger/.test(typeGroup)) flags.push("CRUISE_TARGET");
-  if (v.is_anchorage_waiting || v.berth_class === "anchorage") flags.push("ANCHORAGE_WAITING_CLASSIFIED");
+  if (v.is_anchorage_waiting || v.berth_class === "anchorage" || hasAnchorageSignal(v)) flags.push("ANCHORAGE_WAITING_CLASSIFIED");
   if ((metrics.stay_hours || 0) >= 48) flags.push("STAY_48H_PLUS");
   if ((metrics.stay_hours || 0) >= 720) flags.push("CUMULATIVE_STAY_30D_PLUS");
   if ((metrics.anchorage_hours || 0) >= 24) flags.push("ANCHORAGE_24H_PLUS");
@@ -494,17 +526,17 @@ function buildCandidateProfile(v) {
   let contactWindow = "Monitor weekly";
   let nextAction = "Monitor only; wait for stronger port-stay or itinerary signal.";
 
-  if (score >= 82) {
+  if (score >= IMMEDIATE_TARGET_THRESHOLD) {
     level = "Immediate Candidate";
     urgency = "Now";
     contactWindow = "Contact within 24 hours";
     nextAction = "Prepare UWC outreach now: confirm hull condition, port window, and compliance route.";
-  } else if (score >= 65) {
+  } else if (score >= SALES_CANDIDATE_THRESHOLD) {
     level = "Strong Candidate";
     urgency = "Soon";
     contactWindow = "Contact within 48 hours";
     nextAction = "Send soft check-in: ask for itinerary, hull condition, and next regulated voyage.";
-  } else if (score >= 45) {
+  } else if (score >= REVIEW_TARGET_THRESHOLD) {
     level = "Watch Candidate";
     urgency = "Watch";
     contactWindow = "Review in 3-5 days";
@@ -531,24 +563,24 @@ function buildCandidateProfile(v) {
     candidate_next_action: nextAction,
     candidate_reasons: signals.map(s => s.label),
     candidate_confidence: confidence,
-    is_cleaning_candidate: score >= 45,
-    is_immediate_candidate: score >= 82
+    is_cleaning_candidate: score >= SALES_CANDIDATE_THRESHOLD,
+    is_immediate_candidate: score >= IMMEDIATE_TARGET_THRESHOLD
   };
 }
 
 function buildCandidateSummary(records) {
   const candidates = records.filter(v => v.is_cleaning_candidate);
   const immediate = records.filter(v => v.is_immediate_candidate);
-  const strong = records.filter(v => v.cleaning_candidate_score >= 65 && v.cleaning_candidate_score < 82);
-  const watch = records.filter(v => v.cleaning_candidate_score >= 45 && v.cleaning_candidate_score < 65);
+  const strong = records.filter(v => v.cleaning_candidate_score >= SALES_CANDIDATE_THRESHOLD && v.cleaning_candidate_score < IMMEDIATE_TARGET_THRESHOLD);
+  const watch = records.filter(v => v.cleaning_candidate_score >= REVIEW_TARGET_THRESHOLD && v.cleaning_candidate_score < SALES_CANDIDATE_THRESHOLD);
   const byPort = new Map();
   for (const v of candidates) {
     const port = v.port || "Unknown";
     const current = byPort.get(port) || { port, total: 0, immediate: 0, strong: 0, watch: 0, top_score: 0 };
     current.total += 1;
     current.immediate += v.is_immediate_candidate ? 1 : 0;
-    current.strong += v.cleaning_candidate_score >= 65 && v.cleaning_candidate_score < 82 ? 1 : 0;
-    current.watch += v.cleaning_candidate_score >= 45 && v.cleaning_candidate_score < 65 ? 1 : 0;
+    current.strong += v.cleaning_candidate_score >= SALES_CANDIDATE_THRESHOLD && v.cleaning_candidate_score < IMMEDIATE_TARGET_THRESHOLD ? 1 : 0;
+    current.watch += v.cleaning_candidate_score >= REVIEW_TARGET_THRESHOLD && v.cleaning_candidate_score < SALES_CANDIDATE_THRESHOLD ? 1 : 0;
     current.top_score = Math.max(current.top_score, v.cleaning_candidate_score || 0);
     byPort.set(port, current);
   }
@@ -619,11 +651,11 @@ function buildPortIntelligence(records) {
       current.scored_count += 1;
       current.scored_vessels.push(v);
     }
-    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60) {
+    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD) {
       current.candidate_count += 1;
       current.sales_candidates.push(v);
     }
-    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80) {
+    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD) {
       current.immediate_target_count += 1;
       current.immediate_targets.push(v);
     }
@@ -650,7 +682,7 @@ function dataQualityTier(v) {
 
 function buildCandidateList(records = []) {
   return records
-    .filter(v => v.actionable_source_row !== false && v.commercial_relevance_status === "target_vessel" && v.meets_commercial_gt_threshold && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60))
+    .filter(v => v.actionable_source_row !== false && v.commercial_relevance_status === "target_vessel" && v.meets_commercial_gt_threshold && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD))
     .slice()
     .sort((a, b) =>
       Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
@@ -675,7 +707,7 @@ function buildPortSummary(records) {
     current.total += 1;
     current.critical += (v.risk_score || 0) >= 85 ? 1 : 0;
     current.high_risk += (v.risk_score || 0) >= 70 ? 1 : 0;
-    current.waiting += /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "") ? 1 : 0;
+    current.waiting += hasAnchorageSignal(v) || /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "") ? 1 : 0;
     current.at_berth += /berth|alongside|moored/i.test(v.status || "") ? 1 : 0;
     current.avg_risk += v.risk_score || 0;
     current.opportunity_usd += v.opportunity_usd || 0;
@@ -768,8 +800,8 @@ function enrichSalesSignals(records) {
       enriched.sales_reason = enriched.reason_codes;
       enriched.total_sales_priority_score = 0;
     } else {
-      enriched.is_cleaning_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= 60;
-      enriched.is_immediate_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= 80;
+      enriched.is_cleaning_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= SALES_CANDIDATE_THRESHOLD;
+      enriched.is_immediate_candidate = isMainCommercialVessel(enriched) && enriched.commercial_relevance_status === "target_vessel" && enriched.commercial_value_score >= IMMEDIATE_TARGET_THRESHOLD;
       enriched.is_operating_candidate = enriched.is_cleaning_candidate;
       enriched.is_operating_immediate_candidate = enriched.is_immediate_candidate;
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
@@ -790,13 +822,13 @@ function enrichSalesSignals(records) {
     Object.assign(enriched, buildCommercialSignals(enriched, scheduleMetrics));
     Object.assign(enriched, buildImoRecovery(enriched, scheduleMetrics));
     if (enriched.high_value_target && (enriched.congestion_exposed_target || (scheduleMetrics.stay_hours || 0) >= 48)) {
-      enriched.total_sales_priority_score = Math.max(enriched.total_sales_priority_score || 0, enriched.congestion_exposed_target ? 80 : 60);
+      enriched.total_sales_priority_score = Math.max(enriched.total_sales_priority_score || 0, enriched.congestion_exposed_target ? IMMEDIATE_TARGET_THRESHOLD : SALES_CANDIDATE_THRESHOLD);
       enriched.commercial_value_score = Math.max(enriched.commercial_value_score || 0, enriched.total_sales_priority_score);
       enriched.commercial_value_band = commercialValueBand(enriched.commercial_value_score, enriched.gt_status);
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
-      enriched.sales_priority_band = enriched.total_sales_priority_score >= 80 ? "immediate_target" : "high_potential";
-      enriched.is_cleaning_candidate = enriched.commercial_relevance_status === "target_vessel" && enriched.total_sales_priority_score >= 60;
-      enriched.is_immediate_candidate = enriched.commercial_relevance_status === "target_vessel" && enriched.total_sales_priority_score >= 80;
+      enriched.sales_priority_band = enriched.total_sales_priority_score >= IMMEDIATE_TARGET_THRESHOLD ? "immediate_target" : "high_potential";
+      enriched.is_cleaning_candidate = enriched.commercial_relevance_status === "target_vessel" && enriched.total_sales_priority_score >= SALES_CANDIDATE_THRESHOLD;
+      enriched.is_immediate_candidate = enriched.commercial_relevance_status === "target_vessel" && enriched.total_sales_priority_score >= IMMEDIATE_TARGET_THRESHOLD;
       enriched.is_operating_candidate = enriched.is_cleaning_candidate;
       enriched.is_operating_immediate_candidate = enriched.is_immediate_candidate;
     }
@@ -920,7 +952,7 @@ function buildUnknownGtReview(records = []) {
 
 function buildHighValueLowConfidence(records = []) {
   return sortCommercialPriority(records)
-    .filter(v => (v.commercial_value_score || 0) >= 60 && (v.data_confidence_score || 0) < 60)
+    .filter(v => (v.commercial_value_score || 0) >= REVIEW_TARGET_THRESHOLD && ((v.data_confidence_score || 0) < 60 || !v.imo))
     .map(v => ({
       vessel_name: v.vessel_name,
       port: v.port,
@@ -941,7 +973,7 @@ function buildHighValueLowConfidence(records = []) {
 
 function buildCongestionWatchlist(records = []) {
   return sortCommercialPriority(records)
-    .filter(v => v.is_anchorage_waiting || v.congestion_exposed_target || (v.congestion_exposure_score || 0) >= 12 || (v.anchorage_hours || 0) >= 12)
+    .filter(v => v.is_anchorage_waiting || hasAnchorageSignal(v) || v.congestion_exposed_target || (v.congestion_exposure_score || 0) >= 8 || (v.anchorage_hours || 0) >= 6)
     .map(v => ({
       vessel_name: v.vessel_name,
       port: v.port,
@@ -975,6 +1007,37 @@ function buildAgentFollowupQueue(records = []) {
       next_action: "Confirm IMO/operator and cleaning decision path via local agent.",
       reason_codes: v.reason_codes || []
     }));
+}
+
+function buildScoringDiagnostics(records = []) {
+  const buckets = {
+    score_0_20: 0,
+    score_20_35: 0,
+    score_35_50: 0,
+    score_50_75: 0,
+    score_75_plus: 0
+  };
+  for (const v of records) {
+    const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+    if (score < 20) buckets.score_0_20 += 1;
+    else if (score < REVIEW_TARGET_THRESHOLD) buckets.score_20_35 += 1;
+    else if (score < SALES_CANDIDATE_THRESHOLD) buckets.score_35_50 += 1;
+    else if (score < IMMEDIATE_TARGET_THRESHOLD) buckets.score_50_75 += 1;
+    else buckets.score_75_plus += 1;
+  }
+  return {
+    total_collected: records.length,
+    target_vessels_5000gt_plus: records.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD).length,
+    ...buckets,
+    review_target_threshold: REVIEW_TARGET_THRESHOLD,
+    sales_candidate_threshold: SALES_CANDIDATE_THRESHOLD,
+    immediate_target_threshold: IMMEDIATE_TARGET_THRESHOLD,
+    missing_gt_count: records.filter(v => !Number(v.gt || v.grtg || v.intrlGrtg || 0)).length,
+    missing_imo_count: records.filter(v => !v.imo).length,
+    anchorage_detected_count: records.filter(v => v.is_anchorage_waiting || hasAnchorageSignal(v) || Number(v.anchorage_hours || 0) > 0).length,
+    stay_hours_detected_count: records.filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.planned_stay_hours || 0) > 0).length,
+    vessel_type_group_detected_count: records.filter(v => v.vessel_type_group && v.vessel_type_group !== "unknown").length
+  };
 }
 
 function buildPortCongestionHeatmap(records) {
@@ -1765,8 +1828,9 @@ try {
   const candidateList = buildCandidateList(vessels);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
-  const salesCandidates = vessels.filter(v => (v.commercial_value_score || 0) >= 60 && v.commercial_relevance_status === "target_vessel");
-  const immediateTargets = vessels.filter(v => (v.commercial_value_score || 0) >= 80 && v.commercial_relevance_status === "target_vessel");
+  const salesCandidates = vessels.filter(v => (v.commercial_value_score || 0) >= SALES_CANDIDATE_THRESHOLD && v.commercial_relevance_status === "target_vessel");
+  const immediateTargets = vessels.filter(v => (v.commercial_value_score || 0) >= IMMEDIATE_TARGET_THRESHOLD && v.commercial_relevance_status === "target_vessel");
+  const scoringDiagnostics = buildScoringDiagnostics(vessels);
   const report = {
     ...baseReport,
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
@@ -1783,6 +1847,7 @@ try {
     scored_vessel_count: scoredVessels.length,
     sales_candidate_count: salesCandidates.length,
     immediate_target_count: immediateTargets.length,
+    scoring_diagnostics: scoringDiagnostics,
     imo_missing_count: vessels.filter(v => !v.imo).length,
     imo_recovered_count: vessels.filter(v => v.vessel_master_seed_match && v.imo).length,
     high_value_low_confidence_count: buildHighValueLowConfidence(vessels).length,
@@ -1852,7 +1917,7 @@ try {
     next_action: v.candidate_next_action || v.recommended_action,
     reason_codes: v.reason_codes || []
   })), null, 2));
-  fs.writeFileSync("dashboard/api/hot-candidates.json", JSON.stringify(candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80).slice(0, 40), null, 2));
+  fs.writeFileSync("dashboard/api/hot-candidates.json", JSON.stringify(candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), null, 2));
   fs.writeFileSync("dashboard/api/hot-vessels.json", JSON.stringify(hotVessels, null, 2));
   fs.writeFileSync("dashboard/api/ports.json", JSON.stringify(portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), null, 2));
   fs.writeFileSync("dashboard/api/coverage-registry.json", JSON.stringify({

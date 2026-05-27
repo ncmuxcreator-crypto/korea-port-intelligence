@@ -589,6 +589,8 @@ function normalizeRow(row, source, now) {
     berth_name: String(firstValue(adapted, FIELD_ALIASES.berth)).trim(),
     anchorage_zone: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
     anchorage_name: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
+    laidupFcltyNm: String(rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"])).trim(),
+    facility_code: String(rawValue(adapted, ["laidupFcltyCd", "laidup_fclty_cd", "LAYDUP_FCLTY_CD", "fcltyCd", "facilityCd", "시설코드"])).trim(),
     status: normalizeStatus(firstValue(adapted, FIELD_ALIASES.status)),
     operator: String(firstValue(adapted, FIELD_ALIASES.operator)).trim(),
     agent: String(firstValue(adapted, FIELD_ALIASES.agent)).trim(),

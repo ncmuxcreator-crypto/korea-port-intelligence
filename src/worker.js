@@ -1,4 +1,6 @@
 ﻿const API_CACHE_SECONDS = 300;
+const SALES_CANDIDATE_THRESHOLD = 50;
+const IMMEDIATE_TARGET_THRESHOLD = 75;
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -89,8 +91,8 @@ function normalizeSnapshot(row = {}) {
     data_confidence_score: Number(merged.data_confidence_score || 0),
     data_confidence_band: merged.data_confidence_band || "review",
     cleaning_candidate_score: candidateScore,
-    is_cleaning_candidate: Boolean(merged.is_cleaning_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= 60)),
-    is_immediate_candidate: Boolean(merged.is_immediate_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= 80)),
+    is_cleaning_candidate: Boolean(merged.is_cleaning_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= SALES_CANDIDATE_THRESHOLD)),
+    is_immediate_candidate: Boolean(merged.is_immediate_candidate ?? (Number(merged.gt || 0) >= Number(merged.commercial_gt_threshold || 5000) && candidateScore >= IMMEDIATE_TARGET_THRESHOLD)),
     reason_codes: merged.reason_codes || merged.sales_reason || [],
     sales_reason: merged.sales_reason || merged.reason_codes || [],
     hybrid_entity_key: merged.hybrid_entity_key || merged.vessel_id,
@@ -466,7 +468,7 @@ function buildUnknownGtReview(records) {
 
 function buildHighValueLowConfidence(records) {
   return sortCommercialPriority(records)
-    .filter(v => (v.commercial_value_score || 0) >= 60 && (v.data_confidence_score || 0) < 60)
+    .filter(v => (v.commercial_value_score || 0) >= 35 && ((v.data_confidence_score || 0) < 60 || !v.imo))
     .map(v => ({
       vessel_name: v.vessel_name,
       port: v.port,
@@ -530,8 +532,8 @@ function buildPorts(records) {
     const p = map.get(key) || { port_code: portCode, port_name: portName, vessel_count: 0, scored_count: 0, candidate_count: 0, immediate_target_count: 0 };
     p.vessel_count += 1;
     if (typeof v.total_sales_priority_score === "number") p.scored_count += 1;
-    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60) p.candidate_count += 1;
-    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80) p.immediate_target_count += 1;
+    if (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD) p.candidate_count += 1;
+    if (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD) p.immediate_target_count += 1;
     map.set(key, p);
   }
   return [...map.values()].sort((a, b) => b.immediate_target_count - a.immediate_target_count || b.candidate_count - a.candidate_count || b.vessel_count - a.vessel_count);
@@ -547,8 +549,8 @@ function buildVisibilityBuckets(records) {
     target_vessels: targetVessels,
     staying_vessels: targetVessels.filter(v => v.status_bucket === "staying_vessels"),
     arrival_pipeline: targetVessels.filter(v => v.status_bucket === "arrival_pipeline"),
-    sales_candidates: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60)),
-    immediate_targets: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= 80))
+    sales_candidates: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)),
+    immediate_targets: targetVessels.filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD))
   };
 }
 
@@ -606,8 +608,8 @@ function buildStatus(records, source) {
     cleaning_candidate_count: records.filter(v => v.is_cleaning_candidate).length,
     immediate_candidate_count: records.filter(v => v.is_immediate_candidate).length,
     scored_vessel_count: buckets.target_vessels.filter(v => typeof v.commercial_value_score === "number").length,
-    sales_candidate_count: buckets.target_vessels.filter(v => (v.commercial_value_score || 0) >= 60 && v.commercial_relevance_status === "target_vessel").length,
-    immediate_target_count: buckets.target_vessels.filter(v => (v.commercial_value_score || 0) >= 80 && v.commercial_relevance_status === "target_vessel").length,
+    sales_candidate_count: buckets.target_vessels.filter(v => (v.commercial_value_score || 0) >= SALES_CANDIDATE_THRESHOLD && v.commercial_relevance_status === "target_vessel").length,
+    immediate_target_count: buckets.target_vessels.filter(v => (v.commercial_value_score || 0) >= IMMEDIATE_TARGET_THRESHOLD && v.commercial_relevance_status === "target_vessel").length,
     imo_missing_count: buckets.target_vessels.filter(v => !v.imo).length,
     high_value_low_confidence_count: buildHighValueLowConfidence(buckets.target_vessels).length,
     opportunity_usd: records.reduce((sum, v) => sum + (v.opportunity_usd || 0), 0),
@@ -657,7 +659,7 @@ async function apiResponse(pathname, env) {
   if (pathname.endsWith("/review/high-value-low-confidence.json")) return json(buildHighValueLowConfidence(records), { headers: corsHeaders() });
   if (pathname.endsWith("/review/congestion-watchlist.json")) return json(buildCongestionWatchlist(records), { headers: corsHeaders() });
   if (pathname.endsWith("/vessels.json")) return json(records, { headers: corsHeaders() });
-  if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= 60)), { headers: corsHeaders() });
+  if (pathname.endsWith("/candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel" && (v.is_cleaning_candidate || (v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)), { headers: corsHeaders() });
   if (pathname.endsWith("/hot-candidates.json")) return json(buildHot(records).filter(v => v.commercial_relevance_status === "target_vessel"), { headers: corsHeaders() });
   if (pathname.endsWith("/master/unknown-imo.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/ports.json")) return json(buildPorts(records), { headers: corsHeaders() });
