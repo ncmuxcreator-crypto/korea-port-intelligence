@@ -121,7 +121,7 @@ if (!workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}") || !wo
 if (!workflow.includes("timeout-minutes: 12")) {
   throw new Error("Longterm workflow job timeout must be 12 minutes");
 }
-if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
+if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 8000") || !workflow.includes("timeout-minutes: 7")) {
   throw new Error("Longterm workflow must bound collector runtime and child enrichment");
 }
 for (const marker of ["github.run_id", "github.ref", "runner.os", "github.workflow", "timestamp=$(date -u"]) {
@@ -152,7 +152,7 @@ for (const portCode of ["020", "030", "620", "820", "031", "810", "622"]) {
 for (const param of ["sde", "ede", "deGb", "numOfRows", "requested_url_without_service_key", "resultCode", "resultMsg", "totalCount", "http_status"]) {
   if (!koreaCollector.includes(param)) throw new Error(`Missing PORT-MIS request/diagnostic field: ${param}`);
 }
-for (const param of ["raw_response_preview", "service_key_variant", "serviceKeyVariants"]) {
+for (const param of ["raw_response_preview", "service_key_variant", "serviceKeyVariants", "COLLECTOR_DEBUG_VERBOSE"]) {
   if (!koreaCollector.includes(param)) throw new Error(`Missing PORT-MIS debug field: ${param}`);
 }
 if (!koreaCollector.includes("MAX_CHILD_ENRICHMENT_ROWS") || !koreaCollector.includes("skipped_by_limit")) {
@@ -222,7 +222,7 @@ if (/git push origin HEAD:main|git commit -m "auto: refresh|runs-on: self-hosted
 if (!workflowV2.includes("continue-on-error: true") || !workflowV2.includes("Skip Cloudflare deploy notice")) {
   throw new Error("Longterm Update V2 must keep bypass diagnostics running even when optional checks fail");
 }
-if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
+if (!workflowV2.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflowV2.includes("MAX_SOURCE_ROWS") || !workflowV2.includes("ENABLE_SOURCE_CSV") || !workflowV2.includes("COLLECTOR_DEBUG_VERBOSE") || workflowV2.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflowV2.includes("SOURCE_TIMEOUT_MS: 8000") || !workflowV2.includes("timeout-minutes: 7")) {
   throw new Error("Longterm Update V2 must bound collector runtime and child enrichment");
 }
 

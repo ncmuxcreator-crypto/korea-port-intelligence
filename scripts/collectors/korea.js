@@ -100,6 +100,10 @@ function sourceCsvEnabled() {
   return String(process.env.ENABLE_SOURCE_CSV || "").toLowerCase() === "true";
 }
 
+function debugVerboseEnabled() {
+  return String(process.env.COLLECTOR_DEBUG_VERBOSE || "").toLowerCase() === "true";
+}
+
 function formatDateCompact(date = new Date()) {
   const yyyy = date.getUTCFullYear();
   const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -612,7 +616,9 @@ async function collectRealRows() {
   const records = [];
   let totalChildEnrichmentAttempts = 0;
   diagnostics = { generated_at: now, attempted_count: 0, success_count: 0, failed_count: 0, skipped_count: 0, real_row_count: 0, actionable_row_count: 0, fallback_used: false, env_presence: runtimeEnvDiagnostics(), sources: [] };
-  console.log("[HWK] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
+  if (env("COLLECTOR_DEBUG_ONLY") || debugVerboseEnabled()) {
+    console.log("[HWK] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
+  }
 
   const debugOnly = env("COLLECTOR_DEBUG_ONLY");
   for (const source of allSourceConfigs().filter(source => !debugOnly || source.key === debugOnly)) {
@@ -662,7 +668,7 @@ async function collectRealRows() {
       diag.http_status = http_status;
       diag.requested_url_without_service_key = maskServiceKey(url);
       diag.service_key_variant = service_key_variant;
-      diag.raw_response_preview = text.slice(0, 500);
+      if (debugVerboseEnabled()) diag.raw_response_preview = text.slice(0, 500);
       diag.resultCode = result_meta?.resultCode || null;
       diag.resultMsg = result_meta?.resultMsg || null;
       diag.totalCount = result_meta?.totalCount !== undefined ? Number(result_meta.totalCount) || result_meta.totalCount : null;

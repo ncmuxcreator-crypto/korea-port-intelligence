@@ -36,7 +36,7 @@ jobs:
       MAX_CHILD_ENRICHMENT_ROWS: 4
       COLLECTOR_RUNTIME_BUDGET_MS: 300000
       ENABLE_SOURCE_CSV: "false"
-      COLLECTOR_DEBUG_ONLY: port_operation_busan
+      COLLECTOR_DEBUG_VERBOSE: "false"
       SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -132,6 +132,8 @@ jobs:
             const state = source.success ? "success" : source.skipped ? `skipped:${source.reason || "unknown"}` : source.error ? `failed:${source.error}` : "pending";
             console.log(`${source.key}: ${state}; rows=${source.row_count || 0}; normalized=${source.normalized_count || 0}; actionable=${source.actionable_count || 0}; profile=${source.source_profile || "unknown"}`);
             if (source.warning) console.log(`  warning=${source.warning}`);
+            if (source.http_status) console.log(`  http_status=${source.http_status}; resultCode=${source.resultCode || ""}; totalCount=${source.totalCount || ""}`);
+            if (source.requested_url_without_service_key) console.log(`  request=${source.requested_url_without_service_key}`);
             if (source.sample_keys?.length) console.log(`  sample_keys=${source.sample_keys.join(",")}`);
             if (source.child_enrichment) console.log(`  child_enrichment=${JSON.stringify(source.child_enrichment)}`);
           }
