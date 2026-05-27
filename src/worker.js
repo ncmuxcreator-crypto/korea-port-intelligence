@@ -648,6 +648,39 @@ function buildVisibilityBuckets(records) {
   };
 }
 
+function recordKey(record = {}, fallback = "") {
+  return String(fallback || record.port_call_identity || record.snapshot_id || record.vessel_id || `${record.vessel_name || "UNKNOWN"}|${record.port_code || record.port || "KOREA"}|${record.call_sign || ""}`).toUpperCase();
+}
+
+function vesselIdentityKey(record = {}, fallback = "") {
+  return String(fallback || record.vessel_identity || record.master_vessel_id || record.hybrid_entity_key || record.imo || record.mmsi || record.call_sign || `${record.normalized_vessel_name || record.vessel_name || "UNKNOWN"}|${record.gt || 0}|${record.vessel_type_group || record.vessel_type || ""}`).toUpperCase();
+}
+
+function buildCountFunnel(records = [], buckets = buildVisibilityBuckets(records)) {
+  const rawRows = records.reduce((sum, record) => sum + Math.max(1, Number(record.raw_row_count || record.detail_row_count || 1)), 0);
+  const uniquePortCalls = new Set(records.map((record, index) => recordKey(record, `ROW-${index}`))).size;
+  const uniqueVessels = new Set(records.map((record, index) => vesselIdentityKey(record, `ROW-${index}`))).size;
+  return {
+    raw_api_rows: rawRows,
+    detail_rows_flattened: records.reduce((sum, record) => sum + Number(record.detail_rows_flattened_count || record.detail_rows_flattened || 0), 0),
+    normalized_rows: records.length,
+    duplicate_raw_rows: Math.max(0, rawRows - uniquePortCalls),
+    unique_port_calls: uniquePortCalls,
+    unique_vessels: uniqueVessels,
+    target_vessels_5000gt_plus: buckets.target_vessels.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= Number(v.commercial_gt_threshold || 5000)).length,
+    unknown_gt_review: buckets.target_vessels.filter(v => v.gt_status === "unknown_gt_review").length,
+    excluded_under_5000gt: records.filter(v => {
+      const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+      return gt > 0 && gt < Number(v.commercial_gt_threshold || 5000);
+    }).length,
+    sales_candidates: buckets.sales_candidates.length,
+    immediate_targets: buckets.immediate_targets.length,
+    capped_by_limit: false,
+    cap_name: null,
+    cap_value: null
+  };
+}
+
 
 function buildPortCongestion(records, portCode) {
   return buildPortHeatmap(records).find(p => String(p.port_code || portCodeFromName(p.port)) === String(portCode)) || {
@@ -680,8 +713,10 @@ function buildAnchorage(records) {
 }
 function buildStatus(records, source) {
   const buckets = buildVisibilityBuckets(records);
+  const countFunnel = buildCountFunnel(records, buckets);
   const high = records.filter(v => (v.risk_score || 0) >= 70);
   const dataMode = buckets.target_vessels.length ? "supabase_live_snapshot" : "no_live_data";
+  const usingSnapshotFallback = Boolean(source.pointer?.fallback_pointer && records.length);
   return {
     version: "worker-live-api-v1",
     status: source.error && !records.length ? "degraded" : "success",
@@ -708,6 +743,7 @@ function buildStatus(records, source) {
     imo_recovery_kpis: buildImoRecoveryKpis(buckets.target_vessels),
     high_value_low_confidence_count: buildHighValueLowConfidence(buckets.target_vessels).length,
     opportunity_usd: records.reduce((sum, v) => sum + (v.opportunity_usd || 0), 0),
+    count_funnel: countFunnel,
     frontend_poll_interval_seconds: 900,
     source_runtime: {
       provider: "supabase",
@@ -720,6 +756,8 @@ function buildStatus(records, source) {
       is_stale: Boolean(source.pointer?.is_stale),
       pointer_source: source.pointer?.pointer_source || "none",
       fallback_pointer: Boolean(source.pointer?.fallback_pointer),
+      using_latest_snapshot_fallback: usingSnapshotFallback,
+      fallback_status: usingSnapshotFallback ? "showing_latest_supabase_snapshot" : null,
       pointer_diagnostics: source.pointer?.pointer_diagnostics || [],
       stale_warning: source.pointer?.fallback_pointer
         ? "Active dataset pointer is missing or empty; showing latest available Supabase snapshot run."
