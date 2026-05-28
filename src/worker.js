@@ -647,8 +647,29 @@ async function fetchSupabaseRows(env) {
     ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000"
     : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
   const response = await supabaseGet(env, query);
+  if (response.ok && response.rows.length) {
+    return { rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay), configured: true, error: null, pointer };
+  }
+
+  if (!pointer.legacy_latest) {
+    const fallback = await supabaseGet(env, "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000");
+    const fallbackPointer = {
+      ...pointer,
+      legacy_latest: true,
+      is_stale: true,
+      fallback_pointer: true,
+      pointer_source: "legacy_latest_snapshots_after_empty_active",
+      active_dataset_empty: response.ok && response.rows.length === 0,
+      active_dataset_error: response.ok ? null : response.error
+    };
+    if (fallback.ok && fallback.rows.length) {
+      return { rows: fallback.rows.map(normalizeSnapshot).map(enrichCumulativeStay), configured: true, error: null, pointer: fallbackPointer };
+    }
+    return { rows: [], configured: true, error: response.error || fallback.error || "empty_active_dataset", pointer: fallbackPointer };
+  }
+
   if (!response.ok) return { rows: [], configured: true, error: response.error, pointer };
-  return { rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay), configured: true, error: null, pointer };
+  return { rows: [], configured: true, error: "empty_active_dataset", pointer };
 }
 
 function latestPerVesselPort(records) {
