@@ -84,6 +84,30 @@ The backend should work primarily with:
 - Port authority APIs
 - Berth, pilot, and public schedules
 
+## IMO Recovery Clarification
+
+Most enrichment sources provide identity signals, not guaranteed IMO numbers.
+
+- Port Operation usually has vessel name, call sign, GT, vessel type, and port movement, but usually no IMO.
+- Pilot, berth, and PNC sources usually improve operational timing and berth signals, but usually no IMO.
+- AIS / VTS may contain MMSI or IMO, but public coverage is inconsistent.
+- Vessel Spec API is the primary IMO recovery source.
+
+IMO recovery should be treated as incremental multi-source identity accumulation:
+
+```text
+Port Operation row
+  -> enrichment matching
+  -> vessel_master lookup
+  -> selective Vessel Spec API lookup
+  -> update vessel_master and vessel_aliases
+  -> future runs auto-match the same vessel
+```
+
+Selective IMO enrichment should prioritize GT 5,000+ vessels, high commercial value rows, anchorage waiting, long stay, bulk / tanker / container / PCTC / cruise vessels, unknown IMO, and unknown GT review rows.
+
+Do not optimize only for raw IMO completeness. More important KPIs are commercially meaningful vessel coverage, high-value vessel coverage, high-value IMO coverage, and candidate quality. A commercially important vessel must remain visible even if IMO is unresolved.
+
 MarineTraffic and VesselFinder must not become core dependencies. They are optional future enrichment layers only.
 
 ## Integrated VTS Rule

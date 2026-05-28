@@ -246,6 +246,13 @@ if (/git push origin HEAD:main|git commit -m "auto: refresh/.test(workflow)) {
 if (!workflow.includes("npx wrangler deploy") || !workflow.includes("CLOUDFLARE_API_TOKEN") || !workflow.includes("CLOUDFLARE_ACCOUNT_ID")) {
   throw new Error("Workflow must deploy the Cloudflare Worker with Cloudflare GitHub secrets");
 }
+if (!workflow.includes("dashboard/api.cloudflare-upload-skip")) {
+  throw new Error("Cloudflare deploy must skip generated dashboard/api JSON assets");
+}
+const assetsIgnore = fs.existsSync(".assetsignore") ? fs.readFileSync(".assetsignore", "utf8") : "";
+if (!assetsIgnore.includes("dashboard/api/**") || !assetsIgnore.includes("api/**")) {
+  throw new Error("Cloudflare assets ignore must exclude generated API JSON files");
+}
 
 const wrangler = JSON.parse(fs.readFileSync("wrangler.jsonc", "utf8"));
 if (wrangler.assets?.directory !== "./dashboard" || wrangler.assets?.binding !== "ASSETS") {

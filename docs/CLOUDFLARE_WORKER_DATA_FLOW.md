@@ -85,6 +85,8 @@ The Worker configuration is in `wrangler.jsonc`.
 
 Do not set the assets directory to the repository root. If the root is uploaded, Cloudflare may try to upload `node_modules`, including `workerd`, which exceeds the 25 MiB individual asset limit.
 
+Do not upload generated `dashboard/api/*.json` files as Cloudflare static assets. Those files can exceed the Workers 25 MiB per-asset limit, and `/api/*` must be served dynamically by `src/worker.js` from Supabase. The GitHub Actions deploy step temporarily removes `dashboard/api` during `wrangler deploy`, then restores it for diagnostics artifacts.
+
 ## API Routes Served By Worker
 
 ```text
@@ -97,3 +99,26 @@ Do not set the assets directory to the repository root. If the root is uploaded,
 ```
 
 Other static dashboard files are served from `./dashboard`.
+
+## IMO Availability Clarification
+
+Most operational sources do not reliably provide IMO directly.
+
+- Port Operation usually provides vessel name, call sign, GT, vessel type, and port movement, but not IMO.
+- Pilot, berth, and PNC sources usually provide timing and berth signals, not IMO.
+- AIS/VTS may provide MMSI or IMO, but public coverage is inconsistent.
+- Vessel Spec API is the primary IMO recovery source.
+
+Treat IMO recovery as multi-source identity accumulation:
+
+```text
+Port Operation row
+  -> enrichment matching
+  -> vessel_master lookup
+  -> selective Vessel Spec API lookup for high-value unresolved rows
+  -> successful IMO recovery
+  -> update vessel_master and vessel_aliases
+  -> future runs auto-recover IMO
+```
+
+Do not require IMO for candidate visibility. Commercially important vessels must remain visible when IMO is unresolved; IMO recovery improves identity confidence over time.

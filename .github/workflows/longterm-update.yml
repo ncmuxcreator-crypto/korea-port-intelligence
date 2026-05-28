@@ -184,7 +184,14 @@ jobs:
 
       - name: Deploy Cloudflare Worker
         timeout-minutes: 5
-        run: npx wrangler deploy
+        run: |
+          echo "Preparing lean Cloudflare asset upload"
+          if [ -d dashboard/api ]; then
+            mv dashboard/api dashboard/api.cloudflare-upload-skip
+            mkdir -p dashboard/api
+            trap 'rm -rf dashboard/api; mv dashboard/api.cloudflare-upload-skip dashboard/api' EXIT
+          fi
+          npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
