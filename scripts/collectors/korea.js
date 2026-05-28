@@ -878,6 +878,37 @@ function normalizeMatchText(value = "") {
     .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "");
 }
 
+function normalizeVesselName(value = "") {
+  return normalizeMatchText(value);
+}
+
+function normalizeBerthTerminalAlias(value = "") {
+  const text = normalizeMatchText(value)
+    .replace(/BUSANNEWPORT|NEWPORT|PNC|PUSANNEWPORT/g, "BUSANNEWPORT")
+    .replace(/ULSANTERMINAL|UTT|UOTT|JANGSAENGPO|ONSAN|MIPO/g, match => `ULSAN${match}`)
+    .replace(/BERTH|BTH|선석|부두|터미널|TERMINAL|TMNL/g, "")
+    .replace(/NO|NUMBER|번/g, "");
+  return text;
+}
+
+function matchConfidenceBand(score = 0) {
+  if (score >= 85) return "high";
+  if (score >= 65) return "medium";
+  if (score >= 45) return "low";
+  return "unmatched";
+}
+
+function matchResult(score, reasons = []) {
+  const cleanReasons = [...new Set(reasons.filter(Boolean))];
+  const clamped = Math.max(0, Math.min(100, score));
+  return {
+    score: clamped,
+    method: cleanReasons.join("+") || "no_match",
+    reasons: cleanReasons,
+    confidence: matchConfidenceBand(clamped)
+  };
+}
+
 function parseDateMs(value) {
   if (!value) return null;
   const text = String(value).trim().replace(" ", "T");
@@ -907,13 +938,14 @@ function isUlsanEnrichmentRecord(record = {}) {
 }
 
 function timeWindowScore(left = {}, right = {}) {
-  const leftTimes = [left.ata, left.eta, left.etb, left.atb, left.etd, left.atd].map(parseDateMs).filter(Boolean);
-  const rightTimes = [right.ata, right.eta, right.etb, right.atb, right.etd, right.atd].map(parseDateMs).filter(Boolean);
+  const leftTimes = [left.ata, left.eta, left.etb, left.atb, left.etd, left.atd, left.eta_candidate, left.etb_candidate, left.etd_candidate, left.pilot_time, left.movement_time].map(parseDateMs).filter(Boolean);
+  const rightTimes = [right.ata, right.eta, right.etb, right.atb, right.etd, right.atd, right.eta_candidate, right.etb_candidate, right.etd_candidate, right.pilot_time, right.movement_time].map(parseDateMs).filter(Boolean);
   if (!leftTimes.length || !rightTimes.length) return 0;
-  const windowMs = 48 * 36e5;
   for (const a of leftTimes) {
     for (const b of rightTimes) {
-      if (Math.abs(a - b) <= windowMs) return 10;
+      const diff = Math.abs(a - b);
+      if (diff <= 24 * 36e5) return 18;
+      if (diff <= 48 * 36e5) return 10;
     }
   }
   return -10;
@@ -946,12 +978,12 @@ function pilotMatchScore(ledger = {}, pilot = {}) {
   const methods = [];
   const ledgerCall = normalizeMatchText(ledger.call_sign);
   const pilotCall = normalizeMatchText(pilot.call_sign);
-  const ledgerName = normalizeMatchText(ledger.vessel_name);
-  const pilotName = normalizeMatchText(pilot.vessel_name);
+  const ledgerName = normalizeVesselName(ledger.normalized_vessel_name || ledger.vessel_name);
+  const pilotName = normalizeVesselName(pilot.normalized_vessel_name || pilot.vessel_name);
   const ledgerPort = String(ledger.port_code || portCodeFromName(ledger.port || ledger.port_name) || "");
   const pilotPort = String(pilot.port_code || portCodeFromName(pilot.port || pilot.port_name) || "");
-  const ledgerBerth = normalizeMatchText(ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
-  const pilotBerth = normalizeMatchText(pilot.berth_name || pilot.berth || pilot.pilot_station || pilot.terminal_name);
+  const ledgerBerth = normalizeBerthTerminalAlias(ledger.berth_key || ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
+  const pilotBerth = normalizeBerthTerminalAlias(pilot.berth_key || pilot.berth_name || pilot.berth || pilot.pilot_station || pilot.terminal_name);
   if (ledgerCall && pilotCall && ledgerCall === pilotCall) {
     score += 62;
     methods.push("call_sign_exact");
@@ -975,7 +1007,7 @@ function pilotMatchScore(ledger = {}, pilot = {}) {
   if (timeScore >= 18) methods.push("time_window_24h");
   else if (timeScore > 0) methods.push("time_window_48h");
   score += timeScore;
-  return { score: Math.max(0, Math.min(100, score)), method: methods.join("+") || "no_match" };
+  return matchResult(score, methods);
 }
 
 function mergePilotSchedule(record = {}, matches = []) {
@@ -990,6 +1022,11 @@ function mergePilotSchedule(record = {}, matches = []) {
     pilot_schedule_matched: true,
     pilot_match_method: best.method,
     pilot_match_confidence: best.score,
+    pilot_match_reasons: best.reasons,
+    pilot_match_score: best.score,
+    match_score: Math.max(Number(record.match_score || 0), best.score),
+    match_confidence: matchConfidenceBand(Math.max(Number(record.match_score || 0), best.score)),
+    match_reasons: [...new Set([...(record.match_reasons || []), ...best.reasons])],
     pilot_source_url: pilot.source_url || "",
     pilot_last_seen_at: pilot.updated_at || new Date().toISOString(),
     pilot_time: record.pilot_time || pilotTime,
@@ -1090,12 +1127,12 @@ function enrichmentMatchScore(ledger = {}, enrichment = {}) {
   const methods = [];
   const ledgerCall = normalizeMatchText(ledger.call_sign);
   const enrichCall = normalizeMatchText(enrichment.call_sign);
-  const ledgerName = normalizeMatchText(ledger.vessel_name);
-  const enrichName = normalizeMatchText(enrichment.vessel_name);
+  const ledgerName = normalizeVesselName(ledger.normalized_vessel_name || ledger.vessel_name);
+  const enrichName = normalizeVesselName(enrichment.normalized_vessel_name || enrichment.vessel_name);
   const ledgerPort = String(ledger.port_code || portCodeFromName(ledger.port || ledger.port_name) || "");
   const enrichPort = String(enrichment.port_code || portCodeFromName(enrichment.port || enrichment.port_name) || "");
-  const ledgerBerth = normalizeMatchText(ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
-  const enrichBerth = normalizeMatchText(enrichment.berth_name || enrichment.berth || enrichment.laidupFcltyNm || enrichment.terminal_name);
+  const ledgerBerth = normalizeBerthTerminalAlias(ledger.berth_key || ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
+  const enrichBerth = normalizeBerthTerminalAlias(enrichment.berth_key || enrichment.berth_name || enrichment.berth || enrichment.laidupFcltyNm || enrichment.terminal_name);
 
   if (ledgerCall && enrichCall && ledgerCall === enrichCall) {
     score += 65;
@@ -1123,9 +1160,10 @@ function enrichmentMatchScore(ledger = {}, enrichment = {}) {
     methods.push("berth_terminal_context");
   }
   const timeScore = timeWindowScore(ledger, enrichment);
-  if (timeScore > 0) methods.push("time_window_48h");
+  if (timeScore >= 18) methods.push("time_window_24h");
+  else if (timeScore > 0) methods.push("time_window_48h");
   score += timeScore;
-  return { score: Math.max(0, Math.min(100, score)), method: methods.join("+") || "no_match" };
+  return matchResult(score, methods);
 }
 
 function mergeSecondaryEnrichment(record = {}, matches = []) {
@@ -1137,7 +1175,10 @@ function mergeSecondaryEnrichment(record = {}, matches = []) {
       enrichment_source: record.enrichment_source || "",
       berth_data_source: record.berth_data_source || "",
       berth_match_method: record.berth_match_method || "none",
-      berth_match_confidence: Number(record.berth_match_confidence || 0)
+      berth_match_confidence: Number(record.berth_match_confidence || 0),
+      match_score: Number(record.match_score || 0),
+      match_confidence: record.match_confidence || "unmatched",
+      match_reasons: record.match_reasons || []
     };
   }
   const best = matches[0];
@@ -1165,6 +1206,10 @@ function mergeSecondaryEnrichment(record = {}, matches = []) {
     berth_data_source: sourceLabels.join(", "),
     berth_match_method: best.method,
     berth_match_confidence: best.score,
+    berth_match_reasons: best.reasons,
+    match_score: Math.max(Number(record.match_score || 0), best.score),
+    match_confidence: matchConfidenceBand(Math.max(Number(record.match_score || 0), best.score)),
+    match_reasons: [...new Set([...(record.match_reasons || []), ...best.reasons])],
     source_children: [...new Set([...(record.source_children || []), ...sourceNames])],
     reason_codes: [...new Set([...(record.reason_codes || []), "BERTH_ENRICHMENT_MATCHED"])]
   };
@@ -1178,6 +1223,7 @@ function buildSecondaryEnrichmentDiagnostics(enrichmentRows = [], matchedBySourc
   const countMatched = rows => rows.filter(row => matchedBySource.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.berth_name}`)).length;
   const pncMatched = countMatched(pncRows);
   const ulsanMatched = countMatched(ulsanRows);
+  const matchedTotal = countMatched(enrichmentRows);
   return {
     pnc_sources_attempted: pncSources.size,
     pnc_sources_success: new Set(pncRows.map(row => row.source).filter(Boolean)).size,
@@ -1188,7 +1234,10 @@ function buildSecondaryEnrichmentDiagnostics(enrichmentRows = [], matchedBySourc
     ulsan_sources_success: new Set(ulsanRows.map(row => row.source).filter(Boolean)).size,
     ulsan_rows_collected: ulsanRows.length,
     ulsan_rows_matched: ulsanMatched,
-    ulsan_match_rate: ulsanRows.length ? Math.round((ulsanMatched / ulsanRows.length) * 100) : 0
+    ulsan_match_rate: ulsanRows.length ? Math.round((ulsanMatched / ulsanRows.length) * 100) : 0,
+    berth_match_rate: enrichmentRows.length ? Math.round((matchedTotal / enrichmentRows.length) * 100) : 0,
+    enrichment_rows_matched: matchedTotal,
+    enrichment_rows_unmatched: Math.max(0, enrichmentRows.length - matchedTotal)
   };
 }
 
@@ -1233,6 +1282,7 @@ function normalizeRow(row, source, now) {
   const record = {
     vessel_id: imo ? `IMO-${imo}` : mmsi ? `MMSI-${mmsi}` : callSign ? `CALL-${callSign}` : `${vesselName}-${port}`,
     vessel_name: vesselName || imo || mmsi || callSign,
+    normalized_vessel_name: normalizeVesselName(vesselName || imo || mmsi || callSign),
     imo,
     mmsi,
     call_sign: callSign,
@@ -1273,6 +1323,12 @@ function normalizeRow(row, source, now) {
     beam: toNumber(firstValue(adapted, FIELD_ALIASES.beam)),
     flag: String(firstValue(adapted, FIELD_ALIASES.flag)).trim(),
     terminal_name: rawValue(adapted, TERMINAL_ALIASES),
+    berth_key: normalizeBerthTerminalAlias([
+      firstValue(adapted, FIELD_ALIASES.berth),
+      rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"]),
+      rawValue(adapted, TERMINAL_ALIASES),
+      rawValue(adapted, PILOT_STATION_ALIASES)
+    ].filter(Boolean).join(" ")),
     berth_status: rawValue(adapted, BERTH_STATUS_ALIASES),
     terminal_activity: rawValue(adapted, ["terminal_activity", "terminalActivity", "작업구분", "작업내용", "하역상태", ...BERTH_STATUS_ALIASES]),
     cargo_workload_proxy: toNumber(firstValue(adapted, CARGO_WORKLOAD_ALIASES)),
@@ -1406,6 +1462,9 @@ function mergePortCallRecord(existing, incoming) {
   merged.secondary_enrichment_matched = Boolean(existing.secondary_enrichment_matched || incoming.secondary_enrichment_matched);
   merged.enrichment_confidence = Math.max(Number(existing.enrichment_confidence || 0), Number(incoming.enrichment_confidence || 0));
   merged.berth_match_confidence = Math.max(Number(existing.berth_match_confidence || 0), Number(incoming.berth_match_confidence || 0));
+  merged.match_score = Math.max(Number(existing.match_score || 0), Number(incoming.match_score || 0), Number(existing.pilot_match_score || 0), Number(incoming.pilot_match_score || 0), Number(existing.berth_match_confidence || 0), Number(incoming.berth_match_confidence || 0));
+  merged.match_confidence = matchConfidenceBand(merged.match_score);
+  merged.match_reasons = [...new Set([...(existing.match_reasons || []), ...(incoming.match_reasons || []), ...(existing.pilot_match_reasons || []), ...(incoming.pilot_match_reasons || []), ...(existing.berth_match_reasons || []), ...(incoming.berth_match_reasons || [])])];
   merged.enrichment_source = [...new Set([existing.enrichment_source, incoming.enrichment_source].filter(Boolean).join(",").split(",").map(value => value.trim()).filter(Boolean))].join(",");
   merged.enrichment_sources = [...new Set([...(existing.enrichment_sources || []), ...(incoming.enrichment_sources || [])])];
   merged.berth_data_source = [...new Set([existing.berth_data_source, incoming.berth_data_source].filter(Boolean).join(",").split(",").map(value => value.trim()).filter(Boolean))].join(", ");
