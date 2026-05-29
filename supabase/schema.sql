@@ -358,9 +358,16 @@ create table if not exists contact_master (
   company_name text not null,
   company_normalized text not null,
   contact_type text not null,
+  company_type text,
   email text,
+  general_email text,
+  operations_email text,
+  chartering_email text,
+  purchasing_email text,
+  technical_email text,
   phone text,
   website text,
+  country text,
   source text,
   confidence int default 0,
   last_verified timestamptz,
@@ -368,6 +375,26 @@ create table if not exists contact_master (
   updated_at timestamptz default now(),
   payload jsonb default '{}'::jsonb,
   unique(company_normalized, contact_type, source)
+);
+
+create table if not exists operator_contact_history (
+  history_id text primary key,
+  run_id text,
+  master_vessel_id text,
+  hybrid_entity_key text,
+  vessel_name text,
+  port_code text,
+  operator_name text,
+  operator_normalized text,
+  agent_name text,
+  agent_normalized text,
+  contact_path_status text default 'unknown',
+  contact_path_available boolean default false,
+  contact_readiness_score int default 0,
+  lead_status text default 'monitor',
+  recommended_action text,
+  collected_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb
 );
 
 create table if not exists vessel_operator_history (
@@ -386,6 +413,7 @@ create table if not exists vessel_operator_history (
   agent_normalized text,
   agent_source text,
   contact_readiness_score int default 0,
+  contact_path_status text default 'unknown',
   collected_at timestamptz default now(),
   payload jsonb default '{}'::jsonb
 );
@@ -406,6 +434,7 @@ create table if not exists operator_history (
   agent_normalized text,
   agent_source text,
   contact_readiness_score int default 0,
+  contact_path_status text default 'unknown',
   contact_path_available boolean default false,
   collected_at timestamptz default now(),
   payload jsonb default '{}'::jsonb
@@ -794,6 +823,7 @@ alter table commercial_leads add column if not exists actual_arrival_time timest
 alter table commercial_leads add column if not exists prediction_error_hours numeric;
 alter table commercial_leads add column if not exists alert_candidate boolean default false;
 alter table commercial_leads add column if not exists information_enrichment_needed boolean default false;
+alter table commercial_leads add column if not exists contact_path_status text default 'unknown';
 create index if not exists idx_commercial_leads_follow_up_due on commercial_leads(follow_up_due);
 create index if not exists idx_commercial_leads_alert on commercial_leads(alert_candidate);
 alter table operator_master add column if not exists website text;
@@ -806,8 +836,20 @@ alter table agent_master add column if not exists website text;
 alter table agent_master add column if not exists location text;
 alter table agent_operator_links add column if not exists agent_name text;
 alter table agent_operator_links add column if not exists operator_name text;
+alter table contact_master add column if not exists company_type text;
+alter table contact_master add column if not exists general_email text;
+alter table contact_master add column if not exists operations_email text;
+alter table contact_master add column if not exists chartering_email text;
+alter table contact_master add column if not exists purchasing_email text;
+alter table contact_master add column if not exists technical_email text;
+alter table contact_master add column if not exists country text;
+alter table vessel_snapshots add column if not exists contact_path_status text default 'unknown';
+alter table vessel_operator_history add column if not exists contact_path_status text default 'unknown';
+alter table operator_history add column if not exists contact_path_status text default 'unknown';
 create index if not exists idx_contact_master_company on contact_master(company_normalized);
 create index if not exists idx_contact_master_type on contact_master(contact_type);
+create index if not exists idx_operator_contact_history_run on operator_contact_history(run_id);
+create index if not exists idx_operator_contact_history_status on operator_contact_history(contact_path_status);
 alter table predicted_arrivals add column if not exists predicted_congestion_score int default 0;
 alter table predicted_arrivals add column if not exists congestion_forecast_band text;
 alter table predicted_arrivals add column if not exists anchorage_probability int default 0;

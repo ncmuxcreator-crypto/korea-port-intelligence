@@ -87,6 +87,25 @@ function operatorReasonCodes(v = {}) {
   return codes;
 }
 
+function deriveContactPathStatus(v = {}) {
+  const hasOperator = hasValue(v.operator_name || v.operator);
+  const hasAgent = hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm);
+  const hasContact = hasValue(
+    v.operator_website || v.operator_url ||
+    v.agent_website || v.agent_url ||
+    v.operator_email || v.agent_email ||
+    v.operator_phone || v.agent_phone ||
+    v.contact_email || v.contact_phone ||
+    v.general_email || v.operations_email || v.chartering_email || v.purchasing_email || v.technical_email
+  );
+  const confidence = Number(v.operator_confidence || v.contact_confidence || 0);
+  if (hasContact && confidence >= 70) return "high_confidence_contact";
+  if (hasContact) return "contact_available";
+  if (hasAgent) return "agent_known";
+  if (hasOperator) return "operator_known";
+  return "unknown";
+}
+
 function deriveSalesAccessibilityScore(v = {}) {
   const source = String(v.operator_source || "");
   const confidence = Number(v.operator_confidence || 0);
@@ -110,7 +129,7 @@ function deriveContactReadinessScore(v = {}) {
     (hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) ? 2 : 0) +
     (v.contact_path_available ? 3 : 0)
   ));
-  const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone);
+  const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone || v.general_email || v.operations_email || v.chartering_email || v.purchasing_email || v.technical_email);
   const repeatSignal = Number(v.repeat_operator_score || v.repeat_caller_score || 0) > 0 ? 5 : 0;
   return Math.min(100, Math.round(
     (accessibility / 5) * 55 +
@@ -384,6 +403,7 @@ function normalizeSnapshot(row = {}) {
     manager_name: merged.manager_name || merged.manager || merged.ship_manager || "",
     owner_name: merged.owner_name || merged.owner || merged.ship_owner || "",
     contact_path_available: Boolean(merged.contact_path_available || merged.operator_name || merged.operator || merged.agent_name || merged.agent || merged.satmntEntrpsNm || merged.entrpsCdNm),
+    contact_path_status: merged.contact_path_status || deriveContactPathStatus(merged),
     destination_port: merged.destination_port || merged.destination || merged.next_port || "",
     route_region: merged.route_region || "unknown",
     route_from_port: merged.route_from_port || arrivalPrediction.route_from_port || merged.previous_port || "",
@@ -884,7 +904,7 @@ function deriveArrivalPredictionFromSignals(v = {}) {
 function deriveLeadStatus(v = {}, leadPriorityScore = deriveLeadPriorityScore(v)) {
   const existing = String(v.lead_status || "").toLowerCase();
   if (["contacted", "quoted", "scheduled", "won", "lost"].includes(existing)) return existing;
-  if (leadPriorityScore >= IMMEDIATE_TARGET_THRESHOLD && (v.contact_path_available || Number(v.contact_readiness_score || 0) >= 50)) return "contact_ready";
+  if (leadPriorityScore >= IMMEDIATE_TARGET_THRESHOLD && (v.contact_path_available || ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) || Number(v.contact_readiness_score || 0) >= 50)) return "contact_ready";
   if (leadPriorityScore >= SALES_CANDIDATE_THRESHOLD) return "new_lead";
   return "monitor";
 }
@@ -1933,6 +1953,39 @@ function buildLeadPipeline(records = []) {
     }));
 }
 
+function buildContactReadyVessels(records = []) {
+  return sortCommercialPriority(dedupeCandidateRows(records
+    .filter(v =>
+      Number(v.contact_readiness_score || 0) >= 60 ||
+      ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) ||
+      (v.contact_path_available && commercialScore(v) >= SALES_CANDIDATE_THRESHOLD)
+    )))
+    .sort((a, b) =>
+      Number(b.contact_readiness_score || 0) - Number(a.contact_readiness_score || 0) ||
+      commercialScore(b) - commercialScore(a) ||
+      Number(b.lead_priority_score || 0) - Number(a.lead_priority_score || 0)
+    )
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code || portCodeFromName(v.port),
+      port_name: v.port_name || v.port,
+      operator_name: v.operator_name || v.operator || "",
+      agent_name: v.agent_name || v.agent || "",
+      operator_website: v.operator_website || v.operator_url || "",
+      agent_website: v.agent_website || v.agent_url || "",
+      contact_readiness_score: Number(v.contact_readiness_score || 0),
+      contact_path_status: v.contact_path_status || deriveContactPathStatus(v),
+      contact_path_available: Boolean(v.contact_path_available),
+      lead_status: v.lead_status || deriveLeadStatus(v, Number(v.lead_priority_score || deriveLeadPriorityScore(v))),
+      lead_priority_score: Number(v.lead_priority_score || deriveLeadPriorityScore(v)),
+      commercial_value_score: commercialScore(v),
+      recommended_action: v.recommended_action || v.recommended_next_action || deriveRecommendedNextAction(v),
+      why_now: v.why_now || deriveWhyNow(v),
+      reason_codes: v.reason_codes || []
+    }));
+}
+
 function buildAlertCandidates(records = []) {
   return sortCommercialPriority(dedupeCandidateRows(records.filter(isAlertCandidate)))
     .slice(0, 100)
@@ -2076,6 +2129,7 @@ function buildDashboardSummary(allRecords = [], source = {}) {
     immediate_targets: immediateTargets,
     opportunities,
     lead_pipeline: buildLeadPipeline(activeRecords).slice(0, 8),
+    contact_ready_vessels: buildContactReadyVessels(activeRecords).slice(0, 5),
     alert_candidates: buildAlertCandidates(activeRecords).slice(0, 5),
     port_opportunities: buildPortOpportunityRanking(buckets.target_vessels).slice(0, 5),
     congestion_summary: buildPortHeatmap(buckets.target_vessels).slice(0, 12),
@@ -2471,6 +2525,7 @@ function buildOperatorDiagnostics(records = [], buckets = buildVisibilityBuckets
     operator_inferred_count: records.filter(v => v.operator_inferred).length,
     operator_unknown_count: records.filter(v => !hasValue(v.operator_name || v.operator)).length,
     agent_known_count: records.filter(v => hasValue(v.agent_name || v.agent)).length,
+    contact_available_count: records.filter(v => ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) || hasValue(v.operator_email || v.agent_email || v.operator_website || v.agent_website || v.operator_phone || v.agent_phone)).length,
     operator_confidence_avg: known.length ? Math.round(known.reduce((sum, v) => sum + Number(v.operator_confidence || 0), 0) / known.length) : 0,
     operator_source_breakdown: sourceBreakdown,
     candidates_with_operator_count: buckets.sales_candidates.filter(v => hasValue(v.operator_name || v.operator)).length,
@@ -2583,6 +2638,7 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/arrival-pipeline.json")) return json(buckets.arrival_pipeline, { headers: corsHeaders() });
   if (pathname.endsWith("/predicted-arrivals.json")) return json(buildPredictedArrivals(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/lead-pipeline.json")) return json(buildLeadPipeline(allRecords), { headers: corsHeaders() });
+  if (pathname.endsWith("/contact-ready-vessels.json")) return json(buildContactReadyVessels(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/alert-candidates.json")) return json(buildAlertCandidates(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/pilot-only-arrival-review.json") || pathname.endsWith("/review/pilot-only-arrivals.json")) return json(buckets.pilot_only_arrival_review, { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-queue.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });

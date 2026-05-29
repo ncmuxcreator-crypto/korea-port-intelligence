@@ -707,6 +707,25 @@ function deriveFleetBadges(v) {
   return badges;
 }
 
+function deriveContactPathStatus(v = {}) {
+  const hasOperator = hasValue(v.operator_name || v.operator);
+  const hasAgent = hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm);
+  const hasContact = hasValue(
+    v.operator_website || v.operator_url ||
+    v.agent_website || v.agent_url ||
+    v.operator_email || v.agent_email ||
+    v.operator_phone || v.agent_phone ||
+    v.contact_email || v.contact_phone ||
+    v.general_email || v.operations_email || v.chartering_email || v.purchasing_email || v.technical_email
+  );
+  const confidence = Number(v.operator_confidence || v.contact_confidence || 0);
+  if (hasContact && confidence >= 70) return "high_confidence_contact";
+  if (hasContact) return "contact_available";
+  if (hasAgent) return "agent_known";
+  if (hasOperator) return "operator_known";
+  return "unknown";
+}
+
 function inferOperatorInfo(v = {}) {
   const currentOperator = v.operator_name || v.operator || "";
   const currentAgent = v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm || "";
@@ -756,7 +775,7 @@ function inferOperatorInfo(v = {}) {
     operatorInferred = true;
   }
 
-  const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone);
+  const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone || v.general_email || v.operations_email || v.chartering_email || v.purchasing_email || v.technical_email);
   const repeatSignal = Number(v.repeat_operator_score || v.repeat_caller_score || 0) > 0 ? 5 : 0;
   const contactPathAvailable = Boolean(operatorName || currentAgent || companyContactAvailable);
   const contactIntelligenceScore = (operatorName ? 3 : 0) + (currentAgent ? 2 : 0) + (contactPathAvailable ? 3 : 0);
@@ -788,6 +807,13 @@ function inferOperatorInfo(v = {}) {
     manager_name: manager || "",
     owner_name: owner || "",
     contact_path_available: contactPathAvailable,
+    contact_path_status: deriveContactPathStatus({
+      ...v,
+      operator_name: operatorName,
+      agent_name: currentAgent,
+      operator_confidence: operatorConfidence,
+      contact_path_available: contactPathAvailable
+    }),
     contact_intelligence_score: contactIntelligenceScore,
     contact_readiness_score: contactReadinessScore
   };
@@ -1024,7 +1050,7 @@ function deriveWorkFeasibilityScore(v = {}, metrics = {}) {
 function deriveLeadStatus(v = {}, leadPriorityScore = 0) {
   const existing = String(v.lead_status || "").toLowerCase();
   if (["contacted", "quoted", "scheduled", "won", "lost"].includes(existing)) return existing;
-  if (leadPriorityScore >= IMMEDIATE_TARGET_THRESHOLD && (v.contact_path_available || Number(v.contact_readiness_score || 0) >= 50)) return "contact_ready";
+  if (leadPriorityScore >= IMMEDIATE_TARGET_THRESHOLD && (v.contact_path_available || ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) || Number(v.contact_readiness_score || 0) >= 50)) return "contact_ready";
   if (leadPriorityScore >= SALES_CANDIDATE_THRESHOLD) return "new_lead";
   return "monitor";
 }
@@ -1955,6 +1981,38 @@ function sortCommercialPriority(records) {
   );
 }
 
+function buildContactReadyVessels(records = []) {
+  return sortCommercialPriority(dedupeCandidateRows(records.filter(v =>
+    Number(v.contact_readiness_score || 0) >= 60 ||
+    ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) ||
+    (v.contact_path_available && Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD)
+  )))
+    .sort((a, b) =>
+      Number(b.contact_readiness_score || 0) - Number(a.contact_readiness_score || 0) ||
+      Number(b.commercial_value_score || b.total_sales_priority_score || 0) - Number(a.commercial_value_score || a.total_sales_priority_score || 0) ||
+      Number(b.lead_priority_score || 0) - Number(a.lead_priority_score || 0)
+    )
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      port: v.port,
+      port_code: v.port_code,
+      port_name: v.port_name || v.port,
+      operator_name: v.operator_name || v.operator || "",
+      agent_name: v.agent_name || v.agent || "",
+      operator_website: v.operator_website || v.operator_url || "",
+      agent_website: v.agent_website || v.agent_url || "",
+      contact_readiness_score: Number(v.contact_readiness_score || 0),
+      contact_path_status: v.contact_path_status || deriveContactPathStatus(v),
+      contact_path_available: Boolean(v.contact_path_available),
+      lead_status: v.lead_status || "monitor",
+      lead_priority_score: Number(v.lead_priority_score || 0),
+      commercial_value_score: Number(v.commercial_value_score || v.total_sales_priority_score || 0),
+      recommended_action: v.recommended_action || v.recommended_next_action || recommendedAction(v),
+      why_now: v.why_now || "",
+      reason_codes: v.reason_codes || []
+    }));
+}
+
 function percentileForRank(rank, total) {
   if (total <= 1) return 0;
   return Math.round(((rank - 1) / (total - 1)) * 1000) / 10;
@@ -2481,6 +2539,7 @@ function buildOperatorDiagnostics(records = [], salesCandidates = [], immediateT
     operator_inferred_count: records.filter(v => v.operator_inferred).length,
     operator_unknown_count: records.filter(v => !hasValue(v.operator_name || v.operator)).length,
     agent_known_count: records.filter(v => hasValue(v.agent_name || v.agent)).length,
+    contact_available_count: records.filter(v => ["contact_available", "high_confidence_contact"].includes(v.contact_path_status) || hasValue(v.operator_email || v.agent_email || v.operator_website || v.agent_website || v.operator_phone || v.agent_phone)).length,
     operator_confidence_avg: known.length ? Math.round(known.reduce((sum, v) => sum + Number(v.operator_confidence || 0), 0) / known.length) : 0,
     operator_source_breakdown: sourceBreakdown,
     candidates_with_operator_count: salesCandidates.filter(v => hasValue(v.operator_name || v.operator)).length,
@@ -3430,6 +3489,7 @@ try {
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
   const portIntelligence = buildPortIntelligence(vessels);
   const portOpportunities = buildPortOpportunityRanking(vessels);
+  const contactReadyVessels = buildContactReadyVessels(vessels);
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
@@ -3494,6 +3554,7 @@ try {
     candidate_ops: buildCandidateOps(vessels, baseReport),
     backend_health: buildBackendHealth(vessels, detectSecrets(), baseReport),
     commercial_command_center: commercialCommandCenter,
+    contact_ready_vessels: contactReadyVessels.slice(0, 10),
     hot_vessel_count: hotVessels.length,
     port_opportunities: portOpportunities.slice(0, 10),
     today_port_opportunities: portOpportunities.slice(0, 5),
@@ -3543,6 +3604,7 @@ try {
   fs.writeFileSync("dashboard/api/vessels.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("data/latest-lite.json", JSON.stringify(vessels, null, 2));
   fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));
+  fs.writeFileSync("dashboard/api/contact-ready-vessels.json", JSON.stringify(contactReadyVessels, null, 2));
   fs.writeFileSync("dashboard/api/candidate-summary.json", JSON.stringify(buildCandidateSummary(vessels), null, 2));
   fs.writeFileSync("dashboard/api/contact-queue.json", JSON.stringify(candidateList.slice(0, 50).map((v, index) => ({
     rank: index + 1,

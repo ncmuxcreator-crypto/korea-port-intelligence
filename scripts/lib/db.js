@@ -433,6 +433,7 @@ export async function saveToSupabase(records, options = {}) {
     contact_readiness_score: Number(r.contact_readiness_score || 0),
     contact_intelligence_score: Number(r.contact_intelligence_score || 0),
     contact_path_available: Boolean(r.contact_path_available || r.operator_name || r.operator || r.agent_name || r.agent),
+    contact_path_status: r.contact_path_status || (r.contact_path_available ? "contact_available" : r.agent_name || r.agent ? "agent_known" : r.operator_name || r.operator ? "operator_known" : "unknown"),
     operator_website: r.operator_website || r.operator_url || null,
     operator_email: r.operator_email || null,
     operator_phone: r.operator_phone || null,
@@ -732,9 +733,16 @@ export async function saveToSupabase(records, options = {}) {
           company_name: operatorName,
           company_normalized: operatorNormalized,
           contact_type: "operator",
-          email: r.operator_email || null,
+          company_type: "operator",
+          email: r.operator_email || r.general_email || null,
+          general_email: r.general_email || r.operator_email || null,
+          operations_email: r.operations_email || null,
+          chartering_email: r.chartering_email || null,
+          purchasing_email: r.purchasing_email || null,
+          technical_email: r.technical_email || null,
           phone: r.operator_phone || null,
           website: r.operator_website || r.operator_url || null,
+          country: r.operator_country || r.country || null,
           source: r.operator_source || "collector",
           confidence: Number(r.operator_confidence || 0),
           last_verified: r.contact_last_verified || null,
@@ -750,9 +758,16 @@ export async function saveToSupabase(records, options = {}) {
           company_name: agentName,
           company_normalized: agentNormalized,
           contact_type: "agent",
-          email: r.agent_email || null,
+          company_type: "agent",
+          email: r.agent_email || r.general_email || null,
+          general_email: r.general_email || r.agent_email || null,
+          operations_email: r.operations_email || null,
+          chartering_email: r.chartering_email || null,
+          purchasing_email: r.purchasing_email || null,
+          technical_email: r.technical_email || null,
           phone: r.agent_phone || null,
           website: r.agent_website || r.agent_url || null,
+          country: r.agent_country || r.country || null,
           source: r.agent_source || "collector",
           confidence: Number(r.agent_confidence || r.operator_confidence || 0),
           last_verified: r.contact_last_verified || null,
@@ -787,6 +802,7 @@ export async function saveToSupabase(records, options = {}) {
       agent_normalized: r.agent_normalized || normalizeCompanyName(r.agent_name || r.agent || r.satmntEntrpsNm || r.entrpsCdNm) || null,
       agent_source: r.agent_source || null,
       contact_readiness_score: Number(r.contact_readiness_score || 0),
+      contact_path_status: r.contact_path_status || (r.contact_path_available ? "contact_available" : r.agent_name || r.agent ? "agent_known" : r.operator_name || r.operator ? "operator_known" : "unknown"),
       collected_at: now,
       payload: r
     })), row => row.history_id);
@@ -800,9 +816,34 @@ export async function saveToSupabase(records, options = {}) {
   for (let index = 0; index < operatorHistoryRows.length; index += batchSize) {
     const batch = operatorHistoryRows.slice(index, index + batchSize).map(row => ({
       ...row,
-      contact_path_available: Boolean(row.payload?.contact_path_available || row.operator_name || row.agent_name)
+      contact_path_available: Boolean(row.payload?.contact_path_available || row.operator_name || row.agent_name),
+      contact_path_status: row.contact_path_status || row.payload?.contact_path_status || (row.payload?.contact_path_available ? "contact_available" : row.agent_name ? "agent_known" : row.operator_name ? "operator_known" : "unknown")
     }));
     const { error } = await supabase.from("operator_history").upsert(batch, { onConflict: "history_id" });
+    if (error) throw error;
+  }
+
+  for (let index = 0; index < operatorHistoryRows.length; index += batchSize) {
+    const batch = operatorHistoryRows.slice(index, index + batchSize).map(row => ({
+      history_id: row.history_id.replace(/^VOH/, "OCH"),
+      run_id: row.run_id,
+      master_vessel_id: row.master_vessel_id,
+      hybrid_entity_key: row.hybrid_entity_key,
+      vessel_name: row.vessel_name,
+      port_code: row.port_code,
+      operator_name: row.operator_name,
+      operator_normalized: row.operator_normalized,
+      agent_name: row.agent_name,
+      agent_normalized: row.agent_normalized,
+      contact_path_status: row.contact_path_status || row.payload?.contact_path_status || (row.payload?.contact_path_available ? "contact_available" : row.agent_name ? "agent_known" : row.operator_name ? "operator_known" : "unknown"),
+      contact_path_available: Boolean(row.payload?.contact_path_available || row.operator_name || row.agent_name),
+      contact_readiness_score: Number(row.contact_readiness_score || 0),
+      lead_status: row.payload?.lead_status || "monitor",
+      recommended_action: row.payload?.recommended_action || row.payload?.recommended_next_action || null,
+      collected_at: now,
+      payload: row.payload
+    }));
+    const { error } = await supabase.from("operator_contact_history").upsert(batch, { onConflict: "history_id" });
     if (error) throw error;
   }
 
@@ -923,6 +964,7 @@ export async function saveToSupabase(records, options = {}) {
       lead_priority_score: Number(r.lead_priority_score || 0),
       commercial_value_score: Number(r.commercial_value_score || r.total_sales_priority_score || 0),
       contact_readiness_score: Number(r.contact_readiness_score || 0),
+      contact_path_status: r.contact_path_status || (r.contact_path_available ? "contact_available" : r.agent_name || r.agent ? "agent_known" : r.operator_name || r.operator ? "operator_known" : "unknown"),
       work_feasibility_score: Number(r.work_feasibility_score || 0),
       arrival_opportunity_score: Number(r.arrival_opportunity_score || 0),
       predicted_cleaning_opportunity_score: Number(r.predicted_cleaning_opportunity_score || 0),
