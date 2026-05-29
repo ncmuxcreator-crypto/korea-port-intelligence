@@ -118,11 +118,47 @@ function sortCommercialPriority(records) {
   return records.slice().sort((a, b) =>
     commercialScore(b) - commercialScore(a) ||
     Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
+    Number(b.work_feasibility_score || b.cleaning_window_score || 0) - Number(a.work_feasibility_score || a.cleaning_window_score || 0) ||
     deriveCongestionScore(b) - deriveCongestionScore(a) ||
     (b.data_confidence_score || 0) - (a.data_confidence_score || 0) ||
     (b.biofouling_score || b.biofouling_risk_score || 0) - (a.biofouling_score || a.biofouling_risk_score || 0) ||
     candidateTimestamp(b) - candidateTimestamp(a)
   );
+}
+
+function percentileForRank(rank, total) {
+  if (total <= 1) return 0;
+  return Math.round(((rank - 1) / (total - 1)) * 1000) / 10;
+}
+
+function annotateCommercialRanks(records = []) {
+  const ranked = sortCommercialPriority(records);
+  ranked.forEach((record, index) => {
+    record.global_rank = index + 1;
+    record.global_percentile = percentileForRank(index + 1, ranked.length);
+  });
+  const byPort = new Map();
+  for (const record of records) {
+    const key = String(record.port_code || record.port_name || record.port || "UNKNOWN");
+    if (!byPort.has(key)) byPort.set(key, []);
+    byPort.get(key).push(record);
+  }
+  for (const group of byPort.values()) {
+    sortCommercialPriority(group).forEach((record, index) => {
+      record.port_rank = index + 1;
+      record.port_percentile = percentileForRank(index + 1, group.length);
+    });
+  }
+  return records;
+}
+
+function hasCommercialRank(v = {}) {
+  return Number.isFinite(Number(v.global_percentile)) || Number.isFinite(Number(v.port_percentile));
+}
+
+function withinCommercialPercentile(v = {}, percent = 20) {
+  if (!hasCommercialRank(v)) return true;
+  return Number(v.global_percentile ?? 101) <= percent || Number(v.port_percentile ?? 101) <= percent;
 }
 
 function candidateDedupeKey(v = {}) {
@@ -922,18 +958,20 @@ function deriveCiiProxyScore(v = {}, congestionScore = deriveCongestionScore(v),
 function deriveCommercialProxyScore(v = {}, scores = {}) {
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
   const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
-  const vesselValue = gt >= 80000 ? 20 : gt >= 30000 ? 16 : gt >= 5000 ? 11 : 0;
-  const typeValue = /bulk|tanker|container|pctc|cruise|lng|lpg/.test(type) ? 8 : 0;
-  const workFeasibility = Math.min(25, Number(v.work_feasibility_score || 0) * 0.25 + Number(v.cleaning_window_score || 0));
+  const gtValue = gt >= 150000 ? 10 : gt >= 80000 ? 8 : gt >= 30000 ? 5 : gt >= 5000 ? 2 : 0;
+  const typeValue = /lng|lpg/.test(type) ? 4 : /bulk|tanker|container|pctc|cruise/.test(type) ? 5 : /general|cargo|일반화물/.test(type) ? 2 : 0;
+  const workFeasibility = Math.min(20, Number(v.work_feasibility_score || 0) * 0.2 + Number(v.cleaning_window_score || 0));
+  const dataAssist = Math.min(10, Number(v.vessel_basic_info_completeness_score || v.data_confidence_score || 0) / 10);
   return Math.min(100, Math.round(
-    Math.min(20, vesselValue + typeValue) +
+    Math.min(20, gtValue + typeValue) +
     workFeasibility +
     Number(scores.biofoulingRiskScore || 0) * 0.15 +
-    Number(scores.congestionScore || 0) * 0.15 +
+    Number(scores.congestionScore || 0) * 0.10 +
     Number(scores.performanceProxyScore || 0) * 0.10 +
     Number(scores.ciiPressureScore || 0) * 0.10 +
     Math.min(10, Number(v.biosecurity_exposure_score || 0) / 10) +
-    Math.min(5, deriveSalesAccessibilityScore(v) + (v.agent || v.operator ? 1 : 0))
+    Math.min(5, deriveSalesAccessibilityScore(v) + (v.agent || v.operator ? 1 : 0)) +
+    dataAssist
   ));
 }
 
@@ -942,7 +980,8 @@ function isSalesCandidate(v = {}) {
     !isDepartedRecord(v) &&
     v.excluded_from_commercial_targets !== true &&
     hasUsefulVesselIdentity(v) &&
-    commercialScore(v) >= SALES_CANDIDATE_THRESHOLD;
+    commercialScore(v) >= SALES_CANDIDATE_THRESHOLD &&
+    withinCommercialPercentile(v, 20);
 }
 
 function isCurrentActionableCandidate(v = {}) {
@@ -955,8 +994,29 @@ function isCurrentActionableCandidate(v = {}) {
     Number(v.work_window_hours || 0) > 0;
 }
 
+function hasCurrentOrNearTermWorkFeasibility(v = {}) {
+  return Number(v.work_feasibility_score || 0) >= 25 ||
+    Number(v.cleaning_window_score || 0) >= 12 ||
+    Number(v.work_window_hours || 0) > 0 ||
+    isCurrentActionableCandidate(v);
+}
+
 function isImmediateTarget(v = {}) {
-  return isSalesCandidate(v) && commercialScore(v) >= IMMEDIATE_TARGET_THRESHOLD && isCurrentActionableCandidate(v);
+  return !isSyntheticSample(v) &&
+    !isDepartedRecord(v) &&
+    v.excluded_from_commercial_targets !== true &&
+    hasUsefulVesselIdentity(v) &&
+    commercialScore(v) >= IMMEDIATE_TARGET_THRESHOLD &&
+    withinCommercialPercentile(v, 10) &&
+    hasCurrentOrNearTermWorkFeasibility(v);
+}
+
+function isWatchlistVessel(v = {}) {
+  return !isSyntheticSample(v) &&
+    !isDepartedRecord(v) &&
+    v.excluded_from_commercial_targets !== true &&
+    hasUsefulVesselIdentity(v) &&
+    (commercialScore(v) >= 50 || withinCommercialPercentile(v, 40));
 }
 
 function supabaseBase(env) {
@@ -1549,6 +1609,7 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
     const primary = sortDir === "asc" ? result : -result;
     return primary ||
       commercialScore(b) - commercialScore(a) ||
+      Number(b.work_feasibility_score || b.cleaning_window_score || 0) - Number(a.work_feasibility_score || a.cleaning_window_score || 0) ||
       deriveCongestionScore(b) - deriveCongestionScore(a) ||
       Number(b.data_confidence_score || 0) - Number(a.data_confidence_score || 0) ||
       candidateTimestamp(b) - candidateTimestamp(a);
@@ -1565,10 +1626,10 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
 }
 
 function vesselGroupRows(allRecords = [], group = "target") {
-  const usefulRows = activeRecordsOnly(allRecords).filter(hasUsefulVesselIdentity);
+  const usefulRows = annotateCommercialRanks(activeRecordsOnly(allRecords).filter(hasUsefulVesselIdentity));
   const rows = group === "all"
     ? usefulRows
-    : usefulRows.filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !isHardCandidateExcluded(v));
+    : usefulRows.filter(isSalesCandidate);
   return sortCommercialPriority(dedupeCandidateRows(rows));
 }
 
@@ -1744,7 +1805,12 @@ function recordsForPort(records, portCode) {
 
 function buildVisibilityBuckets(records) {
   const activeRecords = activeRecordsOnly(records);
-  const targetVessels = activeRecords.filter(isMainCommercialVessel);
+  const targetVessels = annotateCommercialRanks(activeRecords.filter(isMainCommercialVessel));
+  for (const vessel of targetVessels) {
+    vessel.is_cleaning_candidate = isSalesCandidate(vessel);
+    vessel.is_immediate_candidate = isImmediateTarget(vessel);
+    vessel.candidate_band = isImmediateTarget(vessel) ? "immediate_target" : isSalesCandidate(vessel) ? "sales_candidate" : isWatchlistVessel(vessel) ? "watchlist" : "general";
+  }
   const canonicalScoredVessels = sortCommercialPriority(dedupeCandidateRows(targetVessels));
   const salesCandidates = sortCommercialPriority(dedupeCandidateRows(canonicalScoredVessels.filter(isSalesCandidate))).map(v => ({ ...v, candidate_band: commercialScore(v) >= IMMEDIATE_TARGET_THRESHOLD ? "immediate_target" : "sales_candidate", exclusion_reason: exclusionReason(v) }));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(canonicalScoredVessels.filter(isImmediateTarget))).map(v => ({ ...v, candidate_band: "immediate_target", is_immediate_candidate: true, exclusion_reason: exclusionReason(v) }));
@@ -1846,9 +1912,23 @@ function buildScoringDiagnostics(records = []) {
   const workScores = records.map(v => Number(v.work_feasibility_score || 0) || Number(v.cleaning_window_score || 0));
   const waitingDays = records.map(commercialWaitingDays);
   const salesTargetCount = records.filter(isSalesCandidate).length;
+  const immediateTargetCount = records.filter(isImmediateTarget).length;
   const targetRatio = records.length ? Math.round((salesTargetCount / records.length) * 1000) / 10 : 0;
+  const immediateTargetRatio = records.length ? Math.round((immediateTargetCount / records.length) * 1000) / 10 : 0;
   const avg = values => values.length ? Math.round(values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length) : 0;
+  const percentileValue = (values, p) => {
+    const sorted = values.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+    if (!sorted.length) return 0;
+    return Math.round(sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))]);
+  };
+  const percentileDistribution = values => ({
+    top_10: values.filter(value => Number(value) <= 10).length,
+    top_20: values.filter(value => Number(value) <= 20).length,
+    top_40: values.filter(value => Number(value) <= 40).length
+  });
+  const scores = records.map(commercialScore);
   return {
+    valid_vessels_count: records.length,
     raw_collected_rows: funnel.raw_api_rows,
     normalized_rows: records.length,
     all_vessels_count: records.length,
@@ -1878,9 +1958,19 @@ function buildScoringDiagnostics(records = []) {
       const value = commercialScore(v);
       return value >= 50 && value < SALES_CANDIDATE_THRESHOLD;
     }).length,
-    immediate_target_count: records.filter(isImmediateTarget).length,
+    immediate_target_count: immediateTargetCount,
     target_ratio: targetRatio,
-    target_ratio_warning: targetRatio > 30 ? "Target qualification may be too broad." : "",
+    immediate_target_ratio: immediateTargetRatio,
+    target_ratio_warning: targetRatio > 30 ? "영업대상 기준이 너무 넓습니다." : "",
+    immediate_target_ratio_warning: immediateTargetRatio > 15 ? "즉시영업후보 기준이 너무 넓습니다." : "",
+    global_percentile_distribution: percentileDistribution(records.map(v => v.global_percentile)),
+    port_percentile_distribution: percentileDistribution(records.map(v => v.port_percentile)),
+    score_avg: avg(scores),
+    score_median: percentileValue(scores, 50),
+    score_p90: percentileValue(scores, 90),
+    score_p75: percentileValue(scores, 75),
+    score_p50: percentileValue(scores, 50),
+    over_scoring_warning: targetRatio > 30 || immediateTargetRatio > 15 ? "영업 후보 점수 또는 비율이 과대 산정될 수 있습니다." : "",
     anchorage_hours_detected_count: records.filter(v => Number(v.anchorage_hours || 0) > 0).length,
     stay_hours_detected_count: records.filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || 0) > 0).length,
     biofouling_score_nonzero_count: records.filter(v => deriveBiofoulingProxyScore(v) > 0).length,
