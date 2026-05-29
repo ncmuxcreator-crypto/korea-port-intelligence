@@ -2,6 +2,30 @@
 const SALES_CANDIDATE_THRESHOLD = 60;
 const IMMEDIATE_TARGET_THRESHOLD = 80;
 const CRITICAL_TARGET_THRESHOLD = 90;
+const PORT_REGISTRY = [
+  { port_code: "020", port_name_ko: "부산항", tier: 1, sort: 10 },
+  { port_code: "820", port_name_ko: "울산항", tier: 1, sort: 20 },
+  { port_code: "620", port_name_ko: "여수·광양항", tier: 1, sort: 30 },
+  { port_code: "031", port_name_ko: "평택·당진항", tier: 1, sort: 40 },
+  { port_code: "030", port_name_ko: "인천항", tier: 1, sort: 50 },
+  { port_code: "810", port_name_ko: "포항항", tier: 1, sort: 60 },
+  { port_code: "622", port_name_ko: "하동항", sub_port: "Hadong", tier: 2, sort: 110 },
+  { port_code: "622", port_name_ko: "삼천포항", sub_port: "Samcheonpo", tier: 2, sort: 120 },
+  { port_code: "621", port_name_ko: "대산항", tier: 2, sort: 130 },
+  { port_code: "622", port_name_ko: "마산·진해항", sub_port: "Masan/Jinhae", tier: 2, sort: 140 },
+  { port_code: "622", port_name_ko: "통영항", sub_port: "Tongyeong", tier: 2, sort: 150 },
+  { port_code: "622", port_name_ko: "거제·옥포항", sub_port: "Geoje/Okpo", tier: 2, sort: 160 },
+  { port_code: "070", port_name_ko: "목포항", tier: 2, sort: 170 },
+  { port_code: "080", port_name_ko: "군산항", tier: 2, sort: 180 },
+  { port_code: "120", port_name_ko: "동해·묵호항", sub_port: "Donghae/Mukho", tier: 2, sort: 190 },
+  { port_code: "940", port_name_ko: "제주항", tier: 3, sort: 210 },
+  { port_code: "120", port_name_ko: "속초항", sub_port: "Sokcho", tier: 3, sort: 220 },
+  { port_code: "031", port_name_ko: "보령항", sub_port: "Boryeong", tier: 3, sort: 230 },
+  { port_code: "030", port_name_ko: "영흥 터미널", sub_port: "Yeongheung", tier: 3, sort: 240 },
+  { port_code: "621", port_name_ko: "태안 터미널", sub_port: "Taean", tier: 3, sort: 250 },
+  { port_code: "031", port_name_ko: "당진 산업터미널", sub_port: "Dangjin Industrial", tier: 3, sort: 260 },
+  { port_code: "820", port_name_ko: "LNG·산업 터미널", sub_port: "LNG/Industrial", tier: 3, sort: 270 }
+];
 const BASIC_INFO_FIELDS = [
   "vessel_name", "normalized_vessel_name", "call_sign", "imo", "mmsi", "vessel_type", "vessel_type_group",
   "gt", "dwt", "loa", "beam", "flag", "operator", "operator_normalized", "agent", "agent_normalized",
@@ -550,7 +574,8 @@ function deriveCommercialRelevance(v = {}) {
 function isMainCommercialVessel(v = {}) {
   const status = v.commercial_relevance_status || deriveCommercialRelevance(v);
   const commercialScore = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
-  if (isHardCandidateExcluded(v)) return false;
+  if (isSyntheticSample(v) || v.excluded_from_commercial_targets === true) return false;
+  if (commercialScore >= SALES_CANDIDATE_THRESHOLD) return true;
   return ["target_vessel", "unknown_gt_review"].includes(status) || commercialScore >= SALES_CANDIDATE_THRESHOLD;
 }
 
@@ -565,7 +590,8 @@ function isExplicitlyExcluded(v = {}) {
 
 function isHardCandidateExcluded(v = {}) {
   const status = v.commercial_relevance_status || deriveCommercialRelevance(v);
-  return status === "excluded_non_commercial_type" ||
+  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  return (status === "excluded_non_commercial_type" && score < SALES_CANDIDATE_THRESHOLD) ||
     v.excluded_from_commercial_targets === true ||
     isSyntheticSample(v);
 }
@@ -864,7 +890,10 @@ function deriveCommercialProxyScore(v = {}, scores = {}) {
 }
 
 function isSalesCandidate(v = {}) {
-  return !isHardCandidateExcluded(v) && commercialScore(v) >= SALES_CANDIDATE_THRESHOLD;
+  return !isSyntheticSample(v) &&
+    v.excluded_from_commercial_targets !== true &&
+    hasUsefulVesselIdentity(v) &&
+    commercialScore(v) >= SALES_CANDIDATE_THRESHOLD;
 }
 
 function isCurrentActionableCandidate(v = {}) {
@@ -1589,12 +1618,48 @@ function portCodeFromName(port = "") {
   return "unknown";
 }
 
+function portRegistryKey(port = {}) {
+  return `${port.port_code || "unknown"}|${String(port.sub_port || port.port_name_ko || port.port_name || "").toLowerCase()}`;
+}
+
+function recordPortKey(record = {}) {
+  const portCode = record.port_code || portCodeFromName(record.port_name || record.port);
+  const subPort = String(record.sub_port || "").toLowerCase();
+  if (subPort) return `${portCode}|${subPort}`;
+  return `${portCode}|`;
+}
+
+function isDisplayablePortName(value = "") {
+  const text = String(value || "").trim();
+  return text && !/^korea$/i.test(text) && !/^unknown$/i.test(text);
+}
+
 function buildPorts(records) {
   const map = new Map();
+  for (const registry of PORT_REGISTRY) {
+    const key = portRegistryKey(registry);
+    map.set(key, {
+      port_code: registry.port_code,
+      port_name: registry.port_name_ko,
+      port_name_ko: registry.port_name_ko,
+      port_group: registry.port_name_ko,
+      sub_port: registry.sub_port || "",
+      tier: registry.tier,
+      commercial_priority: registry.tier === 1 ? "high" : registry.tier === 2 ? "medium_high" : "medium",
+      registry_sort: registry.sort,
+      vessel_count: 0,
+      scored_count: 0,
+      candidate_count: 0,
+      immediate_target_count: 0
+    });
+  }
   for (const v of records) {
     const portName = v.port_name || v.port || "Unknown";
     const portCode = v.port_code || portCodeFromName(portName);
-    const key = portCode !== "unknown" ? portCode : portName;
+    if (portCode === "unknown" || !isDisplayablePortName(portName)) continue;
+    const exactKey = recordPortKey(v);
+    const registryMatch = [...map.keys()].find(key => key.startsWith(`${portCode}|`) && (exactKey === key || !exactKey.split("|")[1]));
+    const key = registryMatch || exactKey || portCode;
     const p = map.get(key) || {
       port_code: portCode,
       port_name: portName,
@@ -1616,6 +1681,7 @@ function buildPorts(records) {
   }
   return [...map.values()].sort((a, b) =>
     Number(a.tier || 99) - Number(b.tier || 99) ||
+    Number(a.registry_sort || 999) - Number(b.registry_sort || 999) ||
     b.immediate_target_count - a.immediate_target_count ||
     b.candidate_count - a.candidate_count ||
     b.vessel_count - a.vessel_count

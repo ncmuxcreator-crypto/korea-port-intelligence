@@ -854,7 +854,7 @@ function normalizePort(value, fallback = "") {
   if (/boryeong/i.test(text)) return "Boryeong";
   if (/yeongheung/i.test(text)) return "Yeongheung";
   if (/taean/i.test(text)) return "Taean";
-  return text || "Korea";
+  return text || "Unknown";
 }
 
 

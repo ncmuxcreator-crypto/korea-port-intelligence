@@ -1105,9 +1105,10 @@ function isMainCommercialVessel(v = {}) {
 
 function isExplicitlyExcluded(v = {}) {
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
-  return v.commercial_relevance_status === "excluded_non_commercial_type" ||
-    v.commercial_relevance_status === "excluded_departure_only" ||
-    (v.commercial_relevance_status === "non_target_small_vessel" && gt > 0 && gt < COMMERCIAL_GT_THRESHOLD) ||
+  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  return (v.commercial_relevance_status === "excluded_non_commercial_type" && score < SALES_CANDIDATE_THRESHOLD) ||
+    (v.commercial_relevance_status === "excluded_departure_only" && score < SALES_CANDIDATE_THRESHOLD) ||
+    (v.commercial_relevance_status === "non_target_small_vessel" && gt > 0 && gt < COMMERCIAL_GT_THRESHOLD && score < SALES_CANDIDATE_THRESHOLD) ||
     v.excluded_from_commercial_targets === true;
 }
 
@@ -1117,8 +1118,8 @@ function isSyntheticSample(v = {}) {
 }
 
 function isHardCandidateExcluded(v = {}) {
-  return v.commercial_relevance_status === "excluded_non_commercial_type" ||
-    v.commercial_relevance_status === "excluded_departure_only" ||
+  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  return (v.commercial_relevance_status === "excluded_non_commercial_type" && score < SALES_CANDIDATE_THRESHOLD) ||
     v.excluded_from_commercial_targets === true ||
     isSyntheticSample(v);
 }
@@ -1130,7 +1131,7 @@ function isSalesCandidate(v = {}) {
 
 function isImmediateTarget(v = {}) {
   const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
-  return !isHardCandidateExcluded(v) && score >= IMMEDIATE_TARGET_THRESHOLD;
+  return isSalesCandidate(v) && score >= IMMEDIATE_TARGET_THRESHOLD && v.commercial_relevance_status !== "excluded_departure_only";
 }
 
 function commercialExclusionReason(v = {}) {
