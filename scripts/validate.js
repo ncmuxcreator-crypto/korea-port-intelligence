@@ -268,11 +268,11 @@ if (!worker.includes("vessel_snapshots") || !worker.includes("SUPABASE_URL") || 
 if (!worker.includes("cumulative_stay_hours") || !worker.includes("CUMULATIVE_STAY_90D_PLUS")) {
   throw new Error("Worker must preserve cumulative stay beyond short port-call windows");
 }
-for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/review/unknown-gt.json", "/review/high-value-low-confidence.json", "/review/congestion-watchlist.json", "target-vessels|staying-vessels|arrivals", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
+for (const route of ["/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/predicted-arrivals.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/review/unknown-gt.json", "/review/high-value-low-confidence.json", "/review/congestion-watchlist.json", "target-vessels|staying-vessels|arrivals", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "active_dataset_pointer"]) {
   if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
 }
 const referenceDictionaries = fs.readFileSync("scripts/lib/reference-dictionaries.js", "utf8");
-for (const marker of ["classifyAnchorage", "classifyBerth", "normalizeVesselType", "\\uB0A8\\uC678\\uD56D", "ANCH", "O A", "bulk_carrier", "pctc", "vesselMasterSeed"]) {
+for (const marker of ["classifyAnchorage", "classifyBerth", "normalizeVesselType", "\\uB0A8\\uC678\\uD56D", "ANCH", "O A", "bulk_carrier", "pctc", "vesselMasterSeed", "berthAliases", "terminalAliases"]) {
   if (!referenceDictionaries.includes(marker)) throw new Error(`Reference dictionary enrichment missing marker: ${marker}`);
 }
 const gdriveLib = fs.readFileSync("scripts/lib/gdrive.js", "utf8");
@@ -286,14 +286,14 @@ if (!dbLib.includes("SUPABASE_BATCH_SIZE") || !dbLib.includes("batchSize")) {
 if (!dbLib.includes('.from("vessel_snapshots")') || !dbLib.includes(".insert(batch)") || dbLib.includes("onConflict: \"snapshot_date,vessel_id,port\"")) {
   throw new Error("Supabase vessel_snapshots must be append-only, not latest-state upsert only");
 }
-if (!dbLib.includes('.from("vessel_entities")') || !dbLib.includes('.from("risk_history")') || !dbLib.includes('.from("vessel_events")') || !dbLib.includes('.from("data_collection_runs")') || !dbLib.includes('.from("active_dataset_pointer")')) {
+if (!dbLib.includes('.from("vessel_entities")') || !dbLib.includes('.from("risk_history")') || !dbLib.includes('.from("vessel_events")') || !dbLib.includes('.from("data_collection_runs")') || !dbLib.includes('.from("active_dataset_pointer")') || !dbLib.includes('.from("enrichment_match_candidates")')) {
   throw new Error("Supabase persistence must update collection runs, active pointer, vessel_entities, risk_history, and vessel_events");
 }
 const schema = fs.readFileSync("supabase/schema.sql", "utf8");
-for (const marker of ["data_collection_runs", "active_dataset_pointer", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "commercial_value_score", "data_confidence_score", "target_vessels_count", "validation_status", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
+for (const marker of ["data_collection_runs", "active_dataset_pointer", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "route_patterns", "vessel_route_history", "predicted_arrivals", "enrichment_match_candidates", "berth_aliases", "terminal_aliases", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "commercial_value_score", "data_confidence_score", "target_vessels_count", "validation_status", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
   if (!schema.includes(marker)) throw new Error(`Supabase schema missing historical persistence marker: ${marker}`);
 }
-for (const file of ["data/reference/ports.csv", "data/reference/berths.csv", "data/reference/anchorages.csv", "data/reference/vessel_types.csv", "data/reference/operators.csv", "data/reference/agents.csv", "data/reference/vessel_master_seed.csv"]) {
+for (const file of ["data/reference/ports.csv", "data/reference/berths.csv", "data/reference/berth_aliases.csv", "data/reference/terminal_aliases.csv", "data/reference/anchorages.csv", "data/reference/vessel_types.csv", "data/reference/operators.csv", "data/reference/agents.csv", "data/reference/agent_operator_mapping.csv", "data/reference/vessel_master_seed.csv"]) {
   if (!fs.existsSync(file)) throw new Error(`Missing CSV reference dictionary: ${file}`);
 }
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));

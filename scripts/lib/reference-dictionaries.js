@@ -145,6 +145,8 @@ export function loadReferenceDictionaries() {
   const portsRegistry = loadCsv("ports_registry.csv");
   const berths = loadCsv("berths.csv");
   const anchorages = loadCsv("anchorages.csv");
+  const berthAliases = loadCsv("berth_aliases.csv");
+  const terminalAliases = loadCsv("terminal_aliases.csv");
   const vesselTypes = loadCsv("vessel_types.csv");
   const operators = loadCsv("operators.csv");
   const agents = loadCsv("agents.csv");
@@ -156,6 +158,8 @@ export function loadReferenceDictionaries() {
     portsRegistry,
     berths,
     anchorages,
+    berthAliases,
+    terminalAliases,
     vesselTypes,
     operators,
     agents,
@@ -163,8 +167,10 @@ export function loadReferenceDictionaries() {
     vesselMasterSeed,
     indexes: {
       ports: indexBy([...ports, ...portsRegistry], ["port_code", "prtAgCd", "port_name", "port_name_ko", "port_name_en", "alias", "sub_port"]),
-      berths: indexBy(berths, ["berth_name", "alias"]),
+      berths: indexBy([...berths, ...berthAliases, ...terminalAliases], ["berth_name", "terminal_name", "alias", "normalized_alias"]),
       anchorages: indexBy(anchorages, ["anchorage_name", "alias"]),
+      berthAliases: indexBy(berthAliases, ["alias", "normalized_alias", "berth_name"]),
+      terminalAliases: indexBy(terminalAliases, ["alias", "normalized_alias", "terminal_name", "berth_name"]),
       vesselTypes: indexBy(vesselTypes, ["vessel_type", "alias"]),
       operators: indexBy(operators, ["operator", "alias"]),
       agents: indexBy(agents, ["agent", "alias"]),
@@ -188,11 +194,13 @@ export function enrichWithReferenceDictionaries(records = [], dictionaries = loa
       enriched.port = enriched.port_name;
     }
 
-    const berthRef = indexes.berths?.get(normalize(record.berth_name || record.berth));
+    const berthRef = indexes.berths?.get(normalize(record.berth_name || record.berth || record.terminal_name || record.laidupFcltyNm));
     if (berthRef) {
-      enriched.berth_name = berthRef.berth_name || enriched.berth_name || enriched.berth;
+      enriched.berth_name = berthRef.berth_name || berthRef.terminal_name || enriched.berth_name || enriched.berth;
+      enriched.terminal_name = berthRef.terminal_name || enriched.terminal_name;
       enriched.berth_class = berthRef.berth_class || enriched.berth_class;
       enriched.berth_classification_source = "dictionary";
+      enriched.berth_alias_match = true;
     }
 
     const anchorageRef = indexes.anchorages?.get(normalize(record.anchorage_name || record.anchorage_zone || record.berth_name || record.berth || record.laidupFcltyNm));

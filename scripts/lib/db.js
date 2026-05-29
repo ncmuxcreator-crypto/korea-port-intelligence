@@ -645,6 +645,34 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  const enrichmentMatchRows = uniqueBy(records
+    .filter(r => Number(r.match_score || r.pilot_match_score || r.berth_match_confidence || r.enrichment_confidence || 0) > 0 || r.pilot_schedule_matched || r.secondary_enrichment_matched)
+    .map(r => ({
+      match_id: stableEntityId("EMC", `${runId}-${r.hybrid_entity_key || r.vessel_id}-${r.port_call_identity || r.raw_row_identity || ""}-${r.enrichment_source || r.pilot_source_origin || r.source || ""}`),
+      run_id: runId,
+      master_vessel_id: fallbackMasterId(r),
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
+      port_call_identity: r.port_call_identity || null,
+      vessel_name: r.vessel_name || null,
+      normalized_vessel_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
+      call_sign: r.call_sign || null,
+      port_code: r.port_code || null,
+      enrichment_source: r.enrichment_source || r.pilot_source_origin || r.source || null,
+      enrichment_source_type: r.pilot_schedule_matched ? "pilot_schedule" : r.secondary_enrichment_matched ? "berth_terminal" : r.source_profile || null,
+      match_score: Number(r.match_score || r.pilot_match_score || r.berth_match_confidence || r.enrichment_confidence || 0),
+      match_confidence: r.match_confidence || r.pilot_match_confidence || r.berth_match_confidence || null,
+      match_reasons: r.match_reasons || r.pilot_match_reasons || r.berth_match_reasons || [],
+      matched_at: now,
+      reused_historical_match: Boolean(r.vessel_master_cache_match || r.vessel_master_seed_match || r.previous_enrichment_match),
+      payload: r
+    })), row => row.match_id);
+
+  for (let index = 0; index < enrichmentMatchRows.length; index += batchSize) {
+    const batch = enrichmentMatchRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("enrichment_match_candidates").upsert(batch, { onConflict: "match_id" });
+    if (error) throw error;
+  }
+
   const aliases = records
     .filter(r => r.vessel_name && (r.hybrid_entity_key || r.vessel_id))
     .map(r => ({

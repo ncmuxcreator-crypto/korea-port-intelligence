@@ -928,6 +928,43 @@ function buildCongestionWatchlist(records) {
     }));
 }
 
+function buildPredictedArrivals(records = []) {
+  return sortCommercialPriority(records
+    .filter(v => v.predicted_arrival_pipeline || v.predicted_arrival_time || Number(v.arrival_opportunity_score || 0) >= 35 || v.status_bucket === "arriving_soon"))
+    .sort((a, b) =>
+      Number(b.arrival_opportunity_score || 0) - Number(a.arrival_opportunity_score || 0) ||
+      Number(b.arrival_prediction_confidence || 0) - Number(a.arrival_prediction_confidence || 0) ||
+      commercialScore(b) - commercialScore(a)
+    )
+    .map(v => ({
+      vessel_name: v.vessel_name,
+      normalized_vessel_name: v.normalized_vessel_name || "",
+      port_code: v.port_code || portCodeFromName(v.port),
+      port_name: v.port_name || v.port,
+      previous_port: v.previous_port || "",
+      next_port: v.next_port || "",
+      destination_port: v.destination_port || v.destination || v.next_port || "",
+      route_region: v.route_region || "unknown",
+      route_from_port: v.route_from_port || v.previous_port || "",
+      route_to_port: v.route_to_port || v.destination_port || v.destination || v.next_port || "",
+      vessel_type: v.vessel_type || "",
+      vessel_type_group: v.vessel_type_group || "",
+      gt: v.gt || 0,
+      eta: v.eta || v.eta_candidate || "",
+      predicted_arrival_time: v.predicted_arrival_time || v.eta || v.eta_candidate || "",
+      arrival_prediction_confidence: Number(v.arrival_prediction_confidence || 0),
+      arrival_opportunity_score: Number(v.arrival_opportunity_score || 0),
+      predicted_congestion: Number(v.predicted_congestion || 0),
+      predicted_cleaning_window: Number(v.predicted_cleaning_window || 0),
+      predicted_arrival_window_hours: Number(v.predicted_arrival_window_hours || 0),
+      arrival_prediction_source: v.arrival_prediction_source || "",
+      route_pattern_known: Boolean(v.route_pattern_known),
+      route_pattern_confidence: Number(v.route_pattern_confidence || 0),
+      commercial_value_score: commercialScore(v),
+      reason_codes: v.reason_codes || []
+    }));
+}
+
 function portCodeFromName(port = "") {
   const text = String(port || "").toLowerCase();
   if (/busan|부산/.test(text)) return "020";
@@ -1184,6 +1221,7 @@ async function apiResponse(pathname, env) {
   if (pathname.endsWith("/target-vessels.json")) return json(buckets.target_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/staying-vessels.json")) return json(buckets.staying_vessels, { headers: corsHeaders() });
   if (pathname.endsWith("/arrival-pipeline.json")) return json(buckets.arrival_pipeline, { headers: corsHeaders() });
+  if (pathname.endsWith("/predicted-arrivals.json")) return json(buildPredictedArrivals(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/pilot-only-arrival-review.json") || pathname.endsWith("/review/pilot-only-arrivals.json")) return json(buckets.pilot_only_arrival_review, { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-queue.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-priority.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });

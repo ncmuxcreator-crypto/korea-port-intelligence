@@ -342,6 +342,52 @@ create table if not exists predicted_arrivals (
   payload jsonb default '{}'::jsonb
 );
 
+create table if not exists enrichment_match_candidates (
+  match_id text primary key,
+  run_id text,
+  master_vessel_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  vessel_name text,
+  normalized_vessel_name text,
+  call_sign text,
+  port_code text,
+  enrichment_source text,
+  enrichment_source_type text,
+  match_score int default 0,
+  match_confidence text,
+  match_reasons jsonb default '[]'::jsonb,
+  matched_at timestamptz default now(),
+  reused_historical_match boolean default false,
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists berth_aliases (
+  alias_id bigserial primary key,
+  port_code text,
+  berth_name text,
+  terminal_name text,
+  alias text,
+  normalized_alias text,
+  berth_class text,
+  source text,
+  confidence int default 70,
+  updated_at timestamptz default now()
+);
+
+create table if not exists terminal_aliases (
+  alias_id bigserial primary key,
+  port_code text,
+  terminal_name text,
+  berth_name text,
+  alias text,
+  normalized_alias text,
+  terminal_group text,
+  source text,
+  confidence int default 70,
+  updated_at timestamptz default now()
+);
+
 create table if not exists vessel_aliases (
   id bigserial primary key,
   alias_id bigserial,
@@ -495,6 +541,10 @@ create index if not exists idx_data_collection_runs_status on data_collection_ru
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
 create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
+create index if not exists idx_enrichment_match_candidates_run_id on enrichment_match_candidates(run_id);
+create index if not exists idx_enrichment_match_candidates_score on enrichment_match_candidates(match_score desc);
+create index if not exists idx_berth_aliases_normalized_alias on berth_aliases(normalized_alias);
+create index if not exists idx_terminal_aliases_normalized_alias on terminal_aliases(normalized_alias);
 
 alter table data_collection_runs add column if not exists raw_collected_rows int default 0;
 alter table data_collection_runs add column if not exists normalized_rows int default 0;
