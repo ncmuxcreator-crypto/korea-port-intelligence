@@ -304,10 +304,10 @@ function deriveArrivalPrediction(v = {}, metrics = {}, routeProfile = deriveRout
 
 function forecastBand(score) {
   const value = Number(score || 0);
-  if (value >= 75) return "high";
-  if (value >= 50) return "medium";
-  if (value >= 30) return "watch";
-  return "low";
+  if (value >= 85) return "CRITICAL";
+  if (value >= 65) return "HIGH";
+  if (value >= 40) return "MEDIUM";
+  return "LOW";
 }
 
 function deriveRouteBonus(v = {}, routeProfile = deriveRouteCommercialProfile(v)) {
@@ -682,6 +682,139 @@ function annotateFleetIntelligence(records = []) {
       recommended_next_action: fleet?.fleet_opportunity_score >= 55 ? fleet.recommended_action : record.recommended_next_action
     };
   });
+}
+
+function predictionEtaBucketHours(v = {}) {
+  const predicted = parseScheduleTime(v.predicted_arrival_time || v.eta || v.eta_candidate || v.pilot_time || v.movement_time);
+  if (!predicted) return null;
+  return Math.round(((predicted.getTime() - Date.now()) / 36e5) * 10) / 10;
+}
+
+function buildPortPredictionContext(records = []) {
+  const byPort = new Map();
+  for (const record of records.filter(v => !isDepartedRecord(v))) {
+    const key = String(record.port_code || record.port_name || record.port || "unknown");
+    const current = byPort.get(key) || {
+      vessels: 0,
+      anchorage: 0,
+      staying: 0,
+      berthOccupied: 0,
+      inboundPilot: 0,
+      outboundPilot: 0,
+      congestionTotal: 0,
+      stayTotal: 0,
+      waitTotal: 0
+    };
+    current.vessels += 1;
+    if (record.is_anchorage_waiting || hasAnchorageSignal(record) || Number(record.anchorage_hours || 0) > 0) current.anchorage += 1;
+    if (["arrived_staying", "berthed", "anchorage_waiting"].includes(record.status_bucket) || (record.ata && !record.atd)) current.staying += 1;
+    if (Number(record.berth_occupancy_proxy || 0) >= 50 || /active|working|cargo|loading|discharging|작업|하역|진행/.test(String(record.terminal_activity || "").toLowerCase())) current.berthOccupied += 1;
+    if (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "inbound") current.inboundPilot += 1;
+    if (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "outbound") current.outboundPilot += 1;
+    current.congestionTotal += Number(record.congestion_score || record.port_congestion_score || 0);
+    current.stayTotal += Number(record.stay_hours || record.current_call_stay_hours || 0);
+    current.waitTotal += Number(record.anchorage_hours || 0);
+    byPort.set(key, current);
+  }
+  for (const context of byPort.values()) {
+    context.avgCongestion = context.vessels ? Math.round(context.congestionTotal / context.vessels) : 0;
+    context.avgStayHours = context.staying ? Math.round(context.stayTotal / Math.max(1, context.staying)) : 0;
+    context.avgWaitingHours = context.anchorage ? Math.round(context.waitTotal / Math.max(1, context.anchorage)) : 0;
+    context.futureCongestionScore = Math.min(100, Math.round(
+      context.avgCongestion * 0.35 +
+      Math.min(28, context.anchorage * 5) +
+      Math.min(20, context.staying * 3) +
+      Math.min(18, context.inboundPilot * 6) -
+      Math.min(12, context.outboundPilot * 4) +
+      Math.min(14, context.berthOccupied * 4)
+    ));
+  }
+  return byPort;
+}
+
+function enhancePredictiveArrivalIntelligence(records = []) {
+  const portContext = buildPortPredictionContext(records);
+  return records.map(record => {
+    const key = String(record.port_code || record.port_name || record.port || "unknown");
+    const context = portContext.get(key) || {};
+    const etaHours = predictionEtaBucketHours(record);
+    const gt = Number(record.gt || record.grtg || record.intrlGrtg || 0);
+    const type = String([record.vessel_type_group, record.vessel_type, record.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+    const commercialType = /bulk|bulker|tanker|container|pctc|cruise|lng|lpg/.test(type);
+    const routePatternConfidence = Number(record.route_pattern_confidence || 0);
+    const predictionError = Number(record.prediction_error_hours);
+    const feedbackBoost = Number.isFinite(predictionError)
+      ? predictionError <= 12 ? 10 : predictionError <= 24 ? 5 : predictionError >= 72 ? -15 : -5
+      : 0;
+    const predictedCongestionScore = boundedScore(Math.max(
+      Number(record.predicted_congestion_score || record.predicted_congestion || 0),
+      Number(context.futureCongestionScore || 0)
+    ) + (etaHours !== null && etaHours >= 0 && etaHours <= 72 ? 5 : 0));
+    const anchorageProbability = boundedScore(Math.max(Number(record.anchorage_probability || 0), (
+      predictedCongestionScore * 0.45 +
+      Math.min(20, Number(context.avgWaitingHours || 0) / 4) +
+      (commercialType ? 12 : 4) +
+      (gt >= 80000 ? 12 : gt >= 30000 ? 9 : gt >= COMMERCIAL_GT_THRESHOLD ? 5 : 0)
+    )));
+    const predictedWorkWindowHours = Number(record.predicted_work_window_hours || 0) ||
+      (record.etd && !record.atd ? Math.max(0, Math.round(hoursBetween(new Date().toISOString(), record.etd) || 0)) : 0) ||
+      (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "outbound" ? 0 : Math.min(96, Math.max(12, Number(context.avgStayHours || context.avgWaitingHours || record.stay_hours || 0) / 2)));
+    const etaProximityScore = etaHours === null ? 0 : etaHours >= 0 && etaHours <= 24 ? 30 : etaHours <= 72 ? 24 : etaHours <= 168 ? 14 : 0;
+    const arrivalOpportunityScore = boundedScore(Math.max(Number(record.arrival_opportunity_score || 0), (
+      etaProximityScore +
+      (gt >= 80000 ? 18 : gt >= 30000 ? 14 : gt >= COMMERCIAL_GT_THRESHOLD ? 9 : 0) +
+      (commercialType ? 14 : 5) +
+      Math.round(predictedCongestionScore * 0.16) +
+      Math.round(anchorageProbability * 0.12) +
+      Math.min(12, Number(record.route_bonus || 0)) +
+      (record.operator_name || record.operator ? 4 : 0)
+    )));
+    const predictedPipeline = Boolean(
+      record.predicted_arrival_pipeline ||
+      record.status_bucket === "arriving_soon" ||
+      (etaHours !== null && etaHours >= 0 && etaHours <= 168 && arrivalOpportunityScore >= 35)
+    );
+    const confidence = boundedScore(Math.max(Number(record.arrival_prediction_confidence || 0), 25) + Math.round(routePatternConfidence * 0.15) + (record.pilot_schedule_matched ? 15 : 0) + feedbackBoost);
+    return {
+      ...record,
+      predicted_congestion_score: predictedCongestionScore,
+      congestion_forecast_band: forecastBand(predictedCongestionScore),
+      anchorage_probability: anchorageProbability,
+      predicted_work_window_hours: predictedWorkWindowHours,
+      work_window_confidence: boundedScore(Number(record.work_window_confidence || 0) || (predictedWorkWindowHours > 0 ? 45 : 15) + (record.pilot_schedule_matched ? 15 : 0)),
+      arrival_opportunity_score: arrivalOpportunityScore,
+      arrival_prediction_confidence: confidence,
+      predicted_arrival_window_hours: etaHours,
+      predicted_arrival_pipeline: predictedPipeline,
+      route_pattern_confidence: boundedScore(routePatternConfidence + feedbackBoost),
+      route_pattern_confidence_adjustment: feedbackBoost,
+      prediction_feedback_status: Number.isFinite(predictionError) ? predictionError <= 24 ? "accurate" : "needs_calibration" : "pending_actual_arrival"
+    };
+  });
+}
+
+function buildPredictedArrivals(records = []) {
+  return sortCommercialPriority(records
+    .filter(v =>
+      v.predicted_arrival_pipeline ||
+      v.predicted_arrival_time ||
+      v.status_bucket === "arriving_soon" ||
+      Number(v.arrival_opportunity_score || 0) >= 35
+    ))
+    .sort((a, b) =>
+      Number(b.arrival_opportunity_score || 0) - Number(a.arrival_opportunity_score || 0) ||
+      Number(b.anchorage_probability || 0) - Number(a.anchorage_probability || 0) ||
+      Number(b.predicted_congestion_score || 0) - Number(a.predicted_congestion_score || 0) ||
+      Number(b.arrival_prediction_confidence || 0) - Number(a.arrival_prediction_confidence || 0)
+    )
+    .slice(0, 200)
+    .map(v => ({
+      ...v,
+      destination_port: v.destination_port || v.destination || v.next_port || v.port_name || v.port,
+      predicted_arrival_time: v.predicted_arrival_time || v.eta || v.eta_candidate || "",
+      congestion_forecast_band: v.congestion_forecast_band || forecastBand(v.predicted_congestion_score || v.predicted_congestion || 0),
+      arrival_window_bucket: Number(v.predicted_arrival_window_hours) <= 24 ? "ETA_LT_24H" : Number(v.predicted_arrival_window_hours) <= 72 ? "ETA_LT_72H" : Number(v.predicted_arrival_window_hours) <= 168 ? "ETA_LT_7D" : "ETA_UNKNOWN"
+    }));
 }
 
 function hasValue(value) {
@@ -3534,7 +3667,7 @@ try {
   const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
-  vessels = annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records)));
+  vessels = enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))));
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -3637,7 +3770,7 @@ try {
   }
   const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
   const stayingVessels = targetVessels.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket));
-  const arrivalPipeline = targetVessels.filter(v => v.status_bucket === "arriving_soon");
+  const arrivalPipeline = buildPredictedArrivals(targetVessels);
   vessels = targetVessels;
   const mergedActionableRows = vessels.filter(v => v.actionable_source_row && !String(v.source_mode || "").includes("sample")).length;
   const hotVessels = buildHotVessels(vessels);
@@ -3681,6 +3814,7 @@ try {
     gt_5000_plus_count: targetVessels.filter(v => v.gt_status === "target_vessel").length,
     staying_vessel_count: stayingVessels.length,
     arrival_pipeline_count: arrivalPipeline.length,
+    predicted_arrivals_count: arrivalPipeline.length,
     scored_vessel_count: scoredVessels.length,
     sales_candidate_count: salesCandidates.length,
     immediate_target_count: immediateTargets.length,
@@ -3714,6 +3848,7 @@ try {
     commercial_command_center: commercialCommandCenter,
     contact_ready_vessels: contactReadyVessels.slice(0, 10),
     fleet_opportunities: fleetOpportunities.slice(0, 10),
+    predicted_arrivals: arrivalPipeline.slice(0, 10),
     hot_vessel_count: hotVessels.length,
     port_opportunities: portOpportunities.slice(0, 10),
     today_port_opportunities: portOpportunities.slice(0, 5),

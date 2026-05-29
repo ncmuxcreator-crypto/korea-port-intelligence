@@ -795,28 +795,37 @@ function deriveLeadPriorityScore(v = {}, parts = {}) {
 
 function forecastBand(score) {
   const value = Number(score || 0);
-  if (value >= 75) return "high";
-  if (value >= 50) return "medium";
-  if (value >= 30) return "watch";
-  return "low";
+  if (value >= 85) return "CRITICAL";
+  if (value >= 65) return "HIGH";
+  if (value >= 40) return "MEDIUM";
+  return "LOW";
 }
 
 function derivePredictedCongestionScore(v = {}) {
+  const historicalWaiting = Number(v.historical_avg_waiting_hours || v.avg_waiting_hours || 0);
+  const historicalStay = Number(v.historical_avg_stay_hours || v.avg_stay_hours || 0);
+  const routeCongestion = Number(v.congestion_probability || v.predicted_congestion || 0);
   return boundedScore(
-    Number(v.predicted_congestion || v.port_congestion_score || v.congestion_score || 0) +
+    Math.max(routeCongestion, Number(v.port_congestion_score || v.congestion_score || 0)) +
     (String(v.pilot_direction || v.movement_type || "").toLowerCase() === "inbound" ? 8 : 0) -
     (String(v.pilot_direction || v.movement_type || "").toLowerCase() === "outbound" ? 8 : 0) +
-    (Number(v.berth_occupancy_proxy || 0) >= 50 ? 10 : 0)
+    (Number(v.berth_occupancy_proxy || 0) >= 50 ? 10 : 0) +
+    (historicalWaiting >= 120 ? 20 : historicalWaiting >= 72 ? 14 : historicalWaiting >= 48 ? 9 : historicalWaiting >= 24 ? 5 : 0) +
+    (historicalStay >= 96 ? 10 : historicalStay >= 48 ? 5 : 0)
   );
 }
 
 function deriveAnchorageProbability(v = {}) {
   const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+  const historicalWaiting = Number(v.historical_avg_waiting_hours || v.avg_waiting_hours || 0);
+  const routeConfidence = Number(v.route_pattern_confidence || 0);
   return boundedScore(
     derivePredictedCongestionScore(v) * 0.42 +
     Math.min(25, Number(v.anchorage_hours || 0) / 2) +
     (/bulk|bulker|tanker|container|pctc|cruise|lng|lpg/.test(type) ? 12 : 4) +
-    (Number(v.gt || 0) >= 30000 ? 10 : Number(v.gt || 0) >= 5000 ? 6 : 0)
+    (Number(v.gt || 0) >= 80000 ? 14 : Number(v.gt || 0) >= 30000 ? 10 : Number(v.gt || 0) >= 5000 ? 6 : 0) +
+    (historicalWaiting >= 120 ? 18 : historicalWaiting >= 72 ? 13 : historicalWaiting >= 48 ? 9 : historicalWaiting >= 24 ? 5 : 0) +
+    Math.min(8, Math.round(routeConfidence * 0.08))
   );
 }
 
@@ -945,6 +954,119 @@ function deriveArrivalPredictionFromSignals(v = {}) {
     predicted_arrival_pipeline: Boolean(predicted && hours !== null && hours >= 0 && hours <= 168 && arrivalOpportunityScore >= 35),
     prediction_error_hours: v.prediction_error_hours ?? (predicted && (v.actual_arrival_time || v.ata) ? derivePredictionErrorHours({ ...v, predicted_arrival_time: predicted.toISOString() }) : null)
   };
+}
+
+function predictionEtaBucketHours(v = {}) {
+  const predicted = parseDate(v.predicted_arrival_time || v.eta || v.eta_candidate || v.pilot_time || v.movement_time);
+  if (!predicted) return null;
+  return Math.round(((predicted.getTime() - Date.now()) / 36e5) * 10) / 10;
+}
+
+function predictionEtaBucket(v = {}) {
+  const hours = predictionEtaBucketHours(v);
+  if (hours === null) return "ETA_UNKNOWN";
+  if (hours >= 0 && hours <= 24) return "ETA_LT_24H";
+  if (hours >= 0 && hours <= 72) return "ETA_LT_72H";
+  if (hours >= 0 && hours <= 168) return "ETA_LT_7D";
+  return "ETA_FUTURE";
+}
+
+function buildPortPredictionContext(records = []) {
+  const byPort = new Map();
+  for (const record of records.filter(v => !isDepartedRecord(v))) {
+    const key = String(record.port_code || record.port_name || record.port || "unknown");
+    const current = byPort.get(key) || {
+      vessels: 0,
+      anchorage: 0,
+      staying: 0,
+      berthOccupied: 0,
+      inboundPilot: 0,
+      outboundPilot: 0,
+      congestionTotal: 0,
+      stayTotal: 0,
+      waitTotal: 0
+    };
+    current.vessels += 1;
+    if (record.is_anchorage_waiting || Number(record.anchorage_hours || 0) > 0 || String(record.status_bucket || "").includes("anchorage")) current.anchorage += 1;
+    if (["arrived_staying", "berthed", "anchorage_waiting"].includes(record.status_bucket) || (record.ata && !record.atd)) current.staying += 1;
+    if (Number(record.berth_occupancy_proxy || 0) >= 50 || /active|working|cargo|loading|discharging|작업|하역|진행/.test(String(record.terminal_activity || "").toLowerCase())) current.berthOccupied += 1;
+    if (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "inbound") current.inboundPilot += 1;
+    if (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "outbound") current.outboundPilot += 1;
+    current.congestionTotal += Number(record.congestion_score || record.port_congestion_score || 0);
+    current.stayTotal += Number(record.stay_hours || record.current_call_stay_hours || 0);
+    current.waitTotal += Number(record.anchorage_hours || 0);
+    byPort.set(key, current);
+  }
+  for (const context of byPort.values()) {
+    context.avgCongestion = context.vessels ? Math.round(context.congestionTotal / context.vessels) : 0;
+    context.avgStayHours = context.staying ? Math.round(context.stayTotal / Math.max(1, context.staying)) : 0;
+    context.avgWaitingHours = context.anchorage ? Math.round(context.waitTotal / Math.max(1, context.anchorage)) : 0;
+    context.futureCongestionScore = boundedScore(
+      context.avgCongestion * 0.35 +
+      Math.min(28, context.anchorage * 5) +
+      Math.min(20, context.staying * 3) +
+      Math.min(18, context.inboundPilot * 6) -
+      Math.min(12, context.outboundPilot * 4) +
+      Math.min(14, context.berthOccupied * 4)
+    );
+  }
+  return byPort;
+}
+
+function enhancePredictiveArrivalIntelligence(records = []) {
+  const portContext = buildPortPredictionContext(records);
+  return records.map(record => {
+    const key = String(record.port_code || record.port_name || record.port || "unknown");
+    const context = portContext.get(key) || {};
+    const etaHours = predictionEtaBucketHours(record);
+    const gt = Number(record.gt || record.grtg || record.intrlGrtg || 0);
+    const type = String([record.vessel_type_group, record.vessel_type, record.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+    const commercialType = /bulk|bulker|tanker|container|pctc|cruise|lng|lpg/.test(type);
+    const predictionError = Number(record.prediction_error_hours);
+    const feedbackBoost = Number.isFinite(predictionError)
+      ? predictionError <= 12 ? 10 : predictionError <= 24 ? 5 : predictionError >= 72 ? -15 : -5
+      : 0;
+    const routeConfidence = Number(record.route_pattern_confidence || 0);
+    const predictedCongestionScore = boundedScore(Math.max(
+      Number(record.predicted_congestion_score || record.predicted_congestion || 0),
+      Number(context.futureCongestionScore || 0)
+    ) + (etaHours !== null && etaHours >= 0 && etaHours <= 72 ? 5 : 0));
+    const anchorageProbability = boundedScore(Math.max(Number(record.anchorage_probability || 0), (
+      predictedCongestionScore * 0.45 +
+      Math.min(20, Number(context.avgWaitingHours || 0) / 4) +
+      (commercialType ? 12 : 4) +
+      (gt >= 80000 ? 12 : gt >= 30000 ? 9 : gt >= 5000 ? 5 : 0)
+    )));
+    const etdDate = record.etd && !record.atd ? parseDate(record.etd) : null;
+    const predictedWorkWindowHours = Number(record.predicted_work_window_hours || 0) ||
+      (etdDate ? Math.max(0, Math.round((etdDate.getTime() - Date.now()) / 36e5 || 0)) : 0) ||
+      (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "outbound" ? 0 : Math.min(96, Math.max(12, Number(context.avgStayHours || context.avgWaitingHours || record.stay_hours || 0) / 2)));
+    const etaProximityScore = etaHours === null ? 0 : etaHours >= 0 && etaHours <= 24 ? 30 : etaHours <= 72 ? 24 : etaHours <= 168 ? 14 : 0;
+    const arrivalOpportunityScore = boundedScore(Math.max(Number(record.arrival_opportunity_score || 0), (
+      etaProximityScore +
+      (gt >= 80000 ? 18 : gt >= 30000 ? 14 : gt >= 5000 ? 9 : 0) +
+      (commercialType ? 14 : 5) +
+      Math.round(predictedCongestionScore * 0.16) +
+      Math.round(anchorageProbability * 0.12) +
+      Math.min(12, Number(record.route_bonus || deriveRouteBonus(record))) +
+      (record.operator_name || record.operator ? 4 : 0)
+    )));
+    return {
+      ...record,
+      predicted_congestion_score: predictedCongestionScore,
+      congestion_forecast_band: forecastBand(predictedCongestionScore),
+      anchorage_probability: anchorageProbability,
+      predicted_work_window_hours: predictedWorkWindowHours,
+      work_window_confidence: boundedScore(Number(record.work_window_confidence || 0) || (predictedWorkWindowHours > 0 ? 45 : 15) + (record.pilot_schedule_matched ? 15 : 0)),
+      arrival_opportunity_score: arrivalOpportunityScore,
+      arrival_prediction_confidence: boundedScore(Math.max(Number(record.arrival_prediction_confidence || 0), 25) + Math.round(routeConfidence * 0.15) + (record.pilot_schedule_matched ? 15 : 0) + feedbackBoost),
+      predicted_arrival_window_hours: etaHours,
+      predicted_arrival_pipeline: Boolean(record.predicted_arrival_pipeline || record.status_bucket === "arriving_soon" || (etaHours !== null && etaHours >= 0 && etaHours <= 168 && arrivalOpportunityScore >= 35)),
+      route_pattern_confidence: boundedScore(routeConfidence + feedbackBoost),
+      route_pattern_confidence_adjustment: feedbackBoost,
+      prediction_feedback_status: Number.isFinite(predictionError) ? predictionError <= 24 ? "accurate" : "needs_calibration" : "pending_actual_arrival"
+    };
+  });
 }
 
 function deriveLeadStatus(v = {}, leadPriorityScore = deriveLeadPriorityScore(v)) {
@@ -1871,7 +1993,8 @@ function buildCongestionWatchlist(records) {
 }
 
 function buildPredictedArrivals(records = []) {
-  return sortCommercialPriority(records
+  const predictiveRecords = enhancePredictiveArrivalIntelligence(records);
+  return sortCommercialPriority(predictiveRecords
     .filter(v => v.predicted_arrival_pipeline || v.predicted_arrival_time || Number(v.arrival_opportunity_score || 0) >= 35 || v.status_bucket === "arriving_soon"))
     .sort((a, b) =>
       Number(b.arrival_opportunity_score || 0) - Number(a.arrival_opportunity_score || 0) ||
@@ -1881,6 +2004,9 @@ function buildPredictedArrivals(records = []) {
     .map(v => ({
       vessel_name: v.vessel_name,
       normalized_vessel_name: v.normalized_vessel_name || "",
+      operator_name: v.operator_name || v.operator || "",
+      operator_normalized: v.operator_normalized || "",
+      agent_name: v.agent_name || v.agent || "",
       port_code: v.port_code || portCodeFromName(v.port),
       port_name: v.port_name || v.port,
       previous_port: v.previous_port || "",
@@ -1899,7 +2025,7 @@ function buildPredictedArrivals(records = []) {
       predicted_congestion: Number(v.predicted_congestion || 0),
       predicted_cleaning_window: Number(v.predicted_cleaning_window || 0),
       predicted_congestion_score: Number(v.predicted_congestion_score || 0),
-      congestion_forecast_band: v.congestion_forecast_band || "low",
+      congestion_forecast_band: v.congestion_forecast_band || forecastBand(v.predicted_congestion_score || v.predicted_congestion || 0),
       anchorage_probability: Number(v.anchorage_probability || 0),
       predicted_work_window_hours: Number(v.predicted_work_window_hours || 0),
       work_window_confidence: Number(v.work_window_confidence || 0),
@@ -1915,6 +2041,8 @@ function buildPredictedArrivals(records = []) {
       arrival_prediction_source: v.arrival_prediction_source || "",
       route_pattern_known: Boolean(v.route_pattern_known),
       route_pattern_confidence: Number(v.route_pattern_confidence || 0),
+      prediction_error_hours: v.prediction_error_hours ?? null,
+      arrival_window_bucket: predictionEtaBucket(v),
       commercial_value_score: commercialScore(v),
       reason_codes: v.reason_codes || []
     }));
@@ -2258,11 +2386,14 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   const immediateTargets = sortCommercialPriority(buckets.immediate_targets).slice(0, 5);
   const immediateKeys = new Set(immediateTargets.map(candidateDedupeKey));
   const opportunities = sortCommercialPriority(buckets.sales_candidates.filter(v => !immediateKeys.has(candidateDedupeKey(v)))).slice(0, 5);
+  const predictedArrivals = buildPredictedArrivals(activeRecords).slice(0, 10);
   return {
     status: buildStatus(activeRecords, source),
     ports: buildPorts(buckets.target_vessels),
     immediate_targets: immediateTargets,
     opportunities,
+    predicted_arrivals: predictedArrivals,
+    arrival_pipeline: predictedArrivals,
     lead_pipeline: buildLeadPipeline(activeRecords).slice(0, 8),
     contact_ready_vessels: buildContactReadyVessels(activeRecords).slice(0, 5),
     fleet_opportunities: buildFleetOpportunityRows(activeRecords).slice(0, 5),
