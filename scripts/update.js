@@ -19,7 +19,8 @@ const PRIORITY_PORTS = [
 const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 5000);
 const REVIEW_TARGET_THRESHOLD = Number(process.env.REVIEW_TARGET_THRESHOLD || 35);
 const SALES_CANDIDATE_THRESHOLD = Number(process.env.SALES_CANDIDATE_THRESHOLD || 60);
-const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 75);
+const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 80);
+const CRITICAL_TARGET_THRESHOLD = Number(process.env.CRITICAL_TARGET_THRESHOLD || 90);
 const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
 
@@ -814,6 +815,7 @@ function deriveCommercialScoreParts(v, metrics) {
 
 function commercialValueBand(score, gtStatus) {
   if (gtStatus === "unknown_gt_review" && score >= 40) return "unknown_gt_review";
+  if (score >= CRITICAL_TARGET_THRESHOLD) return "critical_commercial_target";
   if (score >= IMMEDIATE_TARGET_THRESHOLD) return "immediate_commercial_target";
   if (score >= SALES_CANDIDATE_THRESHOLD) return "high_potential_target";
   if (score >= REVIEW_TARGET_THRESHOLD) return "review_target";
@@ -1854,18 +1856,23 @@ function buildScoringDiagnostics(records = []) {
   const buckets = {
     score_0_20: 0,
     score_20_35: 0,
-    score_35_50: 0,
-    score_50_75: 0,
-    score_75_plus: 0
+    score_35_60: 0,
+    score_60_80: 0,
+    score_80_90: 0,
+    score_90_plus: 0
   };
   for (const v of records) {
     const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
     if (score < 20) buckets.score_0_20 += 1;
     else if (score < REVIEW_TARGET_THRESHOLD) buckets.score_20_35 += 1;
-    else if (score < SALES_CANDIDATE_THRESHOLD) buckets.score_35_50 += 1;
-    else if (score < IMMEDIATE_TARGET_THRESHOLD) buckets.score_50_75 += 1;
-    else buckets.score_75_plus += 1;
+    else if (score < SALES_CANDIDATE_THRESHOLD) buckets.score_35_60 += 1;
+    else if (score < IMMEDIATE_TARGET_THRESHOLD) buckets.score_60_80 += 1;
+    else if (score < CRITICAL_TARGET_THRESHOLD) buckets.score_80_90 += 1;
+    else buckets.score_90_plus += 1;
   }
+  buckets.score_35_50 = buckets.score_35_60;
+  buckets.score_50_75 = buckets.score_60_80;
+  buckets.score_75_plus = buckets.score_80_90 + buckets.score_90_plus;
   const highScoreRows = records.filter(v => Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD);
   const exclusionReasonCounts = {};
   for (const v of highScoreRows) {

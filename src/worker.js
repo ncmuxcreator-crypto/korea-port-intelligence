@@ -1,6 +1,7 @@
 ﻿const API_CACHE_SECONDS = 300;
 const SALES_CANDIDATE_THRESHOLD = 60;
-const IMMEDIATE_TARGET_THRESHOLD = 75;
+const IMMEDIATE_TARGET_THRESHOLD = 80;
+const CRITICAL_TARGET_THRESHOLD = 90;
 const BASIC_INFO_FIELDS = [
   "vessel_name", "normalized_vessel_name", "call_sign", "imo", "mmsi", "vessel_type", "vessel_type_group",
   "gt", "dwt", "loa", "beam", "flag", "operator", "operator_normalized", "agent", "agent_normalized",
@@ -27,9 +28,10 @@ function corsHeaders() {
 }
 
 function scoreLevel(score = 0) {
-  if (score >= 85) return "Critical";
-  if (score >= 70) return "High";
-  if (score >= 45) return "Medium";
+  if (score >= CRITICAL_TARGET_THRESHOLD) return "Critical";
+  if (score >= IMMEDIATE_TARGET_THRESHOLD) return "Immediate";
+  if (score >= SALES_CANDIDATE_THRESHOLD) return "Target";
+  if (score >= 40) return "Watch";
   return "Low";
 }
 
@@ -1516,11 +1518,15 @@ function buildScoringDiagnostics(records = []) {
     const value = commercialScore(v);
     if (value < 20) acc.score_0_20 += 1;
     else if (value < 35) acc.score_20_35 += 1;
-    else if (value < SALES_CANDIDATE_THRESHOLD) acc.score_35_50 += 1;
-    else if (value < IMMEDIATE_TARGET_THRESHOLD) acc.score_50_75 += 1;
-    else acc.score_75_plus += 1;
+    else if (value < SALES_CANDIDATE_THRESHOLD) acc.score_35_60 += 1;
+    else if (value < IMMEDIATE_TARGET_THRESHOLD) acc.score_60_80 += 1;
+    else if (value < CRITICAL_TARGET_THRESHOLD) acc.score_80_90 += 1;
+    else acc.score_90_plus += 1;
     return acc;
-  }, { score_0_20: 0, score_20_35: 0, score_35_50: 0, score_50_75: 0, score_75_plus: 0 });
+  }, { score_0_20: 0, score_20_35: 0, score_35_60: 0, score_60_80: 0, score_80_90: 0, score_90_plus: 0 });
+  scoreBuckets.score_35_50 = scoreBuckets.score_35_60;
+  scoreBuckets.score_50_75 = scoreBuckets.score_60_80;
+  scoreBuckets.score_75_plus = scoreBuckets.score_80_90 + scoreBuckets.score_90_plus;
   return {
     raw_collected_rows: funnel.raw_api_rows,
     normalized_rows: records.length,
@@ -1590,6 +1596,7 @@ function buildStatus(records, source) {
   const countFunnel = buildCountFunnel(records, buckets);
   const high = records.filter(v => (v.risk_score || 0) >= 70);
   const displayableRows = buckets.target_vessels.length || records.length;
+  const monitoringVessels = records.filter(v => !isSyntheticSample(v) && hasUsefulVesselIdentity(v) && commercialScore(v) < SALES_CANDIDATE_THRESHOLD);
   const dataMode = buckets.target_vessels.length ? "supabase_live_snapshot" : records.length ? "supabase_snapshot_no_targets" : "no_live_data";
   const usingSnapshotFallback = Boolean(source.pointer?.fallback_pointer && records.length);
   return {
@@ -1602,6 +1609,7 @@ function buildStatus(records, source) {
     completed_at: new Date().toISOString(),
     record_count: buckets.target_vessels.length,
     all_collected_vessel_count: records.length,
+    monitoring_vessel_count: monitoringVessels.length,
     target_vessel_count: buckets.target_vessels.length,
     staying_vessel_count: buckets.staying_vessels.length,
     arrival_pipeline_count: buckets.arrival_pipeline.length,
@@ -1686,9 +1694,10 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/review/basic-info-missing.json")) return json(buildBasicInfoMissing(records), { headers: corsHeaders() });
   if (pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) {
     const group = String(searchParams.get("group") || "target").toLowerCase();
+    const usefulRows = allRecords.filter(v => !isSyntheticSample(v) && hasUsefulVesselIdentity(v));
     const sourceRows = group === "all"
-      ? allRecords.filter(v => !isSyntheticSample(v) && hasUsefulVesselIdentity(v))
-      : sortCommercialPriority(dedupeCandidateRows([...buckets.sales_candidates, ...buckets.immediate_targets]));
+      ? sortCommercialPriority(dedupeCandidateRows(usefulRows.filter(v => commercialScore(v) < SALES_CANDIDATE_THRESHOLD)))
+      : sortCommercialPriority(dedupeCandidateRows(usefulRows.filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !isHardCandidateExcluded(v))));
     return json(pageRows(sourceRows, searchParams), { headers: corsHeaders() });
   }
   const vesselMatch = pathname.match(new RegExp("^/api/vessels/([^/]+)$"));
