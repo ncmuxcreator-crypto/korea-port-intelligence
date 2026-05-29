@@ -330,6 +330,61 @@ function cleaningOpportunityBand(score) {
   return "LOW";
 }
 
+function biofoulingExposureBand(score) {
+  const value = Number(score || 0);
+  if (value >= 80) return "VERY HIGH";
+  if (value >= 60) return "HIGH";
+  if (value >= 35) return "MEDIUM";
+  return "LOW";
+}
+
+function deriveBiofoulingExposureEngine(v = {}, metrics = {}, routeProfile = deriveRouteCommercialProfile(v), predictiveParts = {}) {
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment, v.vsslKndNm].filter(Boolean).join(" ")).toLowerCase();
+  const anchorageHours = Number(metrics.anchorage_hours || v.anchorage_hours || 0);
+  const stayHours = Number(metrics.stay_hours || v.cumulative_stay_hours || v.stay_hours || v.current_call_stay_hours || 0);
+  const congestion = Number(predictiveParts.predicted_congestion_score || v.congestion_score || v.port_congestion_score || deriveCongestionScore(v, metrics) || 0);
+  const idleExposure = Number(predictiveParts.idle_exposure || v.idle_exposure || Math.min(100, Math.round(Math.min(55, stayHours / 2) + Math.min(35, anchorageHours / 2))));
+  const lowSpeedExposure = Number(predictiveParts.low_speed_exposure || v.low_speed_exposure || 0);
+  const routeExposure = Math.max(
+    Number(routeProfile.biosecurity_exposure_score || v.biosecurity_exposure_score || 0),
+    routeProfile.route_region === "australia" || routeProfile.route_region === "new_zealand" ? 100 :
+      routeProfile.route_region === "brazil" ? 85 :
+        routeProfile.route_region === "north_america" ? 60 :
+          routeProfile.route_region === "europe" ? 50 : 0
+  );
+  const vesselTypeExposure = /bulk|bulker|tanker|container|pctc|cruise|lng|lpg|벌크|탱커|컨테이너|자동차|크루즈/.test(type)
+    ? 85
+    : /general|cargo|화물/.test(type)
+      ? 45
+      : 25;
+  const anchorageExposure = Math.min(100, Math.round(Math.min(90, anchorageHours / 24 * 18) + (v.is_anchorage_waiting || hasAnchorageSignal(v) ? 10 : 0)));
+  const stayExposure = Math.min(100, Math.round(Math.min(90, stayHours / 24 * 12) + (stayHours >= 168 ? 10 : 0)));
+  const gtExposure = gt >= 80000 ? 12 : gt >= 30000 ? 8 : gt >= COMMERCIAL_GT_THRESHOLD ? 4 : 0;
+  const score = boundedScore(
+    anchorageExposure * 0.30 +
+    stayExposure * 0.20 +
+    congestion * 0.15 +
+    Math.max(lowSpeedExposure, idleExposure) * 0.15 +
+    routeExposure * 0.10 +
+    vesselTypeExposure * 0.10 +
+    gtExposure
+  );
+  const reasons = [];
+  if (anchorageHours >= 72 || anchorageExposure >= 45) reasons.push("LONG_ANCHORAGE_EXPOSURE");
+  if (stayHours >= 72) reasons.push("LONG_PORT_STAY");
+  if (lowSpeedExposure >= 35 || idleExposure >= 45) reasons.push("LOW_SPEED_EXPOSURE");
+  if (congestion >= 40) reasons.push("HIGH_CONGESTION_EXPOSURE");
+  if (routeProfile.route_region === "australia" || routeProfile.route_region === "new_zealand") reasons.push("AUSTRALIA_ROUTE");
+  if (routeProfile.route_region === "brazil") reasons.push("BRAZIL_ROUTE");
+  if (gt >= 30000) reasons.push("HIGH_GT_EXPOSURE");
+  return {
+    biofouling_exposure_score: score,
+    biofouling_exposure_band: biofoulingExposureBand(score),
+    biofouling_exposure_reasons: [...new Set(reasons)]
+  };
+}
+
 function deriveCleaningOpportunityPrediction(v = {}, metrics = {}, routeProfile = deriveRouteCommercialProfile(v), predictiveParts = {}) {
   const commercialValue = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
   const congestion = Number(
@@ -428,17 +483,15 @@ function derivePredictiveSignals(v = {}, metrics = {}, routeProfile = deriveRout
   const lowSpeedExposure = Math.min(100, Math.round((speed > 0 && speed < 1.5 ? 45 : 0) + Math.min(35, stayHours / 3) + Math.min(20, anchorageHours / 2)));
   const idleExposure = Math.min(100, Math.round(Math.min(55, stayHours / 2) + Math.min(35, anchorageHours / 2) + (v.is_anchorage_waiting ? 10 : 0)));
   const anchorageExposure = Math.min(100, Math.round(Math.min(70, anchorageHours * 1.2) + (v.is_anchorage_waiting ? 20 : 0) + (hasAnchorageSignal(v) ? 10 : 0)));
-  const biofoulingExposureScore = Math.min(100, Math.round(
-    anchorageExposure * 0.32 +
-    idleExposure * 0.24 +
-    Math.min(25, stayHours / 4) +
-    Math.round(routeProfile.biosecurity_exposure_score * 0.16) +
-    predictedCongestionScore * 0.16
-  ));
+  const biofoulingExposure = deriveBiofoulingExposureEngine(v, metrics, routeProfile, {
+    predicted_congestion_score: predictedCongestionScore,
+    idle_exposure: idleExposure,
+    low_speed_exposure: lowSpeedExposure
+  });
   const cleaningOpportunity = deriveCleaningOpportunityPrediction(v, metrics, routeProfile, {
     predicted_congestion_score: predictedCongestionScore,
     predicted_work_window_hours: predictedWorkWindowHours,
-    biofouling_exposure_score: biofoulingExposureScore
+    biofouling_exposure_score: biofoulingExposure.biofouling_exposure_score
   });
   return {
     predicted_congestion_score: predictedCongestionScore,
@@ -453,7 +506,9 @@ function derivePredictiveSignals(v = {}, metrics = {}, routeProfile = deriveRout
     low_speed_exposure: lowSpeedExposure,
     idle_exposure: idleExposure,
     anchorage_exposure: anchorageExposure,
-    biofouling_exposure_score: biofoulingExposureScore,
+    biofouling_exposure_score: biofoulingExposure.biofouling_exposure_score,
+    biofouling_exposure_band: biofoulingExposure.biofouling_exposure_band,
+    biofouling_exposure_reasons: biofoulingExposure.biofouling_exposure_reasons,
     route_bonus: cleaningOpportunity.route_bonus,
     predicted_cleaning_opportunity_score: cleaningOpportunity.predicted_cleaning_opportunity_score,
     cleaning_opportunity_band: cleaningOpportunity.cleaning_opportunity_band
@@ -813,6 +868,8 @@ function buildPredictedArrivals(records = []) {
       destination_port: v.destination_port || v.destination || v.next_port || v.port_name || v.port,
       predicted_arrival_time: v.predicted_arrival_time || v.eta || v.eta_candidate || "",
       congestion_forecast_band: v.congestion_forecast_band || forecastBand(v.predicted_congestion_score || v.predicted_congestion || 0),
+      biofouling_exposure_band: v.biofouling_exposure_band || biofoulingExposureBand(v.biofouling_exposure_score),
+      biofouling_exposure_reasons: v.biofouling_exposure_reasons || [],
       arrival_window_bucket: Number(v.predicted_arrival_window_hours) <= 24 ? "ETA_LT_24H" : Number(v.predicted_arrival_window_hours) <= 72 ? "ETA_LT_72H" : Number(v.predicted_arrival_window_hours) <= 168 ? "ETA_LT_7D" : "ETA_UNKNOWN"
     }));
 }
@@ -1231,6 +1288,7 @@ function deriveCommercialScoreParts(v, metrics) {
   if (predictiveSignals.anchorage_probability >= 60) reasonCodes.push("ANCHORAGE_PROBABILITY_HIGH");
   if (predictiveSignals.predicted_cleaning_opportunity_score >= 60) reasonCodes.push("PREDICTED_CLEANING_OPPORTUNITY");
   if (predictiveSignals.biofouling_exposure_score >= 60) reasonCodes.push("BIOFOULING_EXPOSURE_HIGH");
+  reasonCodes.push(...(predictiveSignals.biofouling_exposure_reasons || []));
   if (predictiveSignals.repeat_caller_score >= 60) reasonCodes.push("REPEAT_CALLER_SIGNAL");
   if (Number(predictiveSignals.repeat_call_count || 0) >= 3) reasonCodes.push("REPEAT_CALLER");
   if (Number(predictiveSignals.repeat_operator_count || 0) >= 3) reasonCodes.push("REPEAT_OPERATOR_CALL");

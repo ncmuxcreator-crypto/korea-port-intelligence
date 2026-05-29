@@ -210,6 +210,8 @@ alter table vessel_snapshots add column if not exists low_speed_exposure int def
 alter table vessel_snapshots add column if not exists idle_exposure int default 0;
 alter table vessel_snapshots add column if not exists anchorage_exposure int default 0;
 alter table vessel_snapshots add column if not exists biofouling_exposure_score int default 0;
+alter table vessel_snapshots add column if not exists biofouling_exposure_band text;
+alter table vessel_snapshots add column if not exists biofouling_exposure_reasons jsonb default '[]'::jsonb;
 alter table vessel_snapshots add column if not exists predicted_cleaning_opportunity_score int default 0;
 alter table vessel_snapshots add column if not exists arrival_opportunity_score int default 0;
 alter table vessel_snapshots add column if not exists predicted_arrival_pipeline boolean default false;
@@ -892,6 +894,8 @@ alter table predicted_arrivals add column if not exists work_window_confidence i
 alter table predicted_arrivals add column if not exists repeat_caller_score int default 0;
 alter table predicted_arrivals add column if not exists repeat_operator_score int default 0;
 alter table predicted_arrivals add column if not exists biofouling_exposure_score int default 0;
+alter table predicted_arrivals add column if not exists biofouling_exposure_band text;
+alter table predicted_arrivals add column if not exists biofouling_exposure_reasons jsonb default '[]'::jsonb;
 alter table predicted_arrivals add column if not exists predicted_cleaning_opportunity_score int default 0;
 create index if not exists idx_predicted_arrivals_cleaning_opportunity on predicted_arrivals(predicted_cleaning_opportunity_score desc);
 create index if not exists idx_berth_aliases_normalized_alias on berth_aliases(normalized_alias);

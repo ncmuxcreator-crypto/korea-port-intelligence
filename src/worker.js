@@ -385,7 +385,8 @@ function normalizeSnapshot(row = {}) {
     arrivalOpportunityScore: Number(merged.arrival_opportunity_score || 0)
   }));
   const routeBonus = Number(merged.route_bonus || deriveRouteBonus(merged));
-  const predictedCleaningOpportunityScore = Number(merged.predicted_cleaning_opportunity_score || derivePredictedCleaningOpportunityScore({ ...merged, route_bonus: routeBonus }));
+  const biofoulingExposure = deriveBiofoulingExposureEngine(merged);
+  const predictedCleaningOpportunityScore = Number(merged.predicted_cleaning_opportunity_score || derivePredictedCleaningOpportunityScore({ ...merged, route_bonus: routeBonus, biofouling_exposure_score: biofoulingExposure.biofouling_exposure_score }));
   return {
     vessel_id: merged.vessel_id,
     vessel_name: merged.vessel_name,
@@ -473,7 +474,9 @@ function normalizeSnapshot(row = {}) {
     low_speed_exposure: Number(merged.low_speed_exposure || 0),
     idle_exposure: Number(merged.idle_exposure || 0),
     anchorage_exposure: Number(merged.anchorage_exposure || 0),
-    biofouling_exposure_score: Number(merged.biofouling_exposure_score || deriveBiofoulingExposureScore(merged)),
+    biofouling_exposure_score: Number(merged.biofouling_exposure_score || biofoulingExposure.biofouling_exposure_score),
+    biofouling_exposure_band: merged.biofouling_exposure_band || biofoulingExposure.biofouling_exposure_band,
+    biofouling_exposure_reasons: Array.isArray(merged.biofouling_exposure_reasons) ? merged.biofouling_exposure_reasons : biofoulingExposure.biofouling_exposure_reasons,
     route_bonus: routeBonus,
     predicted_cleaning_opportunity_score: predictedCleaningOpportunityScore,
     cleaning_opportunity_band: merged.cleaning_opportunity_band || cleaningOpportunityBand(predictedCleaningOpportunityScore),
@@ -830,15 +833,7 @@ function deriveAnchorageProbability(v = {}) {
 }
 
 function deriveBiofoulingExposureScore(v = {}) {
-  const anchorage = boundedScore(Math.min(70, Number(v.anchorage_hours || 0) * 1.2) + (v.is_anchorage_waiting ? 20 : 0));
-  const idle = boundedScore(Math.min(55, Number(v.stay_hours || v.current_call_stay_hours || 0) / 2) + Math.min(35, Number(v.anchorage_hours || 0) / 2));
-  return boundedScore(
-    anchorage * 0.32 +
-    idle * 0.24 +
-    Math.min(25, Number(v.stay_hours || v.current_call_stay_hours || 0) / 4) +
-    Number(v.biosecurity_exposure_score || 0) * 0.16 +
-    derivePredictedCongestionScore(v) * 0.16
-  );
+  return deriveBiofoulingExposureEngine(v).biofouling_exposure_score;
 }
 
 function deriveRouteBonus(v = {}) {
@@ -863,12 +858,70 @@ function cleaningOpportunityBand(score) {
   return "LOW";
 }
 
+function biofoulingExposureBand(score) {
+  const value = Number(score || 0);
+  if (value >= 80) return "VERY HIGH";
+  if (value >= 60) return "HIGH";
+  if (value >= 35) return "MEDIUM";
+  return "LOW";
+}
+
+function deriveBiofoulingExposureEngine(v = {}) {
+  const route = routeRegionText(v);
+  const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment, v.vsslKndNm].filter(Boolean).join(" ")).toLowerCase();
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  const anchorageHours = Number(v.anchorage_hours || 0);
+  const stayHours = Number(v.cumulative_stay_hours || v.stay_hours || v.current_call_stay_hours || 0);
+  const congestion = Number(v.predicted_congestion_score || v.congestion_score || v.port_congestion_score || derivePredictedCongestionScore(v) || 0);
+  const idleExposure = Number(v.idle_exposure || Math.min(100, Math.round(Math.min(55, stayHours / 2) + Math.min(35, anchorageHours / 2))));
+  const lowSpeedExposure = Number(v.low_speed_exposure || 0);
+  const routeExposure = /australia|new zealand|호주|뉴질랜드/.test(route)
+    ? 100
+    : /brazil|브라질/.test(route)
+      ? 85
+      : /north_america|california|vancouver|usa|canada|북미|미국|캐나다/.test(route)
+        ? 60
+        : /europe|mediterranean|유럽|지중해/.test(route)
+          ? 50
+          : Number(v.biosecurity_exposure_score || 0);
+  const vesselTypeExposure = /bulk|bulker|tanker|container|pctc|cruise|lng|lpg|벌크|탱커|컨테이너|자동차|크루즈/.test(type)
+    ? 85
+    : /general|cargo|화물/.test(type)
+      ? 45
+      : 25;
+  const anchorageExposure = boundedScore(Math.min(90, anchorageHours / 24 * 18) + (v.is_anchorage_waiting ? 10 : 0));
+  const stayExposure = boundedScore(Math.min(90, stayHours / 24 * 12) + (stayHours >= 168 ? 10 : 0));
+  const gtExposure = gt >= 80000 ? 12 : gt >= 30000 ? 8 : gt >= 5000 ? 4 : 0;
+  const score = boundedScore(
+    anchorageExposure * 0.30 +
+    stayExposure * 0.20 +
+    congestion * 0.15 +
+    Math.max(idleExposure, lowSpeedExposure) * 0.15 +
+    routeExposure * 0.10 +
+    vesselTypeExposure * 0.10 +
+    gtExposure
+  );
+  const reasons = [];
+  if (anchorageHours >= 72 || anchorageExposure >= 45) reasons.push("LONG_ANCHORAGE_EXPOSURE");
+  if (stayHours >= 72) reasons.push("LONG_PORT_STAY");
+  if (lowSpeedExposure >= 35 || idleExposure >= 45) reasons.push("LOW_SPEED_EXPOSURE");
+  if (congestion >= 40) reasons.push("HIGH_CONGESTION_EXPOSURE");
+  if (/australia|new zealand|호주|뉴질랜드/.test(route)) reasons.push("AUSTRALIA_ROUTE");
+  if (/brazil|브라질/.test(route)) reasons.push("BRAZIL_ROUTE");
+  if (gt >= 30000) reasons.push("HIGH_GT_EXPOSURE");
+  return {
+    biofouling_exposure_score: score,
+    biofouling_exposure_band: biofoulingExposureBand(score),
+    biofouling_exposure_reasons: [...new Set(reasons)]
+  };
+}
+
 function derivePredictedCleaningOpportunityScore(v = {}) {
   return boundedScore(
     commercialScore(v) * 0.30 +
     derivePredictedCongestionScore(v) * 0.18 +
     deriveWorkFeasibilityScore(v) * 0.24 +
-    deriveBiofoulingExposureScore(v) * 0.18 +
+    Number(v.biofouling_exposure_score || deriveBiofoulingExposureScore(v)) * 0.18 +
     deriveRouteBonus(v) * 0.10
   );
 }
@@ -2035,6 +2088,8 @@ function buildPredictedArrivals(records = []) {
       repeat_operator_score: Number(v.repeat_operator_score || 0),
       route_bonus: Number(v.route_bonus || deriveRouteBonus(v)),
       biofouling_exposure_score: Number(v.biofouling_exposure_score || 0),
+      biofouling_exposure_band: v.biofouling_exposure_band || biofoulingExposureBand(v.biofouling_exposure_score),
+      biofouling_exposure_reasons: v.biofouling_exposure_reasons || [],
       predicted_cleaning_opportunity_score: Number(v.predicted_cleaning_opportunity_score || 0),
       cleaning_opportunity_band: v.cleaning_opportunity_band || cleaningOpportunityBand(v.predicted_cleaning_opportunity_score),
       predicted_arrival_window_hours: Number(v.predicted_arrival_window_hours || 0),
