@@ -1913,6 +1913,11 @@ function buildScoringDiagnostics(records = []) {
   const waitingDays = records.map(commercialWaitingDays);
   const salesTargetCount = records.filter(isSalesCandidate).length;
   const immediateTargetCount = records.filter(isImmediateTarget).length;
+  const percentileRankPresentCount = records.filter(hasCommercialRank).length;
+  const percentileRankMissingCount = records.length - percentileRankPresentCount;
+  const thresholdOnlySalesTargetCount = records.filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !isDepartedRecord(v) && !isHardCandidateExcluded(v)).length;
+  const percentileLogicActive = percentileRankPresentCount > 0;
+  const onlyThresholdLogicActive = percentileRankMissingCount === records.length;
   const targetRatio = records.length ? Math.round((salesTargetCount / records.length) * 1000) / 10 : 0;
   const immediateTargetRatio = records.length ? Math.round((immediateTargetCount / records.length) * 1000) / 10 : 0;
   const avg = values => values.length ? Math.round(values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length) : 0;
@@ -1962,6 +1967,18 @@ function buildScoringDiagnostics(records = []) {
     waiting_10d_plus_count: waitingDays.filter(value => value >= 10).length,
     work_feasibility_score_avg: avg(workScores),
     sales_target_count: salesTargetCount,
+    sales_target_count_calculation: "score >= 65 AND not departed/excluded AND global_percentile <= 20 OR port_percentile <= 20; rows without percentile rank currently pass percentile guard",
+    sales_target_threshold_only_count: thresholdOnlySalesTargetCount,
+    percentile_logic_active: percentileLogicActive,
+    only_threshold_logic_active: onlyThresholdLogicActive,
+    percentile_rank_present_count: percentileRankPresentCount,
+    percentile_rank_missing_count: percentileRankMissingCount,
+    candidate_classification_logic: {
+      immediate_targets: "score >= 75 AND top 10% global/port AND current/near-term work feasibility",
+      sales_targets: "score >= 65 AND top 20% global/port",
+      watchlist: "score >= 50 OR top 40% global/port",
+      percentile_fallback: "if rank fields are missing, percentile guard passes to avoid hiding rows"
+    },
     watchlist_count: records.filter(v => {
       const value = commercialScore(v);
       return value >= 50 && value < SALES_CANDIDATE_THRESHOLD;
@@ -1969,7 +1986,7 @@ function buildScoringDiagnostics(records = []) {
     immediate_target_count: immediateTargetCount,
     target_ratio: targetRatio,
     immediate_target_ratio: immediateTargetRatio,
-    target_ratio_warning: targetRatio > 30 ? "영업대상 기준이 너무 넓습니다." : "",
+    target_ratio_warning: targetRatio > 30 ? "Target qualification is too broad." : "",
     immediate_target_ratio_warning: immediateTargetRatio > 15 ? "즉시영업후보 기준이 너무 넓습니다." : "",
     global_percentile_distribution: percentileDistribution(records.map(v => v.global_percentile)),
     port_percentile_distribution: percentileDistribution(records.map(v => v.port_percentile)),
