@@ -18,8 +18,8 @@ const PRIORITY_PORTS = [
 ];
 const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 5000);
 const REVIEW_TARGET_THRESHOLD = Number(process.env.REVIEW_TARGET_THRESHOLD || 35);
-const SALES_CANDIDATE_THRESHOLD = Number(process.env.SALES_CANDIDATE_THRESHOLD || 60);
-const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 80);
+const SALES_CANDIDATE_THRESHOLD = Number(process.env.SALES_CANDIDATE_THRESHOLD || 65);
+const IMMEDIATE_TARGET_THRESHOLD = Number(process.env.IMMEDIATE_TARGET_THRESHOLD || 75);
 const CRITICAL_TARGET_THRESHOLD = Number(process.env.CRITICAL_TARGET_THRESHOLD || 90);
 const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
@@ -724,12 +724,24 @@ function deriveCommercialScoreParts(v, metrics) {
   const pilotOutbound = String(v.pilot_direction || v.movement_type || "").toLowerCase() === "outbound";
   const outboundPilotSoon = pilotOutbound && parseScheduleTime(v.pilot_time || v.movement_time || v.etd_candidate)?.getTime() > Date.now();
   const minimumCongestionScore = deriveCongestionScore(v, metrics);
-  const biofoulingRiskScore = Math.min(30, Math.round(Math.min(14, stayDays * 1.4) + Math.min(8, anchorageDays * 2) + (isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + Math.round(routeProfile.biosecurity_exposure_score / 20) + (isVeryHighGt ? 2 : 0)));
-  const performanceProxyScore = Math.min(20, Math.round(Math.min(9, anchorageDays * 2) + Math.min(6, stayDays * 0.7) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 3 : 0) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + Math.round(routeProfile.fuel_efficiency_sensitivity_score / 25)));
-  const stayCongestionProxy = isStayingWithoutDeparture ? Math.min(6, 2 + stayDays) : 0;
-  const congestionExposureScore = Math.min(20, Math.max(Math.round(minimumCongestionScore / 5), Math.round((isAnchorageWaiting ? 10 : 0) + Math.min(8, anchorageDays * 2) + stayCongestionProxy + (isLongIdle ? 4 : 0) + (v.berth_class === "anchorage" ? 2 : 0) + Math.min(4, berthOccupancyProxy / 25) + (enrichmentMatched ? 1 : 0))));
-  const cleaningWindowScore = Math.min(15, Math.max(0, Math.round(Math.min(9, Number(metrics.work_window_hours || 0) / 4) + (isAnchorageWaiting ? 4 : 0) + (v.berth || v.berth_name ? 2 : 0) + (enrichmentMatched ? 1 : 0) + (pilotMatched && !outboundPilotSoon ? 2 : 0) - (outboundPilotSoon ? 4 : 0) - (terminalActive ? 2 : 0))));
-  const compliancePressureScore = Math.min(10, Math.round(Math.round(routeProfile.biosecurity_exposure_score / 20) + Math.round(routeProfile.esg_sensitivity_score / 35) + (isHighGt ? 3 : meetsCommercialGtThreshold ? 2 : 0) + (isBulkTankerPctc ? 1 : 0)));
+  const meaningfulWaitingDays = Math.max(0, commercialWaitingDays(v, metrics) - 3);
+  const biofoulingRiskScore = Math.min(15, Math.round(Math.min(5, stayDays * 0.55) + Math.min(5, anchorageDays * 0.9) + (isBulkTankerPctc ? 2 : isCommercialType ? 1 : 0) + Math.min(2, routeProfile.biosecurity_exposure_score / 35) + (isVeryHighGt ? 1 : 0)));
+  const performanceProxyScore = Math.min(10, Math.round(Math.min(3, meaningfulWaitingDays * 0.8) + (Number(v.speed || 0) > 0 && Number(v.speed || 0) < 1.5 ? 2 : 0) + (isHighGt ? 2 : meetsCommercialGtThreshold ? 1 : 0) + (isBulkTankerPctc ? 1 : 0) + Math.min(2, routeProfile.fuel_efficiency_sensitivity_score / 35)));
+  const congestionExposureScore = Math.min(15, Math.round((minimumCongestionScore / 100) * 15));
+  const openWindow = Number(metrics.work_window_hours || 0);
+  const unknownOrFarEtd = !v.etd || openWindow >= 24 || v.work_window_status === "open_or_ongoing";
+  const cleaningWindowScore = Math.min(25, Math.max(0, Math.round(
+    Math.min(12, openWindow / 4) +
+    (isStayingWithoutDeparture ? 6 : 0) +
+    (unknownOrFarEtd ? 4 : 0) +
+    ((isAnchorageWaiting || v.berth_class === "anchorage") ? 4 : 0) +
+    (v.berth || v.berth_name ? 2 : 0) +
+    (enrichmentMatched ? 1 : 0) +
+    (pilotMatched && !outboundPilotSoon ? 2 : 0) -
+    (outboundPilotSoon ? 5 : 0) -
+    (terminalActive ? 3 : 0)
+  )));
+  const compliancePressureScore = Math.min(10, Math.round(Math.round(routeProfile.biosecurity_exposure_score / 25) + Math.round(routeProfile.esg_sensitivity_score / 40) + (isHighGt ? 2 : meetsCommercialGtThreshold ? 1 : 0) + (isBulkTankerPctc ? 1 : 0)));
   const operatorAccessibilityBonus = operatorSource === "vessel_master" || operatorSource === "vessel_spec_api"
     ? 5
     : operatorSource === "operator_dictionary"
@@ -744,14 +756,12 @@ function deriveCommercialScoreParts(v, metrics) {
               ? 2
               : 0;
   const commercialFitScore = Math.min(5, Math.round(Math.max(configuredCommercialFit, (isBulkTankerPctc ? 3 : isCommercialType ? 2 : 0)) + (isHighGt ? 1 : 0) + (operatorAccessibilityBonus > 0 || v.agent ? 1 : 0) + (v.port_code ? 1 : 0) - (isExcludedType ? 4 : 0)));
-  const routeMultiplierBonus = routeProfile.high_regulation_route && (isAnchorageWaiting || isLongIdle || isHighGt || isCommercialType)
-    ? Math.round(routeProfile.route_commercial_weight * 0.45)
-    : Math.round(routeProfile.route_commercial_weight * 0.25);
-  const arrivalOpportunityBonus = arrivalPrediction.predicted_arrival_pipeline ? Math.min(8, Math.round(arrivalPrediction.arrival_opportunity_score / 14)) : 0;
-  const total = biofoulingRiskScore + performanceProxyScore + congestionExposureScore + cleaningWindowScore + compliancePressureScore + commercialFitScore + routeMultiplierBonus + arrivalOpportunityBonus;
+  const vesselValueScore = Math.min(20, Math.round((isHighGt ? 8 : meetsCommercialGtThreshold ? 5 : 0) + (isVeryHighGt ? 4 : 0) + Math.max(configuredCommercialFit, isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + (v.operator || v.agent ? 2 : 0) + (sensitiveRoute ? 1 : 0) - (isExcludedType ? 8 : 0)));
+  const salesAccessibilityScore = Math.min(5, Math.max(operatorAccessibilityBonus, Math.round((v.agent ? 2 : 0) + (v.operator ? 2 : 0) + (v.operator_normalized || v.agent_normalized ? 1 : 0))));
+  const total = vesselValueScore + cleaningWindowScore + biofoulingRiskScore + congestionExposureScore + performanceProxyScore + compliancePressureScore + salesAccessibilityScore;
   const reasonCodes = [];
-  if (anchorageDays >= 1) reasonCodes.push("LONG_ANCHORAGE_WAIT");
-  if (congestionExposureScore >= 14) reasonCodes.push("PORT_CONGESTION_HIGH");
+  if (anchorageDays >= 3) reasonCodes.push("LONG_ANCHORAGE_WAIT");
+  if (congestionExposureScore >= 10) reasonCodes.push("PORT_CONGESTION_HIGH");
   if (isLongIdle) reasonCodes.push("EXTENDED_IDLE_PERIOD");
   if (isAnchorageWaiting) reasonCodes.push("LOW_SPEED_CONGESTION_PATTERN");
   if (meetsCommercialGtThreshold) reasonCodes.push("HIGH_GT_VESSEL");
@@ -784,14 +794,14 @@ function deriveCommercialScoreParts(v, metrics) {
   reasonCodes.push(...routeProfile.route_reason_codes);
   if (Number(metrics.work_window_hours || 0) >= 24) reasonCodes.push("BERTH_WINDOW_AVAILABLE");
   return {
-    vessel_value_score: Math.min(20, Math.round((isHighGt ? 8 : meetsCommercialGtThreshold ? 5 : 0) + (isVeryHighGt ? 4 : 0) + Math.max(configuredCommercialFit, isBulkTankerPctc ? 5 : isCommercialType ? 3 : 0) + (v.operator || v.agent ? 2 : 0) + (sensitiveRoute ? 1 : 0) - (isExcludedType ? 8 : 0))),
+    vessel_value_score: vesselValueScore,
     biofouling_risk_score: biofoulingRiskScore,
     performance_proxy_score: performanceProxyScore,
     congestion_exposure_score: congestionExposureScore,
     congestion_score: minimumCongestionScore,
     cleaning_window_score: cleaningWindowScore,
     compliance_pressure_score: compliancePressureScore,
-    sales_accessibility_score: Math.min(5, Math.max(operatorAccessibilityBonus, Math.round((v.agent ? 2 : 0) + (v.operator ? 2 : 0) + (v.operator_normalized || v.agent_normalized ? 1 : 0)))),
+    sales_accessibility_score: salesAccessibilityScore,
     contact_readiness_score: Math.max(Number(v.contact_readiness_score || 0), Math.min(100, Math.round((operatorAccessibilityBonus / 5) * 55 + (v.agent ? 35 : 0) + (v.manager_name ? 5 : 0) + (v.owner_name ? 5 : 0)))),
     commercial_fit_score: commercialFitScore,
     total_sales_priority_score: Math.min(100, total),
@@ -835,14 +845,12 @@ function commercialValueBand(score, gtStatus) {
 function deriveCommercialValue(v = {}, scoreParts = {}) {
   const commercialValueScore = Math.min(100, Math.round(
     Number(scoreParts.vessel_value_score || 0) +
-    Number(scoreParts.congestion_exposure_score || 0) +
-    Number(scoreParts.biofouling_risk_score || 0) +
     Number(scoreParts.cleaning_window_score || 0) +
+    Number(scoreParts.biofouling_risk_score || 0) +
+    Number(scoreParts.congestion_exposure_score || 0) +
     Number(scoreParts.performance_proxy_score || 0) +
     Number(scoreParts.compliance_pressure_score || 0) +
-    Number(scoreParts.sales_accessibility_score || 0) +
-    Number(scoreParts.route_commercial_weight || 0) +
-    Math.round(Number(scoreParts.arrival_opportunity_score || 0) / 12)
+    Number(scoreParts.sales_accessibility_score || 0)
   ));
   return {
     commercial_value_score: commercialValueScore,
@@ -1081,27 +1089,56 @@ function activeRecordsOnly(records = []) {
   return records.filter(v => !isSyntheticSample(v) && !isDepartedRecord(v));
 }
 
+function commercialWaitingDays(v = {}, metrics = {}) {
+  const anchorageHours = Number(metrics.anchorage_hours ?? v.anchorage_hours ?? 0);
+  const stayHours = Number(metrics.stay_hours ?? v.stay_hours ?? v.current_call_stay_hours ?? v.cumulative_stay_hours ?? 0);
+  return Math.max(anchorageHours, stayHours) / 24;
+}
+
+function waitingDurationSignal(waitingDays = 0) {
+  if (waitingDays >= 10) return 40;
+  if (waitingDays >= 7) return 30;
+  if (waitingDays >= 5) return 20;
+  if (waitingDays >= 3) return 10;
+  return 0;
+}
+
+function commercialGtWeight(v = {}) {
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  if (gt >= 150000) return 1.35;
+  if (gt >= 80000) return 1.25;
+  if (gt >= 30000) return 1.12;
+  if (gt >= COMMERCIAL_GT_THRESHOLD) return 1;
+  if (gt > 0) return 0.55;
+  return 0.8;
+}
+
+function commercialTypeWeight(v = {}) {
+  const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment, v.vsslKndNm].filter(Boolean).join(" ")).toLowerCase();
+  if (/cape|bulk|bulker|bulk_carrier|ore|vlcc|crude_tanker|product_tanker|chemical_tanker|tanker|lng|lpg|pctc|container|cruise|벌크|산물|광석|원유|유조|석유|탱커|가스|자동차|컨테이너|크루즈/.test(type)) return 1.2;
+  if (/general|cargo|일반화물/.test(type)) return 0.85;
+  if (/tug|fishing|workboat|patrol|dredger|예선|어선|작업선|관공선|준설/.test(type)) return 0.35;
+  return 0.7;
+}
+
+function portRelevanceWeight(v = {}) {
+  const code = String(v.port_code || v.prtAgCd || "");
+  const name = String([v.port_name, v.port, v.port_group, v.sub_port].filter(Boolean).join(" ")).toLowerCase();
+  if (["620", "820", "031", "810", "621"].includes(code) || /gwangyang|yeosu|ulsan|pyeongtaek|dangjin|pohang|daesan|광양|여수|울산|평택|당진|포항|대산/.test(name)) return 1.2;
+  if (["020", "030"].includes(code) || /busan|incheon|부산|인천/.test(name)) return 1.1;
+  if (["622", "070", "080", "120"].includes(code)) return 1.05;
+  return 1;
+}
+
 function deriveCongestionScore(v = {}, metrics = {}) {
   const anchorageHours = Number(metrics.anchorage_hours ?? v.anchorage_hours ?? 0);
   const stayHours = Number(metrics.stay_hours ?? v.stay_hours ?? v.current_call_stay_hours ?? v.cumulative_stay_hours ?? 0);
-  const facilityType = String(v.facility_type || v.berth_class || v.anchorage_class || "").toLowerCase();
-  const statusBucket = String(v.status_bucket || "").toLowerCase();
-  const hasDeparture = hasValue(v.atd);
-  let score = Math.max(
-    0,
-    Number(v.congestion_score || 0),
-    Number(v.port_congestion_score || 0),
-    Number(v.anchorage_density_score || 0),
-    Number(v.congestion_exposure_score || 0) * 5
-  );
-  if (anchorageHours >= 24) score = Math.max(score, 40);
-  if (anchorageHours >= 48) score = Math.max(score, 60);
-  if (anchorageHours >= 72) score = Math.max(score, 75);
-  if (stayHours >= 48 && !hasDeparture) score = Math.max(score, 45);
-  if (stayHours >= 72 && !hasDeparture) score = Math.max(score, 60);
-  if ((facilityType === "anchorage" || statusBucket === "anchorage_waiting" || hasAnchorageSignal(v)) && !hasDeparture) score = Math.max(score, 60);
-  if ((anchorageHours > 0 || stayHours > 0 || ["arrived_staying", "berthed", "anchorage_waiting"].includes(statusBucket)) && score === 0) score = 20;
-  return Math.min(100, Math.round(score));
+  const waitingDays = Math.max(anchorageHours, stayHours) / 24;
+  const durationSignal = waitingDurationSignal(waitingDays);
+  const combinedSignal = durationSignal * commercialGtWeight(v) * commercialTypeWeight(v) * portRelevanceWeight(v);
+  const externalPortSignal = Math.min(15, Number(v.port_congestion_score || 0) * 0.15);
+  const densitySignal = Math.min(10, Number(v.anchorage_density_score || 0) * 0.1);
+  return Math.min(100, Math.round(Math.max(0, combinedSignal + externalPortSignal + densitySignal)));
 }
 
 function commercialRelevanceStatus(v = {}) {
@@ -1632,8 +1669,8 @@ function enrichSalesSignals(records) {
     Object.assign(enriched, deriveOperationalRisk(enriched, scheduleMetrics, biofoulingScore));
     Object.assign(enriched, buildCommercialSignals(enriched, scheduleMetrics));
     Object.assign(enriched, buildImoRecovery(enriched, scheduleMetrics));
-    if (enriched.high_value_target && (enriched.congestion_exposed_target || (scheduleMetrics.stay_hours || 0) >= 48)) {
-      enriched.total_sales_priority_score = Math.max(enriched.total_sales_priority_score || 0, enriched.congestion_exposed_target ? IMMEDIATE_TARGET_THRESHOLD : SALES_CANDIDATE_THRESHOLD);
+    if (enriched.high_value_target && (deriveCongestionScore(enriched, scheduleMetrics) >= 20 || (scheduleMetrics.stay_hours || 0) >= 120 || (enriched.cleaning_window_score || 0) >= 18)) {
+      enriched.total_sales_priority_score = Math.max(enriched.total_sales_priority_score || 0, SALES_CANDIDATE_THRESHOLD);
       enriched.commercial_value_score = Math.max(enriched.commercial_value_score || 0, enriched.total_sales_priority_score);
       enriched.commercial_value_band = commercialValueBand(enriched.commercial_value_score, enriched.gt_status);
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
@@ -1892,23 +1929,27 @@ function buildScoringDiagnostics(records = []) {
   const buckets = {
     score_0_20: 0,
     score_20_35: 0,
-    score_35_60: 0,
-    score_60_80: 0,
-    score_80_90: 0,
+    score_35_50: 0,
+    score_50_65: 0,
+    score_65_75: 0,
+    score_75_90: 0,
     score_90_plus: 0
   };
   for (const v of records) {
     const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
     if (score < 20) buckets.score_0_20 += 1;
     else if (score < REVIEW_TARGET_THRESHOLD) buckets.score_20_35 += 1;
-    else if (score < SALES_CANDIDATE_THRESHOLD) buckets.score_35_60 += 1;
-    else if (score < IMMEDIATE_TARGET_THRESHOLD) buckets.score_60_80 += 1;
-    else if (score < CRITICAL_TARGET_THRESHOLD) buckets.score_80_90 += 1;
+    else if (score < 50) buckets.score_35_50 += 1;
+    else if (score < SALES_CANDIDATE_THRESHOLD) buckets.score_50_65 += 1;
+    else if (score < IMMEDIATE_TARGET_THRESHOLD) buckets.score_65_75 += 1;
+    else if (score < CRITICAL_TARGET_THRESHOLD) buckets.score_75_90 += 1;
     else buckets.score_90_plus += 1;
   }
-  buckets.score_35_50 = buckets.score_35_60;
-  buckets.score_50_75 = buckets.score_60_80;
-  buckets.score_75_plus = buckets.score_80_90 + buckets.score_90_plus;
+  buckets.score_35_60 = buckets.score_35_50 + buckets.score_50_65;
+  buckets.score_60_80 = buckets.score_65_75 + buckets.score_75_90;
+  buckets.score_80_90 = buckets.score_75_90;
+  buckets.score_50_75 = buckets.score_50_65 + buckets.score_65_75;
+  buckets.score_75_plus = buckets.score_75_90 + buckets.score_90_plus;
   const highScoreRows = records.filter(v => Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= SALES_CANDIDATE_THRESHOLD);
   const exclusionReasonCounts = {};
   for (const v of highScoreRows) {
@@ -1916,6 +1957,12 @@ function buildScoringDiagnostics(records = []) {
     const reason = commercialExclusionReason(v) || v.exclusion_reason || "unknown";
     exclusionReasonCounts[reason] = (exclusionReasonCounts[reason] || 0) + 1;
   }
+  const congestionScores = records.map(v => deriveCongestionScore(v, v));
+  const workScores = records.map(v => Number(v.work_feasibility_score || 0) || Number(v.cleaning_window_score || 0));
+  const waitingDays = records.map(v => commercialWaitingDays(v, v));
+  const salesTargetCount = records.filter(isSalesCandidate).length;
+  const targetRatio = records.length ? Math.round((salesTargetCount / records.length) * 1000) / 10 : 0;
+  const avg = values => values.length ? Math.round(values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length) : 0;
   return {
     total_collected: records.length,
     target_vessels_5000gt_plus: records.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD).length,
@@ -1923,6 +1970,13 @@ function buildScoringDiagnostics(records = []) {
     review_target_threshold: REVIEW_TARGET_THRESHOLD,
     sales_candidate_threshold: SALES_CANDIDATE_THRESHOLD,
     immediate_target_threshold: IMMEDIATE_TARGET_THRESHOLD,
+    commercial_score_bands: {
+      critical: "90+",
+      immediate_target: "75-89",
+      sales_target: "65-74",
+      watchlist: "50-64",
+      general_vessel: "0-49"
+    },
     high_score_not_promoted_count: highScoreRows.filter(v => !isSalesCandidate(v)).length,
     candidate_promotion_error: highScoreRows.some(v => !isSalesCandidate(v) && !commercialExclusionReason(v) && !v.exclusion_reason),
     exclusion_reason_counts: exclusionReasonCounts,
@@ -1940,8 +1994,24 @@ function buildScoringDiagnostics(records = []) {
     detail_rows_flattened_count: records.filter(v => v.detail_rows_flattened).length,
     detail_rows_missing_time_count: records.filter(v => v.detail_rows_flattened && !v.eta && !v.etd && !v.ata && !v.atd && !v.etb && !v.atb).length,
     vessel_type_group_detected_count: records.filter(v => v.vessel_type_group && v.vessel_type_group !== "unknown").length,
-    congestion_score_calculated_count: records.filter(v => deriveCongestionScore(v, v) > 0).length,
-    congestion_score_zero_but_stay_exists_count: records.filter(v => (Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || 0) > 0 || Number(v.anchorage_hours || 0) > 0) && deriveCongestionScore(v, v) <= 0).length,
+    congestion_score_avg: avg(congestionScores),
+    congestion_score_nonzero_count: congestionScores.filter(value => value > 0).length,
+    congestion_score_calculated_count: congestionScores.filter(value => value > 0).length,
+    congestion_score_zero_but_stay_exists_count: records.filter(v => commercialWaitingDays(v, v) >= 3 && deriveCongestionScore(v, v) <= 0).length,
+    waiting_0_3d_count: waitingDays.filter(value => value > 0 && value < 3).length,
+    waiting_3_5d_count: waitingDays.filter(value => value >= 3 && value < 5).length,
+    waiting_5_7d_count: waitingDays.filter(value => value >= 5 && value < 7).length,
+    waiting_7_10d_count: waitingDays.filter(value => value >= 7 && value < 10).length,
+    waiting_10d_plus_count: waitingDays.filter(value => value >= 10).length,
+    work_feasibility_score_avg: avg(workScores),
+    sales_target_count: salesTargetCount,
+    watchlist_count: records.filter(v => {
+      const score = Number(v.commercial_value_score || v.total_sales_priority_score || 0);
+      return score >= 50 && score < SALES_CANDIDATE_THRESHOLD;
+    }).length,
+    immediate_target_count: records.filter(isImmediateTarget).length,
+    target_ratio: targetRatio,
+    target_ratio_warning: targetRatio > 30 ? "Target qualification may be too broad." : "",
     anchorage_hours_detected_count: records.filter(v => Number(v.anchorage_hours || 0) > 0).length,
     biofouling_score_nonzero_count: records.filter(v => Number(v.biofouling_risk_score || v.biofouling_score || 0) > 0).length,
     cii_score_nonzero_count: records.filter(v => Number(v.cii_pressure_score || v.compliance_pressure_score || 0) > 0).length,
