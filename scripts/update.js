@@ -1751,15 +1751,24 @@ function buildImoRecoveryQueue(records = []) {
 function buildImoRecoveryKpis(records = []) {
   const target = records.filter(isMainCommercialVessel);
   const highValue = target.filter(v => (v.commercial_value_score || v.total_sales_priority_score || 0) >= REVIEW_TARGET_THRESHOLD || Number(v.gt || 0) >= COMMERCIAL_GT_THRESHOLD || v.is_anchorage_waiting);
+  const recovered = records.filter(v => v.imo && (v.imo_recovered_from_seed || v.imo_recovered_from_cache || v.vessel_master_seed_match || v.recovery_source));
+  const recoveryQueueCount = buildImoRecoveryQueue(target).length;
+  const recoveryDenominator = recovered.length + recoveryQueueCount;
   return {
     total_vessels: records.length,
     target_vessels: target.length,
     imo_coverage: coverageRatio(target, v => hasValue(v.imo)),
     high_value_imo_coverage: coverageRatio(highValue, v => hasValue(v.imo)),
-    recovered_imo_count: records.filter(v => v.imo_recovered_from_seed || v.vessel_master_seed_match && v.imo).length,
+    recovered_imo_count: recovered.length,
+    imo_recovered_count: recovered.length,
     unresolved_high_value_count: highValue.filter(v => !v.imo).length,
     call_sign_available_count: target.filter(v => hasValue(v.call_sign)).length,
-    recovery_queue_count: buildImoRecoveryQueue(target).length
+    recovery_queue_count: recoveryQueueCount,
+    imo_recovery_queue_count: recoveryQueueCount,
+    imo_recovery_success_rate: recoveryDenominator ? Math.round((recovered.length / recoveryDenominator) * 100) : 0,
+    call_sign_match_recovery_count: recovered.filter(v => /call.?sign/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
+    vessel_name_match_recovery_count: recovered.filter(v => /name|alias|seed/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
+    spec_api_recovery_count: recovered.filter(v => /spec/i.test(String(v.imo_recovery_source || v.recovery_source || ""))).length
   };
 }
 

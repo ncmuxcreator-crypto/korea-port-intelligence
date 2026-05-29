@@ -419,6 +419,9 @@ create table if not exists predicted_arrivals (
 create table if not exists enrichment_match_candidates (
   match_id text primary key,
   run_id text,
+  source_name text,
+  source_row_id text,
+  snapshot_id text,
   master_vessel_id text,
   hybrid_entity_key text,
   port_call_identity text,
@@ -429,11 +432,41 @@ create table if not exists enrichment_match_candidates (
   enrichment_source text,
   enrichment_source_type text,
   match_score int default 0,
+  confidence text,
   match_confidence text,
   match_reasons jsonb default '[]'::jsonb,
+  matched_fields jsonb default '{}'::jsonb,
+  raw_source_payload jsonb default '{}'::jsonb,
   matched_at timestamptz default now(),
   reused_historical_match boolean default false,
+  created_at timestamptz default now(),
   payload jsonb default '{}'::jsonb
+);
+
+create table if not exists imo_recovery_queue (
+  recovery_id text primary key,
+  run_id text,
+  master_vessel_id text,
+  snapshot_id text,
+  hybrid_entity_key text,
+  vessel_name text,
+  normalized_vessel_name text,
+  call_sign text,
+  gt numeric,
+  vessel_type text,
+  vessel_type_group text,
+  port_code text,
+  commercial_value_score int default 0,
+  data_confidence_score int default 0,
+  priority text,
+  status text default 'pending',
+  attempt_count int default 0,
+  last_attempt_at timestamptz,
+  recovery_source text,
+  recovery_confidence int default 0,
+  payload jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
 create table if not exists commercial_leads (
@@ -654,6 +687,10 @@ create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_ev
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
 create index if not exists idx_enrichment_match_candidates_run_id on enrichment_match_candidates(run_id);
 create index if not exists idx_enrichment_match_candidates_score on enrichment_match_candidates(match_score desc);
+create index if not exists idx_enrichment_match_candidates_source_name on enrichment_match_candidates(source_name);
+create index if not exists idx_imo_recovery_queue_priority on imo_recovery_queue(priority, commercial_value_score desc);
+create index if not exists idx_imo_recovery_queue_status on imo_recovery_queue(status);
+create index if not exists idx_imo_recovery_queue_call_sign on imo_recovery_queue(call_sign);
 create index if not exists idx_commercial_leads_run_id on commercial_leads(run_id);
 create index if not exists idx_commercial_leads_status on commercial_leads(lead_status);
 create index if not exists idx_commercial_leads_priority on commercial_leads(lead_priority_score desc);
@@ -711,6 +748,13 @@ alter table data_collection_runs add column if not exists candidate_promotion_er
 alter table data_collection_runs add column if not exists exclusion_reason_counts jsonb default '{}'::jsonb;
 alter table data_collection_runs add column if not exists imo_missing_count int default 0;
 alter table data_collection_runs add column if not exists imo_recovered_count int default 0;
+alter table data_collection_runs add column if not exists imo_recovery_queue_count int default 0;
+alter table data_collection_runs add column if not exists imo_recovery_success_rate int default 0;
+alter table data_collection_runs add column if not exists high_value_imo_coverage int default 0;
+alter table data_collection_runs add column if not exists unresolved_high_value_count int default 0;
+alter table data_collection_runs add column if not exists call_sign_match_recovery_count int default 0;
+alter table data_collection_runs add column if not exists vessel_name_match_recovery_count int default 0;
+alter table data_collection_runs add column if not exists spec_api_recovery_count int default 0;
 alter table data_collection_runs add column if not exists high_value_low_confidence_count int default 0;
 alter table data_collection_runs add column if not exists validation_status text;
 alter table risk_history add column if not exists commercial_value_score int default 0;
@@ -721,5 +765,17 @@ alter table vessel_master add column if not exists identity_match_strategy text;
 alter table vessel_snapshots add column if not exists identity_confidence int default 0;
 alter table vessel_snapshots add column if not exists identity_confidence_band text;
 alter table vessel_snapshots add column if not exists identity_match_strategy text;
+alter table vessel_snapshots add column if not exists recovery_source text;
+alter table vessel_snapshots add column if not exists recovery_confidence int default 0;
+alter table vessel_snapshots add column if not exists imo_recovery_priority text;
+alter table vessel_snapshots add column if not exists imo_recovery_required boolean default false;
+alter table vessel_snapshots add column if not exists imo_recovery_score int default 0;
 alter table vessel_identity_candidates add column if not exists identity_match_strategy text;
 alter table vessel_identity_candidates add column if not exists commercial_value_score int default 0;
+alter table enrichment_match_candidates add column if not exists source_name text;
+alter table enrichment_match_candidates add column if not exists source_row_id text;
+alter table enrichment_match_candidates add column if not exists snapshot_id text;
+alter table enrichment_match_candidates add column if not exists confidence text;
+alter table enrichment_match_candidates add column if not exists matched_fields jsonb default '{}'::jsonb;
+alter table enrichment_match_candidates add column if not exists raw_source_payload jsonb default '{}'::jsonb;
+alter table enrichment_match_candidates add column if not exists created_at timestamptz default now();

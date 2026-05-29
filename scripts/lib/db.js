@@ -45,6 +45,94 @@ function fallbackMasterId(record = {}) {
   return record.master_vessel_id || record.hybrid_entity_key || record.vessel_id;
 }
 
+function commercialScore(record = {}) {
+  return Number(record.commercial_value_score || record.total_sales_priority_score || record.cleaning_candidate_score || 0);
+}
+
+function imoRecoveryPriority(record = {}) {
+  const score = commercialScore(record);
+  const gt = Number(record.gt || record.grtg || record.intrlGrtg || 0);
+  if (score >= 75) return "CRITICAL";
+  if (gt > 30000) return "HIGH";
+  if (gt >= 5000) return "MEDIUM";
+  return "LOW";
+}
+
+function needsImoRecovery(record = {}) {
+  if (record.imo) return false;
+  const confidence = identityConfidence(record);
+  return !record.vessel_master_cache_match ||
+    confidence < 80 ||
+    ["missing", "missing_recoverable", "missing_low_confidence", "unknown"].includes(String(record.imo_status || "").toLowerCase());
+}
+
+function buildImoRecoveryRows(records = [], runId, now) {
+  return uniqueBy(records
+    .filter(needsImoRecovery)
+    .map(record => {
+      const entityKey = record.hybrid_entity_key || record.vessel_id || `${record.vessel_name || "UNKNOWN"}-${record.port_code || ""}`;
+      return {
+        recovery_id: stableEntityId("IMOR", `${entityKey}-${record.port_code || ""}`),
+        run_id: runId,
+        master_vessel_id: fallbackMasterId(record),
+        snapshot_id: record.snapshot_id || null,
+        hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
+        vessel_name: record.vessel_name || null,
+        normalized_vessel_name: record.normalized_vessel_name || normalizeVesselName(record.vessel_name),
+        call_sign: record.call_sign || null,
+        gt: record.gt || record.grtg || record.intrlGrtg || null,
+        vessel_type: record.vessel_type || null,
+        vessel_type_group: record.vessel_type_group || null,
+        port_code: record.port_code || null,
+        commercial_value_score: commercialScore(record),
+        data_confidence_score: Number(record.data_confidence_score || 0),
+        priority: imoRecoveryPriority(record),
+        status: "pending",
+        attempt_count: Number(record.imo_recovery_attempt_count || 0),
+        last_attempt_at: record.imo_recovery_last_attempt_at || null,
+        updated_at: now,
+        created_at: record.imo_recovery_created_at || now,
+        recovery_source: record.imo_recovery_source || null,
+        recovery_confidence: Number(record.imo_recovery_confidence || 0),
+        payload: {
+          match_priority: [
+            "call_sign_exact",
+            "vessel_master_lookup",
+            "vessel_aliases_lookup",
+            "vessel_master_seed_csv",
+            "normalized_vessel_name",
+            "gt_similarity",
+            "vessel_type_similarity",
+            "vessel_spec_api_lookup"
+          ],
+          imo_status: record.imo_status || "missing",
+          identity_confidence: identityConfidence(record),
+          reason_codes: record.reason_codes || [],
+          vessel_master_cache_match: Boolean(record.vessel_master_cache_match),
+          vessel_master_seed_match: Boolean(record.vessel_master_seed_match)
+        }
+      };
+    }), row => row.recovery_id);
+}
+
+function buildImoRecoveryDiagnostics(records = []) {
+  const queue = buildImoRecoveryRows(records, "diagnostic", new Date().toISOString());
+  const target = records.filter(record => commercialScore(record) >= 35 || Number(record.gt || record.grtg || record.intrlGrtg || 0) >= 5000);
+  const highValue = target.filter(record => commercialScore(record) >= 75 || Number(record.gt || record.grtg || record.intrlGrtg || 0) > 30000);
+  const recovered = records.filter(record => record.imo && (record.imo_recovered_from_cache || record.imo_recovered_from_seed || record.vessel_master_seed_match || record.recovery_source));
+  const denominator = recovered.length + queue.length;
+  return {
+    imo_recovery_queue_count: queue.length,
+    imo_recovered_count: recovered.length,
+    imo_recovery_success_rate: denominator ? Math.round((recovered.length / denominator) * 100) : 0,
+    high_value_imo_coverage: highValue.length ? Math.round((highValue.filter(record => record.imo).length / highValue.length) * 100) : 0,
+    unresolved_high_value_count: highValue.filter(record => !record.imo).length,
+    call_sign_match_recovery_count: recovered.filter(record => /call.?sign/i.test(String(record.imo_recovery_source || record.identity_match_strategy || ""))).length,
+    vessel_name_match_recovery_count: recovered.filter(record => /name|alias|seed/i.test(String(record.imo_recovery_source || record.identity_match_strategy || ""))).length,
+    spec_api_recovery_count: recovered.filter(record => /spec/i.test(String(record.imo_recovery_source || record.recovery_source || ""))).length
+  };
+}
+
 function unique(values = []) {
   return [...new Set(values.filter(value => value !== null && value !== undefined && String(value).trim() !== "").map(value => String(value).trim()))];
 }
@@ -269,13 +357,17 @@ export async function saveToSupabase(records, options = {}) {
     return acc;
   }, {});
   const highScoreNotPromotedCount = Object.values(exclusionReasonCounts).reduce((sum, count) => sum + Number(count || 0), 0);
+  const imoRecoveryDiagnostics = buildImoRecoveryDiagnostics(records);
 
   await supabase.from("data_collection_runs").insert({
     run_id: runId,
     started_at: options.startedAt || now,
     finished_at: now,
     status: runStatus,
-    source_summary: diagnostics,
+    source_summary: {
+      ...diagnostics,
+      imo_recovery: imoRecoveryDiagnostics
+    },
     total_rows: Number(diagnostics.real_row_count || records.length || 0),
     raw_collected_rows: Number(diagnostics.real_row_count || records.length || 0),
     normalized_rows: records.length,
@@ -293,7 +385,7 @@ export async function saveToSupabase(records, options = {}) {
     candidate_promotion_error: highScoreNotPromotedCount > 0,
     exclusion_reason_counts: exclusionReasonCounts,
     imo_missing_count: records.filter(r => !r.imo).length,
-    imo_recovered_count: records.filter(r => r.imo_recovered_from_seed || r.vessel_master_seed_match && r.imo).length,
+    imo_recovered_count: imoRecoveryDiagnostics.imo_recovered_count,
     high_value_low_confidence_count: records.filter(r => (r.commercial_value_score || 0) >= 35 && ((r.data_confidence_score || 0) < 60 || !r.imo)).length,
     actionable_rows: records.filter(r => r.actionable_source_row !== false).length,
     validation_status: promotion.promotable ? "passed" : "not_promoted",
@@ -820,11 +912,18 @@ export async function saveToSupabase(records, options = {}) {
       normalized_vessel_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
       call_sign: r.call_sign || null,
       port_code: r.port_code || null,
+      source_name: r.enrichment_source || r.pilot_source_origin || r.source || null,
+      source_row_id: r.source_row_id || r.raw_row_identity || null,
+      snapshot_id: r.snapshot_id || null,
       enrichment_source: r.enrichment_source || r.pilot_source_origin || r.source || null,
       enrichment_source_type: r.pilot_schedule_matched ? "pilot_schedule" : r.secondary_enrichment_matched ? "berth_terminal" : r.source_profile || null,
       match_score: Number(r.match_score || r.pilot_match_score || r.berth_match_confidence || r.enrichment_confidence || 0),
+      confidence: r.match_confidence || r.pilot_match_confidence || r.berth_match_confidence || null,
       match_confidence: r.match_confidence || r.pilot_match_confidence || r.berth_match_confidence || null,
       match_reasons: r.match_reasons || r.pilot_match_reasons || r.berth_match_reasons || [],
+      matched_fields: r.matched_fields || r.pilot_matched_fields || {},
+      raw_source_payload: r.raw_source_payload || {},
+      created_at: now,
       matched_at: now,
       reused_historical_match: Boolean(r.vessel_master_cache_match || r.vessel_master_seed_match || r.previous_enrichment_match),
       payload: r
@@ -833,7 +932,29 @@ export async function saveToSupabase(records, options = {}) {
   for (let index = 0; index < enrichmentMatchRows.length; index += batchSize) {
     const batch = enrichmentMatchRows.slice(index, index + batchSize);
     const { error } = await supabase.from("enrichment_match_candidates").upsert(batch, { onConflict: "match_id" });
-    if (error) throw error;
+    if (error) {
+      const legacyBatch = batch.map(row => ({
+        match_id: row.match_id,
+        run_id: row.run_id,
+        master_vessel_id: row.master_vessel_id,
+        hybrid_entity_key: row.hybrid_entity_key,
+        port_call_identity: row.port_call_identity,
+        vessel_name: row.vessel_name,
+        normalized_vessel_name: row.normalized_vessel_name,
+        call_sign: row.call_sign,
+        port_code: row.port_code,
+        enrichment_source: row.enrichment_source,
+        enrichment_source_type: row.enrichment_source_type,
+        match_score: row.match_score,
+        match_confidence: row.match_confidence,
+        match_reasons: row.match_reasons,
+        matched_at: row.matched_at,
+        reused_historical_match: row.reused_historical_match,
+        payload: row.payload
+      }));
+      const retry = await supabase.from("enrichment_match_candidates").upsert(legacyBatch, { onConflict: "match_id" });
+      if (retry.error) throw retry.error;
+    }
   }
 
   const aliases = records
@@ -878,6 +999,19 @@ export async function saveToSupabase(records, options = {}) {
     const batch = identityCandidates.slice(index, index + batchSize);
     const { error } = await supabase.from("vessel_identity_candidates").insert(batch);
     if (error) throw error;
+  }
+
+  const imoRecoveryRows = buildImoRecoveryRows(records, runId, now);
+  let imoRecoveryQueueRowsSaved = 0;
+  try {
+    for (let index = 0; index < imoRecoveryRows.length; index += batchSize) {
+      const batch = imoRecoveryRows.slice(index, index + batchSize);
+      const { error } = await supabase.from("imo_recovery_queue").upsert(batch, { onConflict: "recovery_id" });
+      if (error) throw error;
+      imoRecoveryQueueRowsSaved += batch.length;
+    }
+  } catch (error) {
+    console.warn(`[HWK] IMO recovery queue save skipped: ${error.message}`);
   }
 
   const riskRows = records.map(r => ({
@@ -1025,6 +1159,7 @@ export async function saveToSupabase(records, options = {}) {
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,
     identityCandidatesSaved: identityCandidates.length,
+    imoRecoveryQueueRowsSaved,
     riskRowsSaved: riskRows.length,
     eventsSaved: events.length,
     pilotScheduleEventsSaved: pilotEvents.length,

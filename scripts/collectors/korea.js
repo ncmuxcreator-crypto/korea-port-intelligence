@@ -1,5 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  normalizeVesselName as sharedNormalizeVesselName,
+  normalizeCallSign,
+  normalizeBerthName,
+  normalizeTerminalName,
+  scoreMatch,
+  matchConfidenceBand as sharedMatchConfidenceBand
+} from "../lib/matching.js";
 
 const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
@@ -872,17 +880,15 @@ function portCodeFromName(port = "") {
 }
 
 function normalizeMatchText(value = "") {
-  return String(value || "")
-    .normalize("NFKC")
-    .toUpperCase()
-    .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "");
+  return sharedNormalizeVesselName(value);
 }
 
 function normalizeVesselName(value = "") {
-  return normalizeMatchText(value);
+  return sharedNormalizeVesselName(value);
 }
 
 function normalizeBerthTerminalAlias(value = "") {
+  return normalizeBerthName(value) || normalizeTerminalName(value);
   const text = normalizeMatchText(value)
     .replace(/BUSANNEWPORT|NEWPORT|PNC|PUSANNEWPORT/g, "BUSANNEWPORT")
     .replace(/ULSANTERMINAL|UTT|UOTT|JANGSAENGPO|ONSAN|MIPO/g, match => `ULSAN${match}`)
@@ -892,20 +898,18 @@ function normalizeBerthTerminalAlias(value = "") {
 }
 
 function matchConfidenceBand(score = 0) {
-  if (score >= 85) return "high";
-  if (score >= 65) return "medium";
-  if (score >= 45) return "low";
-  return "unmatched";
+  return sharedMatchConfidenceBand(score).toLowerCase();
 }
 
-function matchResult(score, reasons = []) {
+function matchResult(score, reasons = [], matchedFields = {}) {
   const cleanReasons = [...new Set(reasons.filter(Boolean))];
   const clamped = Math.max(0, Math.min(100, score));
   return {
     score: clamped,
     method: cleanReasons.join("+") || "no_match",
     reasons: cleanReasons,
-    confidence: matchConfidenceBand(clamped)
+    confidence: matchConfidenceBand(clamped),
+    matched_fields: matchedFields
   };
 }
 
@@ -974,40 +978,21 @@ function pilotTimeWindowScore(ledger = {}, pilot = {}) {
 }
 
 function pilotMatchScore(ledger = {}, pilot = {}) {
-  let score = 0;
-  const methods = [];
-  const ledgerCall = normalizeMatchText(ledger.call_sign);
-  const pilotCall = normalizeMatchText(pilot.call_sign);
-  const ledgerName = normalizeVesselName(ledger.normalized_vessel_name || ledger.vessel_name);
-  const pilotName = normalizeVesselName(pilot.normalized_vessel_name || pilot.vessel_name);
-  const ledgerPort = String(ledger.port_code || portCodeFromName(ledger.port || ledger.port_name) || "");
-  const pilotPort = String(pilot.port_code || portCodeFromName(pilot.port || pilot.port_name) || "");
-  const ledgerBerth = normalizeBerthTerminalAlias(ledger.berth_key || ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
-  const pilotBerth = normalizeBerthTerminalAlias(pilot.berth_key || pilot.berth_name || pilot.berth || pilot.pilot_station || pilot.terminal_name);
-  if (ledgerCall && pilotCall && ledgerCall === pilotCall) {
-    score += 62;
-    methods.push("call_sign_exact");
-  }
-  if (ledgerName && pilotName && ledgerName === pilotName) {
-    score += 42;
-    methods.push("normalized_vessel_name");
-  } else if (ledgerName && pilotName && (ledgerName.includes(pilotName) || pilotName.includes(ledgerName)) && Math.min(ledgerName.length, pilotName.length) >= 4) {
-    score += 24;
-    methods.push("vessel_name_partial");
-  }
-  if (ledgerPort && pilotPort && ledgerPort === pilotPort) {
-    score += 15;
-    methods.push("port_code");
-  }
-  if (ledgerBerth && pilotBerth && (ledgerBerth.includes(pilotBerth) || pilotBerth.includes(ledgerBerth))) {
-    score += 10;
-    methods.push("berth_or_pilot_station");
+  const shared = scoreMatch(ledger, pilot, {
+    timeWindowHours: Number(process.env.MATCH_TIME_WINDOW_HOURS || 48),
+    strongTimeMatchHours: Number(process.env.STRONG_TIME_MATCH_HOURS || 6)
+  });
+  let score = shared.score;
+  const methods = [...shared.reasons];
+  if (normalizeCallSign(ledger.call_sign) && normalizeCallSign(pilot.call_sign) && normalizeCallSign(ledger.call_sign) === normalizeCallSign(pilot.call_sign)) {
+    score += 12;
+    methods.push("pilot_call_sign_priority");
   }
   const timeScore = pilotTimeWindowScore(ledger, pilot);
   if (timeScore >= 18) methods.push("time_window_24h");
   else if (timeScore > 0) methods.push("time_window_48h");
-  score += timeScore;
-  return matchResult(score, methods);
+  score += Math.max(0, timeScore - 10);
+  return matchResult(score, methods, shared.matched_fields);
 }
 
 function mergePilotSchedule(record = {}, matches = []) {
@@ -1023,6 +1008,7 @@ function mergePilotSchedule(record = {}, matches = []) {
     pilot_match_method: best.method,
     pilot_match_confidence: best.score,
     pilot_match_reasons: best.reasons,
+    pilot_matched_fields: best.matched_fields || {},
     pilot_match_score: best.score,
     match_score: Math.max(Number(record.match_score || 0), best.score),
     match_confidence: matchConfidenceBand(Math.max(Number(record.match_score || 0), best.score)),
@@ -1037,6 +1023,8 @@ function mergePilotSchedule(record = {}, matches = []) {
     schedule_confidence: Math.max(Number(record.schedule_confidence || 0), best.score),
     berth_timing_confidence: Math.max(Number(record.berth_timing_confidence || 0), best.score),
     pilot_source_origin: "pilot_schedule",
+    source_row_id: pilot.raw_row_identity || `${pilot.source}|${pilot.vessel_name}|${pilot.pilot_time || pilot.movement_time || ""}`,
+    raw_source_payload: pilot.raw_payload || pilot.payload || pilot,
     source_children: [...new Set([...(record.source_children || []), pilot.source])],
     reason_codes: [...new Set([...(record.reason_codes || []), "PILOT_SCHEDULE_MATCHED"])]
   };
@@ -1123,47 +1111,25 @@ function applyPilotSchedule(records = []) {
 }
 
 function enrichmentMatchScore(ledger = {}, enrichment = {}) {
-  let score = 0;
-  const methods = [];
-  const ledgerCall = normalizeMatchText(ledger.call_sign);
-  const enrichCall = normalizeMatchText(enrichment.call_sign);
-  const ledgerName = normalizeVesselName(ledger.normalized_vessel_name || ledger.vessel_name);
-  const enrichName = normalizeVesselName(enrichment.normalized_vessel_name || enrichment.vessel_name);
+  const shared = scoreMatch(ledger, enrichment, {
+    timeWindowHours: Number(process.env.MATCH_TIME_WINDOW_HOURS || 48),
+    strongTimeMatchHours: Number(process.env.STRONG_TIME_MATCH_HOURS || 6)
+  });
+  let score = shared.score;
+  const methods = [...shared.reasons];
   const ledgerPort = String(ledger.port_code || portCodeFromName(ledger.port || ledger.port_name) || "");
-  const enrichPort = String(enrichment.port_code || portCodeFromName(enrichment.port || enrichment.port_name) || "");
-  const ledgerBerth = normalizeBerthTerminalAlias(ledger.berth_key || ledger.berth_name || ledger.berth || ledger.laidupFcltyNm || ledger.terminal_name);
-  const enrichBerth = normalizeBerthTerminalAlias(enrichment.berth_key || enrichment.berth_name || enrichment.berth || enrichment.laidupFcltyNm || enrichment.terminal_name);
-
-  if (ledgerCall && enrichCall && ledgerCall === enrichCall) {
-    score += 65;
-    methods.push("call_sign_exact");
-  }
-  if (ledgerName && enrichName && ledgerName === enrichName) {
-    score += 45;
-    methods.push("normalized_vessel_name");
-  } else if (ledgerName && enrichName && (ledgerName.includes(enrichName) || enrichName.includes(ledgerName)) && Math.min(ledgerName.length, enrichName.length) >= 4) {
-    score += 25;
-    methods.push("vessel_name_partial");
-  }
-  if (ledgerPort && enrichPort && ledgerPort === enrichPort) {
-    score += 15;
-    methods.push("port_code");
-  } else if (isPncRecord(enrichment) && ledgerPort === "020") {
-    score += 15;
+  if (isPncRecord(enrichment) && ledgerPort === "020") {
+    score += 12;
     methods.push("port_group_busan_pnc");
   } else if (isUlsanEnrichmentRecord(enrichment) && ledgerPort === "820") {
-    score += 15;
-    methods.push("port_group_ulsan");
-  }
-  if (ledgerBerth && enrichBerth && (ledgerBerth.includes(enrichBerth) || enrichBerth.includes(ledgerBerth))) {
     score += 12;
-    methods.push("berth_terminal_context");
+    methods.push("port_group_ulsan");
   }
   const timeScore = timeWindowScore(ledger, enrichment);
   if (timeScore >= 18) methods.push("time_window_24h");
   else if (timeScore > 0) methods.push("time_window_48h");
-  score += timeScore;
-  return matchResult(score, methods);
+  score += Math.max(0, timeScore - 10);
+  return matchResult(score, methods, shared.matched_fields);
 }
 
 function mergeSecondaryEnrichment(record = {}, matches = []) {
@@ -1207,6 +1173,9 @@ function mergeSecondaryEnrichment(record = {}, matches = []) {
     berth_match_method: best.method,
     berth_match_confidence: best.score,
     berth_match_reasons: best.reasons,
+    matched_fields: { ...(record.matched_fields || {}), ...(best.matched_fields || {}) },
+    source_row_id: enrichment.raw_row_identity || `${enrichment.source}|${enrichment.vessel_name}|${enrichment.berth_name || enrichment.terminal_name || ""}`,
+    raw_source_payload: enrichment.raw_payload || enrichment.payload || enrichment,
     match_score: Math.max(Number(record.match_score || 0), best.score),
     match_confidence: matchConfidenceBand(Math.max(Number(record.match_score || 0), best.score)),
     match_reasons: [...new Set([...(record.match_reasons || []), ...best.reasons])],
@@ -1221,6 +1190,13 @@ function buildSecondaryEnrichmentDiagnostics(enrichmentRows = [], matchedBySourc
   const pncSources = new Set(pncRows.map(row => row.source));
   const ulsanSources = new Set(ulsanRows.map(row => row.source));
   const countMatched = rows => rows.filter(row => matchedBySource.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.berth_name}`)).length;
+  const confidenceCounts = [...matchedBySource.values()].reduce((acc, match) => {
+    const confidence = String(match.confidence || match.match_confidence || "").toLowerCase();
+    if (confidence === "high") acc.high += 1;
+    else if (confidence === "medium") acc.medium += 1;
+    else if (confidence === "low") acc.low += 1;
+    return acc;
+  }, { high: 0, medium: 0, low: 0 });
   const pncMatched = countMatched(pncRows);
   const ulsanMatched = countMatched(ulsanRows);
   const matchedTotal = countMatched(enrichmentRows);
@@ -1235,9 +1211,14 @@ function buildSecondaryEnrichmentDiagnostics(enrichmentRows = [], matchedBySourc
     ulsan_rows_collected: ulsanRows.length,
     ulsan_rows_matched: ulsanMatched,
     ulsan_match_rate: ulsanRows.length ? Math.round((ulsanMatched / ulsanRows.length) * 100) : 0,
+    berth_rows_collected: enrichmentRows.length,
+    berth_rows_matched: matchedTotal,
     berth_match_rate: enrichmentRows.length ? Math.round((matchedTotal / enrichmentRows.length) * 100) : 0,
     enrichment_rows_matched: matchedTotal,
-    enrichment_rows_unmatched: Math.max(0, enrichmentRows.length - matchedTotal)
+    enrichment_rows_unmatched: Math.max(0, enrichmentRows.length - matchedTotal),
+    enrichment_high_confidence_matches: confidenceCounts.high,
+    enrichment_medium_confidence_matches: confidenceCounts.medium,
+    enrichment_low_confidence_matches: confidenceCounts.low
   };
 }
 
@@ -1258,7 +1239,7 @@ function applySecondaryEnrichment(records = []) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
     for (const match of matches) {
-      matchedBySource.set(match.record.raw_row_identity || `${match.record.source}|${match.record.vessel_name}|${match.record.berth_name}`, true);
+      matchedBySource.set(match.record.raw_row_identity || `${match.record.source}|${match.record.vessel_name}|${match.record.berth_name}`, match);
     }
     return mergeSecondaryEnrichment(record, matches);
   });
