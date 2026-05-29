@@ -529,6 +529,8 @@ function normalizeSnapshot(row = {}) {
     first_seen_at: merged.first_seen_at || row.first_seen_at || "",
     last_seen_at: merged.last_seen_at || row.last_seen_at || "",
     data_quality_tier: merged.data_quality_tier || "",
+    data_quality_score: Number(merged.data_quality_score || deriveDataQualityScore(merged)),
+    data_quality_band: merged.data_quality_band || (deriveDataQualityScore(merged) >= 80 ? "high" : deriveDataQualityScore(merged) >= 60 ? "medium" : deriveDataQualityScore(merged) >= 40 ? "low" : "needs_cleanup"),
     vessel_basic_info_completeness_score: Number(merged.vessel_basic_info_completeness_score || basicInfoCompleteness(merged)),
     vessel_basic_info_missing_fields: merged.vessel_basic_info_missing_fields || BASIC_INFO_FIELDS.filter(field => !hasValue(merged[field])),
     vessel_spec_enrichment_priority: Boolean(merged.vessel_spec_enrichment_priority),
@@ -816,6 +818,24 @@ function derivePredictionErrorHours(v = {}) {
   const predicted = parseDate(v.predicted_arrival_time);
   const actual = parseDate(v.actual_arrival_time || v.ata);
   return predicted && actual ? Math.round(Math.abs(actual.getTime() - predicted.getTime()) / 36e5 * 10) / 10 : null;
+}
+
+function deriveDataQualityScore(v = {}) {
+  const vesselType = String(v.vessel_type_group || v.vessel_type || v.vsslKndNm || "").toLowerCase();
+  const hasVesselType = Boolean(vesselType && vesselType !== "unknown");
+  const hasGt = Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0;
+  const hasBerthFacility = Boolean(v.berth_name || v.berth || v.anchorage_name || v.anchorage_zone || v.laidupFcltyNm || v.facility_name_raw);
+  let score = 0;
+  if (hasGt) score += 16;
+  if (v.imo) score += 14;
+  if (v.call_sign) score += 14;
+  if (hasVesselType) score += 12;
+  if (v.ata) score += 12;
+  if (v.atd || v.etd) score += 10;
+  if (hasBerthFacility) score += 12;
+  if (v.operator_name || v.operator) score += 10;
+  if (v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) score += 10;
+  return Math.min(100, score);
 }
 
 function isAlertCandidate(v = {}) {
@@ -1465,6 +1485,68 @@ function buildBasicInfoCoverage(records = []) {
     dwt_coverage: coverageRatio(records, v => hasValue(v.dwt)),
     prioritized_vessel_spec_enrichment_count: records.filter(v => v.vessel_spec_enrichment_priority).length,
     field_weights: BASIC_INFO_FIELDS
+  };
+}
+
+function buildDataQualityLayerDiagnostics(records = [], matchingDiagnostics = buildMatchingDiagnostics(records)) {
+  const avg = values => values.length ? Math.round(values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length) : 0;
+  const scores = records.map(v => Number(v.data_quality_score || deriveDataQualityScore(v) || 0));
+  const parseMs = value => {
+    const date = parseDate(value);
+    return date ? date.getTime() : null;
+  };
+  const gtValues = records.map(v => Number(v.gt || v.grtg || v.intrlGrtg || 0));
+  const sourceConfidenceValues = records.map(v => Number(v.source_confidence_score || v.data_confidence_score || v.data_quality_score || deriveDataQualityScore(v) || 0));
+  const hasPortCallIdentity = v => hasValue(v.port_call_identity || v.port_call_key || v.raw_port_call_identity) ||
+    (hasValue(v.port_code) && hasValue(v.call_sign || v.normalized_vessel_name || v.vessel_name) && hasValue(v.ata || v.eta || v.etryptYear || v.etryptCo));
+  const timeOrderWarning = v => {
+    const ata = parseMs(v.ata);
+    const atd = parseMs(v.atd);
+    const etd = parseMs(v.etd);
+    return Boolean((ata && atd && atd < ata) || (ata && etd && etd < ata));
+  };
+  return {
+    total_vessels: records.length,
+    overall_data_quality_score: avg(scores),
+    data_quality_score_avg: avg(scores),
+    high_quality_count: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v)) >= 80).length,
+    medium_quality_count: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v)) >= 60 && Number(v.data_quality_score || deriveDataQualityScore(v)) < 80).length,
+    low_quality_count: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v)) >= 40 && Number(v.data_quality_score || deriveDataQualityScore(v)) < 60).length,
+    needs_cleanup_count: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v)) < 40).length,
+    gt_coverage: coverageRatio(records, v => Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0),
+    imo_coverage: coverageRatio(records, v => hasValue(v.imo)),
+    call_sign_coverage: coverageRatio(records, v => hasValue(v.call_sign)),
+    vessel_type_coverage: coverageRatio(records, v => hasValue(v.vessel_type_group || v.vessel_type || v.vsslKndNm) && String(v.vessel_type_group || v.vessel_type || v.vsslKndNm).toLowerCase() !== "unknown"),
+    ata_coverage: coverageRatio(records, v => hasValue(v.ata)),
+    atd_coverage: coverageRatio(records, v => hasValue(v.atd)),
+    etd_coverage: coverageRatio(records, v => hasValue(v.etd)),
+    berth_facility_coverage: coverageRatio(records, v => hasValue(v.berth_name || v.berth || v.anchorage_name || v.anchorage_zone || v.laidupFcltyNm || v.facility_name_raw)),
+    operator_coverage: coverageRatio(records, v => hasValue(v.operator_name || v.operator)),
+    agent_coverage: coverageRatio(records, v => hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm)),
+    pilot_match_rate: matchingDiagnostics.pilot_match_rate || 0,
+    pnc_match_rate: matchingDiagnostics.pnc_match_rate || 0,
+    ulsan_match_rate: matchingDiagnostics.ulsan_match_rate || 0,
+    port_call_identity_coverage: coverageRatio(records, hasPortCallIdentity),
+    gt_invalid_count: gtValues.filter(value => value < 0 || value > 500000).length,
+    ata_atd_etd_order_warning_count: records.filter(timeOrderWarning).length,
+    source_confidence_score_avg: avg(sourceConfidenceValues),
+    source_confidence_scored_count: sourceConfidenceValues.filter(Boolean).length,
+    data_quality_bands: {
+      high: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v) || 0) >= 80).length,
+      medium: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v) || 0) >= 60 && Number(v.data_quality_score || deriveDataQualityScore(v) || 0) < 80).length,
+      low: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v) || 0) >= 40 && Number(v.data_quality_score || deriveDataQualityScore(v) || 0) < 60).length,
+      needs_cleanup: records.filter(v => Number(v.data_quality_score || deriveDataQualityScore(v) || 0) < 40).length
+    },
+    normalization_focus: [
+      "port_call_identity",
+      "gt_validation",
+      "ata_atd_etd_validation",
+      "vessel_type_normalization",
+      "port_sub_port_extraction",
+      "agent_normalization",
+      "operator_inference_quality",
+      "source_confidence_scoring"
+    ]
   };
 }
 
@@ -2133,6 +2215,9 @@ function buildOperatorDiagnostics(records = [], buckets = buildVisibilityBuckets
 function buildStatus(records, source) {
   const buckets = buildVisibilityBuckets(records);
   const countFunnel = buildCountFunnel(records, buckets);
+  const matchingDiagnostics = buildMatchingDiagnostics(records);
+  const predictionDiagnostics = buildPredictionDiagnostics(records);
+  const dataQualityLayer = buildDataQualityLayerDiagnostics(records, matchingDiagnostics);
   const high = records.filter(v => (v.risk_score || 0) >= 70);
   const displayableRows = buckets.target_vessels.length || records.length;
   const allDisplayVessels = vesselGroupRows(records, "all");
@@ -2176,8 +2261,9 @@ function buildStatus(records, source) {
     scoring_diagnostics: buildScoringDiagnostics(records),
     high_score_visibility_audit: highScoreVisibilityAudit(records, 93),
     commercial_ranking_audit: commercialRankingAudit(records),
-    matching_diagnostics: buildMatchingDiagnostics(records),
-    prediction_diagnostics: buildPredictionDiagnostics(records),
+    matching_diagnostics: matchingDiagnostics,
+    prediction_diagnostics: predictionDiagnostics,
+    data_quality_layer: dataQualityLayer,
     operator_diagnostics: buildOperatorDiagnostics(records, buckets),
     frontend_poll_interval_seconds: 900,
     source_runtime: {
@@ -2241,6 +2327,7 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/quality/matching-diagnostics.json")) return json(buildMatchingDiagnostics(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/quality/imo-recovery.json")) return json(buildImoRecoveryKpis(records), { headers: corsHeaders() });
   if (pathname.endsWith("/quality/prediction-feedback.json")) return json(buildPredictionDiagnostics(allRecords), { headers: corsHeaders() });
+  if (pathname.endsWith("/quality/data-quality.json")) return json(buildDataQualityLayerDiagnostics(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/review/basic-info-missing.json")) return json(buildBasicInfoMissing(records), { headers: corsHeaders() });
   if (pathname.endsWith("/quality/high-score-visibility-audit.json")) {
     return json(highScoreVisibilityAudit(allRecords, Number(searchParams.get("threshold") || 93)), { headers: corsHeaders() });

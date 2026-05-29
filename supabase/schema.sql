@@ -35,6 +35,8 @@ create table if not exists vessel_snapshots (
   master_vessel_id text,
   port_code text,
   port_name text,
+  port_call_identity text,
+  sub_port text,
   berth_name text,
   anchorage_name text,
   call_sign text,
@@ -50,6 +52,9 @@ create table if not exists vessel_snapshots (
   berth_hours numeric default 0,
   anchorage_hours numeric default 0,
   data_quality_tier text,
+  data_quality_score int default 0,
+  data_quality_band text,
+  source_confidence_score int default 0,
   total_sales_priority_score int default 0,
   commercial_value_score int default 0,
   commercial_value_band text,
@@ -229,6 +234,12 @@ alter table vessel_snapshots add column if not exists global_percentile numeric;
 alter table vessel_snapshots add column if not exists port_rank int;
 alter table vessel_snapshots add column if not exists port_percentile numeric;
 alter table vessel_snapshots add column if not exists route_pattern_confidence int default 0;
+alter table vessel_snapshots add column if not exists data_quality_score int default 0;
+alter table vessel_snapshots add column if not exists data_quality_band text;
+alter table vessel_snapshots add column if not exists source_confidence_score int default 0;
+alter table vessel_snapshots add column if not exists port_call_identity text;
+alter table vessel_snapshots add column if not exists sub_port text;
+create index if not exists idx_vessel_snapshots_port_call_identity on vessel_snapshots(port_call_identity);
 
 create table if not exists vessel_entities (
   hybrid_entity_key text primary key,
