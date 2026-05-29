@@ -337,6 +337,122 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
   };
 }
 
+function scoreNumber(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function candidateLabel(record = {}) {
+  const score = commercialScore(record);
+  if (record.candidate_band) return record.candidate_band;
+  if (score >= 75) return "immediate_target";
+  if (score >= 65) return "sales_target";
+  if (score >= 50) return "watchlist";
+  return "general";
+}
+
+function buildFoundationFeatureVector(record = {}) {
+  return {
+    gt: scoreNumber(record.gt || record.grtg || record.intrlGrtg),
+    commercial_value_score: commercialScore(record),
+    work_feasibility_score: scoreNumber(record.work_feasibility_score),
+    congestion_score: scoreNumber(record.congestion_score || record.port_congestion_score),
+    biofouling_exposure_score: scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score),
+    performance_proxy_score: scoreNumber(record.performance_proxy_score),
+    contact_readiness_score: scoreNumber(record.contact_readiness_score),
+    data_quality_score: scoreNumber(record.data_quality_score || record.data_confidence_score),
+    arrival_opportunity_score: scoreNumber(record.arrival_opportunity_score),
+    anchorage_probability: scoreNumber(record.anchorage_probability),
+    repeat_caller_score: scoreNumber(record.repeat_caller_score),
+    repeat_operator_score: scoreNumber(record.repeat_operator_score),
+    stay_hours: scoreNumber(record.stay_hours),
+    anchorage_hours: scoreNumber(record.anchorage_hours),
+    work_window_hours: scoreNumber(record.work_window_hours || record.predicted_work_window_hours),
+    has_imo: Boolean(record.imo),
+    has_call_sign: Boolean(record.call_sign),
+    has_operator: Boolean(record.operator_name || record.operator),
+    has_agent: Boolean(record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm),
+    has_contact_path: Boolean(record.contact_path_available || record.contact_path_status === "contact_available"),
+    vessel_type_group: record.vessel_type_group || null,
+    status_bucket: record.status_bucket || null,
+    facility_type: record.facility_type || null,
+    route_region: record.route_region || null
+  };
+}
+
+function buildFoundationLabels(record = {}) {
+  const score = commercialScore(record);
+  return {
+    candidate_band: candidateLabel(record),
+    is_watchlist: score >= 50,
+    is_sales_target: score >= 65,
+    is_immediate_target: score >= 75,
+    lead_status: record.lead_status || "monitor",
+    contact_priority: record.contact_priority || "LOW",
+    cleaning_opportunity_band: record.cleaning_opportunity_band || null,
+    biofouling_exposure_band: record.biofouling_exposure_band || null
+  };
+}
+
+function evaluateFoundationRules(record = {}) {
+  const score = commercialScore(record);
+  const gt = scoreNumber(record.gt || record.grtg || record.intrlGrtg);
+  const stayHours = scoreNumber(record.stay_hours);
+  const anchorageHours = scoreNumber(record.anchorage_hours);
+  const workScore = scoreNumber(record.work_feasibility_score);
+  const contactScore = scoreNumber(record.contact_readiness_score);
+  return [
+    {
+      rule_id: "HIGH_COMMERCIAL_VALUE",
+      rule_group: "candidate",
+      passed: score >= 75,
+      severity: score >= 90 ? "critical" : "high",
+      score_impact: score,
+      explanation_ko: "상업 가치 점수가 즉시 검토 기준 이상입니다."
+    },
+    {
+      rule_id: "SALES_TARGET_SCORE",
+      rule_group: "candidate",
+      passed: score >= 65,
+      severity: "medium",
+      score_impact: score,
+      explanation_ko: "상업 가치 점수가 영업대상 기준 이상입니다."
+    },
+    {
+      rule_id: "MISSING_IMO_HIGH_VALUE",
+      rule_group: "identity",
+      passed: !record.imo && (score >= 65 || gt >= 30000),
+      severity: "medium",
+      score_impact: score,
+      explanation_ko: "고가치 선박이지만 IMO가 없어 복구 큐에 우선 반영해야 합니다."
+    },
+    {
+      rule_id: "OPEN_WORK_WINDOW",
+      rule_group: "port_call",
+      passed: workScore >= 50 || (!record.atd && (record.ata || stayHours > 0)),
+      severity: "high",
+      score_impact: workScore,
+      explanation_ko: "현재 체류 중이거나 작업 가능성이 열려 있습니다."
+    },
+    {
+      rule_id: "LONG_STAY_OR_ANCHORAGE",
+      rule_group: "event",
+      passed: stayHours >= 72 || anchorageHours >= 72,
+      severity: "medium",
+      score_impact: Math.max(stayHours, anchorageHours),
+      explanation_ko: "장기 체류 또는 장기 묘박 신호가 있습니다."
+    },
+    {
+      rule_id: "CONTACT_PATH_READY",
+      rule_group: "operator",
+      passed: contactScore >= 60 || record.contact_path_status === "contact_available",
+      severity: "medium",
+      score_impact: contactScore,
+      explanation_ko: "운영선사 또는 대리점 연락 경로가 비교적 준비되어 있습니다."
+    }
+  ];
+}
+
 export async function saveToSupabase(records, options = {}) {
   const supabase = getSupabase();
   const now = new Date().toISOString();
@@ -1390,6 +1506,230 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  const featureStoreRows = uniqueBy(records.map(r => {
+    const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
+    const portCallKey = r.port_call_identity || r.port_call_key || r.raw_row_identity || r.port_code || r.port || "unknown";
+    return {
+      feature_id: stableEntityId("FEAT", `${runId}-${entityKey}-${portCallKey}`),
+      run_id: runId,
+      collected_at: now,
+      entity_type: "vessel_port_call",
+      entity_id: entityKey,
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_identity: r.port_call_identity || r.port_call_key || null,
+      master_vessel_id: fallbackMasterId(r),
+      port_code: r.port_code || null,
+      feature_namespace: "commercial_foundation",
+      feature_version: "foundation_v1",
+      features: buildFoundationFeatureVector(r),
+      labels: buildFoundationLabels(r),
+      payload: {
+        vessel_name: r.vessel_name || null,
+        port_name: r.port_name || r.port || null,
+        reason_codes: r.reason_codes || [],
+        why_now: r.why_now || null,
+        recommended_action: r.recommended_action || r.recommended_next_action || null
+      }
+    };
+  }), row => row.feature_id);
+
+  for (let index = 0; index < featureStoreRows.length; index += batchSize) {
+    const batch = featureStoreRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("feature_store").upsert(batch, { onConflict: "feature_id" });
+    if (error) throw error;
+  }
+
+  const ruleEvaluationRows = uniqueBy(records.flatMap(r => {
+    const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
+    return evaluateFoundationRules(r).map(rule => ({
+      evaluation_id: stableEntityId("RULE", `${runId}-${entityKey}-${rule.rule_id}`),
+      run_id: runId,
+      collected_at: now,
+      rule_id: rule.rule_id,
+      rule_group: rule.rule_group,
+      entity_type: "vessel_port_call",
+      entity_id: entityKey,
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_identity: r.port_call_identity || r.port_call_key || null,
+      master_vessel_id: fallbackMasterId(r),
+      port_code: r.port_code || null,
+      passed: Boolean(rule.passed),
+      severity: rule.severity,
+      score_impact: Number(rule.score_impact || 0),
+      explanation_ko: rule.explanation_ko,
+      features: buildFoundationFeatureVector(r),
+      payload: r
+    }));
+  }), row => row.evaluation_id);
+
+  for (let index = 0; index < ruleEvaluationRows.length; index += batchSize) {
+    const batch = ruleEvaluationRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("rule_evaluations").upsert(batch, { onConflict: "evaluation_id" });
+    if (error) throw error;
+  }
+
+  const explainabilityRows = uniqueBy(records.map(r => {
+    const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
+    const rules = evaluateFoundationRules(r).filter(rule => rule.passed);
+    return {
+      explainability_id: stableEntityId("EXPL", `${runId}-${entityKey}-${r.port_call_identity || r.port_code || ""}`),
+      run_id: runId,
+      collected_at: now,
+      entity_type: "vessel_port_call",
+      entity_id: entityKey,
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_identity: r.port_call_identity || r.port_call_key || null,
+      master_vessel_id: fallbackMasterId(r),
+      port_code: r.port_code || null,
+      commercial_value_score: commercialScore(r),
+      candidate_band: candidateLabel(r),
+      why_now: r.why_now || r.candidate_summary_ko || null,
+      recommended_action: r.recommended_action || r.recommended_next_action || null,
+      reason_codes: r.reason_codes || [],
+      rule_hits: rules.map(rule => rule.rule_id),
+      feature_contributions: buildFoundationFeatureVector(r),
+      payload: r
+    };
+  }), row => row.explainability_id);
+
+  for (let index = 0; index < explainabilityRows.length; index += batchSize) {
+    const batch = explainabilityRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("explainability_snapshots").upsert(batch, { onConflict: "explainability_id" });
+    if (error) throw error;
+  }
+
+  const routeGraphMap = new Map();
+  for (const r of records) {
+    const fromPort = normalizeCompanyName(r.previous_port || r.route_from_port || "");
+    const toPort = normalizeCompanyName(r.destination_port || r.next_port || r.route_to_port || r.port_name || r.port || "");
+    if (!fromPort || !toPort) continue;
+    const vesselTypeGroup = r.vessel_type_group || "unknown";
+    const edgeKey = `${fromPort}|${toPort}|${vesselTypeGroup}`;
+    const edge = routeGraphMap.get(edgeKey) || {
+      from_port: fromPort,
+      to_port: toPort,
+      vessel_type_group: vesselTypeGroup,
+      observation_count: 0,
+      commercial_value_total: 0,
+      waiting_total: 0,
+      stay_total: 0,
+      confidence_total: 0
+    };
+    edge.observation_count += 1;
+    edge.commercial_value_total += commercialScore(r);
+    edge.waiting_total += scoreNumber(r.anchorage_hours);
+    edge.stay_total += scoreNumber(r.stay_hours);
+    edge.confidence_total += scoreNumber(r.arrival_prediction_confidence || r.data_confidence_score);
+    routeGraphMap.set(edgeKey, edge);
+  }
+
+  const routeGraphRows = [...routeGraphMap.values()].map(edge => ({
+    edge_id: stableEntityId("RG", `${edge.from_port}-${edge.to_port}-${edge.vessel_type_group}`),
+    run_id: runId,
+    from_port: edge.from_port,
+    to_port: edge.to_port,
+    vessel_type_group: edge.vessel_type_group,
+    observation_count: edge.observation_count,
+    avg_commercial_value_score: Math.round(edge.commercial_value_total / Math.max(1, edge.observation_count)),
+    avg_waiting_hours: Math.round((edge.waiting_total / Math.max(1, edge.observation_count)) * 10) / 10,
+    avg_stay_hours: Math.round((edge.stay_total / Math.max(1, edge.observation_count)) * 10) / 10,
+    route_confidence: Math.round(edge.confidence_total / Math.max(1, edge.observation_count)),
+    last_seen: now,
+    payload: edge
+  }));
+
+  for (let index = 0; index < routeGraphRows.length; index += batchSize) {
+    const batch = routeGraphRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("route_graph_edges").upsert(batch, { onConflict: "edge_id" });
+    if (error) throw error;
+  }
+
+  const operatorGraphMap = new Map();
+  for (const r of records) {
+    const operatorNormalized = r.operator_normalized || normalizeCompanyName(r.operator_name || r.operator);
+    if (!operatorNormalized) continue;
+    const operatorName = r.operator_name || r.operator || operatorNormalized;
+    const graphEdges = [
+      r.agent_name || r.agent ? { type: "operator_agent", target: normalizeCompanyName(r.agent_name || r.agent), targetName: r.agent_name || r.agent } : null,
+      r.port_code || r.port_name || r.port ? { type: "operator_port", target: String(r.port_code || r.port_name || r.port), targetName: r.port_name || r.port || r.port_code } : null,
+      r.hybrid_entity_key || r.vessel_id ? { type: "operator_vessel", target: String(r.hybrid_entity_key || r.vessel_id), targetName: r.vessel_name || r.hybrid_entity_key || r.vessel_id } : null
+    ].filter(Boolean);
+    for (const graphEdge of graphEdges) {
+      const edgeKey = `${operatorNormalized}|${graphEdge.type}|${graphEdge.target}`;
+      const edge = operatorGraphMap.get(edgeKey) || {
+        operator_name: operatorName,
+        operator_normalized: operatorNormalized,
+        edge_type: graphEdge.type,
+        target_id: graphEdge.target,
+        target_name: graphEdge.targetName,
+        observation_count: 0,
+        commercial_value_total: 0,
+        contact_total: 0
+      };
+      edge.observation_count += 1;
+      edge.commercial_value_total += commercialScore(r);
+      edge.contact_total += scoreNumber(r.contact_readiness_score);
+      operatorGraphMap.set(edgeKey, edge);
+    }
+  }
+
+  const operatorGraphRows = [...operatorGraphMap.values()].map(edge => ({
+    edge_id: stableEntityId("OG", `${edge.operator_normalized}-${edge.edge_type}-${edge.target_id}`),
+    run_id: runId,
+    operator_name: edge.operator_name,
+    operator_normalized: edge.operator_normalized,
+    edge_type: edge.edge_type,
+    target_id: edge.target_id,
+    target_name: edge.target_name,
+    observation_count: edge.observation_count,
+    avg_commercial_value_score: Math.round(edge.commercial_value_total / Math.max(1, edge.observation_count)),
+    avg_contact_readiness_score: Math.round(edge.contact_total / Math.max(1, edge.observation_count)),
+    last_seen: now,
+    payload: edge
+  }));
+
+  for (let index = 0; index < operatorGraphRows.length; index += batchSize) {
+    const batch = operatorGraphRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("operator_graph_edges").upsert(batch, { onConflict: "edge_id" });
+    if (error) throw error;
+  }
+
+  const trainingRows = uniqueBy(records.map(r => {
+    const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
+    return {
+      training_row_id: stableEntityId("TRAIN", `${runId}-${entityKey}-${r.port_call_identity || r.port_code || ""}`),
+      run_id: runId,
+      collected_at: now,
+      entity_type: "vessel_port_call",
+      entity_id: entityKey,
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_identity: r.port_call_identity || r.port_call_key || null,
+      master_vessel_id: fallbackMasterId(r),
+      port_code: r.port_code || null,
+      model_family: "commercial_prediction_foundation",
+      dataset_version: "foundation_v1",
+      features: buildFoundationFeatureVector(r),
+      labels: buildFoundationLabels(r),
+      target_values: {
+        commercial_value_score: commercialScore(r),
+        predicted_cleaning_opportunity_score: scoreNumber(r.predicted_cleaning_opportunity_score),
+        contact_readiness_score: scoreNumber(r.contact_readiness_score),
+        work_feasibility_score: scoreNumber(r.work_feasibility_score)
+      },
+      leakage_guard: {
+        uses_actual_outcome: false,
+        outcome_fields_reserved: ["actual_arrival_time", "prediction_error_hours", "lead_status"]
+      },
+      payload: r
+    };
+  }), row => row.training_row_id);
+
+  for (let index = 0; index < trainingRows.length; index += batchSize) {
+    const batch = trainingRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("model_training_rows").upsert(batch, { onConflict: "training_row_id" });
+    if (error) throw error;
+  }
+
   let promoted = false;
   if (promotion.promotable) {
     const { error } = await supabase.from("active_dataset_pointer").upsert({
@@ -1422,6 +1762,12 @@ export async function saveToSupabase(records, options = {}) {
     vesselOperatorHistoryRowsSaved: operatorHistoryRows.length,
     operatorHistoryRowsSaved: operatorHistoryRows.length,
     fleetOpportunityRowsSaved: fleetOpportunityRows.length,
+    featureStoreRowsSaved: featureStoreRows.length,
+    ruleEvaluationRowsSaved: ruleEvaluationRows.length,
+    explainabilityRowsSaved: explainabilityRows.length,
+    routeGraphRowsSaved: routeGraphRows.length,
+    operatorGraphRowsSaved: operatorGraphRows.length,
+    modelTrainingRowsSaved: trainingRows.length,
     routePatternRowsSaved: routePatternRows.length,
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,

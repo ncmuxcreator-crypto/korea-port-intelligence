@@ -962,6 +962,127 @@ create index if not exists idx_predicted_arrivals_cleaning_opportunity on predic
 create index if not exists idx_berth_aliases_normalized_alias on berth_aliases(normalized_alias);
 create index if not exists idx_terminal_aliases_normalized_alias on terminal_aliases(normalized_alias);
 
+create table if not exists feature_store (
+  feature_id text primary key,
+  run_id text,
+  collected_at timestamptz default now(),
+  entity_type text,
+  entity_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  master_vessel_id text,
+  port_code text,
+  feature_namespace text,
+  feature_version text default 'foundation_v1',
+  features jsonb default '{}'::jsonb,
+  labels jsonb default '{}'::jsonb,
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists rule_evaluations (
+  evaluation_id text primary key,
+  run_id text,
+  collected_at timestamptz default now(),
+  rule_id text,
+  rule_group text,
+  entity_type text,
+  entity_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  master_vessel_id text,
+  port_code text,
+  passed boolean default false,
+  severity text,
+  score_impact numeric default 0,
+  explanation_ko text,
+  features jsonb default '{}'::jsonb,
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists explainability_snapshots (
+  explainability_id text primary key,
+  run_id text,
+  collected_at timestamptz default now(),
+  entity_type text,
+  entity_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  master_vessel_id text,
+  port_code text,
+  commercial_value_score int default 0,
+  candidate_band text,
+  why_now text,
+  recommended_action text,
+  reason_codes jsonb default '[]'::jsonb,
+  rule_hits jsonb default '[]'::jsonb,
+  feature_contributions jsonb default '{}'::jsonb,
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists route_graph_edges (
+  edge_id text primary key,
+  run_id text,
+  from_port text,
+  to_port text,
+  vessel_type_group text,
+  observation_count int default 0,
+  avg_commercial_value_score int default 0,
+  avg_waiting_hours numeric default 0,
+  avg_stay_hours numeric default 0,
+  route_confidence int default 0,
+  last_seen timestamptz default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists operator_graph_edges (
+  edge_id text primary key,
+  run_id text,
+  operator_name text,
+  operator_normalized text,
+  edge_type text,
+  target_id text,
+  target_name text,
+  observation_count int default 0,
+  avg_commercial_value_score int default 0,
+  avg_contact_readiness_score int default 0,
+  last_seen timestamptz default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists model_training_rows (
+  training_row_id text primary key,
+  run_id text,
+  collected_at timestamptz default now(),
+  entity_type text,
+  entity_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  master_vessel_id text,
+  port_code text,
+  model_family text,
+  dataset_version text default 'foundation_v1',
+  features jsonb default '{}'::jsonb,
+  labels jsonb default '{}'::jsonb,
+  target_values jsonb default '{}'::jsonb,
+  leakage_guard jsonb default '{}'::jsonb,
+  payload jsonb default '{}'::jsonb
+);
+
+create index if not exists idx_feature_store_run on feature_store(run_id);
+create index if not exists idx_feature_store_entity on feature_store(entity_id);
+create index if not exists idx_feature_store_namespace on feature_store(feature_namespace);
+create index if not exists idx_rule_evaluations_run on rule_evaluations(run_id);
+create index if not exists idx_rule_evaluations_rule on rule_evaluations(rule_id);
+create index if not exists idx_rule_evaluations_passed on rule_evaluations(passed);
+create index if not exists idx_explainability_snapshots_run on explainability_snapshots(run_id);
+create index if not exists idx_explainability_snapshots_score on explainability_snapshots(commercial_value_score desc);
+create index if not exists idx_route_graph_edges_route on route_graph_edges(from_port, to_port);
+create index if not exists idx_route_graph_edges_confidence on route_graph_edges(route_confidence desc);
+create index if not exists idx_operator_graph_edges_operator on operator_graph_edges(operator_normalized);
+create index if not exists idx_operator_graph_edges_type on operator_graph_edges(edge_type);
+create index if not exists idx_model_training_rows_run on model_training_rows(run_id);
+create index if not exists idx_model_training_rows_family on model_training_rows(model_family);
+
 alter table data_collection_runs add column if not exists raw_collected_rows int default 0;
 alter table data_collection_runs add column if not exists normalized_rows int default 0;
 alter table data_collection_runs add column if not exists target_vessels_count int default 0;
