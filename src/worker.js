@@ -73,6 +73,45 @@ function normalizeCompanyName(value) {
     .replace(/\s+/g, " ");
 }
 
+function normalizeVesselName(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[^A-Z0-9가-힣]+/g, "");
+}
+
+function normalizeIdentityToken(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9가-힣]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function repeatVesselKey(v = {}) {
+  return normalizeIdentityToken(
+    v.master_vessel_id ||
+    v.hybrid_entity_key ||
+    v.imo ||
+    v.mmsi ||
+    v.call_sign ||
+    `${v.vessel_name || ""}-${v.gt || v.grtg || v.intrlGrtg || ""}-${v.vessel_type_group || v.vessel_type || ""}`
+  );
+}
+
+function repeatOperatorKey(v = {}) {
+  return normalizeCompanyName(v.operator_name || v.operator || v.operator_normalized || "");
+}
+
+function repeatScoreFromCalls(count = 0) {
+  const value = Number(count || 0);
+  if (value >= 5) return 30;
+  if (value >= 3) return 20;
+  if (value >= 2) return 10;
+  return 0;
+}
+
 function basicInfoCompleteness(record = {}) {
   const present = BASIC_INFO_FIELDS.filter(field => hasValue(record[field]));
   return Math.round((present.length / BASIC_INFO_FIELDS.length) * 100);
@@ -420,10 +459,17 @@ function normalizeSnapshot(row = {}) {
     anchorage_probability: Number(merged.anchorage_probability || deriveAnchorageProbability(merged)),
     predicted_work_window_hours: Number(merged.predicted_work_window_hours || merged.work_window_hours || 0),
     work_window_confidence: Number(merged.work_window_confidence || 0),
+    calls_last_3m: Number(merged.calls_last_3m || 0),
+    calls_last_6m: Number(merged.calls_last_6m || 0),
+    calls_last_12m: Number(merged.calls_last_12m || merged.repeat_call_count || merged.observation_count || 0),
     repeat_call_count: Number(merged.repeat_call_count || merged.observation_count || 0),
     repeat_operator_count: Number(merged.repeat_operator_count || 0),
     repeat_caller_score: Number(merged.repeat_caller_score || 0),
     repeat_operator_score: Number(merged.repeat_operator_score || 0),
+    operator_call_count: Number(merged.operator_call_count || merged.repeat_operator_count || 0),
+    operator_vessel_count: Number(merged.operator_vessel_count || merged.repeat_operator_count || 0),
+    operator_port_count: Number(merged.operator_port_count || 0),
+    fleet_opportunity_score: Number(merged.fleet_opportunity_score || 0),
     low_speed_exposure: Number(merged.low_speed_exposure || 0),
     idle_exposure: Number(merged.idle_exposure || 0),
     anchorage_exposure: Number(merged.anchorage_exposure || 0),
@@ -1986,6 +2032,95 @@ function buildContactReadyVessels(records = []) {
     }));
 }
 
+function buildFleetOpportunityRows(records = []) {
+  const map = new Map();
+  for (const record of records.filter(v => !isDepartedRecord(v))) {
+    const operatorKey = repeatOperatorKey(record);
+    if (!operatorKey) continue;
+    if (!map.has(operatorKey)) {
+      map.set(operatorKey, {
+        operator_name: record.operator_name || record.operator || operatorKey,
+        operator_normalized: operatorKey,
+        vessels: new Map(),
+        ports: new Set(),
+        target_vessels: 0,
+        immediate_targets: 0,
+        repeat_call_total: 0,
+        repeated_vessels: 0,
+        route_regions: new Set(),
+        congestion_exposed: 0,
+        contact_ready: 0,
+        top_vessels: []
+      });
+    }
+    const fleet = map.get(operatorKey);
+    const vesselKey = repeatVesselKey(record) || normalizeVesselName(record.vessel_name);
+    if (vesselKey) fleet.vessels.set(vesselKey, record);
+    fleet.ports.add(String(record.port_code || record.port_name || record.port || "unknown"));
+    const score = commercialScore(record);
+    if (!isHardCandidateExcluded(record) && score >= SALES_CANDIDATE_THRESHOLD) fleet.target_vessels += 1;
+    if (!isHardCandidateExcluded(record) && score >= IMMEDIATE_TARGET_THRESHOLD && hasCurrentOrNearTermWorkFeasibility(record)) fleet.immediate_targets += 1;
+    const repeatCalls = Number(record.repeat_call_count || record.calls_last_12m || 0);
+    fleet.repeat_call_total += repeatCalls;
+    if (repeatCalls >= 3) fleet.repeated_vessels += 1;
+    if (record.route_region && record.route_region !== "unknown") fleet.route_regions.add(record.route_region);
+    if (deriveCongestionScore(record) >= 40 || Number(record.anchorage_hours || 0) >= 72) fleet.congestion_exposed += 1;
+    if (Number(record.contact_readiness_score || 0) >= 60 || ["contact_available", "high_confidence_contact"].includes(record.contact_path_status)) fleet.contact_ready += 1;
+    fleet.top_vessels.push(record);
+  }
+
+  return [...map.values()]
+    .map(fleet => {
+      const operatorVesselCount = fleet.vessels.size;
+      const operatorPortCount = [...fleet.ports].filter(Boolean).length;
+      const operatorCallCount = Math.max(operatorVesselCount, fleet.repeat_call_total);
+      const repeatOperatorScore = boundedScore(
+        repeatScoreFromCalls(operatorCallCount) +
+        Math.min(25, operatorVesselCount * 4) +
+        Math.min(15, operatorPortCount * 4) +
+        Math.min(15, fleet.repeated_vessels * 5)
+      );
+      const fleetOpportunityScore = boundedScore(
+        Math.min(35, fleet.target_vessels * 9) +
+        Math.min(30, fleet.immediate_targets * 15) +
+        repeatOperatorScore * 0.25 +
+        Math.min(15, fleet.congestion_exposed * 5) +
+        Math.min(10, fleet.contact_ready * 3) +
+        Math.min(8, fleet.route_regions.size * 3)
+      );
+      const topVessels = sortCommercialPriority(fleet.top_vessels).slice(0, 5).map(v => ({
+        vessel_name: v.vessel_name,
+        port_name: v.port_name || v.port,
+        commercial_value_score: commercialScore(v),
+        candidate_band: v.candidate_band || v.sales_priority_band || "general"
+      }));
+      return {
+        operator_name: fleet.operator_name,
+        operator_normalized: fleet.operator_normalized,
+        current_vessel_count: operatorVesselCount,
+        target_vessel_count: fleet.target_vessels,
+        immediate_target_count: fleet.immediate_targets,
+        operator_call_count: operatorCallCount,
+        operator_vessel_count: operatorVesselCount,
+        operator_port_count: operatorPortCount,
+        repeat_operator_score: repeatOperatorScore,
+        fleet_opportunity_score: fleetOpportunityScore,
+        contact_ready_count: fleet.contact_ready,
+        route_concentration_count: fleet.route_regions.size,
+        top_vessels: topVessels,
+        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다.`,
+        recommended_action: fleet.contact_ready > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
+      };
+    })
+    .filter(row => row.current_vessel_count >= 2 || row.target_vessel_count > 0 || row.fleet_opportunity_score >= 20)
+    .sort((a, b) =>
+      Number(b.fleet_opportunity_score || 0) - Number(a.fleet_opportunity_score || 0) ||
+      Number(b.immediate_target_count || 0) - Number(a.immediate_target_count || 0) ||
+      Number(b.target_vessel_count || 0) - Number(a.target_vessel_count || 0) ||
+      Number(b.current_vessel_count || 0) - Number(a.current_vessel_count || 0)
+    );
+}
+
 function buildAlertCandidates(records = []) {
   return sortCommercialPriority(dedupeCandidateRows(records.filter(isAlertCandidate)))
     .slice(0, 100)
@@ -2130,6 +2265,7 @@ function buildDashboardSummary(allRecords = [], source = {}) {
     opportunities,
     lead_pipeline: buildLeadPipeline(activeRecords).slice(0, 8),
     contact_ready_vessels: buildContactReadyVessels(activeRecords).slice(0, 5),
+    fleet_opportunities: buildFleetOpportunityRows(activeRecords).slice(0, 5),
     alert_candidates: buildAlertCandidates(activeRecords).slice(0, 5),
     port_opportunities: buildPortOpportunityRanking(buckets.target_vessels).slice(0, 5),
     congestion_summary: buildPortHeatmap(buckets.target_vessels).slice(0, 12),
@@ -2496,6 +2632,11 @@ function buildScoringDiagnostics(records = []) {
     repeat_operator_signal_count: records.filter(v => Number(v.repeat_operator_score || 0) > 0).length,
     repeat_call_count_3plus: records.filter(v => Number(v.repeat_call_count || 0) >= 3).length,
     repeat_operator_count_3plus: records.filter(v => Number(v.repeat_operator_count || 0) >= 3).length,
+    repeat_caller_count: records.filter(v => Number(v.repeat_call_count || 0) >= 3 || Number(v.repeat_caller_score || 0) >= 20).length,
+    repeat_operator_count: records.filter(v => Number(v.operator_vessel_count || v.repeat_operator_count || 0) >= 3 || Number(v.repeat_operator_score || 0) >= 20).length,
+    fleet_opportunity_count: buildFleetOpportunityRows(records).filter(row => Number(row.fleet_opportunity_score || 0) >= 35).length,
+    operators_with_multiple_targets: buildFleetOpportunityRows(records).filter(row => Number(row.target_vessel_count || 0) >= 2).length,
+    operators_with_multiple_immediate_targets: buildFleetOpportunityRows(records).filter(row => Number(row.immediate_target_count || 0) >= 2).length,
     biofouling_exposure_nonzero_count: records.filter(v => Number(v.biofouling_exposure_score || 0) > 0).length,
     predicted_cleaning_opportunity_nonzero_count: records.filter(v => Number(v.predicted_cleaning_opportunity_score || 0) > 0).length,
     alert_candidate_count: records.filter(isAlertCandidate).length,
@@ -2532,7 +2673,12 @@ function buildOperatorDiagnostics(records = [], buckets = buildVisibilityBuckets
     candidates_with_agent_count: buckets.sales_candidates.filter(v => hasValue(v.agent_name || v.agent)).length,
     immediate_targets_with_contact_path_count: buckets.immediate_targets.filter(v => v.contact_path_available || hasValue(v.operator_name || v.operator) || hasValue(v.agent_name || v.agent)).length,
     contact_ready_count: records.filter(v => Number(v.contact_readiness_score || 0) >= 50 || v.contact_path_available).length,
-    candidates_contact_ready_count: buckets.sales_candidates.filter(v => Number(v.contact_readiness_score || 0) >= 50 || v.contact_path_available).length
+    candidates_contact_ready_count: buckets.sales_candidates.filter(v => Number(v.contact_readiness_score || 0) >= 50 || v.contact_path_available).length,
+    repeat_caller_count: records.filter(v => Number(v.repeat_call_count || 0) >= 3 || Number(v.repeat_caller_score || 0) >= 20).length,
+    repeat_operator_count: records.filter(v => Number(v.operator_vessel_count || v.repeat_operator_count || 0) >= 3 || Number(v.repeat_operator_score || 0) >= 20).length,
+    fleet_opportunity_count: buildFleetOpportunityRows(records).filter(row => Number(row.fleet_opportunity_score || 0) >= 35).length,
+    operators_with_multiple_targets: buildFleetOpportunityRows(records).filter(row => Number(row.target_vessel_count || 0) >= 2).length,
+    operators_with_multiple_immediate_targets: buildFleetOpportunityRows(records).filter(row => Number(row.immediate_target_count || 0) >= 2).length
   };
 }
 
@@ -2639,6 +2785,7 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/predicted-arrivals.json")) return json(buildPredictedArrivals(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/lead-pipeline.json")) return json(buildLeadPipeline(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/contact-ready-vessels.json")) return json(buildContactReadyVessels(allRecords), { headers: corsHeaders() });
+  if (pathname.endsWith("/fleet-opportunities.json")) return json(buildFleetOpportunityRows(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/alert-candidates.json")) return json(buildAlertCandidates(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/pilot-only-arrival-review.json") || pathname.endsWith("/review/pilot-only-arrivals.json")) return json(buckets.pilot_only_arrival_review, { headers: corsHeaders() });
   if (pathname.endsWith("/imo-recovery-queue.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
@@ -2684,6 +2831,16 @@ async function apiResponse(url, env) {
   if (vesselMatch) {
     const vessel = findVesselById(allRecords, vesselMatch[1]);
     return json(vessel || { error: "not_found" }, { status: vessel ? 200 : 404, headers: corsHeaders() });
+  }
+  const operatorMatch = pathname.match(new RegExp("^/api/operators/([^/]+)/portfolio\\.json$"));
+  if (operatorMatch) {
+    const key = decodeURIComponent(operatorMatch[1]);
+    const rows = activeRecordsOnly(allRecords).filter(v => repeatOperatorKey(v) === normalizeCompanyName(key) || String(v.operator_name || v.operator || "").toLowerCase() === key.toLowerCase());
+    const fleet = buildFleetOpportunityRows(rows)[0] || buildFleetOpportunityRows(allRecords).find(row => row.operator_normalized === normalizeCompanyName(key) || row.operator_name === key);
+    return json({
+      operator: fleet || { operator_name: key, current_vessel_count: rows.length },
+      vessels: sortCommercialPriority(rows).slice(0, 100)
+    }, { headers: corsHeaders() });
   }
   if (pathname.endsWith("/candidates.json")) return json(buckets.sales_candidates, { headers: corsHeaders() });
   if (pathname.endsWith("/candidates/top.json")) return json({

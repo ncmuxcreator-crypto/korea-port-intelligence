@@ -195,10 +195,17 @@ alter table vessel_snapshots add column if not exists congestion_forecast_band t
 alter table vessel_snapshots add column if not exists anchorage_probability int default 0;
 alter table vessel_snapshots add column if not exists predicted_work_window_hours numeric default 0;
 alter table vessel_snapshots add column if not exists work_window_confidence int default 0;
+alter table vessel_snapshots add column if not exists calls_last_3m int default 0;
+alter table vessel_snapshots add column if not exists calls_last_6m int default 0;
+alter table vessel_snapshots add column if not exists calls_last_12m int default 0;
 alter table vessel_snapshots add column if not exists repeat_caller_score int default 0;
 alter table vessel_snapshots add column if not exists repeat_operator_score int default 0;
 alter table vessel_snapshots add column if not exists repeat_call_count int default 0;
 alter table vessel_snapshots add column if not exists repeat_operator_count int default 0;
+alter table vessel_snapshots add column if not exists operator_call_count int default 0;
+alter table vessel_snapshots add column if not exists operator_vessel_count int default 0;
+alter table vessel_snapshots add column if not exists operator_port_count int default 0;
+alter table vessel_snapshots add column if not exists fleet_opportunity_score int default 0;
 alter table vessel_snapshots add column if not exists low_speed_exposure int default 0;
 alter table vessel_snapshots add column if not exists idle_exposure int default 0;
 alter table vessel_snapshots add column if not exists anchorage_exposure int default 0;
@@ -438,6 +445,25 @@ create table if not exists operator_history (
   contact_path_available boolean default false,
   collected_at timestamptz default now(),
   payload jsonb default '{}'::jsonb
+);
+
+create table if not exists operator_fleet_opportunities (
+  fleet_opportunity_id text primary key,
+  run_id text,
+  operator_name text,
+  operator_normalized text,
+  current_vessel_count int default 0,
+  target_vessel_count int default 0,
+  immediate_target_count int default 0,
+  operator_call_count int default 0,
+  operator_vessel_count int default 0,
+  operator_port_count int default 0,
+  repeat_operator_score int default 0,
+  fleet_opportunity_score int default 0,
+  contact_readiness_avg int default 0,
+  top_vessels jsonb default '[]'::jsonb,
+  payload jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
 );
 
 create table if not exists route_patterns (
@@ -813,6 +839,11 @@ create index if not exists idx_commercial_leads_priority on commercial_leads(lea
 alter table commercial_leads add column if not exists predicted_cleaning_opportunity_score int default 0;
 alter table commercial_leads add column if not exists anchorage_probability int default 0;
 alter table commercial_leads add column if not exists predicted_congestion_score int default 0;
+alter table commercial_leads add column if not exists repeat_caller_score int default 0;
+alter table commercial_leads add column if not exists repeat_operator_score int default 0;
+alter table commercial_leads add column if not exists repeat_call_count int default 0;
+alter table commercial_leads add column if not exists repeat_operator_count int default 0;
+alter table commercial_leads add column if not exists fleet_opportunity_score int default 0;
 alter table commercial_leads add column if not exists candidate_summary_ko text;
 alter table commercial_leads add column if not exists recommended_action text;
 alter table commercial_leads add column if not exists last_contacted_at timestamptz;
@@ -850,6 +881,9 @@ create index if not exists idx_contact_master_company on contact_master(company_
 create index if not exists idx_contact_master_type on contact_master(contact_type);
 create index if not exists idx_operator_contact_history_run on operator_contact_history(run_id);
 create index if not exists idx_operator_contact_history_status on operator_contact_history(contact_path_status);
+create index if not exists idx_operator_fleet_opportunities_run on operator_fleet_opportunities(run_id);
+create index if not exists idx_operator_fleet_opportunities_score on operator_fleet_opportunities(fleet_opportunity_score desc);
+create index if not exists idx_operator_fleet_opportunities_operator on operator_fleet_opportunities(operator_normalized);
 alter table predicted_arrivals add column if not exists predicted_congestion_score int default 0;
 alter table predicted_arrivals add column if not exists congestion_forecast_band text;
 alter table predicted_arrivals add column if not exists anchorage_probability int default 0;

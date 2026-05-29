@@ -454,10 +454,17 @@ export async function saveToSupabase(records, options = {}) {
     anchorage_probability: Number(r.anchorage_probability || 0),
     predicted_work_window_hours: Number(r.predicted_work_window_hours || 0),
     work_window_confidence: Number(r.work_window_confidence || 0),
+    calls_last_3m: Number(r.calls_last_3m || 0),
+    calls_last_6m: Number(r.calls_last_6m || 0),
+    calls_last_12m: Number(r.calls_last_12m || r.repeat_call_count || 0),
     repeat_caller_score: Number(r.repeat_caller_score || 0),
     repeat_operator_score: Number(r.repeat_operator_score || 0),
     repeat_call_count: Number(r.repeat_call_count || 0),
     repeat_operator_count: Number(r.repeat_operator_count || 0),
+    operator_call_count: Number(r.operator_call_count || r.repeat_operator_count || 0),
+    operator_vessel_count: Number(r.operator_vessel_count || r.repeat_operator_count || 0),
+    operator_port_count: Number(r.operator_port_count || 0),
+    fleet_opportunity_score: Number(r.fleet_opportunity_score || 0),
     low_speed_exposure: Number(r.low_speed_exposure || 0),
     idle_exposure: Number(r.idle_exposure || 0),
     anchorage_exposure: Number(r.anchorage_exposure || 0),
@@ -966,6 +973,11 @@ export async function saveToSupabase(records, options = {}) {
       contact_readiness_score: Number(r.contact_readiness_score || 0),
       contact_path_status: r.contact_path_status || (r.contact_path_available ? "contact_available" : r.agent_name || r.agent ? "agent_known" : r.operator_name || r.operator ? "operator_known" : "unknown"),
       work_feasibility_score: Number(r.work_feasibility_score || 0),
+      repeat_caller_score: Number(r.repeat_caller_score || 0),
+      repeat_operator_score: Number(r.repeat_operator_score || 0),
+      repeat_call_count: Number(r.repeat_call_count || 0),
+      repeat_operator_count: Number(r.repeat_operator_count || 0),
+      fleet_opportunity_score: Number(r.fleet_opportunity_score || 0),
       arrival_opportunity_score: Number(r.arrival_opportunity_score || 0),
       predicted_cleaning_opportunity_score: Number(r.predicted_cleaning_opportunity_score || 0),
       anchorage_probability: Number(r.anchorage_probability || 0),
@@ -1220,6 +1232,81 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  const fleetMap = new Map();
+  for (const r of records) {
+    const operatorName = r.operator_name || r.operator;
+    const operatorNormalized = r.operator_normalized || normalizeCompanyName(operatorName);
+    if (!operatorName || !operatorNormalized) continue;
+    if (!fleetMap.has(operatorNormalized)) {
+      fleetMap.set(operatorNormalized, {
+        operator_name: operatorName,
+        operator_normalized: operatorNormalized,
+        vessels: new Map(),
+        ports: new Set(),
+        target_vessel_count: 0,
+        immediate_target_count: 0,
+        operator_call_count: 0,
+        contact_score_total: 0,
+        contact_score_count: 0,
+        top_vessels: []
+      });
+    }
+    const current = fleetMap.get(operatorNormalized);
+    const vesselKey = r.master_vessel_id || r.hybrid_entity_key || r.imo || r.mmsi || r.call_sign || `${r.vessel_name || ""}-${r.gt || ""}-${r.vessel_type_group || r.vessel_type || ""}`;
+    if (vesselKey) current.vessels.set(vesselKey, r);
+    current.ports.add(String(r.port_code || r.port_name || r.port || "unknown"));
+    if ((r.commercial_value_score || r.total_sales_priority_score || 0) >= 65 || r.is_cleaning_candidate) current.target_vessel_count += 1;
+    if ((r.commercial_value_score || r.total_sales_priority_score || 0) >= 75 || r.is_immediate_candidate) current.immediate_target_count += 1;
+    current.operator_call_count += Number(r.repeat_call_count || r.calls_last_12m || 1);
+    current.contact_score_total += Number(r.contact_readiness_score || 0);
+    current.contact_score_count += 1;
+    current.top_vessels.push(r);
+  }
+
+  const fleetOpportunityRows = [...fleetMap.values()]
+    .map(row => ({
+      fleet_opportunity_id: stableEntityId("FLEET", `${runId}-${row.operator_normalized}`),
+      run_id: runId,
+      operator_name: row.operator_name,
+      operator_normalized: row.operator_normalized,
+      current_vessel_count: row.vessels.size,
+      target_vessel_count: row.target_vessel_count,
+      immediate_target_count: row.immediate_target_count,
+      operator_call_count: row.operator_call_count,
+      operator_vessel_count: row.vessels.size,
+      operator_port_count: row.ports.size,
+      repeat_operator_score: Math.min(100, Number(row.top_vessels[0]?.repeat_operator_score || 0) || (row.operator_call_count >= 5 ? 30 : row.operator_call_count >= 3 ? 20 : row.operator_call_count >= 2 ? 10 : 0)),
+      fleet_opportunity_score: Math.min(100, Math.round(
+        Math.min(35, row.target_vessel_count * 9) +
+        Math.min(30, row.immediate_target_count * 15) +
+        Math.min(20, row.vessels.size * 4) +
+        Math.min(10, row.ports.size * 3) +
+        Math.min(10, row.contact_score_total / Math.max(1, row.contact_score_count) / 10)
+      )),
+      contact_readiness_avg: row.contact_score_count ? Math.round(row.contact_score_total / row.contact_score_count) : 0,
+      top_vessels: row.top_vessels
+        .slice()
+        .sort((a, b) => Number(b.commercial_value_score || b.total_sales_priority_score || 0) - Number(a.commercial_value_score || a.total_sales_priority_score || 0))
+        .slice(0, 5)
+        .map(v => ({
+          vessel_name: v.vessel_name,
+          port_name: v.port_name || v.port,
+          commercial_value_score: Number(v.commercial_value_score || v.total_sales_priority_score || 0),
+          candidate_band: v.candidate_band || v.sales_priority_band || "general"
+        })),
+      payload: {
+        recommended_action: row.contact_score_total > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
+      },
+      created_at: now
+    }))
+    .filter(row => row.current_vessel_count >= 2 || row.target_vessel_count > 0 || row.fleet_opportunity_score >= 20);
+
+  for (let index = 0; index < fleetOpportunityRows.length; index += batchSize) {
+    const batch = fleetOpportunityRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("operator_fleet_opportunities").upsert(batch, { onConflict: "fleet_opportunity_id" });
+    if (error) throw error;
+  }
+
   let promoted = false;
   if (promotion.promotable) {
     const { error } = await supabase.from("active_dataset_pointer").upsert({
@@ -1251,6 +1338,7 @@ export async function saveToSupabase(records, options = {}) {
     agentOperatorMappingRowsSaved: agentOperatorLinks.length,
     vesselOperatorHistoryRowsSaved: operatorHistoryRows.length,
     operatorHistoryRowsSaved: operatorHistoryRows.length,
+    fleetOpportunityRowsSaved: fleetOpportunityRows.length,
     routePatternRowsSaved: routePatternRows.length,
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,
