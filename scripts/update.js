@@ -1827,7 +1827,7 @@ function enrichSalesSignals(records) {
     }
     enriched.operator_fleet_badges = deriveFleetBadges(enriched);
     Object.assign(enriched, deriveLeadPipelineFields(enriched, scheduleMetrics));
-    enriched.recommended_action = enriched.candidate_next_action || recommendedAction(enriched);
+    enriched.recommended_action = enriched.recommended_next_action || enriched.recommended_action || enriched.candidate_next_action || recommendedAction(enriched);
     enriched.opportunity_usd = estimateOpportunity(enriched);
     return enriched;
   });
