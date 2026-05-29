@@ -197,6 +197,8 @@ alter table vessel_snapshots add column if not exists predicted_work_window_hour
 alter table vessel_snapshots add column if not exists work_window_confidence int default 0;
 alter table vessel_snapshots add column if not exists repeat_caller_score int default 0;
 alter table vessel_snapshots add column if not exists repeat_operator_score int default 0;
+alter table vessel_snapshots add column if not exists repeat_call_count int default 0;
+alter table vessel_snapshots add column if not exists repeat_operator_count int default 0;
 alter table vessel_snapshots add column if not exists low_speed_exposure int default 0;
 alter table vessel_snapshots add column if not exists idle_exposure int default 0;
 alter table vessel_snapshots add column if not exists anchorage_exposure int default 0;
@@ -474,6 +476,8 @@ create table if not exists predicted_arrivals (
   work_window_confidence int default 0,
   repeat_caller_score int default 0,
   repeat_operator_score int default 0,
+  repeat_call_count int default 0,
+  repeat_operator_count int default 0,
   biofouling_exposure_score int default 0,
   predicted_cleaning_opportunity_score int default 0,
   arrival_opportunity_score int default 0,

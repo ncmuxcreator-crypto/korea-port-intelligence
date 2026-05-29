@@ -337,13 +337,17 @@ function derivePredictiveSignals(v = {}, metrics = {}, routeProfile = deriveRout
     (stayHours || anchorageHours ? 15 : 0) -
     (berthOccupied ? 10 : 0)
   ));
+  const repeatCallCount = Number(v.repeat_call_count || v.observation_count || 0);
+  const repeatOperatorCount = Number(v.repeat_operator_count || 0);
   const repeatCallerScore = Math.min(100, Math.round(
+    (repeatCallCount >= 10 ? 85 : repeatCallCount >= 5 ? 65 : repeatCallCount >= 3 ? 45 : repeatCallCount >= 2 ? 20 : 0) +
     (v.vessel_master_cache_match || v.vessel_master_seed_match ? 30 : 0) +
     (routePattern.route_pattern_known ? 25 : 0) +
     (Number(routePattern.route_pattern_confidence || 0) * 0.25) +
     (v.identity_confidence >= 70 ? 15 : 0)
   ));
   const repeatOperatorScore = Math.min(100, Math.round(
+    (repeatOperatorCount >= 10 ? 80 : repeatOperatorCount >= 5 ? 55 : repeatOperatorCount >= 3 ? 35 : repeatOperatorCount >= 2 ? 18 : 0) +
     (v.operator_normalized ? 20 : 0) +
     (v.operator_fleet_badges?.includes("repeat_observed_fleet") ? 35 : 0) +
     (v.operator_confidence ? Math.min(30, Number(v.operator_confidence) * 0.3) : 0) +
@@ -374,6 +378,8 @@ function derivePredictiveSignals(v = {}, metrics = {}, routeProfile = deriveRout
     anchorage_probability: anchorageProbability,
     predicted_work_window_hours: predictedWorkWindowHours,
     work_window_confidence: workWindowConfidence,
+    repeat_call_count: repeatCallCount,
+    repeat_operator_count: repeatOperatorCount,
     repeat_caller_score: repeatCallerScore,
     repeat_operator_score: repeatOperatorScore,
     low_speed_exposure: lowSpeedExposure,
@@ -406,6 +412,59 @@ function normalizeCompanyName(value) {
     .trim()
     .toUpperCase()
     .replace(/\s+/g, " ");
+}
+
+function repeatVesselKey(v = {}) {
+  return normalizeIdentityToken(
+    v.master_vessel_id ||
+    v.hybrid_entity_key ||
+    v.imo ||
+    v.mmsi ||
+    v.call_sign ||
+    `${v.vessel_name || ""}-${v.gt || v.grtg || v.intrlGrtg || ""}-${v.vessel_type_group || v.vessel_type || ""}`
+  );
+}
+
+function repeatPortCallKey(v = {}) {
+  return normalizeIdentityToken(
+    v.port_call_identity ||
+    `${v.port_code || v.port || ""}-${v.etryptYear || ""}-${v.etryptCo || ""}-${v.call_sign || ""}-${v.ata || v.eta || v.vessel_name || ""}`
+  );
+}
+
+function repeatOperatorKey(v = {}) {
+  return normalizeCompanyName(v.operator_name || v.operator || v.operator_normalized || "");
+}
+
+function annotateRepeatCallerIntelligence(records = []) {
+  const vesselCalls = new Map();
+  const operatorVessels = new Map();
+  for (const record of records) {
+    const vesselKey = repeatVesselKey(record);
+    if (vesselKey) {
+      if (!vesselCalls.has(vesselKey)) vesselCalls.set(vesselKey, new Set());
+      vesselCalls.get(vesselKey).add(repeatPortCallKey(record) || vesselKey);
+    }
+    const operatorKey = repeatOperatorKey(record);
+    if (operatorKey && vesselKey) {
+      if (!operatorVessels.has(operatorKey)) operatorVessels.set(operatorKey, new Set());
+      operatorVessels.get(operatorKey).add(vesselKey);
+    }
+  }
+
+  return records.map(record => {
+    const vesselKey = repeatVesselKey(record);
+    const operatorKey = repeatOperatorKey(record);
+    const repeatCallCount = Math.max(Number(record.repeat_call_count || record.observation_count || 0), vesselKey ? vesselCalls.get(vesselKey)?.size || 0 : 0);
+    const repeatOperatorCount = Math.max(Number(record.repeat_operator_count || 0), operatorKey ? operatorVessels.get(operatorKey)?.size || 0 : 0);
+    return {
+      ...record,
+      repeat_call_count: repeatCallCount,
+      repeat_operator_count: repeatOperatorCount,
+      repeat_caller: repeatCallCount >= 3,
+      repeat_operator: repeatOperatorCount >= 3
+    };
+  });
 }
 
 function hasValue(value) {
@@ -797,6 +856,8 @@ function deriveCommercialScoreParts(v, metrics) {
   if (predictiveSignals.predicted_cleaning_opportunity_score >= 60) reasonCodes.push("PREDICTED_CLEANING_OPPORTUNITY");
   if (predictiveSignals.biofouling_exposure_score >= 60) reasonCodes.push("BIOFOULING_EXPOSURE_HIGH");
   if (predictiveSignals.repeat_caller_score >= 60) reasonCodes.push("REPEAT_CALLER_SIGNAL");
+  if (Number(predictiveSignals.repeat_call_count || 0) >= 3) reasonCodes.push("REPEAT_CALLER");
+  if (Number(predictiveSignals.repeat_operator_count || 0) >= 3) reasonCodes.push("REPEAT_OPERATOR_CALL");
   reasonCodes.push(...routeProfile.route_reason_codes);
   if (Number(metrics.work_window_hours || 0) >= 24) reasonCodes.push("BERTH_WINDOW_AVAILABLE");
   return {
@@ -2280,6 +2341,8 @@ function buildScoringDiagnostics(records = []) {
     predicted_work_window_count: records.filter(v => Number(v.predicted_work_window_hours || 0) > 0).length,
     repeat_caller_signal_count: records.filter(v => Number(v.repeat_caller_score || 0) > 0).length,
     repeat_operator_signal_count: records.filter(v => Number(v.repeat_operator_score || 0) > 0).length,
+    repeat_call_count_3plus: records.filter(v => Number(v.repeat_call_count || 0) >= 3).length,
+    repeat_operator_count_3plus: records.filter(v => Number(v.repeat_operator_count || 0) >= 3).length,
     biofouling_exposure_nonzero_count: records.filter(v => Number(v.biofouling_exposure_score || 0) > 0).length,
     predicted_cleaning_opportunity_nonzero_count: records.filter(v => Number(v.predicted_cleaning_opportunity_score || 0) > 0).length,
     alert_candidate_count: records.filter(isAlertCandidate).length,
@@ -3144,7 +3207,7 @@ try {
   const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
-  vessels = enrichSalesSignals(cacheResult.records);
+  vessels = enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records));
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
