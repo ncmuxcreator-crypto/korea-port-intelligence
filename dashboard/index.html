@@ -161,7 +161,7 @@ const arr=v=>Array.isArray(v)?v:(Array.isArray(v?.data)?v.data:(Array.isArray(v?
 const n=v=>Number.isFinite(Number(v))?Number(v):0;
 const fmt=v=>Number.isFinite(Number(v))?Number(v).toLocaleString("ko-KR"):"-";
 const text=(...vals)=>vals.find(v=>v!==undefined&&v!==null&&String(v).trim()!=="")||"-";
-const score=v=>n(v.commercial_value_score||v.total_sales_priority_score||v.cleaning_candidate_score||v.score);
+const score=v=>Math.max(0,Math.min(100,n(v.commercial_value_score||v.total_sales_priority_score||v.cleaning_candidate_score||v.score)));
 const gt=v=>n(v.gt||v.grtg||v.intrlGrtg);
 const stay=v=>n(v.cumulative_stay_hours||v.stay_hours||v.current_call_stay_hours);
 const anch=v=>n(v.anchorage_hours);

@@ -300,8 +300,8 @@ function normalizeSnapshot(row = {}) {
     congestion_score: congestionScore,
     congestion_exposure_score: Math.max(Number(merged.congestion_exposure_score || 0), Math.round(congestionScore / 5)),
     port_congestion_score: Math.max(Number(merged.port_congestion_score || 0), congestionScore),
-    total_sales_priority_score: Math.max(Number(merged.total_sales_priority_score || 0), candidateScore),
-    commercial_value_score: Math.max(Number(merged.commercial_value_score || merged.total_sales_priority_score || 0), candidateScore),
+    total_sales_priority_score: boundedScore(Math.max(Number(merged.total_sales_priority_score || 0), candidateScore)),
+    commercial_value_score: boundedScore(Math.max(Number(merged.commercial_value_score || merged.total_sales_priority_score || 0), candidateScore)),
     lead_status: merged.lead_status || deriveLeadStatus(merged, leadPriorityScore),
     lead_priority_score: leadPriorityScore,
     why_now: merged.why_now || deriveWhyNow(merged),
@@ -439,7 +439,7 @@ function deriveCommercialRelevance(v = {}) {
 function isMainCommercialVessel(v = {}) {
   const status = v.commercial_relevance_status || deriveCommercialRelevance(v);
   const commercialScore = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
-  if (isExplicitlyExcluded(v)) return false;
+  if (isHardCandidateExcluded(v)) return false;
   return ["target_vessel", "unknown_gt_review"].includes(status) || commercialScore >= SALES_CANDIDATE_THRESHOLD;
 }
 
@@ -485,7 +485,7 @@ function exclusionReason(v = {}) {
 }
 
 function commercialScore(v = {}) {
-  return Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  return boundedScore(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
 }
 
 function boundedScore(value) {
