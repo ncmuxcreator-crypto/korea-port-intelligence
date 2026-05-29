@@ -2034,8 +2034,17 @@ function buildScoringDiagnostics(records = []) {
     top_40: values.filter(value => Number(value) <= 40).length
   });
   const scores = records.map(v => Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0));
+  const scoreRangeCount = (min, max = Infinity) => scores.filter(score => score >= min && score <= max).length;
   return {
     valid_vessels_count: records.length,
+    all_vessels_count: records.length,
+    score_90_plus_count: scoreRangeCount(90),
+    score_80_89_count: scoreRangeCount(80, 89),
+    score_70_79_count: scoreRangeCount(70, 79),
+    score_60_69_count: scoreRangeCount(60, 69),
+    score_50_59_count: scoreRangeCount(50, 59),
+    score_40_49_count: scoreRangeCount(40, 49),
+    score_0_39_count: scores.filter(score => score < 40).length,
     total_collected: records.length,
     target_vessels_5000gt_plus: records.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD).length,
     ...buckets,

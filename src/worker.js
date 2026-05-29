@@ -1927,8 +1927,16 @@ function buildScoringDiagnostics(records = []) {
     top_40: values.filter(value => Number(value) <= 40).length
   });
   const scores = records.map(commercialScore);
+  const scoreRangeCount = (min, max = Infinity) => scores.filter(score => score >= min && score <= max).length;
   return {
     valid_vessels_count: records.length,
+    score_90_plus_count: scoreRangeCount(90),
+    score_80_89_count: scoreRangeCount(80, 89),
+    score_70_79_count: scoreRangeCount(70, 79),
+    score_60_69_count: scoreRangeCount(60, 69),
+    score_50_59_count: scoreRangeCount(50, 59),
+    score_40_49_count: scoreRangeCount(40, 49),
+    score_0_39_count: scores.filter(score => score < 40).length,
     raw_collected_rows: funnel.raw_api_rows,
     normalized_rows: records.length,
     all_vessels_count: records.length,
