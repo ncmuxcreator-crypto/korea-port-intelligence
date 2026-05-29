@@ -1594,6 +1594,48 @@ function deriveActionPriority(v = {}, action = "") {
   return "LOW";
 }
 
+function deriveRecommendedContactPath(v = {}) {
+  const operator = v.operator_name || v.operator || "";
+  const agent = v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm || "";
+  if (operator && agent) return `${agent} 경유 ${operator} 담당팀`;
+  if (agent) return `${agent} 대리점/신고업체`;
+  if (operator) return `${operator} 운영선사 담당팀`;
+  return "대리점/운영선사 확인 필요";
+}
+
+function deriveRecommendedDepartment(v = {}) {
+  const action = v.recommended_action || v.recommended_next_action || "";
+  const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+  if (/견적|선체|biofouling|cii|performance|technical|벌크|탱커|container|bulk|tanker|pctc|cruise/.test(`${action} ${type}`)) return "Technical / Fleet Management";
+  if (/eta|스케줄|도선|출항|입항|operation|ops/.test(action)) return "Operations";
+  if (/대리점|agent/.test(action)) return "Port Agent / Operations";
+  return "Operations / Technical";
+}
+
+function deriveRecommendedFollowupDate(v = {}) {
+  const now = Date.now();
+  const arrivalWindow = Number(v.predicted_arrival_window_hours);
+  const workWindow = Number(v.work_window_hours || v.predicted_work_window_hours || 0);
+  const action = v.recommended_action || v.recommended_next_action || "";
+  const days = /출항 전|견적 발송/.test(action) || workWindow > 0
+    ? 1
+    : Number.isFinite(arrivalWindow) && arrivalWindow > 48
+      ? Math.max(1, Math.min(5, Math.floor((arrivalWindow - 48) / 24)))
+      : Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD
+        ? 1
+        : 3;
+  return new Date(now + days * 86400000).toISOString().slice(0, 10);
+}
+
+function deriveRecommendedEmailDraft(v = {}) {
+  const vessel = v.vessel_name || "해당 선박";
+  const port = v.port_name || v.port || "한국 항만";
+  const why = v.why_now || deriveWhyNow(v);
+  const action = v.recommended_action || v.recommended_next_action || "선박 스케줄 확인";
+  const contactPath = v.recommended_contact_path || deriveRecommendedContactPath(v);
+  return `안녕하세요, HullWiper Korea입니다.\n\n${vessel} 관련하여 ${port} 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\n${why}\n\n권장 다음 단계: ${action}\n연락 경로: ${contactPath}\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.`;
+}
+
 function deriveLeadTimeline(v = {}, metrics = {}) {
   return [
     { label: "ETA", value: v.eta || v.eta_candidate || null, source: v.eta_source || (v.eta_candidate ? "pilot_schedule" : "") },
@@ -1642,6 +1684,8 @@ function deriveLeadPipelineFields(v = {}, metrics = {}) {
   );
   const autoLeadCreated = commercialValueScore >= IMMEDIATE_TARGET_THRESHOLD;
   const recommendedAction = deriveRecommendedNextAction(v, leadPriorityScore);
+  const copilotContext = { ...v, recommended_action: recommendedAction, recommended_next_action: recommendedAction };
+  const recommendedContactPath = deriveRecommendedContactPath(copilotContext);
   return {
     work_feasibility_score: workFeasibilityScore,
     lead_priority_score: leadPriorityScore,
@@ -1654,6 +1698,10 @@ function deriveLeadPipelineFields(v = {}, metrics = {}) {
     recommended_next_action: recommendedAction,
     recommended_action: recommendedAction,
     action_priority: deriveActionPriority(v, recommendedAction),
+    recommended_contact_path: recommendedContactPath,
+    recommended_department: deriveRecommendedDepartment(copilotContext),
+    recommended_email_draft: deriveRecommendedEmailDraft({ ...copilotContext, recommended_contact_path: recommendedContactPath }),
+    recommended_followup_date: deriveRecommendedFollowupDate(copilotContext),
     lead_timeline: deriveLeadTimeline(v, metrics),
     ...derivePredictionAccuracy(v),
     alert_candidate: isAlertCandidate(v),
