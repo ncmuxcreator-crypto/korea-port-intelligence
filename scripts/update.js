@@ -1618,6 +1618,15 @@ function buildPortIntelligence(records) {
       scored_count: 0,
       candidate_count: 0,
       immediate_target_count: 0,
+      high_value_vessels: 0,
+      anchorage_waiting: 0,
+      work_window_hours_total: 0,
+      work_window_count: 0,
+      operator_known_count: 0,
+      agent_known_count: 0,
+      port_opportunity_score: 0,
+      operator_quality: 0,
+      work_window_hours: 0,
       all_vessels: [],
       scored_vessels: [],
       sales_candidates: [],
@@ -1638,17 +1647,48 @@ function buildPortIntelligence(records) {
       current.immediate_target_count += 1;
       current.immediate_targets.push(v);
     }
+    const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+    if (score >= 75 || Number(v.gt || 0) >= 30000 || v.high_value_target) current.high_value_vessels += 1;
+    if (v.is_anchorage_waiting || Number(v.anchorage_hours || 0) > 0 || String(v.status_bucket || "").includes("anchorage")) current.anchorage_waiting += 1;
+    if (Number(v.work_window_hours || v.predicted_work_window_hours || 0) > 0) {
+      current.work_window_hours_total += Number(v.work_window_hours || v.predicted_work_window_hours || 0);
+      current.work_window_count += 1;
+    }
+    if (v.operator_name || v.operator) current.operator_known_count += 1;
+    if (v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) current.agent_known_count += 1;
     if (v.berth) current.berths.push({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd });
     byPort.set(key, current);
   }
   return [...byPort.values()].map(port => ({
     ...port,
+    work_window_hours: port.work_window_count ? Math.round((port.work_window_hours_total / port.work_window_count) * 10) / 10 : 0,
+    average_work_window_hours: port.work_window_count ? Math.round((port.work_window_hours_total / port.work_window_count) * 10) / 10 : 0,
+    operator_quality: port.vessel_count ? Math.round(((port.operator_known_count * 0.65 + port.agent_known_count * 0.35) / port.vessel_count) * 100) : 0,
+    port_opportunity_score: Math.min(100, Math.round(
+      Math.min(35, port.high_value_vessels * 7) +
+      Math.min(25, port.anchorage_waiting * 6) +
+      Math.min(20, (port.work_window_count ? port.work_window_hours_total / port.work_window_count : 0) * 0.8) +
+      Math.min(15, (port.vessel_count ? ((port.operator_known_count * 0.65 + port.agent_known_count * 0.35) / port.vessel_count) * 100 : 0) * 0.15) +
+      Math.min(10, port.immediate_target_count * 5)
+    )),
     all_vessels: sortCommercialPriority(port.all_vessels),
     scored_vessels: sortCommercialPriority(port.scored_vessels),
     sales_candidates: sortCommercialPriority(dedupeCandidateRows(port.sales_candidates)),
     immediate_targets: sortCommercialPriority(dedupeCandidateRows(port.immediate_targets)),
     berths: port.berths.slice(0, 100)
   })).sort((a, b) => b.immediate_target_count - a.immediate_target_count || b.candidate_count - a.candidate_count || b.vessel_count - a.vessel_count);
+}
+
+function buildPortOpportunityRanking(records = []) {
+  return buildPortIntelligence(records)
+    .map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port)
+    .sort((a, b) =>
+      b.port_opportunity_score - a.port_opportunity_score ||
+      b.immediate_target_count - a.immediate_target_count ||
+      b.high_value_vessels - a.high_value_vessels ||
+      b.anchorage_waiting - a.anchorage_waiting ||
+      b.candidate_count - a.candidate_count
+    );
 }
 
 function dataQualityTier(v) {
@@ -3318,6 +3358,7 @@ try {
   const portCongestionHeatmap = buildPortCongestionHeatmap(vessels);
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
   const portIntelligence = buildPortIntelligence(vessels);
+  const portOpportunities = buildPortOpportunityRanking(vessels);
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
@@ -3383,6 +3424,8 @@ try {
     backend_health: buildBackendHealth(vessels, detectSecrets(), baseReport),
     commercial_command_center: commercialCommandCenter,
     hot_vessel_count: hotVessels.length,
+    port_opportunities: portOpportunities.slice(0, 10),
+    today_port_opportunities: portOpportunities.slice(0, 5),
     port_intelligence: portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
     port_congestion_heatmap: portCongestionHeatmap,
     biofouling_timeline: biofoulingTimeline,
@@ -3446,6 +3489,7 @@ try {
   fs.writeFileSync("dashboard/api/hot-candidates.json", JSON.stringify(candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), null, 2));
   fs.writeFileSync("dashboard/api/hot-vessels.json", JSON.stringify(hotVessels, null, 2));
   fs.writeFileSync("dashboard/api/ports.json", JSON.stringify(portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), null, 2));
+  fs.writeFileSync("dashboard/api/port-opportunities.json", JSON.stringify(portOpportunities, null, 2));
   fs.writeFileSync("dashboard/api/coverage-registry.json", JSON.stringify({
     generated_at: completedAt,
     data_mode: report.data_mode,
