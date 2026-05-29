@@ -92,11 +92,12 @@ function deriveContactReadinessScore(v = {}) {
 
 function sortCommercialPriority(records) {
   return records.slice().sort((a, b) =>
-    Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
     commercialScore(b) - commercialScore(a) ||
+    Number(b.is_immediate_candidate) - Number(a.is_immediate_candidate) ||
     deriveCongestionScore(b) - deriveCongestionScore(a) ||
     (b.data_confidence_score || 0) - (a.data_confidence_score || 0) ||
-    (b.biofouling_score || b.biofouling_risk_score || 0) - (a.biofouling_score || a.biofouling_risk_score || 0)
+    (b.biofouling_score || b.biofouling_risk_score || 0) - (a.biofouling_score || a.biofouling_risk_score || 0) ||
+    candidateTimestamp(b) - candidateTimestamp(a)
   );
 }
 
@@ -185,6 +186,48 @@ function highScoreVisibilityAudit(records = [], threshold = 93) {
     hidden_high_score_examples: hiddenHighScoreRows.slice(0, 12).map(highScoreAuditRow),
     excluded_high_score_examples: excludedHighScoreRows.slice(0, 12).map(highScoreAuditRow),
     deduped_high_score_groups: dedupedGroups
+  };
+}
+
+function compactRankRow(v = {}, rank = 0) {
+  return {
+    rank,
+    vessel_name: v.vessel_name || v.name || "",
+    port: v.port_name || v.port || "",
+    port_code: v.port_code || portCodeFromName(v.port || v.port_name),
+    score: commercialScore(v),
+    congestion_score: deriveCongestionScore(v),
+    data_confidence_score: Number(v.data_confidence_score || 0),
+    gt: Number(v.gt || v.grtg || v.intrlGrtg || 0),
+    status_bucket: v.status_bucket || "",
+    candidate_band: v.candidate_band || scoreLevel(commercialScore(v)),
+    key: candidateDedupeKey(v),
+    exclusion_reason: exclusionReason(v) || ""
+  };
+}
+
+function commercialRankingAudit(records = []) {
+  const usefulRows = records.filter(v => !isSyntheticSample(v) && hasUsefulVesselIdentity(v));
+  const sourceRanked = sortCommercialPriority(usefulRows);
+  const targetRanked = vesselGroupRows(records, "target");
+  const immediateRanked = sortCommercialPriority(dedupeCandidateRows(targetRanked.filter(isImmediateTarget)));
+  const targetKeys = new Set(targetRanked.map(candidateDedupeKey));
+  const sourceTopKeys = new Set(sourceRanked.slice(0, 20).map(candidateDedupeKey));
+  const missingFromTargetTop = sourceRanked
+    .slice(0, 20)
+    .filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !targetKeys.has(candidateDedupeKey(v)))
+    .map((v, index) => compactRankRow(v, index + 1));
+  return {
+    ranking_rule: "commercial_value_score desc, then immediate flag, congestion score, data confidence, biofouling score, latest timestamp",
+    source_top_score: commercialScore(sourceRanked[0] || {}),
+    target_top_score: commercialScore(targetRanked[0] || {}),
+    immediate_top_score: commercialScore(immediateRanked[0] || {}),
+    source_top_20_count: sourceTopKeys.size,
+    source_top_20_missing_from_target_count: missingFromTargetTop.length,
+    source_top_10: sourceRanked.slice(0, 10).map((v, i) => compactRankRow(v, i + 1)),
+    target_top_10: targetRanked.slice(0, 10).map((v, i) => compactRankRow(v, i + 1)),
+    immediate_top_10: immediateRanked.slice(0, 10).map((v, i) => compactRankRow(v, i + 1)),
+    missing_from_target_top_examples: missingFromTargetTop.slice(0, 10)
   };
 }
 
@@ -1419,7 +1462,12 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
     const result = typeof av === "number" && typeof bv === "number"
       ? av - bv
       : String(av).localeCompare(String(bv), "ko");
-    return sortDir === "asc" ? result : -result;
+    const primary = sortDir === "asc" ? result : -result;
+    return primary ||
+      commercialScore(b) - commercialScore(a) ||
+      deriveCongestionScore(b) - deriveCongestionScore(a) ||
+      Number(b.data_confidence_score || 0) - Number(a.data_confidence_score || 0) ||
+      candidateTimestamp(b) - candidateTimestamp(a);
   });
   const start = (page - 1) * pageSize;
   return {
@@ -1777,6 +1825,7 @@ function buildStatus(records, source) {
     count_funnel: countFunnel,
     scoring_diagnostics: buildScoringDiagnostics(records),
     high_score_visibility_audit: highScoreVisibilityAudit(records, 93),
+    commercial_ranking_audit: commercialRankingAudit(records),
     operator_diagnostics: buildOperatorDiagnostics(records, buckets),
     frontend_poll_interval_seconds: 900,
     source_runtime: {
@@ -1839,6 +1888,9 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/review/basic-info-missing.json")) return json(buildBasicInfoMissing(records), { headers: corsHeaders() });
   if (pathname.endsWith("/quality/high-score-visibility-audit.json")) {
     return json(highScoreVisibilityAudit(allRecords, Number(searchParams.get("threshold") || 93)), { headers: corsHeaders() });
+  }
+  if (pathname.endsWith("/quality/commercial-ranking-audit.json")) {
+    return json(commercialRankingAudit(allRecords), { headers: corsHeaders() });
   }
   if (pathname === "/api/vessels.csv" || pathname.endsWith("/vessels.csv")) {
     const group = String(searchParams.get("group") || "target").toLowerCase();
