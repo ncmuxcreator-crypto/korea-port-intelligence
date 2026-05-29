@@ -1325,6 +1325,45 @@ export async function saveToSupabase(records, options = {}) {
         Math.min(10, row.ports.size * 3) +
         Math.min(10, row.contact_score_total / Math.max(1, row.contact_score_count) / 10)
       )),
+      fleet_cleaning_probability: Math.min(100, Math.round(
+        (row.contact_score_count ? Math.round((row.biofouling_total || 0) / row.contact_score_count) : 0) * 0.28 +
+        (row.contact_score_count ? Math.round((row.congestion_total || 0) / row.contact_score_count) : 0) * 0.18 +
+        (Math.min(100, Number(row.top_vessels[0]?.repeat_operator_score || 0) || (row.operator_call_count >= 5 ? 30 : row.operator_call_count >= 3 ? 20 : row.operator_call_count >= 2 ? 10 : 0))) * 0.16 +
+        (row.contact_score_count ? Math.round((row.route_exposure_total || 0) / row.contact_score_count) : 0) * 0.12 +
+        Math.min(14, row.target_vessel_count * 4) +
+        Math.min(10, row.immediate_target_count * 5) +
+        Math.min(8, row.vessels.size * 2) +
+        Math.min(6, row.ports.size * 2)
+      )),
+      fleet_cleaning_probability_band: Math.min(100, Math.round(
+        (row.contact_score_count ? Math.round((row.biofouling_total || 0) / row.contact_score_count) : 0) * 0.28 +
+        (row.contact_score_count ? Math.round((row.congestion_total || 0) / row.contact_score_count) : 0) * 0.18 +
+        (Math.min(100, Number(row.top_vessels[0]?.repeat_operator_score || 0) || (row.operator_call_count >= 5 ? 30 : row.operator_call_count >= 3 ? 20 : row.operator_call_count >= 2 ? 10 : 0))) * 0.16 +
+        (row.contact_score_count ? Math.round((row.route_exposure_total || 0) / row.contact_score_count) : 0) * 0.12 +
+        Math.min(14, row.target_vessel_count * 4) +
+        Math.min(10, row.immediate_target_count * 5) +
+        Math.min(8, row.vessels.size * 2) +
+        Math.min(6, row.ports.size * 2)
+      )) >= 80 ? "VERY_HIGH" : Math.min(100, Math.round(
+        (row.contact_score_count ? Math.round((row.biofouling_total || 0) / row.contact_score_count) : 0) * 0.28 +
+        (row.contact_score_count ? Math.round((row.congestion_total || 0) / row.contact_score_count) : 0) * 0.18 +
+        (Math.min(100, Number(row.top_vessels[0]?.repeat_operator_score || 0) || (row.operator_call_count >= 5 ? 30 : row.operator_call_count >= 3 ? 20 : row.operator_call_count >= 2 ? 10 : 0))) * 0.16 +
+        (row.contact_score_count ? Math.round((row.route_exposure_total || 0) / row.contact_score_count) : 0) * 0.12 +
+        Math.min(14, row.target_vessel_count * 4) +
+        Math.min(10, row.immediate_target_count * 5) +
+        Math.min(8, row.vessels.size * 2) +
+        Math.min(6, row.ports.size * 2)
+      )) >= 65 ? "HIGH" : Math.min(100, Math.round(
+        (row.contact_score_count ? Math.round((row.biofouling_total || 0) / row.contact_score_count) : 0) * 0.28 +
+        (row.contact_score_count ? Math.round((row.congestion_total || 0) / row.contact_score_count) : 0) * 0.18 +
+        (Math.min(100, Number(row.top_vessels[0]?.repeat_operator_score || 0) || (row.operator_call_count >= 5 ? 30 : row.operator_call_count >= 3 ? 20 : row.operator_call_count >= 2 ? 10 : 0))) * 0.16 +
+        (row.contact_score_count ? Math.round((row.route_exposure_total || 0) / row.contact_score_count) : 0) * 0.12 +
+        Math.min(14, row.target_vessel_count * 4) +
+        Math.min(10, row.immediate_target_count * 5) +
+        Math.min(8, row.vessels.size * 2) +
+        Math.min(6, row.ports.size * 2)
+      )) >= 45 ? "MEDIUM" : "LOW",
+      forecast_window_days: 30,
       contact_readiness_avg: row.contact_score_count ? Math.round(row.contact_score_total / row.contact_score_count) : 0,
       fleet_alert: row.immediate_target_count >= 2 || row.target_vessel_count >= 4 ? "HIGH_FLEET_OPPORTUNITY" : null,
       fleet_alerts: row.immediate_target_count >= 2 || row.target_vessel_count >= 4 ? ["HIGH_FLEET_OPPORTUNITY"] : [],

@@ -941,6 +941,10 @@ alter table operator_fleet_opportunities add column if not exists route_exposure
 alter table operator_fleet_opportunities add column if not exists operator_quality_score int default 0;
 alter table operator_fleet_opportunities add column if not exists fleet_alert text;
 alter table operator_fleet_opportunities add column if not exists fleet_alerts jsonb default '[]'::jsonb;
+alter table operator_fleet_opportunities add column if not exists fleet_cleaning_probability int default 0;
+alter table operator_fleet_opportunities add column if not exists fleet_cleaning_probability_band text;
+alter table operator_fleet_opportunities add column if not exists forecast_window_days int default 30;
+create index if not exists idx_operator_fleet_cleaning_probability on operator_fleet_opportunities(fleet_cleaning_probability desc);
 alter table predicted_arrivals add column if not exists predicted_congestion_score int default 0;
 alter table predicted_arrivals add column if not exists congestion_forecast_band text;
 alter table predicted_arrivals add column if not exists anchorage_probability int default 0;

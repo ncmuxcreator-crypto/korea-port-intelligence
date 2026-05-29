@@ -648,6 +648,38 @@ function repeatScoreFromCalls(count = 0) {
   return 0;
 }
 
+function fleetCleaningProbability({
+  averageBiofoulingExposure = 0,
+  averageCongestionExposure = 0,
+  repeatOperatorScore = 0,
+  routeExposureScore = 0,
+  targetVesselCount = 0,
+  immediateTargetCount = 0,
+  operatorVesselCount = 0,
+  operatorPortCount = 0,
+  operatorQualityScore = 0
+} = {}) {
+  return boundedScore(
+    Number(averageBiofoulingExposure || 0) * 0.28 +
+    Number(averageCongestionExposure || 0) * 0.18 +
+    Number(repeatOperatorScore || 0) * 0.16 +
+    Number(routeExposureScore || 0) * 0.12 +
+    Math.min(14, Number(targetVesselCount || 0) * 4) +
+    Math.min(10, Number(immediateTargetCount || 0) * 5) +
+    Math.min(8, Number(operatorVesselCount || 0) * 2) +
+    Math.min(6, Number(operatorPortCount || 0) * 2) +
+    Number(operatorQualityScore || 0) * 0.04
+  );
+}
+
+function fleetCleaningProbabilityBand(probability = 0) {
+  const value = Number(probability || 0);
+  if (value >= 80) return "VERY_HIGH";
+  if (value >= 65) return "HIGH";
+  if (value >= 45) return "MEDIUM";
+  return "LOW";
+}
+
 function buildFleetOpportunityRows(records = []) {
   const map = new Map();
   for (const record of records.filter(v => !isDepartedRecord(v))) {
@@ -720,8 +752,20 @@ function buildFleetOpportunityRows(records = []) {
         Math.min(12, routeExposureScore * 0.12) +
         Math.min(10, operatorQualityScore * 0.10)
       );
+      const cleaningProbability = fleetCleaningProbability({
+        averageBiofoulingExposure,
+        averageCongestionExposure,
+        repeatOperatorScore,
+        routeExposureScore,
+        targetVesselCount: fleet.target_vessels,
+        immediateTargetCount: fleet.immediate_targets,
+        operatorVesselCount,
+        operatorPortCount,
+        operatorQualityScore
+      });
       const alertCodes = [];
       if (fleetOpportunityScore >= 70 || fleet.immediate_targets >= 2 || fleet.target_vessels >= 4) alertCodes.push("HIGH_FLEET_OPPORTUNITY");
+      if (cleaningProbability >= 65) alertCodes.push("FLEET_CLEANING_DEMAND_30D");
       const topVessels = sortCommercialPriority(fleet.top_vessels).slice(0, 5).map(v => ({
         vessel_name: v.vessel_name,
         port_name: v.port_name || v.port,
@@ -739,6 +783,9 @@ function buildFleetOpportunityRows(records = []) {
         operator_port_count: operatorPortCount,
         repeat_operator_score: repeatOperatorScore,
         fleet_opportunity_score: fleetOpportunityScore,
+        fleet_cleaning_probability: cleaningProbability,
+        fleet_cleaning_probability_band: fleetCleaningProbabilityBand(cleaningProbability),
+        forecast_window_days: 30,
         average_commercial_value: averageCommercialValue,
         average_biofouling_exposure: averageBiofoulingExposure,
         average_congestion_exposure: averageCongestionExposure,
@@ -749,13 +796,14 @@ function buildFleetOpportunityRows(records = []) {
         contact_ready_count: fleet.contact_ready,
         route_concentration_count: fleet.route_regions.size,
         top_vessels: topVessels,
-        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 평균 상업가치 ${averageCommercialValue}점, 평균 Biofouling Exposure ${averageBiofoulingExposure}점입니다.`,
-        recommended_action: fleet.contact_ready > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
+        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 30일 세척 수요 가능성은 ${cleaningProbability}점이며 평균 Biofouling Exposure ${averageBiofoulingExposure}점, 평균 체선노출 ${averageCongestionExposure}점입니다.`,
+        recommended_action: cleaningProbability >= 65 ? "30일 선대 세척 수요 사전 제안" : fleet.contact_ready > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
       };
     })
     .filter(row => row.current_vessel_count >= 2 || row.target_vessel_count > 0 || row.fleet_opportunity_score >= 20)
     .sort((a, b) =>
       Number(b.fleet_opportunity_score || 0) - Number(a.fleet_opportunity_score || 0) ||
+      Number(b.fleet_cleaning_probability || 0) - Number(a.fleet_cleaning_probability || 0) ||
       Number(b.immediate_target_count || 0) - Number(a.immediate_target_count || 0) ||
       Number(b.target_vessel_count || 0) - Number(a.target_vessel_count || 0) ||
       Number(b.current_vessel_count || 0) - Number(a.current_vessel_count || 0)
@@ -4102,7 +4150,7 @@ try {
     backend_health: buildBackendHealth(vessels, detectSecrets(), baseReport),
     commercial_command_center: commercialCommandCenter,
     contact_ready_vessels: contactReadyVessels.slice(0, 10),
-    fleet_opportunities: fleetOpportunities.slice(0, 10),
+    fleet_opportunities: fleetOpportunities.slice(0, 20),
     predicted_cleaning_opportunities: predictedCleaningOpportunities.slice(0, 10),
     predicted_arrivals: arrivalPipeline.slice(0, 10),
     hot_vessel_count: hotVessels.length,
