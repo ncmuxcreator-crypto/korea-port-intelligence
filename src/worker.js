@@ -95,19 +95,28 @@ function deriveSalesAccessibilityScore(v = {}) {
   if (source === "vessel_name_prefix" && confidence >= 70) return 3;
   if (source === "agent_dictionary") return 2;
   if (source === "agent_heuristic") return 1;
-  if (hasValue(v.operator_name || v.operator)) return 2;
-  if (hasValue(v.agent_name || v.agent)) return 1;
-  return 0;
+  const raw = Number(v.contact_intelligence_score ?? (
+    (hasValue(v.operator_name || v.operator) ? 3 : 0) +
+    (hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) ? 2 : 0) +
+    (v.contact_path_available ? 3 : 0)
+  ));
+  return Math.min(5, Math.max(0, Math.round(raw)));
 }
 
 function deriveContactReadinessScore(v = {}) {
   const accessibility = deriveSalesAccessibilityScore(v);
+  const rawContactScore = Number(v.contact_intelligence_score ?? (
+    (hasValue(v.operator_name || v.operator) ? 3 : 0) +
+    (hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) ? 2 : 0) +
+    (v.contact_path_available ? 3 : 0)
+  ));
   const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone);
   const repeatSignal = Number(v.repeat_operator_score || v.repeat_caller_score || 0) > 0 ? 5 : 0;
   return Math.min(100, Math.round(
     (accessibility / 5) * 55 +
     (hasValue(v.agent_name || v.agent || v.satmntEntrpsNm || v.entrpsCdNm) ? 35 : 0) +
     (companyContactAvailable ? 10 : 0) +
+    Math.min(10, rawContactScore) +
     repeatSignal +
     (hasValue(v.manager_name || v.manager) ? 5 : 0) +
     (hasValue(v.owner_name || v.owner) ? 5 : 0)
@@ -398,6 +407,11 @@ function normalizeSnapshot(row = {}) {
     predicted_arrival_window_hours: Number(merged.predicted_arrival_window_hours || 0),
     predicted_arrival_pipeline: Boolean(merged.predicted_arrival_pipeline),
     arrival_prediction_source: merged.arrival_prediction_source || "",
+    contact_intelligence_score: Number(merged.contact_intelligence_score ?? (
+      (merged.operator_name || merged.operator ? 3 : 0) +
+      (merged.agent_name || merged.agent || merged.satmntEntrpsNm || merged.entrpsCdNm ? 2 : 0) +
+      (merged.contact_path_available ? 3 : 0)
+    )),
     sales_accessibility_score: Number(merged.sales_accessibility_score || deriveSalesAccessibilityScore(merged)),
     contact_readiness_score: Number(merged.contact_readiness_score || deriveContactReadinessScore(merged)),
     biosecurity_exposure_score: Number(merged.biosecurity_exposure_score || 0),

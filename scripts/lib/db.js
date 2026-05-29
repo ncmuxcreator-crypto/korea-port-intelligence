@@ -431,6 +431,7 @@ export async function saveToSupabase(records, options = {}) {
     manager_name: r.manager_name || null,
     owner_name: r.owner_name || null,
     contact_readiness_score: Number(r.contact_readiness_score || 0),
+    contact_intelligence_score: Number(r.contact_intelligence_score || 0),
     contact_path_available: Boolean(r.contact_path_available || r.operator_name || r.operator || r.agent_name || r.agent),
     operator_website: r.operator_website || r.operator_url || null,
     operator_email: r.operator_email || null,
@@ -699,6 +700,25 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  for (let index = 0; index < agentOperatorLinks.length; index += batchSize) {
+    const batch = agentOperatorLinks.slice(index, index + batchSize).map(row => ({
+      mapping_id: row.link_id,
+      agent_id: row.agent_id,
+      operator_id: row.operator_id,
+      agent_name: row.agent_name,
+      operator_name: row.operator_name,
+      agent_normalized: row.agent_normalized,
+      operator_normalized: row.operator_normalized,
+      source: row.source,
+      confidence: row.confidence,
+      inferred: row.inferred,
+      last_seen: row.last_seen,
+      payload: row.payload
+    }));
+    const { error } = await supabase.from("agent_operator_mapping").upsert(batch, { onConflict: "agent_normalized,operator_normalized,source" });
+    if (error) throw error;
+  }
+
   const contactRows = uniqueBy(records
     .flatMap(r => {
       const out = [];
@@ -772,6 +792,15 @@ export async function saveToSupabase(records, options = {}) {
   for (let index = 0; index < operatorHistoryRows.length; index += batchSize) {
     const batch = operatorHistoryRows.slice(index, index + batchSize);
     const { error } = await supabase.from("vessel_operator_history").upsert(batch, { onConflict: "history_id" });
+    if (error) throw error;
+  }
+
+  for (let index = 0; index < operatorHistoryRows.length; index += batchSize) {
+    const batch = operatorHistoryRows.slice(index, index + batchSize).map(row => ({
+      ...row,
+      contact_path_available: Boolean(row.payload?.contact_path_available || row.operator_name || row.agent_name)
+    }));
+    const { error } = await supabase.from("operator_history").upsert(batch, { onConflict: "history_id" });
     if (error) throw error;
   }
 
@@ -1173,7 +1202,9 @@ export async function saveToSupabase(records, options = {}) {
     operatorRowsSaved: operatorRows.length,
     agentRowsSaved: agentRows.length,
     agentOperatorLinksSaved: agentOperatorLinks.length,
+    agentOperatorMappingRowsSaved: agentOperatorLinks.length,
     vesselOperatorHistoryRowsSaved: operatorHistoryRows.length,
+    operatorHistoryRowsSaved: operatorHistoryRows.length,
     routePatternRowsSaved: routePatternRows.length,
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,

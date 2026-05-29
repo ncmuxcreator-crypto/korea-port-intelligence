@@ -174,6 +174,7 @@ alter table vessel_snapshots add column if not exists agent_source text;
 alter table vessel_snapshots add column if not exists manager_name text;
 alter table vessel_snapshots add column if not exists owner_name text;
 alter table vessel_snapshots add column if not exists contact_readiness_score int default 0;
+alter table vessel_snapshots add column if not exists contact_intelligence_score int default 0;
 alter table vessel_snapshots add column if not exists contact_path_available boolean default false;
 alter table vessel_snapshots add column if not exists operator_website text;
 alter table vessel_snapshots add column if not exists operator_email text;
@@ -333,6 +334,23 @@ create table if not exists agent_operator_links (
   unique(agent_normalized, operator_normalized, source)
 );
 
+create table if not exists agent_operator_mapping (
+  mapping_id text primary key,
+  agent_id text,
+  operator_id text,
+  agent_name text,
+  operator_name text,
+  agent_normalized text not null,
+  operator_normalized text not null,
+  source text,
+  confidence int default 0,
+  inferred boolean default true,
+  first_seen timestamptz default now(),
+  last_seen timestamptz default now(),
+  payload jsonb default '{}'::jsonb,
+  unique(agent_normalized, operator_normalized, source)
+);
+
 create table if not exists contact_master (
   contact_id text primary key,
   company_name text not null,
@@ -366,6 +384,27 @@ create table if not exists vessel_operator_history (
   agent_normalized text,
   agent_source text,
   contact_readiness_score int default 0,
+  collected_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create table if not exists operator_history (
+  history_id text primary key,
+  run_id text,
+  master_vessel_id text,
+  hybrid_entity_key text,
+  vessel_name text,
+  port_code text,
+  operator_name text,
+  operator_normalized text,
+  operator_inferred boolean default false,
+  operator_confidence int default 0,
+  operator_source text,
+  agent_name text,
+  agent_normalized text,
+  agent_source text,
+  contact_readiness_score int default 0,
+  contact_path_available boolean default false,
   collected_at timestamptz default now(),
   payload jsonb default '{}'::jsonb
 );
@@ -722,6 +761,13 @@ create index if not exists idx_data_collection_runs_status on data_collection_ru
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
 create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
+alter table enrichment_match_candidates add column if not exists source_name text;
+alter table enrichment_match_candidates add column if not exists source_row_id text;
+alter table enrichment_match_candidates add column if not exists snapshot_id text;
+alter table enrichment_match_candidates add column if not exists confidence text;
+alter table enrichment_match_candidates add column if not exists matched_fields jsonb default '{}'::jsonb;
+alter table enrichment_match_candidates add column if not exists raw_source_payload jsonb default '{}'::jsonb;
+alter table enrichment_match_candidates add column if not exists created_at timestamptz default now();
 create index if not exists idx_enrichment_match_candidates_run_id on enrichment_match_candidates(run_id);
 create index if not exists idx_enrichment_match_candidates_score on enrichment_match_candidates(match_score desc);
 create index if not exists idx_enrichment_match_candidates_source_name on enrichment_match_candidates(source_name);

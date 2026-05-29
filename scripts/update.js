@@ -630,6 +630,7 @@ function inferOperatorInfo(v = {}) {
   const companyContactAvailable = hasValue(v.operator_website || v.operator_url || v.agent_website || v.agent_url || v.operator_email || v.agent_email || v.operator_phone || v.agent_phone || v.contact_email || v.contact_phone);
   const repeatSignal = Number(v.repeat_operator_score || v.repeat_caller_score || 0) > 0 ? 5 : 0;
   const contactPathAvailable = Boolean(operatorName || currentAgent || companyContactAvailable);
+  const contactIntelligenceScore = (operatorName ? 3 : 0) + (currentAgent ? 2 : 0) + (contactPathAvailable ? 3 : 0);
   const contactReadinessScore = Math.min(100, Math.round(
     (operatorName ? Math.min(55, 20 + Number(operatorConfidence || 0) * 0.35) : 0) +
     (currentAgent ? 35 : 0) +
@@ -658,6 +659,7 @@ function inferOperatorInfo(v = {}) {
     manager_name: manager || "",
     owner_name: owner || "",
     contact_path_available: contactPathAvailable,
+    contact_intelligence_score: contactIntelligenceScore,
     contact_readiness_score: contactReadinessScore
   };
 }
@@ -759,7 +761,8 @@ function deriveCommercialScoreParts(v, metrics) {
   const gtBonus = gt >= 150000 ? 10 : gt >= 80000 ? 8 : gt >= 30000 ? 5 : meetsCommercialGtThreshold ? 2 : 0;
   const typeBonus = /lng|lpg/.test(type) ? 4 : isBulkTankerPctc || /container|cruise/.test(type) ? 5 : /general|cargo|일반화물/.test(type) ? 2 : 0;
   const vesselValueScore = Math.min(20, Math.max(0, Math.round(gtBonus + typeBonus + Math.min(3, configuredCommercialFit) - (isExcludedType ? 10 : 0))));
-  const salesAccessibilityScore = Math.min(5, Math.round((v.operator ? 3 : 0) + (v.agent ? 2 : 0) + (v.contact_path_available ? 3 : 0), 0));
+  const contactIntelligenceScore = Number(v.contact_intelligence_score ?? ((v.operator ? 3 : 0) + (v.agent ? 2 : 0) + (v.contact_path_available ? 3 : 0)));
+  const salesAccessibilityScore = Math.min(5, Math.round(contactIntelligenceScore));
   const dataCompletenessAssistScore = Math.min(10, Math.round(Number(v.vessel_basic_info_completeness_score || v.data_confidence_score || 0) / 10));
   const total = vesselValueScore + cleaningWindowScore + biofoulingRiskScore + congestionExposureScore + performanceProxyScore + compliancePressureScore + salesAccessibilityScore + dataCompletenessAssistScore;
   const reasonCodes = [];
@@ -805,6 +808,7 @@ function deriveCommercialScoreParts(v, metrics) {
     cleaning_window_score: cleaningWindowScore,
     compliance_pressure_score: compliancePressureScore,
     sales_accessibility_score: salesAccessibilityScore,
+    contact_intelligence_score: contactIntelligenceScore,
     data_completeness_assist_score: dataCompletenessAssistScore,
     contact_readiness_score: Math.max(Number(v.contact_readiness_score || 0), Math.min(100, Math.round((operatorAccessibilityBonus / 5) * 55 + (v.agent ? 35 : 0) + (v.manager_name ? 5 : 0) + (v.owner_name ? 5 : 0)))),
     commercial_fit_score: commercialFitScore,
