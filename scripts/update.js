@@ -955,6 +955,15 @@ function hasValue(value) {
   return String(value).trim() !== "";
 }
 
+function hasUsefulVesselIdentity(v = {}) {
+  const name = String(v.vessel_name || v.name || "").trim();
+  const port = String(v.port_name || v.port || v.port_code || "").trim();
+  const identity = String(v.call_sign || v.imo || v.mmsi || v.hybrid_entity_key || v.port_call_identity || "").trim();
+  if (!name && !identity) return false;
+  if (/^korea$/i.test(port) && !name && !identity) return false;
+  return true;
+}
+
 const BASIC_INFO_FIELDS = [
   "vessel_name",
   "normalized_vessel_name",
