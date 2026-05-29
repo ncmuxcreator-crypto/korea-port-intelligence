@@ -210,6 +210,18 @@ function normalizeSnapshot(row = {}) {
     arrival_prediction_confidence: Number(merged.arrival_prediction_confidence || 0),
     predicted_congestion: Number(merged.predicted_congestion || 0),
     predicted_cleaning_window: Number(merged.predicted_cleaning_window || 0),
+    predicted_congestion_score: Number(merged.predicted_congestion_score || merged.predicted_congestion || derivePredictedCongestionScore(merged)),
+    congestion_forecast_band: merged.congestion_forecast_band || forecastBand(merged.predicted_congestion_score || merged.predicted_congestion || derivePredictedCongestionScore(merged)),
+    anchorage_probability: Number(merged.anchorage_probability || deriveAnchorageProbability(merged)),
+    predicted_work_window_hours: Number(merged.predicted_work_window_hours || merged.work_window_hours || 0),
+    work_window_confidence: Number(merged.work_window_confidence || 0),
+    repeat_caller_score: Number(merged.repeat_caller_score || 0),
+    repeat_operator_score: Number(merged.repeat_operator_score || 0),
+    low_speed_exposure: Number(merged.low_speed_exposure || 0),
+    idle_exposure: Number(merged.idle_exposure || 0),
+    anchorage_exposure: Number(merged.anchorage_exposure || 0),
+    biofouling_exposure_score: Number(merged.biofouling_exposure_score || deriveBiofoulingExposureScore(merged)),
+    predicted_cleaning_opportunity_score: Number(merged.predicted_cleaning_opportunity_score || derivePredictedCleaningOpportunityScore(merged)),
     arrival_opportunity_score: Number(merged.arrival_opportunity_score || 0),
     predicted_arrival_window_hours: Number(merged.predicted_arrival_window_hours || 0),
     predicted_arrival_pipeline: Boolean(merged.predicted_arrival_pipeline),
@@ -469,7 +481,57 @@ function deriveLeadPriorityScore(v = {}, parts = {}) {
     Number(parts.commercialValueScore ?? commercialScore(v)) * 0.45 +
     Number(parts.contactReadinessScore ?? v.contact_readiness_score ?? deriveContactReadinessScore(v)) * 0.2 +
     Number(parts.workFeasibilityScore ?? v.work_feasibility_score ?? deriveWorkFeasibilityScore(v)) * 0.2 +
-    Number(parts.arrivalOpportunityScore ?? v.arrival_opportunity_score ?? 0) * 0.15
+    Math.max(Number(parts.arrivalOpportunityScore ?? v.arrival_opportunity_score ?? 0), Number(v.predicted_cleaning_opportunity_score || 0)) * 0.15
+  );
+}
+
+function forecastBand(score) {
+  const value = Number(score || 0);
+  if (value >= 75) return "high";
+  if (value >= 50) return "medium";
+  if (value >= 30) return "watch";
+  return "low";
+}
+
+function derivePredictedCongestionScore(v = {}) {
+  return boundedScore(
+    Number(v.predicted_congestion || v.port_congestion_score || v.congestion_score || 0) +
+    (String(v.pilot_direction || v.movement_type || "").toLowerCase() === "inbound" ? 8 : 0) -
+    (String(v.pilot_direction || v.movement_type || "").toLowerCase() === "outbound" ? 8 : 0) +
+    (Number(v.berth_occupancy_proxy || 0) >= 50 ? 10 : 0)
+  );
+}
+
+function deriveAnchorageProbability(v = {}) {
+  const type = String([v.vessel_type_group, v.vessel_type, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+  return boundedScore(
+    derivePredictedCongestionScore(v) * 0.42 +
+    Math.min(25, Number(v.anchorage_hours || 0) / 2) +
+    (/bulk|bulker|tanker|container|pctc|cruise|lng|lpg/.test(type) ? 12 : 4) +
+    (Number(v.gt || 0) >= 30000 ? 10 : Number(v.gt || 0) >= 5000 ? 6 : 0)
+  );
+}
+
+function deriveBiofoulingExposureScore(v = {}) {
+  const anchorage = boundedScore(Math.min(70, Number(v.anchorage_hours || 0) * 1.2) + (v.is_anchorage_waiting ? 20 : 0));
+  const idle = boundedScore(Math.min(55, Number(v.stay_hours || v.current_call_stay_hours || 0) / 2) + Math.min(35, Number(v.anchorage_hours || 0) / 2));
+  return boundedScore(
+    anchorage * 0.32 +
+    idle * 0.24 +
+    Math.min(25, Number(v.stay_hours || v.current_call_stay_hours || 0) / 4) +
+    Number(v.biosecurity_exposure_score || 0) * 0.16 +
+    derivePredictedCongestionScore(v) * 0.16
+  );
+}
+
+function derivePredictedCleaningOpportunityScore(v = {}) {
+  return boundedScore(
+    commercialScore(v) * 0.28 +
+    deriveAnchorageProbability(v) * 0.18 +
+    (Number(v.predicted_work_window_hours || v.work_window_hours || 0) ? Math.min(100, Number(v.predicted_work_window_hours || v.work_window_hours || 0) * 3) : 0) * 0.16 +
+    deriveBiofoulingExposureScore(v) * 0.18 +
+    derivePredictedCongestionScore(v) * 0.14 +
+    Number(v.arrival_opportunity_score || 0) * 0.06
   );
 }
 
@@ -1061,6 +1123,15 @@ function buildPredictedArrivals(records = []) {
       arrival_opportunity_score: Number(v.arrival_opportunity_score || 0),
       predicted_congestion: Number(v.predicted_congestion || 0),
       predicted_cleaning_window: Number(v.predicted_cleaning_window || 0),
+      predicted_congestion_score: Number(v.predicted_congestion_score || 0),
+      congestion_forecast_band: v.congestion_forecast_band || "low",
+      anchorage_probability: Number(v.anchorage_probability || 0),
+      predicted_work_window_hours: Number(v.predicted_work_window_hours || 0),
+      work_window_confidence: Number(v.work_window_confidence || 0),
+      repeat_caller_score: Number(v.repeat_caller_score || 0),
+      repeat_operator_score: Number(v.repeat_operator_score || 0),
+      biofouling_exposure_score: Number(v.biofouling_exposure_score || 0),
+      predicted_cleaning_opportunity_score: Number(v.predicted_cleaning_opportunity_score || 0),
       predicted_arrival_window_hours: Number(v.predicted_arrival_window_hours || 0),
       arrival_prediction_source: v.arrival_prediction_source || "",
       route_pattern_known: Boolean(v.route_pattern_known),
@@ -1109,6 +1180,15 @@ function buildLeadPipeline(records = []) {
       contact_readiness_score: Number(v.contact_readiness_score || 0),
       work_feasibility_score: Number(v.work_feasibility_score || 0),
       arrival_opportunity_score: Number(v.arrival_opportunity_score || 0),
+      predicted_cleaning_opportunity_score: Number(v.predicted_cleaning_opportunity_score || 0),
+      anchorage_probability: Number(v.anchorage_probability || 0),
+      predicted_congestion_score: Number(v.predicted_congestion_score || 0),
+      congestion_forecast_band: v.congestion_forecast_band || "low",
+      predicted_work_window_hours: Number(v.predicted_work_window_hours || 0),
+      work_window_confidence: Number(v.work_window_confidence || 0),
+      biofouling_exposure_score: Number(v.biofouling_exposure_score || 0),
+      repeat_caller_score: Number(v.repeat_caller_score || 0),
+      repeat_operator_score: Number(v.repeat_operator_score || 0),
       lead_priority_score: Number(v.lead_priority_score || 0),
       lead_status: v.lead_status || "monitor",
       why_now: v.why_now || "",
@@ -1272,7 +1352,14 @@ function buildScoringDiagnostics(records = []) {
     route_pattern_known_count: records.filter(v => v.route_pattern_known).length,
     predicted_arrival_count: records.filter(v => v.predicted_arrival_time).length,
     predicted_arrival_pipeline_count: records.filter(v => v.predicted_arrival_pipeline).length,
-    arrival_opportunity_score_nonzero_count: records.filter(v => Number(v.arrival_opportunity_score || 0) > 0).length
+    arrival_opportunity_score_nonzero_count: records.filter(v => Number(v.arrival_opportunity_score || 0) > 0).length,
+    predicted_congestion_score_nonzero_count: records.filter(v => Number(v.predicted_congestion_score || 0) > 0).length,
+    anchorage_probability_nonzero_count: records.filter(v => Number(v.anchorage_probability || 0) > 0).length,
+    predicted_work_window_count: records.filter(v => Number(v.predicted_work_window_hours || 0) > 0).length,
+    repeat_caller_signal_count: records.filter(v => Number(v.repeat_caller_score || 0) > 0).length,
+    repeat_operator_signal_count: records.filter(v => Number(v.repeat_operator_score || 0) > 0).length,
+    biofouling_exposure_nonzero_count: records.filter(v => Number(v.biofouling_exposure_score || 0) > 0).length,
+    predicted_cleaning_opportunity_nonzero_count: records.filter(v => Number(v.predicted_cleaning_opportunity_score || 0) > 0).length
   };
 }
 

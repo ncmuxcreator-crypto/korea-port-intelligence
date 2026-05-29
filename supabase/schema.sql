@@ -176,6 +176,18 @@ alter table vessel_snapshots add column if not exists predicted_arrival_time tim
 alter table vessel_snapshots add column if not exists arrival_prediction_confidence int default 0;
 alter table vessel_snapshots add column if not exists predicted_congestion int default 0;
 alter table vessel_snapshots add column if not exists predicted_cleaning_window int default 0;
+alter table vessel_snapshots add column if not exists predicted_congestion_score int default 0;
+alter table vessel_snapshots add column if not exists congestion_forecast_band text;
+alter table vessel_snapshots add column if not exists anchorage_probability int default 0;
+alter table vessel_snapshots add column if not exists predicted_work_window_hours numeric default 0;
+alter table vessel_snapshots add column if not exists work_window_confidence int default 0;
+alter table vessel_snapshots add column if not exists repeat_caller_score int default 0;
+alter table vessel_snapshots add column if not exists repeat_operator_score int default 0;
+alter table vessel_snapshots add column if not exists low_speed_exposure int default 0;
+alter table vessel_snapshots add column if not exists idle_exposure int default 0;
+alter table vessel_snapshots add column if not exists anchorage_exposure int default 0;
+alter table vessel_snapshots add column if not exists biofouling_exposure_score int default 0;
+alter table vessel_snapshots add column if not exists predicted_cleaning_opportunity_score int default 0;
 alter table vessel_snapshots add column if not exists arrival_opportunity_score int default 0;
 alter table vessel_snapshots add column if not exists predicted_arrival_pipeline boolean default false;
 alter table vessel_snapshots add column if not exists work_feasibility_score int default 0;
@@ -194,6 +206,7 @@ create index if not exists idx_vessel_snapshots_agent_normalized on vessel_snaps
 create index if not exists idx_vessel_snapshots_route_region on vessel_snapshots(route_region);
 create index if not exists idx_vessel_snapshots_predicted_arrival_time on vessel_snapshots(predicted_arrival_time);
 create index if not exists idx_vessel_snapshots_lead_priority on vessel_snapshots(lead_priority_score desc);
+create index if not exists idx_vessel_snapshots_predicted_cleaning_opportunity on vessel_snapshots(predicted_cleaning_opportunity_score desc);
 
 create table if not exists vessel_entities (
   hybrid_entity_key text primary key,
@@ -344,6 +357,15 @@ create table if not exists predicted_arrivals (
   arrival_prediction_confidence int default 0,
   predicted_congestion int default 0,
   predicted_cleaning_window int default 0,
+  predicted_congestion_score int default 0,
+  congestion_forecast_band text,
+  anchorage_probability int default 0,
+  predicted_work_window_hours numeric default 0,
+  work_window_confidence int default 0,
+  repeat_caller_score int default 0,
+  repeat_operator_score int default 0,
+  biofouling_exposure_score int default 0,
+  predicted_cleaning_opportunity_score int default 0,
   arrival_opportunity_score int default 0,
   status text,
   created_at timestamptz default now(),
@@ -385,6 +407,9 @@ create table if not exists commercial_leads (
   contact_readiness_score int default 0,
   work_feasibility_score int default 0,
   arrival_opportunity_score int default 0,
+  predicted_cleaning_opportunity_score int default 0,
+  anchorage_probability int default 0,
+  predicted_congestion_score int default 0,
   why_now text,
   sales_angle text,
   recommended_next_action text,
@@ -578,6 +603,19 @@ create index if not exists idx_enrichment_match_candidates_score on enrichment_m
 create index if not exists idx_commercial_leads_run_id on commercial_leads(run_id);
 create index if not exists idx_commercial_leads_status on commercial_leads(lead_status);
 create index if not exists idx_commercial_leads_priority on commercial_leads(lead_priority_score desc);
+alter table commercial_leads add column if not exists predicted_cleaning_opportunity_score int default 0;
+alter table commercial_leads add column if not exists anchorage_probability int default 0;
+alter table commercial_leads add column if not exists predicted_congestion_score int default 0;
+alter table predicted_arrivals add column if not exists predicted_congestion_score int default 0;
+alter table predicted_arrivals add column if not exists congestion_forecast_band text;
+alter table predicted_arrivals add column if not exists anchorage_probability int default 0;
+alter table predicted_arrivals add column if not exists predicted_work_window_hours numeric default 0;
+alter table predicted_arrivals add column if not exists work_window_confidence int default 0;
+alter table predicted_arrivals add column if not exists repeat_caller_score int default 0;
+alter table predicted_arrivals add column if not exists repeat_operator_score int default 0;
+alter table predicted_arrivals add column if not exists biofouling_exposure_score int default 0;
+alter table predicted_arrivals add column if not exists predicted_cleaning_opportunity_score int default 0;
+create index if not exists idx_predicted_arrivals_cleaning_opportunity on predicted_arrivals(predicted_cleaning_opportunity_score desc);
 create index if not exists idx_berth_aliases_normalized_alias on berth_aliases(normalized_alias);
 create index if not exists idx_terminal_aliases_normalized_alias on terminal_aliases(normalized_alias);
 
