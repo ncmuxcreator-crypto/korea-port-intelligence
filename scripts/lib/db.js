@@ -453,6 +453,98 @@ function evaluateFoundationRules(record = {}) {
   ];
 }
 
+function leanStorageEnabled() {
+  return String(process.env.DB_STORAGE_MODE || "lean").toLowerCase() !== "full";
+}
+
+function compactPayload(record = {}) {
+  return {
+    vessel_name: record.vessel_name || null,
+    normalized_vessel_name: record.normalized_vessel_name || normalizeVesselName(record.vessel_name),
+    hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
+    port_call_identity: record.port_call_identity || record.port_call_key || null,
+    port_code: record.port_code || null,
+    port_name: record.port_name || record.port || null,
+    vessel_type: record.vessel_type || null,
+    vessel_type_group: record.vessel_type_group || null,
+    gt: record.gt || record.grtg || record.intrlGrtg || null,
+    imo: record.imo || null,
+    mmsi: record.mmsi || null,
+    call_sign: record.call_sign || null,
+    ata: record.ata || null,
+    atd: record.atd || null,
+    etd: record.etd || null,
+    eta: record.eta || null,
+    stay_hours: record.stay_hours || 0,
+    anchorage_hours: record.anchorage_hours || 0,
+    status_bucket: record.status_bucket || null,
+    commercial_value_score: commercialScore(record),
+    candidate_band: candidateLabel(record),
+    reason_codes: record.reason_codes || [],
+    operator_name: record.operator_name || record.operator || null,
+    agent_name: record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm || null,
+    contact_readiness_score: scoreNumber(record.contact_readiness_score),
+    data_confidence_score: scoreNumber(record.data_confidence_score),
+    data_quality_score: scoreNumber(record.data_quality_score),
+    why_now: record.why_now || record.candidate_summary_ko || null,
+    recommended_action: record.recommended_action || record.recommended_next_action || null,
+    source_name: record.source || record.source_name || record.source_mode || null,
+    collected_at: record.collected_at || null
+  };
+}
+
+function storagePayload(record = {}) {
+  return leanStorageEnabled() ? compactPayload(record) : record;
+}
+
+function shouldPersistAnalyticalRow(record = {}) {
+  const score = commercialScore(record);
+  const gt = scoreNumber(record.gt || record.grtg || record.intrlGrtg);
+  return score >= 50 ||
+    gt >= 5000 ||
+    scoreNumber(record.predicted_cleaning_opportunity_score) >= 35 ||
+    scoreNumber(record.work_feasibility_score) >= 35 ||
+    Boolean(record.is_immediate_candidate || record.is_cleaning_candidate || record.alert_candidate || record.information_enrichment_needed);
+}
+
+function retentionCutoff(days) {
+  return new Date(Date.now() - Number(days || 0) * 24 * 60 * 60 * 1000).toISOString();
+}
+
+async function runLeanRetentionCleanup(supabase) {
+  if (!leanStorageEnabled() || String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() === "false") {
+    return { skipped: true };
+  }
+  const retention = {
+    vesselSnapshotsDays: Number(process.env.DB_RETENTION_VESSEL_SNAPSHOTS_DAYS || 3),
+    riskHistoryDays: Number(process.env.DB_RETENTION_RISK_HISTORY_DAYS || 14),
+    enrichmentDays: Number(process.env.DB_RETENTION_ENRICHMENT_DAYS || 7),
+    ruleDays: Number(process.env.DB_RETENTION_RULE_DAYS || 7),
+    featureDays: Number(process.env.DB_RETENTION_FEATURE_DAYS || 7),
+    modelDays: Number(process.env.DB_RETENTION_MODEL_DAYS || 14),
+    explainabilityDays: Number(process.env.DB_RETENTION_EXPLAINABILITY_DAYS || 7)
+  };
+  const jobs = [
+    ["vessel_snapshots", "collected_at", retention.vesselSnapshotsDays],
+    ["risk_history", "collected_at", retention.riskHistoryDays],
+    ["enrichment_match_candidates", "created_at", retention.enrichmentDays],
+    ["rule_evaluations", "collected_at", retention.ruleDays],
+    ["feature_store", "collected_at", retention.featureDays],
+    ["model_training_rows", "collected_at", retention.modelDays],
+    ["explainability_snapshots", "collected_at", retention.explainabilityDays]
+  ];
+  const result = {};
+  for (const [table, column, days] of jobs) {
+    try {
+      const { error } = await supabase.from(table).delete().lt(column, retentionCutoff(days));
+      result[table] = error ? `skipped:${error.message}` : `retained_${days}d`;
+    } catch (error) {
+      result[table] = `skipped:${error.message}`;
+    }
+  }
+  return result;
+}
+
 export async function saveToSupabase(records, options = {}) {
   const supabase = getSupabase();
   const now = new Date().toISOString();
@@ -460,6 +552,7 @@ export async function saveToSupabase(records, options = {}) {
   const diagnostics = options.diagnostics || {};
   const promotion = shouldPromoteRun(records, diagnostics);
   const runStatus = options.status === "failed" ? "failed" : promotion.promotable ? "promotable" : records.length ? "degraded_not_promoted" : "no_live_data";
+  const storageMode = leanStorageEnabled() ? "lean" : "full";
   const exclusionReasonCounts = records.reduce((acc, r) => {
     const score = Number(r.commercial_value_score || r.total_sales_priority_score || r.cleaning_candidate_score || 0);
     const excluded = r.commercial_relevance_status === "excluded_non_commercial_type" ||
@@ -482,7 +575,9 @@ export async function saveToSupabase(records, options = {}) {
     status: runStatus,
     source_summary: {
       ...diagnostics,
-      imo_recovery: imoRecoveryDiagnostics
+      imo_recovery: imoRecoveryDiagnostics,
+      db_storage_mode: storageMode,
+      db_retention_cleanup: String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() !== "false"
     },
     total_rows: Number(diagnostics.real_row_count || records.length || 0),
     raw_collected_rows: Number(diagnostics.real_row_count || records.length || 0),
@@ -635,7 +730,7 @@ export async function saveToSupabase(records, options = {}) {
     sales_reason: r.sales_reason || r.reason_codes || [],
     reason_codes: r.reason_codes || [],
     hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
-    payload: r,
+    payload: storagePayload(r),
     updated_at: r.updated_at || now,
     collected_at: now,
     source: r.source || r.source_mode || "korea-port-hull-intelligence",
@@ -668,7 +763,7 @@ export async function saveToSupabase(records, options = {}) {
     gt: r.gt || null,
     operator: r.operator || null,
     last_seen_at: now,
-    payload: r
+    payload: storagePayload(r)
   })).filter(r => r.hybrid_entity_key);
 
   for (let index = 0; index < entities.length; index += batchSize) {
@@ -699,7 +794,7 @@ export async function saveToSupabase(records, options = {}) {
     imo_status: r.imo_status || (r.imo ? "present" : "missing"),
     last_seen: now,
     updated_at: now,
-    payload: r
+    payload: storagePayload(r)
   })).filter(r => r.master_vessel_id);
 
   const existingMasters = new Map();
@@ -826,7 +921,7 @@ export async function saveToSupabase(records, options = {}) {
         confidence: Number(r.operator_confidence || 0),
         inferred: Boolean(r.operator_inferred),
         last_seen: now,
-        payload: r
+        payload: storagePayload(r)
       };
     })
     .filter(Boolean), row => `${row.agent_normalized}|${row.operator_normalized}|${row.source}`);
@@ -850,7 +945,7 @@ export async function saveToSupabase(records, options = {}) {
       confidence: row.confidence,
       inferred: row.inferred,
       last_seen: row.last_seen,
-      payload: row.payload
+      payload: storagePayload(row.payload)
     }));
     const { error } = await supabase.from("agent_operator_mapping").upsert(batch, { onConflict: "agent_normalized,operator_normalized,source" });
     if (error) throw error;
@@ -881,7 +976,7 @@ export async function saveToSupabase(records, options = {}) {
           confidence: Number(r.operator_confidence || 0),
           last_verified: r.contact_last_verified || null,
           updated_at: now,
-          payload: r
+          payload: storagePayload(r)
         });
       }
       const agentName = r.agent_name || r.agent || r.satmntEntrpsNm || r.entrpsCdNm;
@@ -906,7 +1001,7 @@ export async function saveToSupabase(records, options = {}) {
           confidence: Number(r.agent_confidence || r.operator_confidence || 0),
           last_verified: r.contact_last_verified || null,
           updated_at: now,
-          payload: r
+          payload: storagePayload(r)
         });
       }
       return out;
@@ -940,7 +1035,7 @@ export async function saveToSupabase(records, options = {}) {
       contact_priority: r.contact_priority || null,
       contact_path_label_ko: r.contact_path_label_ko || null,
       collected_at: now,
-      payload: r
+      payload: storagePayload(r)
     })), row => row.history_id);
 
   for (let index = 0; index < operatorHistoryRows.length; index += batchSize) {
@@ -981,7 +1076,7 @@ export async function saveToSupabase(records, options = {}) {
       lead_status: row.payload?.lead_status || "monitor",
       recommended_action: row.payload?.recommended_action || row.payload?.recommended_next_action || null,
       collected_at: now,
-      payload: row.payload
+      payload: storagePayload(row.payload)
     }));
     const { error } = await supabase.from("operator_contact_history").upsert(batch, { onConflict: "history_id" });
     if (error) throw error;
@@ -1006,7 +1101,7 @@ export async function saveToSupabase(records, options = {}) {
         route_pattern_confidence: Number(r.route_pattern_confidence || r.arrival_prediction_confidence || 0),
         observation_count: 1,
         last_seen: now,
-        payload: r
+        payload: storagePayload(r)
       };
     })
     .filter(Boolean), row => `${row.from_port}|${row.to_port}|${row.vessel_type_group}`);
@@ -1038,7 +1133,7 @@ export async function saveToSupabase(records, options = {}) {
       prediction_confidence: Number(r.arrival_prediction_confidence || r.prediction_confidence || 0),
       route_pattern_id: stableEntityId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}-${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}-${r.vessel_type_group || "unknown"}`),
       arrival_prediction_confidence: Number(r.arrival_prediction_confidence || 0),
-      payload: r
+      payload: storagePayload(r)
     })), row => row.route_history_id);
 
   for (let index = 0; index < vesselRouteHistoryRows.length; index += batchSize) {
@@ -1084,7 +1179,7 @@ export async function saveToSupabase(records, options = {}) {
       opportunity_summary: r.opportunity_summary || null,
       arrival_opportunity_score: Number(r.arrival_opportunity_score || 0),
       status: r.predicted_arrival_pipeline ? "predicted_arrival_pipeline" : "route_watch",
-      payload: r
+      payload: storagePayload(r)
     })), row => row.predicted_arrival_id);
 
   for (let index = 0; index < predictedArrivalRows.length; index += batchSize) {
@@ -1144,7 +1239,7 @@ export async function saveToSupabase(records, options = {}) {
       prediction_error_hours: r.prediction_error_hours ?? null,
       alert_candidate: Boolean(r.alert_candidate),
       information_enrichment_needed: Boolean(r.information_enrichment_needed),
-      payload: r,
+      payload: storagePayload(r),
       updated_at: now
     })), row => row.lead_id);
 
@@ -1155,7 +1250,11 @@ export async function saveToSupabase(records, options = {}) {
   }
 
   const enrichmentMatchRows = uniqueBy(records
-    .filter(r => Number(r.match_score || r.pilot_match_score || r.berth_match_confidence || r.enrichment_confidence || 0) > 0 || r.pilot_schedule_matched || r.secondary_enrichment_matched)
+    .filter(r => {
+      const score = Number(r.match_score || r.pilot_match_score || r.berth_match_confidence || r.enrichment_confidence || 0);
+      if (leanStorageEnabled()) return score >= 60 || r.pilot_schedule_matched || r.secondary_enrichment_matched;
+      return score > 0 || r.pilot_schedule_matched || r.secondary_enrichment_matched;
+    })
     .map(r => ({
       match_id: stableEntityId("EMC", `${runId}-${r.hybrid_entity_key || r.vessel_id}-${r.port_call_identity || r.raw_row_identity || ""}-${r.enrichment_source || r.pilot_source_origin || r.source || ""}`),
       run_id: runId,
@@ -1176,11 +1275,11 @@ export async function saveToSupabase(records, options = {}) {
       match_confidence: r.match_confidence || r.pilot_match_confidence || r.berth_match_confidence || null,
       match_reasons: r.match_reasons || r.pilot_match_reasons || r.berth_match_reasons || [],
       matched_fields: r.matched_fields || r.pilot_matched_fields || {},
-      raw_source_payload: r.raw_source_payload || {},
+      raw_source_payload: leanStorageEnabled() ? {} : r.raw_source_payload || {},
       created_at: now,
       matched_at: now,
       reused_historical_match: Boolean(r.vessel_master_cache_match || r.vessel_master_seed_match || r.previous_enrichment_match),
-      payload: r
+      payload: storagePayload(r)
     })), row => row.match_id);
 
   for (let index = 0; index < enrichmentMatchRows.length; index += batchSize) {
@@ -1204,7 +1303,7 @@ export async function saveToSupabase(records, options = {}) {
         match_reasons: row.match_reasons,
         matched_at: row.matched_at,
         reused_historical_match: row.reused_historical_match,
-        payload: row.payload
+        payload: storagePayload(row.payload)
       }));
       const retry = await supabase.from("enrichment_match_candidates").upsert(legacyBatch, { onConflict: "match_id" });
       if (retry.error) throw retry.error;
@@ -1246,7 +1345,7 @@ export async function saveToSupabase(records, options = {}) {
       likely_imo_candidates: [],
       confidence_band: r.identity_confidence_band || (identityConfidence(r) >= 80 ? "strong_identifier" : identityConfidence(r) >= 60 ? "context_match" : identityConfidence(r) >= 40 ? "weak_fuzzy" : "unresolved"),
       manual_review_required: (r.commercial_value_score || r.total_sales_priority_score || 0) >= 35 || Number(r.gt || 0) >= 5000 || r.is_anchorage_waiting,
-      payload: r
+      payload: storagePayload(r)
     }));
 
   for (let index = 0; index < identityCandidates.length; index += batchSize) {
@@ -1268,7 +1367,7 @@ export async function saveToSupabase(records, options = {}) {
     console.warn(`[HWK] IMO recovery queue save skipped: ${error.message}`);
   }
 
-  const riskRows = records.map(r => ({
+  const riskRows = records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => ({
     run_id: runId,
     master_vessel_id: fallbackMasterId(r),
     hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
@@ -1286,7 +1385,7 @@ export async function saveToSupabase(records, options = {}) {
     candidate_band: r.sales_priority_band || "low_priority",
     reason_codes: r.reason_codes || [],
     collected_at: now,
-    payload: r
+    payload: storagePayload(r)
   })).filter(r => r.hybrid_entity_key);
 
   for (let index = 0; index < riskRows.length; index += batchSize) {
@@ -1309,7 +1408,7 @@ export async function saveToSupabase(records, options = {}) {
       confidence: r.candidate_confidence || 50,
       source_name: r.source || null,
       port: r.port || null,
-      payload: r
+      payload: storagePayload(r)
     }))
     .filter(r => r.hybrid_entity_key);
 
@@ -1334,7 +1433,7 @@ export async function saveToSupabase(records, options = {}) {
       berth_name: r.berth_name || r.berth || null,
       movement_type: r.movement_type || r.pilot_direction || null,
       status: r.pilot_only_arrival_review ? "pilot_only_pending_port_operation" : "matched_to_port_operation",
-      raw_payload: r,
+      raw_payload: storagePayload(r),
       matched_snapshot_id: null,
       matched_master_vessel_id: r.pilot_only_arrival_review ? null : fallbackMasterId(r),
       match_confidence: Number(r.pilot_match_confidence || r.schedule_confidence || 0)
@@ -1506,7 +1605,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const featureStoreRows = uniqueBy(records.map(r => {
+  const featureStoreRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     const portCallKey = r.port_call_identity || r.port_call_key || r.raw_row_identity || r.port_code || r.port || "unknown";
     return {
@@ -1539,9 +1638,9 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const ruleEvaluationRows = uniqueBy(records.flatMap(r => {
+  const ruleEvaluationRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).flatMap(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
-    return evaluateFoundationRules(r).map(rule => ({
+    return evaluateFoundationRules(r).filter(rule => !leanStorageEnabled() || rule.passed).map(rule => ({
       evaluation_id: stableEntityId("RULE", `${runId}-${entityKey}-${rule.rule_id}`),
       run_id: runId,
       collected_at: now,
@@ -1558,7 +1657,7 @@ export async function saveToSupabase(records, options = {}) {
       score_impact: Number(rule.score_impact || 0),
       explanation_ko: rule.explanation_ko,
       features: buildFoundationFeatureVector(r),
-      payload: r
+      payload: storagePayload(r)
     }));
   }), row => row.evaluation_id);
 
@@ -1568,7 +1667,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const explainabilityRows = uniqueBy(records.map(r => {
+  const explainabilityRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     const rules = evaluateFoundationRules(r).filter(rule => rule.passed);
     return {
@@ -1588,7 +1687,7 @@ export async function saveToSupabase(records, options = {}) {
       reason_codes: r.reason_codes || [],
       rule_hits: rules.map(rule => rule.rule_id),
       feature_contributions: buildFoundationFeatureVector(r),
-      payload: r
+      payload: storagePayload(r)
     };
   }), row => row.explainability_id);
 
@@ -1694,7 +1793,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const trainingRows = uniqueBy(records.map(r => {
+  const trainingRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     return {
       training_row_id: stableEntityId("TRAIN", `${runId}-${entityKey}-${r.port_call_identity || r.port_code || ""}`),
@@ -1720,7 +1819,7 @@ export async function saveToSupabase(records, options = {}) {
         uses_actual_outcome: false,
         outcome_fields_reserved: ["actual_arrival_time", "prediction_error_hours", "lead_status"]
       },
-      payload: r
+      payload: storagePayload(r)
     };
   }), row => row.training_row_id);
 
@@ -1745,6 +1844,8 @@ export async function saveToSupabase(records, options = {}) {
     promoted = true;
   }
 
+  const retentionCleanup = await runLeanRetentionCleanup(supabase);
+
   return {
     runId,
     recordsSaved,
@@ -1768,6 +1869,7 @@ export async function saveToSupabase(records, options = {}) {
     routeGraphRowsSaved: routeGraphRows.length,
     operatorGraphRowsSaved: operatorGraphRows.length,
     modelTrainingRowsSaved: trainingRows.length,
+    retentionCleanup,
     routePatternRowsSaved: routePatternRows.length,
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,
