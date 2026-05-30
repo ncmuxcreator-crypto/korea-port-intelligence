@@ -803,9 +803,23 @@ function lifecycleKey(record = {}) {
 
 function buildPortCallId(record = {}) {
   if (record.port_call_id) return record.port_call_id;
-  const portCode = record.port_code || record.port || "";
+  const portCode = record.port_code || record.prtAgCd || record.port || "";
+  const etryptYear = record.etryptYear || record.etrypt_year || record.ETRYPT_YEAR;
+  const etryptCo = record.etryptCo || record.etrypt_co || record.ETRYPT_CO;
+  const callSign = record.call_sign || record.clsgn || record.CLSGN;
+  if (portCode && etryptYear && etryptCo && callSign) {
+    return stableEntityId("PCALL", `${portCode}-${etryptYear}-${etryptCo}-${callSign}`);
+  }
   const explicitIdentity = record.port_call_identity || record.port_call_key || record.raw_port_call_identity;
   if (explicitIdentity) return stableEntityId("PCALL", `${portCode}-${explicitIdentity}`);
+  const scheduleDate = String(record.ata || record.eta || record.etryptDt || record.collected_at || "").slice(0, 10);
+  if (portCode && callSign && scheduleDate) {
+    return stableEntityId("PCALL", `${portCode}-${callSign}-${scheduleDate}`);
+  }
+  const normalizedName = normalizeVesselName(record.normalized_vessel_name || record.vessel_name);
+  if (portCode && normalizedName && scheduleDate) {
+    return stableEntityId("PCALL", `${portCode}-${normalizedName}-${scheduleDate}`);
+  }
   const vesselIdentity = record.master_vessel_id || record.hybrid_entity_key || record.imo || record.mmsi || record.call_sign || normalizeVesselName(record.vessel_name);
   const arrivalKey = record.ata || record.eta || record.etryptDt || record.etryptYear || record.collected_at || "";
   return stableEntityId("PCALL", `${portCode}-${vesselIdentity}-${arrivalKey}`);
@@ -845,7 +859,7 @@ async function fetchPreviousSnapshotMap(supabase) {
   try {
     const { data, error } = await supabase
       .from("vessel_snapshots")
-      .select("hybrid_entity_key,vessel_id,port_call_id,port_call_identity,port_code,port,berth_name,anchorage_name,facility_type,status_bucket,status,ata,atd,etd,pilot_time,pilot_direction,movement_type,stay_hours,anchorage_hours,collected_at")
+      .select("hybrid_entity_key,vessel_id,port_call_id,port_call_identity,port_code,port,berth_name,anchorage_name,facility_type,status_bucket,status,eta,etb,ata,atb,etd,atd,pilot_time,pilot_direction,movement_type,stay_hours,anchorage_hours,congestion_score,port_congestion_score,commercial_value_score,total_sales_priority_score,candidate_band,sales_priority_band,is_cleaning_candidate,is_immediate_candidate,collected_at")
       .order("collected_at", { ascending: false })
       .limit(Number(process.env.EVENT_PREVIOUS_SNAPSHOT_LIMIT || 5000));
     if (error) return new Map();
@@ -862,26 +876,30 @@ async function fetchPreviousSnapshotMap(supabase) {
 
 function eventRow(record, runId, now, type, eventTime, confidence, reason, previous = null) {
   const bucket = eventTimeBucket(eventTime, now);
+  const portCallId = buildPortCallId(record);
   return {
-    event_uid: stableEntityId("EVT", `${fallbackMasterId(record)}-${buildPortCallId(record)}-${type}-${bucket}`),
+    event_uid: stableEntityId("EVT", `${portCallId}-${type}-${bucket}`),
     hybrid_entity_key: record.hybrid_entity_key || record.vessel_id,
     master_vessel_id: fallbackMasterId(record),
     run_id: runId,
     vessel_id: record.vessel_id || null,
-    port_call_id: buildPortCallId(record),
+    port_call_id: portCallId,
     event_type: type,
     event_time: eventTime || now,
+    event_time_bucket: bucket,
     port_code: record.port_code || null,
     berth_name: record.berth_name || record.berth || record.anchorage_name || null,
     confidence,
     source_name: record.source || record.source_name || record.source_mode || "snapshot_diff",
     source: record.source || record.source_name || record.source_mode || "snapshot_diff",
     port: record.port || record.port_name || null,
+    created_at: now,
     previous_snapshot: previous ? compactPayload(previous) : {},
     payload: {
       event_reason: reason,
       event_source: "snapshot_diff",
       event_time_bucket: bucket,
+      port_call_id: portCallId,
       commercial_value_score: commercialScore(record),
       candidate_band: candidateLabel(record)
     }
@@ -900,16 +918,27 @@ function buildLifecycleEvents(records = [], previousMap = new Map(), runId, now)
     const stayHours = scoreNumber(record.stay_hours);
     const anchorageHours = scoreNumber(record.anchorage_hours);
     const congestionScore = scoreNumber(record.congestion_score || record.port_congestion_score);
+    const previousBand = candidateLabel(previous || {});
+    const currentBand = candidateLabel(record);
+    const previousOpportunity = previous ? (isSalesTargetRecord(previous) || isImmediateTargetRecord(previous)) : false;
+    const currentOpportunity = isSalesTargetRecord(record) || isImmediateTargetRecord(record);
 
+    if (!previous) rows.push(eventRow(record, runId, now, "PORT_CALL_CREATED", record.ata || record.eta || now, 80, "New port call identity detected", previous));
+    if (record.eta && !previous?.eta) rows.push(eventRow(record, runId, now, "ARRIVAL_PLANNED", record.eta, 70, "ETA or planned arrival appeared", previous));
     if (record.ata && !previous?.ata) rows.push(eventRow(record, runId, now, "PORT_ARRIVAL", record.ata, 90, "ATA newly detected", previous));
     if ((record.pilot_time || record.movement_time) && isInboundPilot(record) && !previous?.pilot_time) rows.push(eventRow(record, runId, now, "PILOT_INBOUND", record.pilot_time || record.movement_time, 75, "Inbound pilot schedule detected", previous));
     if (currentBerth && currentBerth !== previousBerth && isBerthState(record)) rows.push(eventRow(record, runId, now, "BERTH_ASSIGNED", record.atb || record.etb || record.ata || now, 80, "Berth assignment changed or appeared", previous));
     if (currentAnchorage && !previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_START", record.ata || record.eta || now, 75, "Anchorage state appeared", previous));
     if (!currentAnchorage && previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_END", record.atb || record.ata || now, 70, "Anchorage state ended", previous));
+    if (currentAnchorage && anchorageHours >= 120 && scoreNumber(previous?.anchorage_hours) < 120) rows.push(eventRow(record, runId, now, "ANCHORAGE_EXTENDED", now, 70, "Anchorage duration crossed 5 days", previous));
     if ((stayHours >= 72 || anchorageHours >= 72) && (!previous || scoreNumber(previous.stay_hours) < 72 && scoreNumber(previous.anchorage_hours) < 72)) rows.push(eventRow(record, runId, now, "LONG_STAY_DETECTED", now, 70, "Stay or anchorage crossed 72 hours", previous));
     if (congestionScore >= 60 && scoreNumber(previous?.congestion_score || previous?.port_congestion_score) < 60) rows.push(eventRow(record, runId, now, "CONGESTION_DETECTED", now, 70, "Congestion score crossed operational threshold", previous));
     if ((record.pilot_time || record.movement_time) && isOutboundPilot(record) && !isOutboundPilot(previous || {})) rows.push(eventRow(record, runId, now, "PILOT_OUTBOUND", record.pilot_time || record.movement_time, 75, "Outbound pilot schedule detected", previous));
+    if (record.etd && !previous?.etd) rows.push(eventRow(record, runId, now, "DEPARTURE_PLANNED", record.etd, 70, "ETD or planned departure appeared", previous));
     if (record.atd && !previous?.atd) rows.push(eventRow(record, runId, now, "PORT_DEPARTURE", record.atd, 90, "ATD newly detected", previous));
+    if (previous && currentBand !== previousBand) rows.push(eventRow(record, runId, now, "SCORE_BAND_CHANGED", now, 70, `Candidate band changed from ${previousBand} to ${currentBand}`, previous));
+    if (currentOpportunity && !previousOpportunity) rows.push(eventRow(record, runId, now, "OPPORTUNITY_CREATED", now, 75, "Port-call commercial opportunity became active", previous));
+    if (!currentOpportunity && previousOpportunity) rows.push(eventRow(record, runId, now, "OPPORTUNITY_CLOSED", record.atd || now, 70, "Port-call commercial opportunity closed or no longer qualifies", previous));
   }
   return uniqueBy(rows, row => row.event_uid);
 }
@@ -1338,9 +1367,17 @@ export async function saveToSupabase(records, options = {}) {
       arrival: r.ata || r.eta || null,
       departure: r.atd || r.etd || null,
       eta: r.eta || null,
+      etb: r.etb || r.etb_candidate || null,
+      ata: r.ata || null,
+      atb: r.atb || null,
       etd: r.etd || null,
+      atd: r.atd || null,
+      arrival_time: r.ata || r.eta || null,
+      departure_time: r.atd || r.etd || null,
       pilot_inbound: r.pilot_inbound || (isInboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
       pilot_outbound: r.pilot_outbound || (isOutboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
+      pilot_inbound_time: r.pilot_inbound_time || r.pilot_inbound || (isInboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
+      pilot_outbound_time: r.pilot_outbound_time || r.pilot_outbound || (isOutboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
       berth: r.berth || r.berth_name || null,
       berth_name: r.berth_name || r.berth || null,
       terminal: r.terminal || r.terminal_name || null,
@@ -1355,11 +1392,17 @@ export async function saveToSupabase(records, options = {}) {
       status_bucket: r.status_bucket || r.status || null,
       stay_hours: scoreNumber(r.stay_hours || r.current_call_stay_hours || r.cumulative_stay_hours),
       anchorage_hours: scoreNumber(r.anchorage_hours),
+      work_window_hours: scoreNumber(r.work_window_hours || r.predicted_work_window_hours),
       commercial_value_score: Number(r.commercial_value_score || r.total_sales_priority_score || 0),
       candidate_band: r.candidate_band || r.sales_priority_band || "general",
       work_feasibility_score: Number(r.work_feasibility_score || 0),
+      congestion_score: scoreNumber(r.congestion_score || r.port_congestion_score || r.congestion_exposure_score),
+      biofouling_exposure_score: scoreNumber(r.biofouling_exposure_score || r.biofouling_risk_score || r.biofouling_score),
+      data_confidence_score: scoreNumber(r.data_confidence_score),
       contact_readiness_score: Number(r.contact_readiness_score || 0),
       last_seen: now,
+      created_at: r.created_at || now,
+      updated_at: r.updated_at || now,
       payload: storagePayload({
         ...r,
         port_call_master_role: "unique_port_visit_commercial_opportunity"
@@ -2067,18 +2110,6 @@ export async function saveToSupabase(records, options = {}) {
   }
 
   const rawEvents = buildLifecycleEvents(records, previousSnapshotMap, runId, now)
-    .concat(records
-      .filter(r => r.is_cleaning_candidate || r.is_immediate_candidate || (r.total_sales_priority_score || 0) >= 60)
-      .map(r => eventRow(
-        r,
-        runId,
-        now,
-        r.is_immediate_candidate ? "SCORE_BAND_CHANGED" : "LONG_STAY_DETECTED",
-        now,
-        r.candidate_confidence || 50,
-        r.is_immediate_candidate ? "Immediate candidate score signal" : "Commercial score or long-stay signal",
-        previousSnapshotMap.get(lifecycleKey(r)) || null
-      )))
     .filter(r => r.hybrid_entity_key);
   const events = uniqueBy(rawEvents, row => row.event_uid);
   const eventDuplicatesSkipped = Math.max(0, rawEvents.length - events.length);
@@ -2310,6 +2341,44 @@ export async function saveToSupabase(records, options = {}) {
   for (let index = 0; index < featureStoreRows.length; index += batchSize) {
     const batch = featureStoreRows.slice(index, index + batchSize);
     const { error } = await supabase.from("feature_store").upsert(batch, { onConflict: "feature_id" });
+    if (error) throw error;
+  }
+
+  const featureSnapshotRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistFeatureRow(r)).map(r => {
+    const portCallId = buildPortCallId(r);
+    return {
+      feature_snapshot_id: stableEntityId("FSNAP", `${runId}-${portCallId}`),
+      run_id: runId,
+      snapshot_time: now,
+      port_call_id: portCallId,
+      master_vessel_id: fallbackMasterId(r),
+      port_code: r.port_code || null,
+      vessel_type_group: r.vessel_type_group || null,
+      gt: scoreNumber(r.gt || r.grtg || r.intrlGrtg),
+      operator_name: r.operator_name || r.operator || null,
+      agent_name: r.agent_name || r.agent || r.satmntEntrpsNm || r.entrpsCdNm || null,
+      stay_hours: scoreNumber(r.stay_hours || r.current_call_stay_hours || r.cumulative_stay_hours),
+      anchorage_hours: scoreNumber(r.anchorage_hours),
+      work_window_hours: scoreNumber(r.work_window_hours || r.predicted_work_window_hours),
+      congestion_score: scoreNumber(r.congestion_score || r.port_congestion_score || r.congestion_exposure_score),
+      work_feasibility_score: scoreNumber(r.work_feasibility_score || r.cleaning_window_score),
+      biofouling_exposure_score: scoreNumber(r.biofouling_exposure_score || r.biofouling_risk_score || r.biofouling_score),
+      commercial_value_score: commercialScore(r),
+      data_confidence_score: scoreNumber(r.data_confidence_score || r.data_quality_score),
+      contact_readiness_score: scoreNumber(r.contact_readiness_score),
+      repeat_caller_score: scoreNumber(r.repeat_caller_score),
+      route_bonus_score: scoreNumber(r.route_bonus_score || r.route_bonus || r.compliance_pressure_score),
+      arrival_opportunity_score: scoreNumber(r.arrival_opportunity_score),
+      predicted_cleaning_opportunity_score: scoreNumber(r.predicted_cleaning_opportunity_score),
+      candidate_band: candidateLabel(r),
+      feature_version: "port_call_feature_snapshot_v1",
+      created_at: now
+    };
+  }), row => row.feature_snapshot_id);
+
+  for (let index = 0; index < featureSnapshotRows.length; index += batchSize) {
+    const batch = featureSnapshotRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("feature_snapshots").upsert(batch, { onConflict: "feature_snapshot_id" });
     if (error) throw error;
   }
 
@@ -2602,6 +2671,7 @@ export async function saveToSupabase(records, options = {}) {
     enrichment_match_candidates: enrichmentMatchRows.length,
     commercial_leads: commercialLeadRows.length,
     feature_store: featureStoreRows.length,
+    feature_snapshots: featureSnapshotRows.length,
     rule_evaluations: ruleEvaluationRows.length,
     explainability_snapshots: explainabilityRows.length,
     model_training_rows: trainingRows.length,
@@ -2631,6 +2701,7 @@ export async function saveToSupabase(records, options = {}) {
     operatorHistoryRowsSaved: operatorHistoryRows.length,
     fleetOpportunityRowsSaved: fleetOpportunityRows.length,
     featureStoreRowsSaved: featureStoreRows.length,
+    featureSnapshotRowsSaved: featureSnapshotRows.length,
     ruleEvaluationRowsSaved: ruleEvaluationRows.length,
     explainabilityRowsSaved: explainabilityRows.length,
     routeGraphRowsSaved: routeGraphRows.length,

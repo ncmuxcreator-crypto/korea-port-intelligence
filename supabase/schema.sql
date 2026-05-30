@@ -163,10 +163,18 @@ create table if not exists port_call_master (
   sub_port text,
   arrival timestamptz,
   departure timestamptz,
+  arrival_time timestamptz,
+  departure_time timestamptz,
   eta timestamptz,
+  etb timestamptz,
+  ata timestamptz,
+  atb timestamptz,
   etd timestamptz,
+  atd timestamptz,
   pilot_inbound timestamptz,
   pilot_outbound timestamptz,
+  pilot_inbound_time timestamptz,
+  pilot_outbound_time timestamptz,
   berth text,
   berth_name text,
   terminal text,
@@ -181,10 +189,16 @@ create table if not exists port_call_master (
   status_bucket text,
   stay_hours numeric default 0,
   anchorage_hours numeric default 0,
+  work_window_hours numeric default 0,
   commercial_value_score int default 0,
   candidate_band text,
   work_feasibility_score int default 0,
+  congestion_score int default 0,
+  biofouling_exposure_score int default 0,
+  data_confidence_score int default 0,
   contact_readiness_score int default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
   first_seen timestamptz default now(),
   last_seen timestamptz default now(),
   payload jsonb default '{}'::jsonb
@@ -201,11 +215,27 @@ create index if not exists idx_port_calls_risk_score on port_calls(risk_score de
 
 alter table port_call_master add column if not exists pilot_inbound timestamptz;
 alter table port_call_master add column if not exists pilot_outbound timestamptz;
+alter table port_call_master add column if not exists pilot_inbound_time timestamptz;
+alter table port_call_master add column if not exists pilot_outbound_time timestamptz;
+alter table port_call_master add column if not exists arrival_time timestamptz;
+alter table port_call_master add column if not exists departure_time timestamptz;
+alter table port_call_master add column if not exists etb timestamptz;
+alter table port_call_master add column if not exists ata timestamptz;
+alter table port_call_master add column if not exists atb timestamptz;
+alter table port_call_master add column if not exists atd timestamptz;
 alter table port_call_master add column if not exists stay_hours numeric default 0;
 alter table port_call_master add column if not exists anchorage_hours numeric default 0;
+alter table port_call_master add column if not exists work_window_hours numeric default 0;
+alter table port_call_master add column if not exists congestion_score int default 0;
+alter table port_call_master add column if not exists biofouling_exposure_score int default 0;
+alter table port_call_master add column if not exists data_confidence_score int default 0;
+alter table port_call_master add column if not exists created_at timestamptz default now();
+alter table port_call_master add column if not exists updated_at timestamptz default now();
 create index if not exists idx_port_call_master_candidate_band on port_call_master(candidate_band);
 create index if not exists idx_port_call_master_arrival on port_call_master(arrival desc);
 create index if not exists idx_port_call_master_departure on port_call_master(departure desc);
+create index if not exists idx_port_call_master_arrival_time on port_call_master(arrival_time desc);
+create index if not exists idx_port_call_master_updated_at on port_call_master(updated_at desc);
 
 alter table vessel_snapshots add column if not exists snapshot_date date default current_date;
 alter table vessel_snapshots alter column snapshot_date set default current_date;
@@ -1030,6 +1060,7 @@ create table if not exists vessel_events (
   port_call_id text,
   event_type text not null,
   event_time timestamptz,
+  event_time_bucket timestamptz,
   port_code text,
   berth_name text,
   confidence int default 0,
@@ -1037,6 +1068,7 @@ create table if not exists vessel_events (
   source text,
   port text,
   previous_snapshot jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
   event_at timestamptz not null default now(),
   payload jsonb default '{}'::jsonb
 );
@@ -1142,11 +1174,16 @@ create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedul
 alter table vessel_events add column if not exists event_uid text;
 alter table vessel_events add column if not exists port_call_id text;
 alter table vessel_events add column if not exists source text;
+alter table vessel_events add column if not exists source_name text;
+alter table vessel_events add column if not exists event_time_bucket timestamptz;
+alter table vessel_events add column if not exists created_at timestamptz default now();
 alter table vessel_events add column if not exists previous_snapshot jsonb default '{}'::jsonb;
 create unique index if not exists idx_vessel_events_event_uid on vessel_events(event_uid) where event_uid is not null;
+create unique index if not exists ux_vessel_events_port_call_type_bucket on vessel_events(port_call_id, event_type, event_time_bucket) where port_call_id is not null and event_time_bucket is not null;
 create index if not exists idx_vessel_events_run_id on vessel_events(run_id);
 create index if not exists idx_vessel_events_type_time on vessel_events(event_type, event_time desc);
 create index if not exists idx_vessel_events_port_call on vessel_events(port_call_id);
+create index if not exists idx_vessel_events_created_at on vessel_events(created_at desc);
 alter table enrichment_match_candidates add column if not exists source_name text;
 alter table enrichment_match_candidates add column if not exists source_row_id text;
 alter table enrichment_match_candidates add column if not exists snapshot_id text;
@@ -1276,6 +1313,35 @@ create table if not exists feature_store (
   payload jsonb default '{}'::jsonb
 );
 
+create table if not exists feature_snapshots (
+  feature_snapshot_id text primary key,
+  run_id text,
+  snapshot_time timestamptz default now(),
+  port_call_id text,
+  master_vessel_id text,
+  port_code text,
+  vessel_type_group text,
+  gt numeric default 0,
+  operator_name text,
+  agent_name text,
+  stay_hours numeric default 0,
+  anchorage_hours numeric default 0,
+  work_window_hours numeric default 0,
+  congestion_score int default 0,
+  work_feasibility_score int default 0,
+  biofouling_exposure_score int default 0,
+  commercial_value_score int default 0,
+  data_confidence_score int default 0,
+  contact_readiness_score int default 0,
+  repeat_caller_score int default 0,
+  route_bonus_score int default 0,
+  arrival_opportunity_score int default 0,
+  predicted_cleaning_opportunity_score int default 0,
+  candidate_band text,
+  feature_version text default 'port_call_feature_snapshot_v1',
+  created_at timestamptz default now()
+);
+
 create table if not exists rule_evaluations (
   evaluation_id text primary key,
   run_id text,
@@ -1374,6 +1440,13 @@ create index if not exists idx_feature_store_entity on feature_store(entity_id);
 create index if not exists idx_feature_store_port_call on feature_store(port_call_id);
 create index if not exists idx_feature_store_namespace on feature_store(feature_namespace);
 comment on table feature_store is 'Model-ready feature snapshots per run. Primary namespace: model_ready_port_call.';
+create index if not exists idx_feature_snapshots_run on feature_snapshots(run_id);
+create index if not exists idx_feature_snapshots_port_call on feature_snapshots(port_call_id);
+create index if not exists idx_feature_snapshots_port on feature_snapshots(port_code);
+create index if not exists idx_feature_snapshots_candidate_band on feature_snapshots(candidate_band);
+create index if not exists idx_feature_snapshots_score on feature_snapshots(commercial_value_score desc);
+create index if not exists idx_feature_snapshots_snapshot_time on feature_snapshots(snapshot_time desc);
+comment on table feature_snapshots is 'Columnar model-ready normalized features per port call and run. No raw payloads.';
 create index if not exists idx_rule_evaluations_run on rule_evaluations(run_id);
 create index if not exists idx_rule_evaluations_rule on rule_evaluations(rule_id);
 create index if not exists idx_rule_evaluations_passed on rule_evaluations(passed);
