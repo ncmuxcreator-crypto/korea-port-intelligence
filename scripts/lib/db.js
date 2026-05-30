@@ -505,6 +505,56 @@ function buildPortCallArchitectureDiagnostics(records = []) {
   };
 }
 
+function aggregatePortSummaryRows(portRows = []) {
+  const grouped = new Map();
+  for (const row of portRows) {
+    const groupName = row.port_group || row.port_name || row.port_code || "항만 확인 필요";
+    const key = `${row.port_code || groupName}|${groupName}`;
+    const current = grouped.get(key) || {
+      port_unit_key: key,
+      port_code: row.port_code || null,
+      port_name: groupName,
+      port_group: groupName,
+      sub_port: "",
+      display_scope: "representative_port_aggregate",
+      total_vessels: 0,
+      target_vessels: 0,
+      sales_targets: 0,
+      sales_candidates: 0,
+      immediate_targets: 0,
+      anchorage_vessels: 0,
+      long_stay_vessels: 0,
+      port_opportunity_score: 0,
+      child_units: []
+    };
+    for (const field of ["total_vessels", "target_vessels", "sales_targets", "sales_candidates", "immediate_targets", "anchorage_vessels", "long_stay_vessels"]) {
+      current[field] += scoreNumber(row[field]);
+    }
+    if (scoreNumber(row.total_vessels) > 0 && row.sub_port) {
+      current.child_units.push({
+        port_name: row.port_name,
+        sub_port: row.sub_port,
+        total_vessels: row.total_vessels,
+        target_vessels: row.target_vessels,
+        sales_targets: row.sales_targets,
+        anchorage_vessels: row.anchorage_vessels
+      });
+    }
+    grouped.set(key, current);
+  }
+  return [...grouped.values()].map(row => ({
+    ...row,
+    child_units: row.child_units.sort((a, b) => scoreNumber(b.total_vessels) - scoreNumber(a.total_vessels)).slice(0, 5),
+    port_opportunity_score: Math.min(100, Math.round(
+      average([row.target_vessels, row.sales_targets * 10, row.immediate_targets * 20, row.anchorage_vessels * 2, row.long_stay_vessels * 3])
+    ))
+  })).filter(row => row.total_vessels > 0 || row.target_vessels > 0).sort((a, b) =>
+    b.port_opportunity_score - a.port_opportunity_score ||
+    b.target_vessels - a.target_vessels ||
+    b.total_vessels - a.total_vessels
+  );
+}
+
 function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {}) {
   const usefulRecords = records.filter(record => record.vessel_name || record.hybrid_entity_key || record.port_call_identity || record.port_call_key);
   const targetRows = usefulRecords.filter(record => ["target_vessel", "unknown_gt_review"].includes(record.commercial_relevance_status) || isSalesTargetRecord(record) || isImmediateTargetRecord(record));
@@ -512,7 +562,7 @@ function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {
   const immediateRows = usefulRecords.filter(isImmediateTargetRecord);
   const watchlistRows = usefulRecords.filter(isWatchlistRecord);
   const portGroups = groupBy(usefulRecords, record => summaryPortUnit(record).key);
-  const portSummary = [...portGroups.entries()].map(([portKey, rows]) => ({
+  const portUnitSummary = [...portGroups.entries()].map(([portKey, rows]) => ({
     port_unit_key: portKey,
     port_code: summaryPortUnit(rows[0]).port_code || portKey,
     port_name: summaryPortUnit(rows[0]).port_name,
@@ -527,6 +577,7 @@ function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {
     long_stay_vessels: rows.filter(row => scoreNumber(row.stay_hours) >= 168 || scoreNumber(row.anchorage_hours) >= 168).length,
     port_opportunity_score: Math.min(100, Math.round(average(rows.map(commercialScore)) + rows.filter(isImmediateTargetRecord).length * 5))
   })).sort((a, b) => b.port_opportunity_score - a.port_opportunity_score || b.target_vessels - a.target_vessels);
+  const portSummary = aggregatePortSummaryRows(portUnitSummary);
   const topImmediate = [...immediateRows].sort((a, b) => commercialScore(b) - commercialScore(a)).slice(0, 5);
   const topSales = [...salesRows].filter(row => !isImmediateTargetRecord(row)).sort((a, b) => commercialScore(b) - commercialScore(a)).slice(0, 5);
   return {

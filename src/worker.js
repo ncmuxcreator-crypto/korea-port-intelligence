@@ -3002,7 +3002,7 @@ function isDisplayablePortName(value = "") {
   return text && !/^korea$/i.test(text) && !/^unknown$/i.test(text);
 }
 
-function buildPorts(records) {
+function buildPortUnitRows(records) {
   const map = new Map();
   for (const registry of PORT_REGISTRY) {
     const code = normalizePortCode(registry.port_code);
@@ -3138,6 +3138,84 @@ function buildPorts(records) {
     b.immediate_target_count - a.immediate_target_count ||
     b.candidate_count - a.candidate_count ||
     b.vessel_count - a.vessel_count
+  );
+}
+
+function buildPorts(records) {
+  const unitRows = buildPortUnitRows(records);
+  const grouped = new Map();
+  for (const row of unitRows) {
+    const groupName = row.port_group || row.port_name || row.port_name_ko || row.port_code || "항만 확인 필요";
+    const key = `${row.port_code || groupName}|${groupName}`;
+    const current = grouped.get(key) || {
+      port_code: row.port_code,
+      port_unit_key: key,
+      port_name: groupName,
+      port_name_ko: groupName,
+      port_group: groupName,
+      sub_port: "",
+      display_scope: "representative_port_aggregate",
+      tier: row.tier,
+      commercial_priority: row.commercial_priority,
+      registry_sort: row.registry_sort,
+      vessel_count: 0,
+      total_vessels: 0,
+      target_vessels: 0,
+      target_vessel_count: 0,
+      scored_count: 0,
+      candidate_count: 0,
+      sales_candidates: 0,
+      immediate_target_count: 0,
+      immediate_targets: 0,
+      high_value_vessels: 0,
+      anchorage_waiting: 0,
+      anchorage_vessels: 0,
+      long_stay_vessels: 0,
+      long_idle_vessels: 0,
+      work_window_hours_total: 0,
+      work_window_count: 0,
+      operator_known_count: 0,
+      agent_known_count: 0,
+      child_units: []
+    };
+    for (const field of ["vessel_count", "total_vessels", "target_vessels", "target_vessel_count", "scored_count", "candidate_count", "sales_candidates", "immediate_target_count", "immediate_targets", "high_value_vessels", "anchorage_waiting", "anchorage_vessels", "long_stay_vessels", "long_idle_vessels", "work_window_hours_total", "work_window_count", "operator_known_count", "agent_known_count"]) {
+      current[field] += Number(row[field] || 0);
+    }
+    if (row.total_vessels > 0 && row.sub_port) {
+      current.child_units.push({
+        port_name: row.port_name,
+        sub_port: row.sub_port,
+        total_vessels: row.total_vessels,
+        target_vessels: row.target_vessels,
+        sales_candidates: row.sales_candidates,
+        anchorage_vessels: row.anchorage_vessels
+      });
+    }
+    grouped.set(key, current);
+  }
+  return [...grouped.values()].map(p => {
+    const avgWorkWindow = p.work_window_count ? Math.round((p.work_window_hours_total / p.work_window_count) * 10) / 10 : 0;
+    const operatorQuality = p.vessel_count ? Math.round(((p.operator_known_count * 0.65 + p.agent_known_count * 0.35) / p.vessel_count) * 100) : 0;
+    const portOpportunityScore = Math.min(100, Math.round(
+      Math.min(35, p.high_value_vessels * 7) +
+      Math.min(25, p.anchorage_waiting * 6) +
+      Math.min(20, avgWorkWindow * 0.8) +
+      Math.min(15, operatorQuality * 0.15) +
+      Math.min(10, p.immediate_target_count * 5)
+    ));
+    return {
+      ...p,
+      child_units: p.child_units.sort((a, b) => Number(b.total_vessels || 0) - Number(a.total_vessels || 0)).slice(0, 5),
+      work_window_hours: avgWorkWindow,
+      average_work_window_hours: avgWorkWindow,
+      operator_quality: operatorQuality,
+      port_opportunity_score: portOpportunityScore
+    };
+  }).filter(p => p.total_vessels > 0 || Number(p.tier || 99) <= 2).sort((a, b) =>
+    Number(a.tier || 99) - Number(b.tier || 99) ||
+    Number(a.registry_sort || 999) - Number(b.registry_sort || 999) ||
+    Number(b.total_vessels || 0) - Number(a.total_vessels || 0) ||
+    b.port_opportunity_score - a.port_opportunity_score
   );
 }
 
