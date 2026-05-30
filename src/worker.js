@@ -2726,6 +2726,24 @@ function recordPortKey(record = {}) {
   return `${portCode}|`;
 }
 
+function registryKeyForRecord(record = {}, map = new Map()) {
+  const portCode = String(record.port_code || portCodeFromName(record.port_name || record.port) || "unknown");
+  const exactKey = recordPortKey(record);
+  if (map.has(exactKey)) return exactKey;
+
+  const candidates = PORT_REGISTRY
+    .filter(port => String(port.port_code || "") === portCode)
+    .sort((a, b) => Number(a.tier || 99) - Number(b.tier || 99) || Number(a.sort || 999) - Number(b.sort || 999));
+
+  const mainPort = candidates.find(port => Number(port.tier || 99) === 1) || candidates[0];
+  if (mainPort) {
+    const mainKey = portRegistryKey(mainPort);
+    if (map.has(mainKey)) return mainKey;
+  }
+
+  return exactKey;
+}
+
 function isDisplayablePortName(value = "") {
   const text = String(value || "").trim();
   return text && !/^korea$/i.test(text) && !/^unknown$/i.test(text);
@@ -2763,9 +2781,7 @@ function buildPorts(records) {
     const portName = v.port_name || v.port || "Unknown";
     const portCode = v.port_code || portCodeFromName(portName);
     if (portCode === "unknown" || !isDisplayablePortName(portName)) continue;
-    const exactKey = recordPortKey(v);
-    const registryMatch = [...map.keys()].find(key => key.startsWith(`${portCode}|`) && (exactKey === key || !exactKey.split("|")[1]));
-    const key = registryMatch || exactKey || portCode;
+    const key = registryKeyForRecord(v, map) || portCode;
     const p = map.get(key) || {
       port_code: portCode,
       port_name: portName,
