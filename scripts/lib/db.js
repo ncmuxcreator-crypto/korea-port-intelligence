@@ -494,14 +494,26 @@ function buildFoundationLabels(record = {}) {
 }
 
 function buildScoreComponents(record = {}) {
+  const routePressure = Math.max(
+    scoreNumber(record.route_pressure_score),
+    scoreNumber(record.route_bonus_score || record.route_bonus),
+    scoreNumber(record.compliance_pressure_score)
+  );
   return {
     commercial_value_score: commercialScore(record),
+    vessel_value: scoreNumber(record.vessel_value_score || record.commercial_fit_score),
+    work_feasibility: scoreNumber(record.work_feasibility_score || record.cleaning_window_score),
+    congestion_exposure: scoreNumber(record.congestion_score || record.port_congestion_score || record.congestion_exposure_score),
+    biofouling_exposure: scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score || record.biofouling_score),
+    route_pressure: routePressure,
+    contact_readiness: scoreNumber(record.contact_readiness_score || record.sales_accessibility_score),
+    data_confidence: scoreNumber(record.data_confidence_score || record.data_quality_score),
     vessel_value_score: scoreNumber(record.vessel_value_score || record.commercial_fit_score),
     work_feasibility_score: scoreNumber(record.work_feasibility_score || record.cleaning_window_score),
     congestion_score: scoreNumber(record.congestion_score || record.port_congestion_score || record.congestion_exposure_score),
     biofouling_exposure_score: scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score || record.biofouling_score),
     performance_proxy_score: scoreNumber(record.performance_proxy_score),
-    compliance_pressure_score: scoreNumber(record.compliance_pressure_score),
+    compliance_pressure_score: routePressure,
     contact_readiness_score: scoreNumber(record.contact_readiness_score || record.sales_accessibility_score),
     data_confidence_score: scoreNumber(record.data_confidence_score || record.data_quality_score),
     repeat_caller_score: scoreNumber(record.repeat_caller_score),
@@ -522,17 +534,17 @@ function buildScoreReasons(record = {}) {
   const anchorageDays = scoreNumber(record.anchorage_hours) / 24;
   const stayDays = scoreNumber(record.stay_hours) / 24;
 
-  if (gt >= 5000) reasons.push(`GT ${Math.round(gt).toLocaleString("en-US")}`);
-  if (type) reasons.push(type);
-  if (anchorageDays >= 1) reasons.push(`Anchorage ${Math.round(anchorageDays * 10) / 10} days`);
-  if (stayDays >= 2) reasons.push(`Stay ${Math.round(stayDays * 10) / 10} days`);
-  if (record.pilot_outbound_missing || record.no_outbound_pilot || record.work_window_status === "open_or_ongoing") reasons.push("No outbound pilot / open work window");
-  if (scoreNumber(record.work_feasibility_score) >= 60) reasons.push("High work feasibility");
-  if (scoreNumber(record.congestion_score || record.port_congestion_score) >= 50) reasons.push("Congestion exposed");
-  if (scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score) >= 50) reasons.push("Biofouling exposure elevated");
-  if (record.operator_name || record.operator) reasons.push("Operator identified");
-  if (record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm) reasons.push("Agent identified");
-  if (record.route_region) reasons.push(`${record.route_region} route signal`);
+  if (gt >= 5000) reasons.push(`GT ${Math.round(gt).toLocaleString("en-US")}급 대상 선박`);
+  if (type) reasons.push(`${type} 선종`);
+  if (anchorageDays >= 1) reasons.push(`묘박/대기 ${Math.round(anchorageDays * 10) / 10}일`);
+  if (stayDays >= 2) reasons.push(`항만 체류 ${Math.round(stayDays * 10) / 10}일`);
+  if (record.pilot_outbound_missing || record.no_outbound_pilot || record.work_window_status === "open_or_ongoing") reasons.push("출항 도선 미확인 또는 작업창 열림");
+  if (scoreNumber(record.work_feasibility_score) >= 60) reasons.push("작업 가능성 높음");
+  if (scoreNumber(record.congestion_score || record.port_congestion_score) >= 50) reasons.push("체선/대기 노출 확인");
+  if (scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score) >= 50) reasons.push("바이오파울링 노출 지표 높음");
+  if (record.operator_name || record.operator) reasons.push("운영선사 확인");
+  if (record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm) reasons.push("대리점/신고업체 확인");
+  if (record.route_region) reasons.push(`${record.route_region} 항로 압박 신호`);
   for (const code of record.reason_codes || []) reasons.push(String(code).replace(/_/g, " "));
 
   return [...new Set(reasons)].slice(0, 12);
@@ -542,10 +554,47 @@ function buildWhyScoredHigh(record = {}) {
   const score = commercialScore(record);
   const reasons = buildScoreReasons(record).slice(0, 4);
   if (!score && !reasons.length) return null;
-  const vessel = record.vessel_name || "This vessel";
-  const port = record.port_name || record.port || record.port_code || "current port";
-  const prefix = `Commercial Value ${score}: ${vessel} at ${port}`;
-  return reasons.length ? `${prefix} scored high because of ${reasons.join(", ")}.` : `${prefix} has commercially relevant signals.`;
+  const vessel = record.vessel_name || "해당 선박";
+  const port = record.port_name || record.port || record.port_code || "현재 항만";
+  return reasons.length
+    ? `${port}의 ${vessel}은 상업 가치 ${score}점으로 평가되며, 주요 근거는 ${reasons.join(", ")}입니다.`
+    : `${port}의 ${vessel}은 상업적으로 검토할 신호가 확인됩니다.`;
+}
+
+function buildWhyNowKo(record = {}) {
+  if (record.why_now) return record.why_now;
+  const port = record.port_name || record.port || "해당 항만";
+  const gt = scoreNumber(record.gt || record.grtg || record.intrlGrtg);
+  const type = String(record.vessel_type_group || record.vessel_type || "선박").replace(/_/g, " ");
+  const anchorageDays = scoreNumber(record.anchorage_hours) / 24;
+  const stayDays = scoreNumber(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours) / 24;
+  const workScore = scoreNumber(record.work_feasibility_score || record.cleaning_window_score);
+  const parts = [];
+  if (gt >= 5000) parts.push(`GT ${Math.round(gt).toLocaleString("en-US")}급 ${type}`);
+  else parts.push(type);
+  if (anchorageDays >= 1) parts.push(`묘박/대기 ${Math.round(anchorageDays * 10) / 10}일`);
+  else if (stayDays >= 1) parts.push(`체류 ${Math.round(stayDays * 10) / 10}일`);
+  if (workScore >= 50 || record.work_window_status === "open_or_ongoing") parts.push("작업 가능성이 높음");
+  if (record.no_outbound_pilot || record.pilot_outbound_missing || !record.atd) parts.push("출항 완료 전 확인 필요");
+  return `${port}에서 ${parts.filter(Boolean).join(", ")} 신호가 확인되어 현재 영업 우선순위 검토가 필요합니다.`;
+}
+
+function buildRecommendedActionKo(record = {}) {
+  if (record.recommended_action || record.recommended_next_action) return record.recommended_action || record.recommended_next_action;
+  if (!(record.operator_name || record.operator) && !(record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm)) return "운영선사와 대리점 정보를 먼저 확인하세요.";
+  if (scoreNumber(record.work_feasibility_score || record.work_window_hours) >= 50) return "대리점 확인 후 작업 가능 시간과 견적 요청 여부를 확인하세요.";
+  if (record.eta || record.etb || record.predicted_arrival_time) return "입항/접안 일정 기준으로 사전 연락 가능성을 확인하세요.";
+  return "선박 스케줄과 연락 경로를 확인하세요.";
+}
+
+function buildCandidateSummaryKo(record = {}) {
+  if (record.candidate_summary_ko) return record.candidate_summary_ko;
+  const vessel = record.vessel_name || "해당 선박";
+  const port = record.port_name || record.port || "항만";
+  const score = commercialScore(record);
+  const band = candidateLabel(record);
+  const reasons = buildScoreReasons(record).slice(0, 3).join(", ");
+  return `${vessel} / ${port} / 상업 가치 ${score}점 / ${band}${reasons ? ` / ${reasons}` : ""}`;
 }
 
 function kstSnapshotDate(value = new Date()) {
@@ -1288,10 +1337,10 @@ export async function saveToSupabase(records, options = {}) {
     lead_status: r.lead_status || "monitor",
     lead_priority_score: Number(r.lead_priority_score || 0),
     why_now: r.why_now || null,
-    candidate_summary_ko: r.candidate_summary_ko || null,
+    candidate_summary_ko: buildCandidateSummaryKo(r),
     sales_angle: r.sales_angle || null,
     recommended_next_action: r.recommended_next_action || null,
-    recommended_action: r.recommended_action || r.recommended_next_action || null,
+    recommended_action: buildRecommendedActionKo(r),
     action_priority: r.action_priority || null,
     recommended_contact_path: r.recommended_contact_path || null,
     recommended_department: r.recommended_department || null,
@@ -1885,11 +1934,11 @@ export async function saveToSupabase(records, options = {}) {
       opportunity_summary: r.opportunity_summary || null,
       anchorage_probability: Number(r.anchorage_probability || 0),
       predicted_congestion_score: Number(r.predicted_congestion_score || r.predicted_congestion || 0),
-      why_now: r.why_now || null,
-      candidate_summary_ko: r.candidate_summary_ko || null,
+      why_now: buildWhyNowKo(r),
+      candidate_summary_ko: buildCandidateSummaryKo(r),
       sales_angle: r.sales_angle || null,
       recommended_next_action: r.recommended_next_action || null,
-      recommended_action: r.recommended_action || r.recommended_next_action || null,
+      recommended_action: buildRecommendedActionKo(r),
       action_priority: r.action_priority || null,
       recommended_contact_path: r.recommended_contact_path || null,
       recommended_department: r.recommended_department || null,
@@ -1944,8 +1993,8 @@ export async function saveToSupabase(records, options = {}) {
         work_feasibility_score: Number(r.work_feasibility_score || 0),
         contact_readiness_score: Number(r.contact_readiness_score || 0),
         predicted_cleaning_opportunity_score: Number(r.predicted_cleaning_opportunity_score || 0),
-        why_now: r.why_now || null,
-        recommended_action: r.recommended_action || r.recommended_next_action || null,
+        why_now: buildWhyNowKo(r),
+        recommended_action: buildRecommendedActionKo(r),
         recommended_contact_path: r.recommended_contact_path || r.contact_path_label_ko || null,
         ...opportunityTimestampFields(state, r, now),
         last_seen: now,
@@ -2332,8 +2381,8 @@ export async function saveToSupabase(records, options = {}) {
         port_call_key: portCallKey,
         model_ready_fields: ["gt", "vessel_type", "stay_hours", "anchorage_hours", "commercial_value_score", "congestion_score", "biofouling_exposure_score", "operator_score", "repeat_caller_score"],
         reason_codes: r.reason_codes || [],
-        why_now: r.why_now || null,
-        recommended_action: r.recommended_action || r.recommended_next_action || null
+        why_now: buildWhyNowKo(r),
+        recommended_action: buildRecommendedActionKo(r)
       }
     };
   }), row => row.feature_id);
@@ -2426,15 +2475,20 @@ export async function saveToSupabase(records, options = {}) {
       port_code: r.port_code || null,
       commercial_value_score: commercialScore(r),
       candidate_band: candidateLabel(r),
-      why_now: r.why_now || r.candidate_summary_ko || null,
+      why_now: buildWhyNowKo(r),
       why_scored_high: r.why_scored_high || buildWhyScoredHigh(r),
-      recommended_action: r.recommended_action || r.recommended_next_action || null,
+      recommended_action: buildRecommendedActionKo(r),
       score_components: buildScoreComponents(r),
       score_reasons: buildScoreReasons(r),
       reason_codes: r.reason_codes || [],
       rule_hits: rules.map(rule => rule.rule_id),
       feature_contributions: buildFoundationFeatureVector(r),
-      payload: storagePayload(r)
+      payload: storagePayload({
+        ...r,
+        candidate_summary_ko: buildCandidateSummaryKo(r),
+        why_now: buildWhyNowKo(r),
+        recommended_action: buildRecommendedActionKo(r)
+      })
     };
   }), row => row.explainability_id);
 
