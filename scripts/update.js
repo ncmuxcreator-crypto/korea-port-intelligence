@@ -2705,6 +2705,39 @@ function candidateDedupeKey(v = {}) {
   return `NAME_PORT_BERTH_TIME|${normalizedName}|${portCode}|${v.berth_name || v.berth || v.anchorage_name || ""}|${v.ata || v.eta || ""}`;
 }
 
+function candidateBandFromScore(value = 0) {
+  const score = Number(value || 0);
+  if (score >= CRITICAL_TARGET_THRESHOLD) return "critical";
+  if (score >= IMMEDIATE_TARGET_THRESHOLD) return "immediate_target";
+  if (score >= SALES_CANDIDATE_THRESHOLD) return "sales_target";
+  if (score >= 50) return "watchlist";
+  return "general";
+}
+
+function ensureOutputContractFields(records = [], { runId = "", generatedAt = "", dataSourceUsed = "static_json_snapshot" } = {}) {
+  return records.map((record = {}, index) => {
+    const portCode = String(record.port_code || portCodeFromName(record.port || record.port_name) || "unknown");
+    const vesselName = record.vessel_name || record.name || record.ship_name || record.normalized_vessel_name || "UNKNOWN";
+    const commercialValueScore = Number(record.commercial_value_score ?? record.total_sales_priority_score ?? record.cleaning_candidate_score ?? 0);
+    const fallbackPortCallId = normalizeIdentityToken(candidateDedupeKey({ ...record, port_code: portCode, vessel_name: vesselName }) || `ROW-${index}`);
+    const masterVesselId = record.master_vessel_id || record.hybrid_entity_key || record.vessel_id || record.imo || record.mmsi || record.call_sign || normalizeIdentityToken(vesselName);
+    return {
+      ...record,
+      run_id: record.run_id || runId,
+      generated_at: record.generated_at || record.collected_at || generatedAt,
+      data_source_used: record.data_source_used || record.source_name || record.source || dataSourceUsed,
+      port_call_id: record.port_call_id || fallbackPortCallId,
+      master_vessel_id: masterVesselId,
+      vessel_name: vesselName,
+      port_code: portCode,
+      port_name: record.port_name || record.port || portCode,
+      candidate_band: record.candidate_band || record.sales_priority_band || candidateBandFromScore(commercialValueScore),
+      commercial_value_score: commercialValueScore,
+      data_confidence_score: Number(record.data_confidence_score ?? record.confidence_score ?? 0)
+    };
+  });
+}
+
 function candidateTimestamp(v = {}) {
   const value = Date.parse(v.collected_at || v.updated_at || v.last_seen_at || v.first_seen_at || "");
   return Number.isNaN(value) ? 0 : value;
@@ -4451,7 +4484,14 @@ try {
     diagnosticsOnly: shouldWriteDebugApiOutputs(baseReport),
     debugDir: DEBUG_API_DIR
   });
-  const allCollectedVessels = activeRecordsOnly(snapshotOutputs.merged);
+  const allCollectedVessels = ensureOutputContractFields(
+    activeRecordsOnly(snapshotOutputs.merged),
+    {
+      runId: baseReport.run_id,
+      generatedAt: baseReport.generated_at || baseReport.completed_at || new Date().toISOString(),
+      dataSourceUsed: baseReport.data_source_used || "static_json_snapshot"
+    }
+  );
   const targetVesselsRaw = allCollectedVessels.filter(isMainCommercialVessel);
   annotateCommercialRanks(targetVesselsRaw);
   for (const vessel of targetVesselsRaw) {
