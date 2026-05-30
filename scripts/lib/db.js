@@ -545,6 +545,107 @@ async function runLeanRetentionCleanup(supabase) {
   return result;
 }
 
+function lifecycleKey(record = {}) {
+  const portCode = record.port_code || record.port || "";
+  if (record.port_call_identity || record.port_call_key) return `PORTCALL|${portCode}|${record.port_call_identity || record.port_call_key}`;
+  if (record.hybrid_entity_key || record.vessel_id) return `VESSELPORT|${portCode}|${record.hybrid_entity_key || record.vessel_id}`;
+  if (record.call_sign) return `CALLSIGN|${portCode}|${record.call_sign}`;
+  return `NAME|${portCode}|${normalizeVesselName(record.vessel_name)}`;
+}
+
+function isAnchorageState(record = {}) {
+  const facility = String(record.facility_type || "").toLowerCase();
+  const status = String(record.status_bucket || record.status || "").toLowerCase();
+  return facility.includes("anchorage") ||
+    status.includes("anchorage") ||
+    Boolean(record.is_anchorage_waiting) ||
+    scoreNumber(record.anchorage_hours) > 0 ||
+    hasValue(record.anchorage_name);
+}
+
+function isBerthState(record = {}) {
+  const facility = String(record.facility_type || "").toLowerCase();
+  return facility.includes("berth") || (hasValue(record.berth_name || record.berth) && !isAnchorageState(record));
+}
+
+function isInboundPilot(record = {}) {
+  return /in|입항|inbound/i.test([record.pilot_direction, record.movement_type].filter(Boolean).join(" "));
+}
+
+function isOutboundPilot(record = {}) {
+  return /out|출항|outbound/i.test([record.pilot_direction, record.movement_type].filter(Boolean).join(" "));
+}
+
+async function fetchPreviousSnapshotMap(supabase) {
+  try {
+    const { data, error } = await supabase
+      .from("vessel_snapshots")
+      .select("hybrid_entity_key,vessel_id,port_call_identity,port_code,port,berth_name,anchorage_name,facility_type,status_bucket,status,ata,atd,etd,pilot_time,pilot_direction,movement_type,stay_hours,anchorage_hours,collected_at")
+      .order("collected_at", { ascending: false })
+      .limit(Number(process.env.EVENT_PREVIOUS_SNAPSHOT_LIMIT || 5000));
+    if (error) return new Map();
+    const map = new Map();
+    for (const row of data || []) {
+      const key = lifecycleKey(row);
+      if (key && !map.has(key)) map.set(key, row);
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+function eventRow(record, runId, now, type, eventTime, confidence, reason, previous = null) {
+  return {
+    event_uid: stableEntityId("EVT", `${runId}-${lifecycleKey(record)}-${type}-${eventTime || now}`),
+    hybrid_entity_key: record.hybrid_entity_key || record.vessel_id,
+    master_vessel_id: fallbackMasterId(record),
+    run_id: runId,
+    vessel_id: record.vessel_id || null,
+    port_call_id: record.port_call_identity || record.port_call_key || null,
+    event_type: type,
+    event_time: eventTime || now,
+    port_code: record.port_code || null,
+    berth_name: record.berth_name || record.berth || record.anchorage_name || null,
+    confidence,
+    source_name: record.source || record.source_name || record.source_mode || "snapshot_diff",
+    source: record.source || record.source_name || record.source_mode || "snapshot_diff",
+    port: record.port || record.port_name || null,
+    previous_snapshot: previous ? compactPayload(previous) : {},
+    payload: {
+      ...storagePayload(record),
+      event_reason: reason,
+      event_source: "snapshot_diff"
+    }
+  };
+}
+
+function buildLifecycleEvents(records = [], previousMap = new Map(), runId, now) {
+  const rows = [];
+  for (const record of records) {
+    if (!record.hybrid_entity_key && !record.vessel_id && !record.call_sign && !record.vessel_name) continue;
+    const previous = previousMap.get(lifecycleKey(record)) || null;
+    const previousAnchorage = isAnchorageState(previous || {});
+    const currentAnchorage = isAnchorageState(record);
+    const previousBerth = previous?.berth_name || previous?.berth || null;
+    const currentBerth = record.berth_name || record.berth || null;
+    const stayHours = scoreNumber(record.stay_hours);
+    const anchorageHours = scoreNumber(record.anchorage_hours);
+    const congestionScore = scoreNumber(record.congestion_score || record.port_congestion_score);
+
+    if (record.ata && !previous?.ata) rows.push(eventRow(record, runId, now, "PORT_ARRIVAL", record.ata, 90, "ATA newly detected", previous));
+    if ((record.pilot_time || record.movement_time) && isInboundPilot(record) && !previous?.pilot_time) rows.push(eventRow(record, runId, now, "PILOT_INBOUND", record.pilot_time || record.movement_time, 75, "Inbound pilot schedule detected", previous));
+    if (currentBerth && currentBerth !== previousBerth && isBerthState(record)) rows.push(eventRow(record, runId, now, "BERTH_ASSIGNED", record.atb || record.etb || record.ata || now, 80, "Berth assignment changed or appeared", previous));
+    if (currentAnchorage && !previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_START", record.ata || record.eta || now, 75, "Anchorage state appeared", previous));
+    if (!currentAnchorage && previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_END", record.atb || record.ata || now, 70, "Anchorage state ended", previous));
+    if ((stayHours >= 72 || anchorageHours >= 72) && (!previous || scoreNumber(previous.stay_hours) < 72 && scoreNumber(previous.anchorage_hours) < 72)) rows.push(eventRow(record, runId, now, "LONG_STAY_DETECTED", now, 70, "Stay or anchorage crossed 72 hours", previous));
+    if (congestionScore >= 60 && scoreNumber(previous?.congestion_score || previous?.port_congestion_score) < 60) rows.push(eventRow(record, runId, now, "CONGESTION_DETECTED", now, 70, "Congestion score crossed operational threshold", previous));
+    if ((record.pilot_time || record.movement_time) && isOutboundPilot(record) && !isOutboundPilot(previous || {})) rows.push(eventRow(record, runId, now, "PILOT_OUTBOUND", record.pilot_time || record.movement_time, 75, "Outbound pilot schedule detected", previous));
+    if (record.atd && !previous?.atd) rows.push(eventRow(record, runId, now, "PORT_DEPARTURE", record.atd, 90, "ATD newly detected", previous));
+  }
+  return uniqueBy(rows, row => row.event_uid);
+}
+
 export async function saveToSupabase(records, options = {}) {
   const supabase = getSupabase();
   const now = new Date().toISOString();
@@ -740,6 +841,8 @@ export async function saveToSupabase(records, options = {}) {
   if (!rows.length) {
     return { runId, recordsSaved: 0, table: "vessel_snapshots", mode: "empty", promoted: false, promotion };
   }
+
+  const previousSnapshotMap = await fetchPreviousSnapshotMap(supabase);
 
   let recordsSaved = 0;
   const batchSize = Number(process.env.SUPABASE_BATCH_SIZE || 100);
@@ -1394,22 +1497,19 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const events = records
-    .filter(r => r.is_cleaning_candidate || r.is_immediate_candidate || (r.total_sales_priority_score || 0) >= 60)
-    .map(r => ({
-      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
-      master_vessel_id: fallbackMasterId(r),
-      run_id: runId,
-      vessel_id: r.vessel_id,
-      event_type: r.is_immediate_candidate ? "SCORE_INCREASED" : "LONG_IDLE_DETECTED",
-      event_time: now,
-      port_code: r.port_code || null,
-      berth_name: r.berth_name || r.berth || null,
-      confidence: r.candidate_confidence || 50,
-      source_name: r.source || null,
-      port: r.port || null,
-      payload: storagePayload(r)
-    }))
+  const events = buildLifecycleEvents(records, previousSnapshotMap, runId, now)
+    .concat(records
+      .filter(r => r.is_cleaning_candidate || r.is_immediate_candidate || (r.total_sales_priority_score || 0) >= 60)
+      .map(r => eventRow(
+        r,
+        runId,
+        now,
+        r.is_immediate_candidate ? "SCORE_INCREASED" : "LONG_STAY_DETECTED",
+        now,
+        r.candidate_confidence || 50,
+        r.is_immediate_candidate ? "Immediate candidate score signal" : "Commercial score or long-stay signal",
+        previousSnapshotMap.get(lifecycleKey(r)) || null
+      )))
     .filter(r => r.hybrid_entity_key);
 
   for (let index = 0; index < events.length; index += batchSize) {

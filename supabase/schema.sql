@@ -738,17 +738,21 @@ create table if not exists vessel_identity_candidates (
 create table if not exists vessel_events (
   id bigserial primary key,
   event_id bigserial,
+  event_uid text,
   hybrid_entity_key text,
   master_vessel_id text,
   run_id text,
   vessel_id text,
+  port_call_id text,
   event_type text not null,
   event_time timestamptz,
   port_code text,
   berth_name text,
   confidence int default 0,
   source_name text,
+  source text,
   port text,
+  previous_snapshot jsonb default '{}'::jsonb,
   event_at timestamptz not null default now(),
   payload jsonb default '{}'::jsonb
 );
@@ -851,6 +855,14 @@ create index if not exists idx_data_collection_runs_status on data_collection_ru
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
 create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
+alter table vessel_events add column if not exists event_uid text;
+alter table vessel_events add column if not exists port_call_id text;
+alter table vessel_events add column if not exists source text;
+alter table vessel_events add column if not exists previous_snapshot jsonb default '{}'::jsonb;
+create unique index if not exists idx_vessel_events_event_uid on vessel_events(event_uid) where event_uid is not null;
+create index if not exists idx_vessel_events_run_id on vessel_events(run_id);
+create index if not exists idx_vessel_events_type_time on vessel_events(event_type, event_time desc);
+create index if not exists idx_vessel_events_port_call on vessel_events(port_call_id);
 alter table enrichment_match_candidates add column if not exists source_name text;
 alter table enrichment_match_candidates add column if not exists source_row_id text;
 alter table enrichment_match_candidates add column if not exists snapshot_id text;
