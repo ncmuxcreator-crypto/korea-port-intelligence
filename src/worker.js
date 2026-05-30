@@ -334,10 +334,15 @@ function withinCommercialPercentile(v = {}, percent = 20) {
 function candidateDedupeKey(v = {}) {
   const normalizedName = String(v.normalized_vessel_name || v.vessel_name || "").normalize("NFKC").toUpperCase().replace(/[^A-Z0-9가-힣]+/g, "");
   const portCode = String(v.port_code || portCodeFromName(v.port || v.port_name) || "");
-  if (hasValue(v.master_vessel_id) && hasValue(v.port_call_identity)) return `MASTER_PORTCALL|${v.master_vessel_id}|${portCode}|${v.port_call_identity}`;
-  if (hasValue(v.imo)) return `IMO_TIME|${v.imo}|${portCode}|${v.ata || v.eta || ""}`;
+  const eventDate = String(v.ata || v.eta || v.atd || v.etd || v.first_seen_at || v.collected_at || "").slice(0, 10);
+  if (hasValue(v.port_call_id)) return `PORTCALL_ID|${v.port_call_id}`;
+  if (hasValue(v.port_call_identity)) return `PORTCALL|${portCode}|${v.port_call_identity}`;
+  if (hasValue(v.master_vessel_id) && eventDate) return `MASTER_DATE|${v.master_vessel_id}|${portCode}|${eventDate}`;
+  if (hasValue(v.imo) && eventDate) return `IMO_DATE|${v.imo}|${portCode}|${eventDate}`;
   if (hasValue(v.call_sign) && (hasValue(v.etryptYear) || hasValue(v.etryptCo))) return `CALL_PORTCALL|${v.call_sign}|${portCode}|${v.etryptYear || ""}|${v.etryptCo || ""}`;
-  return `NAME_PORT_BERTH_TIME|${normalizedName}|${portCode}|${v.berth_name || v.berth || v.anchorage_name || ""}|${v.ata || v.eta || ""}`;
+  if (hasValue(v.call_sign) && eventDate) return `CALL_DATE|${v.call_sign}|${portCode}|${eventDate}`;
+  if (normalizedName && eventDate) return `NAME_PORT_DATE|${normalizedName}|${portCode}|${eventDate}`;
+  return `NAME_PORT_BERTH|${normalizedName}|${portCode}|${v.berth_name || v.berth || v.anchorage_name || ""}`;
 }
 
 function candidateTimestamp(v = {}) {
@@ -360,6 +365,40 @@ function dedupeCandidateRows(records = []) {
     if (!current || isBetterCandidate(record, current)) byKey.set(key, record);
   }
   return [...byKey.values()];
+}
+
+function duplicatePortCallDiagnostics(records = []) {
+  const groups = new Map();
+  records.forEach((record, index) => {
+    const key = candidateDedupeKey(record);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ record, index });
+  });
+  const duplicates = [...groups.entries()].filter(([, rows]) => rows.length > 1);
+  const reasonBreakdown = {};
+  for (const [key, rows] of duplicates) {
+    const reason = key.split("|")[0] || "UNKNOWN";
+    reasonBreakdown[reason] = (reasonBreakdown[reason] || 0) + rows.length - 1;
+  }
+  return {
+    duplicate_rows_detected: duplicates.reduce((sum, [, rows]) => sum + rows.length - 1, 0),
+    duplicate_rows_removed: duplicates.reduce((sum, [, rows]) => sum + rows.length - 1, 0),
+    duplicate_reason_breakdown: reasonBreakdown,
+    duplicate_examples: duplicates.slice(0, 10).map(([key, rows]) => ({
+      dedupe_key: key,
+      row_count: rows.length,
+      vessels: rows.slice(0, 5).map(({ record }) => ({
+        vessel_name: record.vessel_name || record.name || "",
+        call_sign: record.call_sign || "",
+        port_code: record.port_code || "",
+        port_name: record.port_name || record.port || "",
+        ata: record.ata || "",
+        eta: record.eta || "",
+        atd: record.atd || "",
+        source: record.source || record.source_name || record.source_origin || ""
+      }))
+    }))
+  };
 }
 
 function highScoreAuditRow(v = {}) {
@@ -510,6 +549,10 @@ function normalizeSnapshot(row = {}) {
     commercial_priority: merged.commercial_priority || "",
     anchorage_relevance: merged.anchorage_relevance || "",
     berth: merged.berth || "",
+    laidupFcltyNm: merged.laidupFcltyNm || "",
+    facility_name: merged.facility_name || "",
+    facility_name_raw: merged.facility_name_raw || "",
+    facility_type: merged.facility_type || "",
     anchorage_zone: merged.anchorage_zone || "",
     anchorage_name: merged.anchorage_name || merged.anchorage_zone || "",
     berth_class: merged.berth_class || "",
@@ -740,6 +783,8 @@ function normalizeSnapshot(row = {}) {
     vessel_basic_info_missing_fields: merged.vessel_basic_info_missing_fields || BASIC_INFO_FIELDS.filter(field => !hasValue(merged[field])),
     vessel_spec_enrichment_priority: Boolean(merged.vessel_spec_enrichment_priority),
     status_bucket: merged.status_bucket || deriveStatusBucket(merged),
+    is_anchorage_waiting: Boolean(merged.is_anchorage_waiting || (deriveStatusBucket(merged) === "anchorage_waiting")),
+    anchorage_detection_source: merged.anchorage_detection_source || anchorageSignalSource(merged),
     commercial_relevance_status: merged.commercial_relevance_status || deriveCommercialRelevance(merged),
     candidate_band: merged.candidate_band || merged.sales_priority_band || "low_priority",
     updated_at: merged.updated_at || merged.collected_at || row.collected_at || new Date().toISOString()
@@ -781,6 +826,34 @@ function stayDaysGroup(hours) {
   return "stay_under_3d";
 }
 
+function anchorageSignalSource(v = {}) {
+  const facilityText = [
+    v.facility_type,
+    v.berth_class,
+    v.anchorage_class,
+    v.anchorage_name,
+    v.anchorage_zone,
+    v.laidupFcltyNm,
+    v.facility_name,
+    v.facility_name_raw,
+    v.berth_name,
+    v.berth,
+    v.terminal_name,
+    v.status_bucket,
+    v.operational_status,
+    v.status
+  ].filter(Boolean).join(" ").normalize("NFKC");
+  if (Number(v.anchorage_hours || 0) > 0) return "anchorage_hours";
+  if (String(v.facility_type || v.berth_class || "").toLowerCase() === "anchorage") return "facility_type";
+  if (/anchorage|anchor|waiting|outer|drifting|idle|묘박|정박|박지|외항|대기/i.test(facilityText)) return "facility_name";
+  if (String(v.status_bucket || "").toLowerCase() === "anchorage_waiting") return "status_bucket";
+  return "";
+}
+
+function isAnchorageLike(v = {}) {
+  return Boolean(anchorageSignalSource(v));
+}
+
 function deriveStatusBucket(v = {}) {
   const status = String(v.status || "").toLowerCase();
   const now = Date.now();
@@ -796,7 +869,7 @@ function deriveStatusBucket(v = {}) {
   const atd = parse(v.atd);
   const facilityType = String(v.facility_type || v.berth_class || "").toLowerCase();
   if (v.pilot_only_arrival_review || v.ledger_status === "pilot_only_pending_port_operation") return "arriving_soon";
-  if ((facilityType === "anchorage" || /waiting|anchorage|anchor|idle|drifting|묘박|정박|박지|외항|대기/i.test(status) || Number(v.anchorage_hours || 0) > 0) && !atd) return "anchorage_waiting";
+  if (isAnchorageLike(v) && !atd) return "anchorage_waiting";
   if ((facilityType === "berth" || /berth|moored|alongside/.test(status) || v.berth || v.berth_name || v.atb) && !atd) return "berthed";
   if (ata && !atd) return "arrived_staying";
   if (eta && !ata && eta >= now) return "arriving_soon";
@@ -1182,7 +1255,7 @@ function buildPortPredictionContext(records = []) {
       waitTotal: 0
     };
     current.vessels += 1;
-    if (record.is_anchorage_waiting || Number(record.anchorage_hours || 0) > 0 || String(record.status_bucket || "").includes("anchorage")) current.anchorage += 1;
+    if (isAnchorageLike(record)) current.anchorage += 1;
     if (["arrived_staying", "berthed", "anchorage_waiting"].includes(record.status_bucket) || (record.ata && !record.atd)) current.staying += 1;
     if (Number(record.berth_occupancy_proxy || 0) >= 50 || /active|working|cargo|loading|discharging|작업|하역|진행/.test(String(record.terminal_activity || "").toLowerCase())) current.berthOccupied += 1;
     if (String(record.pilot_direction || record.movement_type || "").toLowerCase() === "inbound") current.inboundPilot += 1;
@@ -1599,8 +1672,7 @@ function isCurrentActionableCandidate(v = {}) {
   const status = String(v.status_bucket || v.operational_status || v.status || "").toLowerCase();
   if (status === "departed") return false;
   return ["arrived_staying", "berthed", "anchorage_waiting"].includes(status) ||
-    Boolean(v.is_anchorage_waiting) ||
-    Number(v.anchorage_hours || 0) > 0 ||
+    isAnchorageLike(v) ||
     Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || 0) > 0 ||
     Number(v.work_window_hours || 0) > 0;
 }
@@ -1804,20 +1876,23 @@ function isBetterSnapshotRepresentative(next = {}, current = {}) {
 
 function snapshotRepresentativeKey(record = {}, index = 0) {
   const portCode = String(record.port_code || portCodeFromName(record.port || record.port_name) || "");
+  if (hasValue(record.port_call_id)) return `PORTCALL_ID|${record.port_call_id}`;
   if (hasValue(record.port_call_identity)) return `PORTCALL|${portCode}|${record.port_call_identity}`;
-  if (hasValue(record.snapshot_id)) return `SNAPSHOT|${record.snapshot_id}`;
+  const eventDate = String(record.ata || record.eta || record.atd || record.etd || record.first_seen_at || record.collected_at || "").slice(0, 10);
   if (hasValue(record.master_vessel_id) && hasValue(record.ata || record.eta || record.etryptYear || record.etryptCo)) {
     return `MASTER_TIME|${record.master_vessel_id}|${portCode}|${record.ata || record.eta || record.etryptYear || ""}|${record.etryptCo || ""}`;
   }
   if (hasValue(record.call_sign) && hasValue(record.etryptYear || record.etryptCo)) {
     return `CALL_PORTCALL|${record.call_sign}|${portCode}|${record.etryptYear || ""}|${record.etryptCo || ""}`;
   }
+  if (hasValue(record.call_sign) && eventDate) return `CALL_DATE|${record.call_sign}|${portCode}|${eventDate}`;
   const normalizedName = String(record.normalized_vessel_name || record.vessel_name || record.name || "")
     .normalize("NFKC")
     .toUpperCase()
     .replace(/[^A-Z0-9가-힣]+/g, "");
-  const time = record.ata || record.eta || record.atd || record.etd || record.collected_at || index;
-  return `NAME_PORT_TIME|${normalizedName || record.hybrid_entity_key || record.vessel_id || `ROW-${index}`}|${portCode}|${time}`;
+  if (normalizedName && eventDate) return `NAME_PORT_DATE|${normalizedName}|${portCode}|${eventDate}`;
+  if (hasValue(record.snapshot_id)) return `SNAPSHOT|${record.snapshot_id}`;
+  return `NAME_PORT_TIME|${normalizedName || record.hybrid_entity_key || record.vessel_id || `ROW-${index}`}|${portCode}|${index}`;
 }
 
 function latestPerVesselPort(records) {
@@ -1848,7 +1923,7 @@ function buildPortHeatmap(records) {
     p.vessel_count += 1;
     p.target_vessels += 1;
     p.target_vessel_count += 1;
-    if (v.is_anchorage_waiting || (v.anchorage_hours || 0) >= 12 || /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "")) {
+    if (isAnchorageLike(v) || (v.anchorage_hours || 0) >= 12) {
       p.waiting += 1;
       p.anchorage_waiting += 1;
       p.anchorage_vessels += 1;
@@ -1911,7 +1986,7 @@ function buildPortOpportunityRanking(records = []) {
     p.target_vessels += 1;
     p.target_vessel_count += 1;
     if (score >= 75 || gt >= 30000 || v.high_value_target) p.high_value_vessels += 1;
-    if (v.is_anchorage_waiting || Number(v.anchorage_hours || 0) > 0 || String(v.status_bucket || "").includes("anchorage")) {
+    if (isAnchorageLike(v)) {
       p.anchorage_waiting += 1;
       p.anchorage_vessels += 1;
     }
@@ -2824,6 +2899,10 @@ function snapshotDataFreshness(snapshot = {}) {
 
 function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "latest_successful_summary_snapshot") {
   const freshness = snapshotDataFreshness(snapshot);
+  const portSummary = parseJsonField(snapshot.port_summary, []);
+  const anchorageCount = Array.isArray(portSummary)
+    ? portSummary.reduce((sum, port) => sum + Number(port.anchorage_vessels || port.anchorage_waiting || 0), 0)
+    : 0;
   return {
     active_run_id: source.pointer?.active_run_id || null,
     summary_run_id: snapshot.run_id || null,
@@ -2849,6 +2928,8 @@ function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "la
     target_vessel_count: Number(snapshot.target_vessels_count || 0),
     sales_candidate_count: Number(snapshot.sales_target_count || 0),
     immediate_target_count: Number(snapshot.immediate_target_count || 0),
+    anchorage_waiting_count: anchorageCount,
+    anchorage_detected_count: anchorageCount,
     opportunity_count: Number(snapshot.opportunity_count || 0),
     watchlist_count: Number(snapshot.watchlist_count || 0),
     port_count: Number(snapshot.port_count || 0),
@@ -3146,7 +3227,7 @@ function buildPortUnitRows(records) {
       p.immediate_targets += 1;
     }
     if (commercialScore(v) >= 75 || Number(v.gt || 0) >= 30000 || v.high_value_target) p.high_value_vessels += 1;
-    if (v.is_anchorage_waiting || Number(v.anchorage_hours || 0) > 0 || String(v.status_bucket || "").includes("anchorage")) {
+    if (isAnchorageLike(v)) {
       p.anchorage_waiting += 1;
       p.anchorage_vessels += 1;
     }
@@ -3368,7 +3449,7 @@ function vesselIdentityKey(record = {}, fallback = "") {
 
 function buildCountFunnel(records = [], buckets = buildVisibilityBuckets(records)) {
   const rawRows = records.reduce((sum, record) => sum + Math.max(1, Number(record.raw_row_count || record.detail_row_count || 1)), 0);
-  const uniquePortCalls = new Set(records.map((record, index) => recordKey(record, `ROW-${index}`))).size;
+  const uniquePortCalls = new Set(records.map((record, index) => candidateDedupeKey(record) || recordKey(record, `ROW-${index}`))).size;
   const uniqueVessels = new Set(records.map((record, index) => vesselIdentityKey(record, `ROW-${index}`))).size;
   return {
     raw_api_rows: rawRows,
@@ -3440,14 +3521,18 @@ function buildSourceCountsFromLogs(logRows = [], activeRunId = null) {
 
 function buildDedupeAudit(records = [], buckets = buildVisibilityBuckets(records)) {
   const funnel = buildCountFunnel(records, buckets);
-  const duplicateRowsRemoved = Number(funnel.duplicate_raw_rows || 0);
+  const duplicateDiagnostics = duplicatePortCallDiagnostics(records);
+  const duplicateRowsRemoved = Math.max(Number(funnel.duplicate_raw_rows || 0), duplicateDiagnostics.duplicate_rows_removed);
   return {
     raw_rows: Number(funnel.raw_api_rows || records.length),
     normalized_rows: Number(funnel.normalized_rows || records.length),
+    duplicate_rows_detected: duplicateDiagnostics.duplicate_rows_detected,
     duplicate_rows_removed: duplicateRowsRemoved,
     duplicate_rate: Number(funnel.raw_api_rows || 0) ? Math.round((duplicateRowsRemoved / Number(funnel.raw_api_rows || 1)) * 1000) / 10 : 0,
     unique_port_calls: Number(funnel.unique_port_calls || 0),
     unique_vessels: Number(funnel.unique_vessels || 0),
+    duplicate_reason_breakdown: duplicateDiagnostics.duplicate_reason_breakdown,
+    duplicate_examples: duplicateDiagnostics.duplicate_examples,
     duplicate_cause_estimates: {
       io_double_count_candidates: records.filter(record => record.deGb || record.de_gb || record.direction).length,
       repeated_detail_rows: records.filter(record => record.detail_rows_flattened || Number(record.detail_row_count || 0) > 1).length,
@@ -3460,7 +3545,10 @@ function buildDedupeAudit(records = [], buckets = buildVisibilityBuckets(records
 
 function buildCandidatePromotionAudit(records = []) {
   const scoring = buildScoringDiagnostics(records);
+  const buckets = buildVisibilityBuckets(records);
+  const targetTableRows = vesselGroupRows(records, "target");
   return {
+    active_run_id: records.find(record => record.run_id)?.run_id || null,
     commercial_score_distribution: scoring.score_distribution,
     score_90_plus_count: scoring.score_90_plus_count,
     score_80_89_count: scoring.score_80_89_count,
@@ -3471,6 +3559,14 @@ function buildCandidatePromotionAudit(records = []) {
     score_0_39_count: scoring.score_0_39_count,
     candidate_generation_count: scoring.candidate_generation_count,
     candidate_promotion_count: scoring.candidate_promotion_count,
+    sales_target_count_summary: buckets.sales_candidates.length,
+    sales_target_count_table_api: targetTableRows.length,
+    sales_target_count_rendered: targetTableRows.length,
+    immediate_target_count_summary: buckets.immediate_targets.length,
+    immediate_target_count_table_api: buckets.immediate_targets.length,
+    immediate_target_count_rendered: buckets.immediate_targets.length,
+    dataset_run_id_summary: records.find(record => record.run_id)?.run_id || null,
+    dataset_run_id_table: records.find(record => record.run_id)?.run_id || null,
     high_score_not_promoted_count: scoring.high_score_not_promoted_count,
     excluded_high_value_count: scoring.high_score_not_promoted_count,
     exclusion_reason_counts: scoring.exclusion_reason_counts || scoring.candidate_exclusion_reason_counts || {},
@@ -3568,7 +3664,7 @@ function buildPortCongestion(records, portCode) {
 }
 
 function buildAnchorage(records) {
-  return sortCommercialPriority(records.filter(v => v.is_anchorage_waiting || (v.anchorage_hours || 0) > 0 || /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "")))
+  return sortCommercialPriority(records.filter(v => isAnchorageLike(v)))
     .map(v => ({
       vessel_id: v.vessel_id,
       vessel_name: v.vessel_name,
@@ -3722,6 +3818,14 @@ function buildScoringDiagnostics(records = []) {
     score_p50: percentileValue(scores, 50),
     over_scoring_warning: targetRatio > 30 || immediateTargetRatio > 15 ? "영업 후보 점수 또는 비율이 과대 산정될 수 있습니다." : "",
     anchorage_hours_detected_count: records.filter(v => Number(v.anchorage_hours || 0) > 0).length,
+    anchorage_detected_count: records.filter(isAnchorageLike).length,
+    staying_vessels_count: records.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(String(v.status_bucket || deriveStatusBucket(v))) || (v.ata && !v.atd)).length,
+    facility_unknown_count: records.filter(v => !hasValue(v.facility_type || v.berth_name || v.berth || v.anchorage_name || v.laidupFcltyNm || v.facility_name || v.facility_name_raw || v.terminal_name)).length,
+    anchorage_detection_source_breakdown: records.reduce((acc, v) => {
+      const source = anchorageSignalSource(v);
+      if (source) acc[source] = (acc[source] || 0) + 1;
+      return acc;
+    }, {}),
     stay_hours_detected_count: records.filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || 0) > 0).length,
     biofouling_score_nonzero_count: records.filter(v => deriveBiofoulingProxyScore(v) > 0).length,
     cii_score_nonzero_count: records.filter(v => deriveCiiProxyScore(v) > 0).length,
@@ -3791,6 +3895,7 @@ function buildOperatorDiagnostics(records = [], buckets = buildVisibilityBuckets
 function buildStatus(records, source) {
   const buckets = buildVisibilityBuckets(records);
   const countFunnel = buildCountFunnel(records, buckets);
+  const dedupeDiagnostics = buildDedupeAudit(records, buckets);
   const matchingDiagnostics = buildMatchingDiagnostics(records);
   const predictionDiagnostics = buildPredictionDiagnostics(records);
   const dataQualityLayer = buildDataQualityLayerDiagnostics(records, matchingDiagnostics);
@@ -3832,6 +3937,8 @@ function buildStatus(records, source) {
     commercial_target_vessel_count: buckets.sales_candidates.length,
     target_vessel_count: buckets.target_vessels.length,
     staying_vessel_count: buckets.staying_vessels.length,
+    anchorage_waiting_count: records.filter(isAnchorageLike).length,
+    anchorage_detected_count: records.filter(isAnchorageLike).length,
     arrival_pipeline_count: buckets.arrival_pipeline.length,
     pilot_only_arrival_review_count: buckets.pilot_only_arrival_review.length,
     unknown_gt_review_count: buckets.target_vessels.filter(v => v.gt_status === "unknown_gt_review").length,
@@ -3844,6 +3951,13 @@ function buildStatus(records, source) {
     immediate_candidate_count: records.filter(v => v.is_immediate_candidate).length,
     scored_vessel_count: buckets.target_vessels.filter(v => typeof v.commercial_value_score === "number").length,
     sales_candidate_count: buckets.sales_candidates.length,
+    sales_target_count: buckets.sales_candidates.length,
+    sales_target_count_summary: buckets.sales_candidates.length,
+    sales_target_count_table_api: vesselGroupRows(records, "target").length,
+    immediate_target_count_summary: buckets.immediate_targets.length,
+    immediate_target_count_table_api: buckets.immediate_targets.length,
+    dataset_run_id_summary: activeRunId,
+    dataset_run_id_table: activeRunId,
     immediate_target_count: buckets.immediate_targets.length,
     lead_pipeline_count: buildLeadPipeline(records).length,
     imo_missing_count: buckets.target_vessels.filter(v => !v.imo).length,
@@ -3851,6 +3965,7 @@ function buildStatus(records, source) {
     high_value_low_confidence_count: buildHighValueLowConfidence(buckets.target_vessels).length,
     opportunity_usd: records.reduce((sum, v) => sum + (v.opportunity_usd || 0), 0),
     count_funnel: countFunnel,
+    dedupe_diagnostics: dedupeDiagnostics,
     scoring_diagnostics: scoringDiagnostics,
     candidate_generation_count: scoringDiagnostics.candidate_generation_count,
     candidate_promotion_count: scoringDiagnostics.candidate_promotion_count,
@@ -4168,7 +4283,7 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
-    if (latestSummarySnapshot) {
+    if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
       const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
@@ -4401,6 +4516,12 @@ async function apiResponse(url, env) {
       target_vessels_api_count: groupCounts.target,
       all_vessels_rendered_count: group === "all" ? sourceRows.length : groupCounts.all,
       target_vessels_rendered_count: group === "target" ? sourceRows.length : groupCounts.target,
+      sales_target_count_table_api: groupCounts.target,
+      sales_target_count_rendered: group === "target" ? sourceRows.length : groupCounts.target,
+      immediate_target_count_table_api: buildVisibilityBuckets(allRecords).immediate_targets.length,
+      immediate_target_count_rendered: buildVisibilityBuckets(allRecords).immediate_targets.length,
+      dataset_run_id_table: status.active_run_id,
+      dataset_run_id_summary: status.active_run_id,
       dataset_relationship: "all_vessels contains watchlist, sales_targets, and immediate_targets",
       regression_warnings: regressionWarnings
     }, { headers: corsHeaders() });
