@@ -4090,6 +4090,18 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/quality/commercial-ranking-audit.json")) {
     return json(commercialRankingAudit(allRecords), { headers: corsHeaders() });
   }
+  const portMatch = pathname.match(new RegExp("^/api/ports/([^/]+)/(vessels|target-vessels|staying-vessels|arrivals|candidates|berths|congestion|anchorage)\\.json$"));
+  if (portMatch) {
+    const rows = recordsForPort(allRecords, decodeURIComponent(portMatch[1]));
+    if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
+    if (portMatch[2] === "target-vessels") return json(rows.filter(isMainCommercialVessel), { headers: corsHeaders() });
+    if (portMatch[2] === "staying-vessels") return json(rows.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)), { headers: corsHeaders() });
+    if (portMatch[2] === "arrivals") return json(rows.filter(v => v.status_bucket === "arriving_soon"), { headers: corsHeaders() });
+    if (portMatch[2] === "candidates") return json(buildVisibilityBuckets(rows).sales_candidates, { headers: corsHeaders() });
+    if (portMatch[2] === "congestion") return json(buildPortCongestion(records, decodeURIComponent(portMatch[1])), { headers: corsHeaders() });
+    if (portMatch[2] === "anchorage") return json(buildAnchorage(rows), { headers: corsHeaders() });
+    return json(rows.filter(v => v.berth).map(v => ({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd })), { headers: corsHeaders() });
+  }
   if (pathname === "/api/vessels.csv" || pathname.endsWith("/vessels.csv")) {
     const group = String(searchParams.get("group") || "target").toLowerCase();
     const sourceRows = vesselGroupRows(allRecords, group);
@@ -4202,18 +4214,6 @@ async function apiResponse(url, env) {
     }, { headers: corsHeaders() });
   }
   if (pathname.endsWith("/port-opportunities.json")) return json(buildPortOpportunityRanking(records), { headers: corsHeaders() });
-  const portMatch = pathname.match(new RegExp("^/api/ports/([^/]+)/(vessels|target-vessels|staying-vessels|arrivals|candidates|berths|congestion|anchorage)\\.json$"));
-  if (portMatch) {
-    const rows = recordsForPort(allRecords, decodeURIComponent(portMatch[1]));
-    if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
-    if (portMatch[2] === "target-vessels") return json(rows.filter(isMainCommercialVessel), { headers: corsHeaders() });
-    if (portMatch[2] === "staying-vessels") return json(rows.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)), { headers: corsHeaders() });
-    if (portMatch[2] === "arrivals") return json(rows.filter(v => v.status_bucket === "arriving_soon"), { headers: corsHeaders() });
-    if (portMatch[2] === "candidates") return json(buildVisibilityBuckets(rows).sales_candidates, { headers: corsHeaders() });
-    if (portMatch[2] === "congestion") return json(buildPortCongestion(records, decodeURIComponent(portMatch[1])), { headers: corsHeaders() });
-    if (portMatch[2] === "anchorage") return json(buildAnchorage(rows), { headers: corsHeaders() });
-    return json(rows.filter(v => v.berth).map(v => ({ berth_name: v.berth, vessel_name: v.vessel_name, status: v.status, eta: v.eta, etd: v.etd })), { headers: corsHeaders() });
-  }
   if (pathname.endsWith("/hot-vessels.json")) return json(buildHot(records), { headers: corsHeaders() });
   if (pathname.endsWith("/commercial-command-center.json")) return json(buildCommandCenter(records), { headers: corsHeaders() });
   if (pathname.endsWith("/port-congestion-heatmap.json")) return json(buildPortHeatmap(records), { headers: corsHeaders() });
