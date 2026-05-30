@@ -1807,16 +1807,47 @@ async function fetchActivePointer(env) {
 }
 
 async function fetchSupabaseRows(env) {
-  if (!supabaseBase(env)) return { rows: [], configured: false, error: "missing_supabase_binding" };
+  if (!supabaseBase(env)) {
+    const local = await fetchLocalStaticSnapshot(env, "missing_supabase_binding");
+    if (local.rows.length) return local;
+    return {
+      rows: [],
+      configured: false,
+      error: "missing_supabase_binding",
+      data_source_used: "diagnostics_only_no_live_data",
+      fallback_used: false,
+      fallback_reason: "missing_supabase_binding"
+    };
+  }
   const pointer = await fetchActivePointer(env);
-  if (!pointer.active_run_id && !pointer.legacy_latest) return { rows: [], configured: pointer.configured, error: pointer.error || "missing_active_dataset", pointer };
+  if (!pointer.active_run_id && !pointer.legacy_latest) {
+    const local = await fetchLocalStaticSnapshot(env, pointer.error || "missing_active_dataset");
+    if (local.rows.length) return { ...local, configured: pointer.configured, pointer: { ...local.pointer, supabase_pointer_error: pointer.error || null } };
+    return {
+      rows: [],
+      configured: pointer.configured,
+      error: pointer.error || "missing_active_dataset",
+      pointer,
+      data_source_used: "diagnostics_only_no_live_data",
+      fallback_used: false,
+      fallback_reason: pointer.error || "missing_active_dataset"
+    };
+  }
 
   const query = pointer.legacy_latest
     ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000"
     : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
   const response = await supabaseGet(env, query);
   if (response.ok && response.rows.length) {
-    return { rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay), configured: true, error: null, pointer };
+    return {
+      rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
+      configured: true,
+      error: null,
+      pointer,
+      data_source_used: pointer.legacy_latest || pointer.fallback_pointer ? "supabase_latest_snapshot_fallback" : "supabase_active_dataset",
+      fallback_used: Boolean(pointer.legacy_latest || pointer.fallback_pointer),
+      fallback_reason: pointer.legacy_latest || pointer.fallback_pointer ? pointer.pointer_source || "supabase_latest_snapshot_fallback" : null
+    };
   }
 
   if (!pointer.legacy_latest) {
@@ -1831,13 +1862,91 @@ async function fetchSupabaseRows(env) {
       active_dataset_error: response.ok ? null : response.error
     };
     if (fallback.ok && fallback.rows.length) {
-      return { rows: fallback.rows.map(normalizeSnapshot).map(enrichCumulativeStay), configured: true, error: null, pointer: fallbackPointer };
+      return {
+        rows: fallback.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
+        configured: true,
+        error: null,
+        pointer: fallbackPointer,
+        data_source_used: "supabase_latest_snapshot_fallback",
+        fallback_used: true,
+        fallback_reason: "active_dataset_empty_or_failed"
+      };
     }
-    return { rows: [], configured: true, error: response.error || fallback.error || "empty_active_dataset", pointer: fallbackPointer };
+    const local = await fetchLocalStaticSnapshot(env, response.error || fallback.error || "empty_active_dataset");
+    if (local.rows.length) return { ...local, configured: true, pointer: { ...local.pointer, supabase_pointer_error: response.error || fallback.error || null } };
+    return {
+      rows: [],
+      configured: true,
+      error: response.error || fallback.error || "empty_active_dataset",
+      pointer: fallbackPointer,
+      data_source_used: "diagnostics_only_no_live_data",
+      fallback_used: false,
+      fallback_reason: response.error || fallback.error || "empty_active_dataset"
+    };
   }
 
-  if (!response.ok) return { rows: [], configured: true, error: response.error, pointer };
-  return { rows: [], configured: true, error: "empty_active_dataset", pointer };
+  const local = await fetchLocalStaticSnapshot(env, response.ok ? "empty_active_dataset" : response.error);
+  if (local.rows.length) return { ...local, configured: true, pointer: { ...local.pointer, supabase_pointer_error: response.ok ? null : response.error } };
+  if (!response.ok) return {
+    rows: [],
+    configured: true,
+    error: response.error,
+    pointer,
+    data_source_used: "diagnostics_only_no_live_data",
+    fallback_used: false,
+    fallback_reason: response.error
+  };
+  return {
+    rows: [],
+    configured: true,
+    error: "empty_active_dataset",
+    pointer,
+    data_source_used: "diagnostics_only_no_live_data",
+    fallback_used: false,
+    fallback_reason: "empty_active_dataset"
+  };
+}
+
+async function fetchAssetJson(env, path) {
+  if (!env?.ASSETS?.fetch) return null;
+  try {
+    const response = await env.ASSETS.fetch(new Request(`https://local-assets.invalid${path}`));
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function fetchLocalStaticSnapshot(env, reason = "supabase_unavailable") {
+  const vesselsPayload = await fetchAssetJson(env, "/api/vessels.json");
+  const statusPayload = await fetchAssetJson(env, "/api/status.json");
+  const rows = Array.isArray(vesselsPayload)
+    ? vesselsPayload
+    : Array.isArray(vesselsPayload?.data)
+      ? vesselsPayload.data
+      : Array.isArray(vesselsPayload?.vessels)
+        ? vesselsPayload.vessels
+        : [];
+  const normalizedRows = rows.map(normalizeSnapshot).map(enrichCumulativeStay);
+  return {
+    rows: normalizedRows,
+    configured: false,
+    error: normalizedRows.length ? null : reason,
+    pointer: {
+      active_run_id: statusPayload?.run_id || normalizedRows.find(row => row.run_id)?.run_id || null,
+      active_collected_at: statusPayload?.completed_at || statusPayload?.generated_at || null,
+      promoted_at: null,
+      is_stale: true,
+      pointer_source: "local_static_snapshot",
+      fallback_pointer: true,
+      local_static_snapshot: true
+    },
+    local_status: statusPayload || null,
+    data_source_used: normalizedRows.length ? "local_static_snapshot" : "diagnostics_only_no_live_data",
+    fallback_used: normalizedRows.length > 0,
+    fallback_reason: normalizedRows.length ? reason : "no_local_static_snapshot_rows"
+  };
 }
 
 async function fetchLatestSummarySnapshot(env) {
@@ -2856,6 +2965,9 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   const status = buildStatus(activeRecords, source);
   return {
     active_run_id: status.active_run_id,
+    data_source_used: status.data_source_used,
+    fallback_used: status.fallback_used,
+    fallback_reason: status.fallback_reason,
     generated_at: status.generated_at,
     data_freshness: status.data_freshness,
     record_count: status.record_count,
@@ -2906,11 +3018,13 @@ function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "la
   return {
     active_run_id: source.pointer?.active_run_id || null,
     summary_run_id: snapshot.run_id || null,
+    data_source_used: "latest_successful_summary_snapshot",
     generated_at: new Date().toISOString(),
     data_freshness: freshness,
     auto_update_interval_hours: AUTO_UPDATE_INTERVAL_HOURS,
     auto_update_label: "데이터는 4시간마다 자동 업데이트됩니다.",
     is_fallback: true,
+    fallback_used: true,
     fallback_reason: reason,
     latest_successful_summary_run_id: snapshot.run_id || null,
     last_successful_generated_at: snapshot.generated_at || null,
@@ -2935,8 +3049,11 @@ function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "la
     port_count: Number(snapshot.port_count || 0),
     source_runtime: {
       provider: "supabase",
+      data_source_used: "latest_successful_summary_snapshot",
       active_run_id: source.pointer?.active_run_id || null,
       active_collected_at: source.pointer?.active_collected_at || null,
+      fallback_used: true,
+      fallback_reason: reason,
       fallback_status: "showing_latest_successful_summary_snapshot",
       using_latest_summary_fallback: true,
       stale_warning: "최신 수집이 진행 중이거나 실패하여 마지막 정상 수치를 표시 중입니다."
@@ -2973,7 +3090,9 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
   return {
     active_run_id: status.active_run_id,
     summary_run_id: snapshot.run_id || null,
+    data_source_used: status.data_source_used,
     is_fallback: true,
+    fallback_used: true,
     fallback_reason: reason,
     generated_at: snapshot.generated_at || status.generated_at,
     data_freshness: status.data_freshness,
@@ -3985,12 +4104,20 @@ function buildStatus(records, source) {
   const monitoringVessels = allDisplayVessels.filter(v => commercialScore(v) < SALES_CANDIDATE_THRESHOLD);
   const dataMode = buckets.target_vessels.length ? "supabase_live_snapshot" : records.length ? "supabase_snapshot_no_targets" : "no_live_data";
   const usingSnapshotFallback = Boolean(source.pointer?.fallback_pointer && records.length);
+  const dataSourceUsed = source.data_source_used || (records.length
+    ? (source.pointer?.local_static_snapshot ? "local_static_snapshot" : source.pointer?.fallback_pointer ? "supabase_latest_snapshot_fallback" : "supabase_active_dataset")
+    : "diagnostics_only_no_live_data");
+  const fallbackUsed = Boolean(source.fallback_used || usingSnapshotFallback || dataSourceUsed !== "supabase_active_dataset");
+  const fallbackReason = source.fallback_reason || (fallbackUsed ? source.pointer?.pointer_source || source.error || dataSourceUsed : null);
   const activeRunId = source.pointer?.active_run_id || null;
   const activeCollectedAt = source.pointer?.active_collected_at || source.pointer?.promoted_at || null;
   const dataAgeMinutes = activeCollectedAt ? Math.round((Date.now() - new Date(activeCollectedAt).getTime()) / 60000) : null;
   const dataIsStale = dataAgeMinutes === null ? Boolean(source.pointer?.is_stale) : dataAgeMinutes > AUTO_UPDATE_INTERVAL_HOURS * 60;
   return {
     active_run_id: activeRunId,
+    data_source_used: dataSourceUsed,
+    fallback_used: fallbackUsed,
+    fallback_reason: fallbackReason,
     generated_at: new Date().toISOString(),
     data_freshness: {
       active_collected_at: activeCollectedAt,
@@ -4060,9 +4187,12 @@ function buildStatus(records, source) {
     operator_diagnostics: buildOperatorDiagnostics(records, buckets),
     frontend_poll_interval_seconds: 900,
     source_runtime: {
-      provider: "supabase",
+      provider: dataSourceUsed.startsWith("supabase") ? "supabase" : dataSourceUsed === "local_static_snapshot" ? "static_json" : "diagnostics",
       configured: source.configured,
       error: source.error,
+      data_source_used: dataSourceUsed,
+      fallback_used: fallbackUsed,
+      fallback_reason: fallbackReason,
       auth_key_type: source.pointer?.auth_key_type || (source.configured ? "unknown" : "missing"),
       row_count: records.length,
       active_run_id: activeRunId,
@@ -4072,7 +4202,7 @@ function buildStatus(records, source) {
       pointer_source: source.pointer?.pointer_source || "none",
       fallback_pointer: Boolean(source.pointer?.fallback_pointer),
       using_latest_snapshot_fallback: usingSnapshotFallback,
-      fallback_status: usingSnapshotFallback ? "showing_latest_supabase_snapshot" : null,
+      fallback_status: fallbackUsed ? fallbackReason || "fallback" : null,
       pointer_diagnostics: source.pointer?.pointer_diagnostics || [],
       stale_warning: source.pointer?.fallback_pointer
         ? "활성 데이터셋 포인터가 비어 있어 최신 사용 가능 스냅샷을 표시 중입니다."
@@ -4370,7 +4500,9 @@ async function apiResponse(url, env) {
       if (pathname.endsWith("/candidates/top.json")) return json({
         active_run_id: summary.active_run_id,
         summary_run_id: summary.summary_run_id,
+        data_source_used: summary.data_source_used,
         is_fallback: summary.is_fallback,
+        fallback_used: summary.fallback_used,
         fallback_reason: summary.fallback_reason,
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
@@ -4388,7 +4520,9 @@ async function apiResponse(url, env) {
         return json({
         active_run_id: summary.active_run_id,
         summary_run_id: summary.summary_run_id,
+        data_source_used: summary.data_source_used,
         is_fallback: summary.is_fallback,
+        fallback_used: summary.fallback_used,
         fallback_reason: summary.fallback_reason,
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
@@ -4413,6 +4547,7 @@ async function apiResponse(url, env) {
           previous_dataset_version: previousVersion,
           active_run_id: pointer.active_run_id || null,
           summary_run_id: latestSummarySnapshot.run_id,
+          data_source_used: summary.data_source_used,
           generated_at: summary.generated_at,
           data_freshness: summary.data_freshness,
           record_count: summary.record_count,
@@ -4425,6 +4560,7 @@ async function apiResponse(url, env) {
           changed_ports: [...currentPorts].filter(port => !previousPorts.has(port)),
           changed_operators: [],
           is_fallback: summary.is_fallback,
+          fallback_used: summary.fallback_used,
           fallback_reason: summary.fallback_reason,
           changed: previousVersion ? String(previousVersion) !== String(latestSummarySnapshot.run_id || "") : false
         }, { headers: corsHeaders() });
@@ -4442,7 +4578,8 @@ async function apiResponse(url, env) {
     const summary = buildDashboardSummary(allRecords, source);
     summary.is_fallback = false;
     summary.summary_run_id = summary.active_run_id;
-    summary.fallback_reason = null;
+    summary.fallback_used = Boolean(summary.fallback_used);
+    if (!summary.fallback_used) summary.fallback_reason = null;
     return json(summary, { headers: corsHeaders() });
   }
   if (pathname.endsWith("/status.json")) {
@@ -4450,7 +4587,8 @@ async function apiResponse(url, env) {
     const status = buildStatus(allRecords, source);
     status.is_fallback = false;
     status.summary_run_id = status.active_run_id;
-    status.fallback_reason = null;
+    status.fallback_used = Boolean(status.fallback_used);
+    if (!status.fallback_used) status.fallback_reason = null;
     return json(status, { headers: corsHeaders() });
   }
   if (pathname.endsWith("/changes.json")) {
@@ -4477,6 +4615,7 @@ async function apiResponse(url, env) {
       previous_dataset_version: previousVersion,
       active_run_id: status.active_run_id,
       summary_run_id: status.summary_run_id || currentSnapshot?.run_id || null,
+      data_source_used: status.data_source_used,
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
       record_count: status.record_count,
@@ -4489,6 +4628,7 @@ async function apiResponse(url, env) {
       changed_ports: changedPorts,
       changed_operators: [],
       is_fallback: Boolean(shouldUseSummaryFallback),
+      fallback_used: Boolean(status.fallback_used || shouldUseSummaryFallback),
       fallback_reason: shouldUseSummaryFallback ? status.fallback_reason : null,
       changed: previousVersion ? String(previousVersion) !== String(currentSnapshot?.run_id || status.active_run_id || "") : false
     }, { headers: corsHeaders() });
@@ -4587,6 +4727,9 @@ async function apiResponse(url, env) {
     if (group === "all" && groupCounts.all > 0 && !paged.data.length) regressionWarnings.push("전체선박 UI/API 바인딩 실패.");
     return json({
       active_run_id: status.active_run_id,
+      data_source_used: status.data_source_used,
+      fallback_used: status.fallback_used,
+      fallback_reason: status.fallback_reason,
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
       record_count: status.record_count,
@@ -4633,7 +4776,9 @@ async function apiResponse(url, env) {
       return json({
         active_run_id: summary.active_run_id,
         summary_run_id: summary.summary_run_id,
+        data_source_used: summary.data_source_used,
         is_fallback: true,
+        fallback_used: summary.fallback_used,
         fallback_reason: summary.fallback_reason,
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
@@ -4648,6 +4793,9 @@ async function apiResponse(url, env) {
     const status = buildStatus(allRecords, source);
     return json({
     active_run_id: status.active_run_id,
+    data_source_used: status.data_source_used,
+    fallback_used: status.fallback_used,
+    fallback_reason: status.fallback_reason,
     generated_at: status.generated_at,
     data_freshness: status.data_freshness,
     record_count: status.record_count,
@@ -4666,7 +4814,9 @@ async function apiResponse(url, env) {
       return json({
         active_run_id: summary.active_run_id,
         summary_run_id: summary.summary_run_id,
+        data_source_used: summary.data_source_used,
         is_fallback: true,
+        fallback_used: summary.fallback_used,
         fallback_reason: summary.fallback_reason,
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
@@ -4683,6 +4833,9 @@ async function apiResponse(url, env) {
     const portUnits = buildPortUnits(allRecords);
     return json({
       active_run_id: status.active_run_id,
+      data_source_used: status.data_source_used,
+      fallback_used: status.fallback_used,
+      fallback_reason: status.fallback_reason,
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
       record_count: status.record_count,

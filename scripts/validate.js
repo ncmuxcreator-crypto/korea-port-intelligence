@@ -300,6 +300,9 @@ if (!worker.includes("cumulative_stay_hours") || !worker.includes("CUMULATIVE_ST
 for (const route of ["/dashboard-summary.json", "/api/vessels/", "pageRows", "/candidates/top.json", "/ports.json", "/candidates.json", "/hot-candidates.json", "/target-vessels.json", "/staying-vessels.json", "/arrival-pipeline.json", "/predicted-arrivals.json", "/lead-pipeline.json", "/alert-candidates.json", "/imo-recovery-queue.json", "/high-value-targets.json", "/review/unknown-gt.json", "/review/high-value-low-confidence.json", "/review/congestion-watchlist.json", "target-vessels|staying-vessels|arrivals", "/api/ports/", "congestion", "anchorage", "/master/unknown-imo.json", "/api/history/ports.json", "/api/history/operators.json", "/api/history/routes.json", "/api/history/opportunities.json", "/api/health/pipeline.json", "/api/config-status.json", "active_dataset_pointer"]) {
   if (!worker.includes(route)) throw new Error(`Worker missing port-first API route marker: ${route}`);
 }
+for (const marker of ["data_source_used", "supabase_active_dataset", "local_static_snapshot", "diagnostics_only_no_live_data", "fallback_used", "fallback_reason"]) {
+  if (!worker.includes(marker)) throw new Error(`Worker missing production data source marker: ${marker}`);
+}
 for (const marker of ["buildConfigStatus", "missing_required_config", "enabled_sources", "enabled_ports_count", "active_runtime_limits"]) {
   if (!worker.includes(marker)) throw new Error(`Worker config status missing marker: ${marker}`);
 }
