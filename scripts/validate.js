@@ -17,6 +17,7 @@ const required = [
   "dashboard/api/port-congestion-heatmap.json",
   "dashboard/api/biofouling-timeline.json",
   "dashboard/api/candidates.json",
+  "dashboard/api/dashboard-summary.json",
   "dashboard/api/all-collected-vessels.json",
   "dashboard/api/target-vessels.json",
   "dashboard/api/staying-vessels.json",
@@ -210,6 +211,12 @@ if (fs.existsSync("dashboard/api/backend-doctor.json")) {
   }
   if (Number(doctor.record_count || 0) === 0 && doctor.data_status !== "empty_dataset") {
     throw new Error("Backend doctor must mark record_count=0 as empty_dataset");
+  }
+  for (const marker of ["serving_mode", "static_outputs_valid", "worker_supabase_required", "production_data_source"]) {
+    if (!(marker in doctor)) throw new Error(`Backend doctor missing serving-mode field: ${marker}`);
+  }
+  for (const marker of ["all_collected_vessels_exists_actual", "target_vessels_exists_actual", "dashboard_summary_exists_actual"]) {
+    if (!(marker in doctor)) throw new Error(`Backend doctor missing actual static output field: ${marker}`);
   }
 }
 if (fs.existsSync("dashboard/api/readiness-gate.json")) {

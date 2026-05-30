@@ -3319,6 +3319,50 @@ function buildDataQualityLayerDiagnostics(records = [], matchingDiagnostics = bu
   };
 }
 
+function readJsonFile(path, fallback = null) {
+  try {
+    return fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function countJsonRows(value) {
+  if (Array.isArray(value)) return value.length;
+  if (Array.isArray(value?.data)) return value.data.length;
+  if (Array.isArray(value?.items)) return value.items.length;
+  if (Array.isArray(value?.vessels)) return value.vessels.length;
+  if (Array.isArray(value?.candidates)) return value.candidates.length;
+  if (value && typeof value === "object") {
+    return Number(value.record_count || value.all_vessels_count || value.target_vessels_count || value.candidate_count || 0);
+  }
+  return 0;
+}
+
+function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
+  const existingPayload = readJsonFile(path, null);
+  const existingRows = countJsonRows(existingPayload);
+  const incomingRows = countJsonRows(payload);
+  const shouldPreserve = report?.data_mode === "no_live_data" && existingRows > 0 && incomingRows === 0;
+  fs.mkdirSync(path.split("/").slice(0, -1).join("/"), { recursive: true });
+  if (shouldPreserve) {
+    manifest[path] = {
+      status: "preserved_previous_successful_static_output",
+      rows: existingRows,
+      incoming_rows: incomingRows,
+      reason: "no_live_data_run_must_not_overwrite_previous_nonempty_static_dataset"
+    };
+    return manifest[path];
+  }
+  fs.writeFileSync(path, JSON.stringify(payload, null, 2));
+  manifest[path] = {
+    status: "written",
+    rows: incomingRows,
+    previous_rows: existingRows
+  };
+  return manifest[path];
+}
+
 function buildDatasetGenerationAudit({
   report = {},
   collectedRows = [],
@@ -3338,6 +3382,18 @@ function buildDatasetGenerationAudit({
   const immediateTargetsGenerated = Number(immediateTargets.length || 0);
   const vesselsJsonRows = Number(targetVessels.length || 0);
   const candidatesJsonRows = Number(candidateList.length || 0);
+  const requiredSecretsMissing = detectSecrets()
+    .filter(item => item.status !== "enabled" && Array.isArray(item.missing) && item.missing.length)
+    .flatMap(item => item.missing);
+  const skippedSources = Array.isArray(collectorDiagnostics?.sources)
+    ? collectorDiagnostics.sources.filter(source => source.skipped || String(source.status || "").toLowerCase() === "skipped")
+    : [];
+  const previousSuccessfulDatasetAvailable = [
+    "dashboard/api/vessels.json",
+    "dashboard/api/all-collected-vessels.json",
+    "dashboard/api/target-vessels.json",
+    "dashboard/api/candidates.json"
+  ].some(path => countJsonRows(readJsonFile(path, [])) > 0);
   const gateAudit = {
     collection_gate: sourceRowsCollected > 0 ? "pass" : "blocked",
     normalization_gate: sourceRowsCollected > 0 ? (normalizedRows > 0 ? "pass" : "blocked") : "not_reached",
@@ -3401,6 +3457,20 @@ function buildDatasetGenerationAudit({
       candidates_json_basis: "dashboard/api/candidates.json is a static export of candidateList from this run",
       production_serving_rule: "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
     },
+    required_secrets_missing: requiredSecretsMissing,
+    collectors_skipped: skippedSources.map(source => ({
+      source_name: source.key || source.source_name || source.label || "unknown_source",
+      reason: source.reason || source.error_message || source.status || "skipped"
+    })),
+    static_outputs_generated: {
+      "dashboard/api/vessels.json": vesselsJsonRows,
+      "dashboard/api/all-collected-vessels.json": allVesselsGenerated,
+      "dashboard/api/target-vessels.json": targetVessels.length,
+      "dashboard/api/candidates.json": candidatesJsonRows,
+      "dashboard/api/dashboard-summary.json": report?.record_count || 0
+    },
+    production_promotion_blocked: report?.data_mode === "no_live_data" || Boolean(supabaseWrite?.promotion?.no_live_data_not_promotable) || (supabaseWrite?.status && supabaseWrite.status !== "synced"),
+    previous_successful_dataset_available: previousSuccessfulDatasetAvailable,
     gate_audit: gateAudit,
     gate_block_reasons: gateBlockReasons,
     recommended_fix: [
@@ -4387,9 +4457,51 @@ try {
     gdrive: gdriveArchive,
     raw_archive_index: rawArchiveIndex
   };
+  const dashboardSummary = {
+    active_run_id: report?.source_runtime?.active_run_id || report?.run_id || runId,
+    summary_run_id: report?.run_id || runId,
+    generated_at: completedAt,
+    data_freshness: {
+      active_collected_at: report?.completed_at || completedAt,
+      update_interval_label_ko: "4시간마다 자동 업데이트"
+    },
+    data_source_used: report?.data_mode === "no_live_data" ? "diagnostics_only_no_live_data" : "static_json_snapshot",
+    fallback_used: report?.data_mode === "no_live_data",
+    fallback_reason: report?.data_mode === "no_live_data" ? "local_or_failed_run_without_live_source_rows" : null,
+    production_ready: report?.data_mode !== "no_live_data" && Number(report?.record_count || 0) > 0,
+    record_count: report?.record_count || 0,
+    all_vessels_count: report?.all_collected_vessel_count || allCollectedVessels.length,
+    target_vessels_count: report?.target_vessel_count || targetVessels.length,
+    sales_target_count: report?.sales_candidate_count || salesCandidates.length,
+    immediate_target_count: report?.immediate_target_count || immediateTargets.length,
+    opportunity_count: report?.candidate_summary?.candidate_count || candidateList.length,
+    watchlist_count: report?.scoring_diagnostics?.watchlist_count || 0,
+    port_count: portIntelligence.length,
+    status: {
+      active_run_id: report?.source_runtime?.active_run_id || report?.run_id || runId,
+      generated_at: completedAt,
+      data_mode: report?.data_mode,
+      record_count: report?.record_count || 0,
+      all_collected_vessel_count: report?.all_collected_vessel_count || allCollectedVessels.length,
+      target_vessel_count: report?.target_vessel_count || targetVessels.length,
+      sales_candidate_count: report?.sales_candidate_count || salesCandidates.length,
+      immediate_target_count: report?.immediate_target_count || immediateTargets.length
+    },
+    port_summary: portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
+    candidate_summary: buildCandidateSummary(vessels),
+    congestion_summary: portCongestionHeatmap,
+    data_quality_summary: dataQualityLayer,
+    source_health_summary: collectorDiagnosticsAfterCollection
+  };
+  const staticOutputManifest = {};
+  report.static_output_write_status = staticOutputManifest;
+  report.dataset_generation_audit.static_outputs_generated = {
+    ...report.dataset_generation_audit.static_outputs_generated,
+    "dashboard/api/dashboard-summary.json": dashboardSummary.record_count
+  };
 
-  fs.writeFileSync("dashboard/api/all-collected-vessels.json", JSON.stringify(allCollectedVessels, null, 2));
-  fs.writeFileSync("dashboard/api/target-vessels.json", JSON.stringify(targetVessels, null, 2));
+  writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
+  writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
   fs.writeFileSync("dashboard/api/staying-vessels.json", JSON.stringify(stayingVessels, null, 2));
   fs.writeFileSync("dashboard/api/arrival-pipeline.json", JSON.stringify(arrivalPipeline, null, 2));
   fs.writeFileSync("dashboard/api/imo-recovery-queue.json", JSON.stringify(buildImoRecoveryQueue(vessels), null, 2));
@@ -4404,15 +4516,15 @@ try {
   fs.writeFileSync("dashboard/api/quality/basic-info-coverage.json", JSON.stringify(buildBasicInfoCoverage(vessels), null, 2));
   fs.writeFileSync("dashboard/api/quality/scoring-diagnostics.json", JSON.stringify(scoringDiagnostics, null, 2));
   fs.writeFileSync("dashboard/api/quality/matching-diagnostics.json", JSON.stringify(matchingDiagnostics, null, 2));
-  fs.writeFileSync("dashboard/api/quality/dataset-generation-audit.json", JSON.stringify(datasetGenerationAudit, null, 2));
+  fs.writeFileSync("dashboard/api/quality/dataset-generation-audit.json", JSON.stringify(report.dataset_generation_audit, null, 2));
   fs.writeFileSync("dashboard/api/quality/imo-recovery.json", JSON.stringify(buildImoRecoveryKpis(vessels), null, 2));
   fs.writeFileSync("dashboard/api/quality/prediction-feedback.json", JSON.stringify(predictionDiagnostics, null, 2));
   fs.writeFileSync("dashboard/api/quality/data-quality.json", JSON.stringify(dataQualityLayer, null, 2));
   fs.writeFileSync("dashboard/api/review/basic-info-missing.json", JSON.stringify(buildBasicInfoMissingReview(vessels), null, 2));
   fs.writeFileSync("dashboard/api/predicted-arrivals.json", JSON.stringify(arrivalPipeline, null, 2));
-  fs.writeFileSync("dashboard/api/vessels.json", JSON.stringify(vessels, null, 2));
-  fs.writeFileSync("data/latest-lite.json", JSON.stringify(vessels, null, 2));
-  fs.writeFileSync("dashboard/api/candidates.json", JSON.stringify(candidateList, null, 2));
+  writeStaticDatasetJson("dashboard/api/vessels.json", vessels, report, staticOutputManifest);
+  writeStaticDatasetJson("data/latest-lite.json", vessels, report, staticOutputManifest);
+  writeStaticDatasetJson("dashboard/api/candidates.json", candidateList, report, staticOutputManifest);
   fs.writeFileSync("dashboard/api/contact-ready-vessels.json", JSON.stringify(contactReadyVessels, null, 2));
   fs.writeFileSync("dashboard/api/fleet-opportunities.json", JSON.stringify(fleetOpportunities, null, 2));
   fs.writeFileSync("dashboard/api/predicted-cleaning-opportunities.json", JSON.stringify(predictedCleaningOpportunities, null, 2));
@@ -4432,7 +4544,8 @@ try {
   })), null, 2));
   fs.writeFileSync("dashboard/api/hot-candidates.json", JSON.stringify(candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), null, 2));
   fs.writeFileSync("dashboard/api/hot-vessels.json", JSON.stringify(hotVessels, null, 2));
-  fs.writeFileSync("dashboard/api/ports.json", JSON.stringify(portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), null, 2));
+  writeStaticDatasetJson("dashboard/api/ports.json", portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), report, staticOutputManifest);
+  writeStaticDatasetJson("dashboard/api/dashboard-summary.json", dashboardSummary, report, staticOutputManifest);
   fs.writeFileSync("dashboard/api/port-opportunities.json", JSON.stringify(portOpportunities, null, 2));
   fs.writeFileSync("dashboard/api/coverage-registry.json", JSON.stringify({
     generated_at: completedAt,

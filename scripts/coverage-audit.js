@@ -74,6 +74,15 @@ const enabledPorts = registry.filter(row => truthy(row.enabled) && truthy(row.ha
 const status = readJson(statusPath, {});
 const coverage = readJson(coveragePath, {});
 const sources = Array.isArray(status?.collector_diagnostics?.sources) ? status.collector_diagnostics.sources : [];
+const portOperationSources = sources.filter(source => String(source.key || source.source_name || "").startsWith("port_operation_"));
+const portOperationCollectorEnabled = enabledPorts.length > 0 && (
+  portOperationSources.length > 0 ||
+  !["source_disabled", "collector_disabled"].includes(String(status?.collector_diagnostics?.port_operation_status || "").toLowerCase())
+);
+const portOperationSecretPresent = Boolean(process.env.PORT_OPERATION_SERVICE_KEY || process.env.PORT_OPERATION_API_KEY || process.env.SERVICEKEY);
+const portOperationApiUrlPresent = Boolean(process.env.PORT_OPERATION_API_URL) ||
+  portOperationSources.some(source => source.requested_url_without_service_key || source.requested_url || source.url);
+const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 
 const sourceMatchesRegistryRow = (source, row) => {
   const sameCode = String(source.prtAgCd || source.portCode || source.port_code || "") === String(row.prtAgCd || row.port_code || "");
@@ -104,6 +113,19 @@ for (const row of enabledPorts) {
 }
 
 const missingAttemptsByTier = Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.not_attempted_ports.length]));
+const portsAttemptedCount = Object.values(byTier).reduce((sum, stats) => sum + stats.attempted_count, 0);
+const portsSkippedReason = (() => {
+  if (!enabledPorts.length) return "no_enabled_port_operation_ports_in_registry";
+  if (!portOperationCollectorEnabled) return "port_operation_collector_disabled";
+  if (!portOperationSecretPresent) return validationMode === "local"
+    ? "validation_mode_local_missing_PORT_OPERATION_SERVICE_KEY"
+    : "missing_PORT_OPERATION_SERVICE_KEY";
+  if (!portOperationApiUrlPresent) return "missing_PORT_OPERATION_API_URL";
+  if (!portsAttemptedCount) return portOperationSources.length
+    ? "collector_reported_sources_but_no_enabled_registry_port_attempted"
+    : "port_operation_collector_not_run_or_no_source_logs";
+  return null;
+})();
 const ok = enabledPorts.length > 0 &&
   Object.values(byTier).every(stats => stats.enabled_count === 0 || stats.attempted_count === stats.enabled_count);
 
@@ -124,6 +146,12 @@ const report = {
   tier1_rows_collected: byTier["1"].rows_collected,
   tier2_rows_collected: byTier["2"].rows_collected,
   tier3_rows_collected: byTier["3"].rows_collected,
+  port_operation_collector_enabled: portOperationCollectorEnabled,
+  port_operation_secret_present: portOperationSecretPresent,
+  port_operation_api_url_present: portOperationApiUrlPresent,
+  ports_attempted_count: portsAttemptedCount,
+  ports_skipped_reason: portsSkippedReason,
+  validation_mode: validationMode,
   no_data_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.no_data_ports])),
   not_attempted_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.not_attempted_ports])),
   missing_attempts_by_tier: missingAttemptsByTier,

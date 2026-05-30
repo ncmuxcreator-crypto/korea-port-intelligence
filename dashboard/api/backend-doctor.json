@@ -1,12 +1,24 @@
 {
   "ok": false,
-  "checked_at": "2026-05-30T13:42:53.969Z",
+  "checked_at": "2026-05-30T14:05:01.760Z",
+  "serving_mode": "mixed",
+  "production_data_source": "supabase_active_dataset",
+  "worker_supabase_required": true,
+  "static_outputs_valid": false,
+  "static_files_missing": [],
   "files_exist": true,
   "files_have_rows": false,
   "all_collected_vessels_exists": true,
+  "all_collected_vessels_exists_actual": true,
+  "all_collected_vessels_in_package": true,
   "all_collected_vessels_count": 0,
   "target_vessels_exists": true,
+  "target_vessels_exists_actual": true,
+  "target_vessels_in_package": true,
   "target_vessels_count": 0,
+  "dashboard_summary_exists_actual": true,
+  "dashboard_summary_in_package": true,
+  "dashboard_summary_record_count": 0,
   "vessels_json_count": 0,
   "record_count": 0,
   "vessel_rows": 0,
@@ -22,6 +34,7 @@
     "dashboard/api/vessels.json": "ok",
     "dashboard/api/all-collected-vessels.json": "ok",
     "dashboard/api/target-vessels.json": "ok",
+    "dashboard/api/dashboard-summary.json": "ok",
     "dashboard/api/candidates.json": "ok",
     "dashboard/api/candidate-summary.json": "ok",
     "dashboard/api/coverage-registry.json": "ok"
@@ -38,7 +51,8 @@
   },
   "notes": [
     "vessels.json/status.json indicate an empty dataset.",
-    "Backend is not production-ready from static JSON outputs. Use Worker/Supabase active dataset if available."
+    "Backend is not production-ready from static JSON outputs. Use Worker/Supabase active dataset if available.",
+    "Static JSON files are fallback/diagnostics for Worker-Supabase serving mode."
   ],
   "failure_reasons": [
     "empty_dataset",
