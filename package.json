@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "update": "node scripts/update.js",
+    "daily:enrich": "node scripts/daily-enrichment.js",
     "validate": "node scripts/validate.js",
     "build": "npm run update && npm run validate",
     "deploy:cloudflare": "npx wrangler deploy",

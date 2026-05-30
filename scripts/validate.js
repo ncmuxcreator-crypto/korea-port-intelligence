@@ -303,6 +303,17 @@ const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 if (packageJson.scripts?.["gdrive:check"] && !fs.existsSync("scripts/gdrive-check.js")) {
   throw new Error("Google Drive check script is registered but scripts/gdrive-check.js is missing");
 }
+if (packageJson.scripts?.["daily:enrich"] !== "node scripts/daily-enrichment.js" || !fs.existsSync("scripts/daily-enrichment.js")) {
+  throw new Error("Daily enrichment script must be registered as npm run daily:enrich");
+}
+const dailyEnrichmentScript = fs.readFileSync("scripts/daily-enrichment.js", "utf8");
+for (const marker of ["DAILY_ENRICHMENT_LIMIT", "MATCH_TIME_WINDOW_HOURS", "enrichWithVesselMasterCache", "enrichment_match_candidates", "imo_recovery_queue", "vessel_identity_candidates", "daily_critical_info_enrichment", "historical_match_reused"]) {
+  if (!dailyEnrichmentScript.includes(marker)) throw new Error(`Daily enrichment script missing marker: ${marker}`);
+}
+const dailyEnrichmentWorkflow = fs.readFileSync(".github/workflows/daily-enrichment.yml", "utf8");
+for (const marker of ["name: Daily Critical Enrichment", "workflow_dispatch", "cron: \"0 15 * * *\"", "runs-on: ubuntu-latest", "timeout-minutes: 15", "npm run daily:enrich", "DAILY_ENRICHMENT_LIMIT", "MATCH_TIME_WINDOW_HOURS"]) {
+  if (!dailyEnrichmentWorkflow.includes(marker)) throw new Error(`Daily enrichment workflow missing marker: ${marker}`);
+}
 const healthWorkflow = fs.readFileSync(".github/workflows/actions-health-check.yml", "utf8");
 if (!healthWorkflow.includes("runs-on: ubuntu-latest") || !healthWorkflow.includes("workflow_dispatch") || !healthWorkflow.includes("timeout-minutes: 3")) {
   throw new Error("Actions health-check workflow is incomplete");

@@ -1,0 +1,79 @@
+name: Daily Critical Enrichment
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    env:
+      CI: true
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+      DAILY_ENRICHMENT_LIMIT: 300
+      DAILY_ENRICHMENT_UPDATE_LIMIT: 120
+      MATCH_TIME_WINDOW_HOURS: 48
+      STRONG_TIME_MATCH_HOURS: 6
+      DB_STORAGE_MODE: lean
+      SUPABASE_BATCH_SIZE: 200
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Workflow start diagnostics
+        run: |
+          echo "workflow=${{ github.workflow }}"
+          echo "run_id=${{ github.run_id }}"
+          echo "ref=${{ github.ref }}"
+          echo "runner_os=${{ runner.os }}"
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          node - <<'NODE'
+          console.log({
+            SUPABASE_URL: !!process.env.SUPABASE_URL,
+            SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+            DAILY_ENRICHMENT_LIMIT: process.env.DAILY_ENRICHMENT_LIMIT,
+            MATCH_TIME_WINDOW_HOURS: process.env.MATCH_TIME_WINDOW_HOURS
+          });
+          NODE
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        timeout-minutes: 4
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/
+
+      - name: Run daily critical enrichment
+        timeout-minutes: 8
+        run: npm run daily:enrich
+
+      - name: Upload enrichment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hwk-daily-enrichment-report
+          retention-days: 7
+          path: |
+            dashboard/api/daily-enrichment-runtime.json
+            data/daily-enrichment-report.json

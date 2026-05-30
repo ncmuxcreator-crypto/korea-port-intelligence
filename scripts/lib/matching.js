@@ -34,14 +34,21 @@ export function normalizeTerminalName(value = "") {
     .toUpperCase()
     .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "");
 
-  if (/PNIT|PNC|PUSANNEWPORT|BUSANNEWPORT/.test(normalized)) return "BUSANNEWPORT";
-  if (/HPNT|HYUNDAIBUSANNEWPORT/.test(normalized)) return "HPNT";
-  if (/GAMCHEON/.test(normalized)) return "GAMCHEON";
-  if (/SINGAMMAN/.test(normalized)) return "SINGAMMAN";
-  if (/ONSAN/.test(normalized)) return "ONSAN";
-  if (/JANGSAENGPO/.test(normalized)) return "JANGSAENGPO";
-  if (/ULSANTERMINAL|UOTT|UTT/.test(normalized)) return "ULSANTERMINAL";
-  if (/GWANGYANG/.test(normalized)) return "GWANGYANGTERMINAL";
+  if (/PNIT|PNC|PUSANNEWPORT|BUSANNEWPORT|부산신항|부산항신항|신항/.test(normalized)) return "BUSANNEWPORT";
+  if (/HPNT|HYUNDAIBUSANNEWPORT|현대부산신항|현대신항/.test(normalized)) return "HPNT";
+  if (/HJNC|한진부산신항|한진신항/.test(normalized)) return "HJNC";
+  if (/BNCT|부산신항컨테이너|신항컨테이너/.test(normalized)) return "BNCT";
+  if (/PNIT|부산신항국제터미널/.test(normalized)) return "PNIT";
+  if (/GAMCHEON|감천|감천항/.test(normalized)) return "GAMCHEON";
+  if (/SINGAMMAN|신감만|감만/.test(normalized)) return "SINGAMMAN";
+  if (/ONSAN|온산/.test(normalized)) return "ONSAN";
+  if (/JANGSAENGPO|장생포/.test(normalized)) return "JANGSAENGPO";
+  if (/ULSANTERMINAL|UOTT|UTT|울산터미널|울산항/.test(normalized)) return "ULSANTERMINAL";
+  if (/GWANGYANG|광양|광양항/.test(normalized)) return "GWANGYANGTERMINAL";
+  if (/YEOSU|여수|여천/.test(normalized)) return "YEOSUTERMINAL";
+  if (/DAESAN|대산/.test(normalized)) return "DAESAN";
+  if (/INCHEON|인천/.test(normalized)) return "INCHEON";
+  if (/POHANG|포항/.test(normalized)) return "POHANG";
 
   return normalized
     .replace(/BERTH|BTH|TERMINAL|TMNL|NO|NUMBER/g, "")
