@@ -264,6 +264,26 @@ if (!status.collector_diagnostics || typeof status.collector_diagnostics.attempt
 if (!status.collector_diagnostics.preflight || !("preflight_failure_reason" in status.collector_diagnostics.preflight)) {
   throw new Error("Collector diagnostics must include preflight check results");
 }
+const allowedSkipReasons = new Set([
+  "missing_service_key",
+  "missing_api_url",
+  "collector_disabled",
+  "no_enabled_ports",
+  "local_no_secret_mode",
+  "validation_mode_blocks_collection",
+  "unknown_error"
+]);
+if (Number(status.collector_diagnostics.attempted_count || 0) === 0 && !status.collector_diagnostics.skip_reason && !status.collector_diagnostics.preflight_failure_reason) {
+  throw new Error("Collector diagnostics must not have attempted_count=0 without skip_reason");
+}
+if (status.collector_diagnostics.skip_reason && !allowedSkipReasons.has(status.collector_diagnostics.skip_reason)) {
+  throw new Error(`Collector skip_reason is not standardized: ${status.collector_diagnostics.skip_reason}`);
+}
+for (const source of status.collector_diagnostics.sources || []) {
+  if (source.skipped && (!source.skip_reason || !allowedSkipReasons.has(source.skip_reason))) {
+    throw new Error(`Skipped collector missing standardized skip_reason: ${source.key || source.source_name || source.label || "unknown"}`);
+  }
+}
 if (status.data_mode === "no_live_data" && !status.preflight_failure_reason && status.collector_diagnostics.preflight_status === "failed") {
   throw new Error("No-live-data preflight failures must expose preflight_failure_reason");
 }

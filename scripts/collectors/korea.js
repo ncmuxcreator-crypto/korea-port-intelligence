@@ -224,6 +224,19 @@ function canAttempt(source) {
   return Boolean(source.url && (source.noKeyRequired || source.serviceKey || hasEmbeddedKey(source.url)));
 }
 
+function collectorSkipReason(reason = "", { validationMode = "" } = {}) {
+  const text = String(reason || "").toLowerCase();
+  const mode = String(validationMode || process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+  if (text.includes("no_enabled") || text.includes("enabled_ports_count_zero")) return "no_enabled_ports";
+  if (text.includes("collector_disabled") || text.includes("source_disabled")) return "collector_disabled";
+  if (text.includes("validation_mode_blocks")) return "validation_mode_blocks_collection";
+  if ((text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) && mode === "local") return "local_no_secret_mode";
+  if (text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) return "missing_service_key";
+  if (text.includes("missing_port_operation_api_url") || text.includes("missing_api_url") || text.includes("missing_url")) return "missing_api_url";
+  if (mode === "local" && !envAny("PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY", "SERVICEKEY")) return "local_no_secret_mode";
+  return "unknown_error";
+}
+
 function sourceCsvEnabled() {
   return String(process.env.ENABLE_SOURCE_CSV || "").toLowerCase() === "true";
 }
@@ -321,6 +334,7 @@ function configuredPortOperationPorts() {
 }
 
 function buildCollectorPreflight() {
+  const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
   const registryExists = fs.existsSync(PORTS_REGISTRY_PATH);
   const registry = registryExists ? parseReferenceCsv(fs.readFileSync(PORTS_REGISTRY_PATH, "utf8")) : [];
   const normalizedRegistry = portRegistryRows();
@@ -349,10 +363,12 @@ function buildCollectorPreflight() {
   if (!Number.isFinite(sdeMs) || !Number.isFinite(edeMs) || sdeMs > edeMs) failures.push("invalid_PORT_OPERATION_date_window");
   if (!Number.isFinite(numOfRows) || numOfRows <= 0) failures.push("invalid_PORT_OPERATION_NUM_OF_ROWS");
   if (!Number.isFinite(maxPages) || maxPages <= 0) failures.push("invalid_PORT_OPERATION_MAX_PAGES");
+  const preflightFailureReason = collectorSkipReason(failures[0], { validationMode });
   return {
     ok: failures.length === 0,
     failures,
-    preflight_failure_reason: failures[0] || null,
+    raw_preflight_failure_reason: failures[0] || null,
+    preflight_failure_reason: failures.length ? preflightFailureReason : null,
     port_operation_collector_enabled: portOperationCollectorEnabled,
     port_operation_secret_present: Boolean(serviceKey),
     port_operation_api_url_present: Boolean(apiUrl),
@@ -364,7 +380,8 @@ function buildCollectorPreflight() {
     enabled_ports_loaded_count: enabledRegistry.length,
     enabled_ports_passed_to_collector_count: ports.length,
     ports_attempted_count: 0,
-    ports_skipped_reason: failures[0] || null,
+    ports_skipped_reason: failures.length ? preflightFailureReason : null,
+    validation_mode: validationMode,
     date_window: { sde, ede, valid: Number.isFinite(sdeMs) && Number.isFinite(edeMs) && sdeMs <= edeMs },
     numOfRows,
     maxPages,
@@ -376,7 +393,21 @@ function buildCollectorPreflight() {
       port_name_ko: port.portNameKo,
       tier: port.tier,
       sub_port: port.subPort
-    }))
+    })),
+    planned_port_operation_sources: ports.flatMap(port => directions.map(deGb => ({
+      key: `port_operation_${port.name}_${deGb.toLowerCase()}`,
+      source_name: `port_operation_${port.name}_${deGb.toLowerCase()}`,
+      label: `PORT-MIS VsslEtrynd5 ${port.portName} ${deGb}`,
+      prtAgCd: port.code,
+      port_code: port.portCode,
+      port_name: port.portName,
+      deGb,
+      skipped: true,
+      attempted: false,
+      skip_reason: failures.length ? preflightFailureReason : null,
+      reason: failures.length ? preflightFailureReason : null,
+      raw_skip_reason: failures[0] || null
+    })))
   };
 }
 
@@ -1711,6 +1742,7 @@ async function collectRealRows() {
   diagnostics.preflight = preflight;
   diagnostics.preflight_status = preflight.ok ? "passed" : "failed";
   diagnostics.preflight_failure_reason = preflight.preflight_failure_reason;
+  diagnostics.skip_reason = preflight.ok ? null : preflight.preflight_failure_reason;
   diagnostics.port_operation_collection_plan = preflight;
   diagnostics.coverage = {
     ...(diagnostics.coverage || {}),
@@ -1718,12 +1750,28 @@ async function collectRealRows() {
     successful_ports_count: 0,
     failed_ports_count: 0,
     no_data_ports_count: 0,
-    port_operation_rows_by_port: {}
+    port_operation_rows_by_port: {},
+    port_operation_skip_reason_breakdown: preflight.ok ? {} : { [preflight.preflight_failure_reason]: diagnostics.skipped_count || preflight.planned_port_operation_sources.length || 1 }
   };
   if (!preflight.ok) {
     diagnostics.fallback_used = true;
     diagnostics.skipped_count = preflight.enabled_ports_passed_to_collector_count * Math.max(1, preflight.deGb_values.length);
-    diagnostics.sources = [];
+    diagnostics.sources = preflight.planned_port_operation_sources.map(source => ({
+      ...source,
+      started_at: now,
+      finished_at: now,
+      duration_ms: 0,
+      status: "skipped",
+      success: false,
+      row_count: 0,
+      normalized_count: 0,
+      rows_collected: 0,
+      rows_normalized: 0,
+      rows_matched: 0,
+      actionable_count: 0,
+      retry_count: 0,
+      error_message: null
+    }));
     const error = new Error(`Collector preflight failed: ${preflight.preflight_failure_reason}`);
     error.preflight = preflight;
     throw error;
@@ -1776,14 +1824,18 @@ async function collectRealRows() {
     }
     if (!source.url) {
       diag.skipped = true;
-      diag.reason = source.disabledReason || "missing_url";
+      diag.reason = collectorSkipReason(source.disabledReason || "missing_url");
+      diag.skip_reason = diag.reason;
+      diag.raw_skip_reason = source.disabledReason || "missing_url";
       diagnostics.skipped_count += 1;
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
     if (!canAttempt(source)) {
       diag.skipped = true;
-      diag.reason = "missing_service_key_or_embedded_key";
+      diag.reason = collectorSkipReason("missing_service_key_or_embedded_key");
+      diag.skip_reason = diag.reason;
+      diag.raw_skip_reason = "missing_service_key_or_embedded_key";
       diagnostics.skipped_count += 1;
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
@@ -1911,7 +1963,7 @@ async function collectRealRows() {
     port_operation_sources_skipped_count: portOperationDiagnostics.filter(source => source.skipped).length,
     port_operation_skip_reason_breakdown: portOperationDiagnostics.reduce((acc, source) => {
       if (!source.skipped) return acc;
-      const reason = source.reason || source.error_message || source.status || "unknown";
+      const reason = source.skip_reason || source.reason || source.error_message || source.status || "unknown_error";
       acc[reason] = (acc[reason] || 0) + 1;
       return acc;
     }, {}),

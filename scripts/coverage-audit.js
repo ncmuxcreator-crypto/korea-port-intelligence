@@ -127,6 +127,17 @@ const portsSkippedReason = (() => {
     : "port_operation_collector_not_run_or_no_source_logs";
   return null;
 })();
+const normalizeSkipReason = reason => {
+  const text = String(reason || "").toLowerCase();
+  if (text.includes("no_enabled")) return "no_enabled_ports";
+  if (text.includes("collector_disabled") || text.includes("source_disabled")) return "collector_disabled";
+  if (text.includes("validation_mode_blocks")) return "validation_mode_blocks_collection";
+  if ((text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) && validationMode === "local") return "local_no_secret_mode";
+  if (text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) return "missing_service_key";
+  if (text.includes("missing_port_operation_api_url") || text.includes("missing_api_url") || text.includes("missing_url")) return "missing_api_url";
+  if (validationMode === "local" && !portOperationSecretPresent) return "local_no_secret_mode";
+  return "unknown_error";
+};
 const ok = enabledPorts.length > 0 &&
   Object.values(byTier).every(stats => stats.enabled_count === 0 || stats.attempted_count === stats.enabled_count);
 
@@ -153,7 +164,8 @@ const report = {
   port_operation_secret_present: portOperationSecretPresent,
   port_operation_api_url_present: portOperationApiUrlPresent,
   ports_attempted_count: portsAttemptedCount,
-  ports_skipped_reason: portsSkippedReason,
+  ports_skipped_reason: portsSkippedReason ? normalizeSkipReason(portsSkippedReason) : null,
+  raw_ports_skipped_reason: portsSkippedReason,
   first_5_ports_to_attempt: Array.isArray(collectionPlan.first_5_ports_to_attempt)
     ? collectionPlan.first_5_ports_to_attempt
     : enabledPorts.slice(0, 5).map(row => ({
@@ -166,7 +178,7 @@ const report = {
       })),
   port_operation_skip_reason_breakdown: collectionPlan.port_operation_skip_reason_breakdown || portOperationSources.reduce((acc, source) => {
     if (!source.skipped) return acc;
-    const reason = source.reason || source.error_message || source.status || "unknown";
+    const reason = normalizeSkipReason(source.skip_reason || source.reason || source.error_message || source.status || "unknown_error");
     acc[reason] = (acc[reason] || 0) + 1;
     return acc;
   }, {}),

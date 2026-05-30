@@ -37,7 +37,8 @@ const enabledCollectors = [...new Set(sources.map(source => source.key || source
 const attemptedCollectors = sources.filter(source => source.attempted).map(source => source.key || source.source_name);
 const skippedCollectors = sources.filter(source => source.skipped).map(source => ({
   source_name: source.key || source.source_name || source.label || "unknown_source",
-  reason: source.reason || source.error_message || source.status || "skipped"
+  reason: source.skip_reason || source.reason || source.error_message || source.status || "unknown_error",
+  raw_reason: source.raw_skip_reason || source.reason || source.error_message || source.status || null
 }));
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
 const previousSourceHealthWasStale = Boolean(previousRuntime?.run_id && statusRunId && String(previousRuntime.run_id) !== String(statusRunId));
@@ -70,7 +71,7 @@ const report = {
     enabled_ports_loaded_count: Number(diagnostics.port_operation_collection_plan?.enabled_ports_loaded_count || 0),
     enabled_ports_passed_to_collector_count: Number(diagnostics.port_operation_collection_plan?.enabled_ports_passed_to_collector_count || 0),
     ports_attempted_count: Number(diagnostics.coverage?.ports_attempted_count || diagnostics.ports_attempted_count || 0),
-    ports_skipped_reason: diagnostics.port_operation_collection_plan?.ports_skipped_reason || null,
+    ports_skipped_reason: diagnostics.port_operation_collection_plan?.ports_skipped_reason || diagnostics.skip_reason || null,
     first_5_ports_to_attempt: diagnostics.port_operation_collection_plan?.first_5_ports_to_attempt || []
   },
   preflight: diagnostics.preflight || null,
