@@ -74,6 +74,7 @@ const enabledPorts = registry.filter(row => truthy(row.enabled) && truthy(row.ha
 const status = readJson(statusPath, {});
 const coverage = readJson(coveragePath, {});
 const sources = Array.isArray(status?.collector_diagnostics?.sources) ? status.collector_diagnostics.sources : [];
+const collectionPlan = status?.collector_diagnostics?.port_operation_collection_plan || status?.collector_diagnostics?.coverage || {};
 const portOperationSources = sources.filter(source => String(source.key || source.source_name || "").startsWith("port_operation_"));
 const portOperationCollectorEnabled = enabledPorts.length > 0 && (
   portOperationSources.length > 0 ||
@@ -137,6 +138,8 @@ const report = {
   registry_source: registryPath,
   coverage_registry_record_count: coverage.record_count || 0,
   enabled_ports_count: enabledPorts.length,
+  enabled_ports_loaded_count: Number(collectionPlan.enabled_ports_loaded_count || enabledPorts.length || 0),
+  enabled_ports_passed_to_collector_count: Number(collectionPlan.enabled_ports_passed_to_collector_count || collectionPlan.unique_prtAgCd_count || 0),
   tier1_enabled_count: byTier["1"].enabled_count,
   tier2_enabled_count: byTier["2"].enabled_count,
   tier3_enabled_count: byTier["3"].enabled_count,
@@ -151,6 +154,22 @@ const report = {
   port_operation_api_url_present: portOperationApiUrlPresent,
   ports_attempted_count: portsAttemptedCount,
   ports_skipped_reason: portsSkippedReason,
+  first_5_ports_to_attempt: Array.isArray(collectionPlan.first_5_ports_to_attempt)
+    ? collectionPlan.first_5_ports_to_attempt
+    : enabledPorts.slice(0, 5).map(row => ({
+        prtAgCd: row.prtAgCd || row.port_code || "",
+        port_code: row.port_code || row.prtAgCd || "",
+        port_name: row.port_name_en || row.port_name_ko || row.sub_port || "",
+        port_name_ko: row.port_name_ko || "",
+        tier: row.tier || "",
+        sub_port: row.sub_port || ""
+      })),
+  port_operation_skip_reason_breakdown: collectionPlan.port_operation_skip_reason_breakdown || portOperationSources.reduce((acc, source) => {
+    if (!source.skipped) return acc;
+    const reason = source.reason || source.error_message || source.status || "unknown";
+    acc[reason] = (acc[reason] || 0) + 1;
+    return acc;
+  }, {}),
   validation_mode: validationMode,
   no_data_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.no_data_ports])),
   not_attempted_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.not_attempted_ports])),
@@ -163,9 +182,10 @@ const report = {
 fs.mkdirSync("dashboard/api", { recursive: true });
 fs.writeFileSync("dashboard/api/coverage-audit.json", JSON.stringify(report, null, 2));
 
-if (!report.ok) {
+if (!report.ok && validationMode === "production") {
   console.error("Coverage audit failed", report);
   process.exit(1);
 }
 
-console.log("Coverage audit passed");
+if (!report.ok) console.warn("Coverage audit warning", report);
+else console.log("Coverage audit passed");

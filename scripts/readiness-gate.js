@@ -25,6 +25,11 @@ const inferredRunId = vesselRunIds.length === 1 ? vesselRunIds[0] : statusRunId;
 const staleReadinessGate = Boolean(statusRunId && inferredRunId && String(statusRunId) !== String(inferredRunId));
 const stalePreviousReports = previousReports.filter(previous => previous?.run_id && statusRunId && String(previous.run_id) !== String(statusRunId));
 const previousStale = stalePreviousReports.length > 0;
+const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+const dataMode = String(status.data_mode || status.data_mode_detail?.mode || "").toLowerCase();
+const emptyDataset = vessels.length === 0 || Number(status.record_count || 0) === 0;
+const noLiveData = dataMode === "no_live_data";
+const productionReady = !staleReadinessGate && !previousStale && !emptyDataset && !noLiveData;
 
 const report = {
   version: "17.7.0",
@@ -41,13 +46,18 @@ const report = {
   blockedSample: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach").length,
   sampleImmediateBlocked: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach" && v.is_immediate_candidate).length,
   operatingImmediate: vessels.filter(v => v.is_operating_immediate_candidate).length,
+  readiness_status: emptyDataset || noLiveData ? "empty_dataset" : staleReadinessGate || previousStale ? "stale" : "ready",
+  data_mode: status.data_mode || null,
+  record_count: Number(status.record_count || 0),
+  production_ready: productionReady,
+  validation_mode: validationMode,
   stale_readiness_gate: staleReadinessGate || previousStale,
   stale_reasons: [
     staleReadinessGate ? "vessels.json run_id does not match status.json run_id" : null,
     previousStale ? "previous readiness gate run_id does not match current status.json run_id" : null
   ].filter(Boolean),
   status_run_id_match: !staleReadinessGate,
-  ok: !staleReadinessGate && vessels.every(v => !String(v.source_mode || "").includes("sample") || v.commercial_use_status === "do_not_use_for_outreach"),
+  ok: productionReady && vessels.every(v => !String(v.source_mode || "").includes("sample") || v.commercial_use_status === "do_not_use_for_outreach"),
   note: "This gate is generated for the current status.json run_id and must not be reused across active_run_id changes."
 };
 
@@ -56,7 +66,7 @@ for (const outputPath of outputPaths) {
   fs.writeFileSync(outputPath, JSON.stringify(report, null, 2));
 }
 
-if (report.stale_readiness_gate) {
+if (report.stale_readiness_gate || (validationMode === "production" && !report.ok)) {
   console.error("Readiness gate is stale for the current dataset", report);
   process.exit(1);
 }

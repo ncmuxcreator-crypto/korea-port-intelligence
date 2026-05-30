@@ -476,6 +476,31 @@ function allSourceConfigs() {
       numOfRows: env("PORT_OPERATION_NUM_OF_ROWS") || "50"
     }
   })));
+  diagnostics.port_operation_collection_plan = {
+    port_operation_collector_enabled: portOperationPorts.length > 0,
+    port_operation_secret_present: Boolean(portOperationKey),
+    port_operation_api_url_present: Boolean(env("PORT_OPERATION_API_URL")),
+    port_operation_api_url_effective: Boolean(portOperationUrl),
+    enabled_ports_loaded_count: portRegistryRows().filter(row => truthyFlag(row.enabled) && truthyFlag(row.has_port_operation)).length,
+    enabled_ports_passed_to_collector_count: portOperationPorts.length,
+    port_operation_source_count: portOperationSources.length,
+    deGb_values: portOperationDirections,
+    ports_skipped_reason: portOperationPorts.length === 0
+      ? "no_enabled_port_operation_ports_in_registry"
+      : !portOperationKey
+        ? "missing_PORT_OPERATION_SERVICE_KEY"
+        : !portOperationUrl
+          ? "missing_PORT_OPERATION_API_URL"
+          : null,
+    first_5_ports_to_attempt: portOperationPorts.slice(0, 5).map(port => ({
+      prtAgCd: port.code,
+      port_code: port.portCode,
+      port_name: port.portName,
+      port_name_ko: port.portNameKo,
+      tier: port.tier,
+      sub_port: port.subPort
+    }))
+  };
   const vtsCodes = (env("MOF_VTS_PORT_CODES") || "BUSAN,YEOSU,GWANGYANG,ULSAN,PYEONGTAEK,POHANG,HADONG,MASAN,INCHEON")
     .split(/[,\s]+/)
     .map(code => code.trim())
@@ -1787,8 +1812,19 @@ async function collectRealRows() {
     }).length
   };
   const portOperationDiagnostics = diagnostics.sources.filter(source => String(source.key || "").startsWith("port_operation_"));
+  const portOperationAttempted = portOperationDiagnostics.filter(source => source.attempted);
   diagnostics.coverage = {
     ...(diagnostics.port_registry || {}),
+    ...(diagnostics.port_operation_collection_plan || {}),
+    ports_attempted_count: new Set(portOperationAttempted.map(source => source.prtAgCd).filter(Boolean)).size,
+    port_operation_sources_attempted_count: portOperationAttempted.length,
+    port_operation_sources_skipped_count: portOperationDiagnostics.filter(source => source.skipped).length,
+    port_operation_skip_reason_breakdown: portOperationDiagnostics.reduce((acc, source) => {
+      if (!source.skipped) return acc;
+      const reason = source.reason || source.error_message || source.status || "unknown";
+      acc[reason] = (acc[reason] || 0) + 1;
+      return acc;
+    }, {}),
     successful_ports_count: new Set(portOperationDiagnostics.filter(source => source.success && Number(source.row_count || 0) > 0).map(source => source.prtAgCd).filter(Boolean)).size,
     failed_ports_count: new Set(portOperationDiagnostics.filter(source => source.error).map(source => source.prtAgCd).filter(Boolean)).size,
     no_data_ports_count: new Set(portOperationDiagnostics.filter(source => source.success && Number(source.row_count || 0) === 0).map(source => source.prtAgCd).filter(Boolean)).size,

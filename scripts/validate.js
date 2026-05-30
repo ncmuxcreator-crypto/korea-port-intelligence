@@ -227,6 +227,30 @@ if (fs.existsSync("dashboard/api/readiness-gate.json")) {
   if (status.run_id && readiness.run_id && String(status.run_id) !== String(readiness.run_id) && readiness.stale_readiness_gate !== true) {
     throw new Error("Readiness gate must mark stale_readiness_gate=true when run_id differs from status.json");
   }
+  if (Number(readiness.total || 0) === 0 && readiness.ok === true) {
+    throw new Error("Readiness gate must not return ok=true for an empty dataset");
+  }
+  if (String(readiness.data_mode || "") === "no_live_data" && readiness.production_ready === true) {
+    throw new Error("Readiness gate must not mark no_live_data as production_ready");
+  }
+}
+if (fs.existsSync("dashboard/api/snapshot-guard.json")) {
+  const guard = JSON.parse(fs.readFileSync("dashboard/api/snapshot-guard.json", "utf8"));
+  if (Number(status.record_count || 0) === 0 && guard.status !== "empty_dataset") {
+    throw new Error("Snapshot guard must mark zero-row outputs as empty_dataset");
+  }
+  if (Number(status.record_count || 0) === 0 && guard.production_ready === true) {
+    throw new Error("Snapshot guard must not mark zero-row outputs as production_ready");
+  }
+}
+if (fs.existsSync("dashboard/api/source-health-runtime.json")) {
+  const sourceHealth = JSON.parse(fs.readFileSync("dashboard/api/source-health-runtime.json", "utf8"));
+  if (status.run_id && sourceHealth.run_id && String(status.run_id) !== String(sourceHealth.run_id) && sourceHealth.stale_source_health !== true) {
+    throw new Error("Source health runtime must mark stale_source_health=true when run_id differs from status.json");
+  }
+  for (const marker of ["run_id", "generated_at", "secrets_present", "enabled_collectors", "attempted_collectors", "skipped_collectors"]) {
+    if (!(marker in sourceHealth)) throw new Error(`Source health runtime missing current-run field: ${marker}`);
+  }
 }
 if (!status.candidate_ops || !status.backend_health || !status.seven_pack_summary) {
   throw new Error("Missing stability bundle outputs");
