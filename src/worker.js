@@ -3243,9 +3243,149 @@ async function historyApiResponse(pathname, searchParams, env) {
   return null;
 }
 
+function ratePercent(numerator, denominator) {
+  const total = Number(denominator || 0);
+  return total ? Math.round((Number(numerator || 0) / total) * 1000) / 10 : 0;
+}
+
+function workerEnvPresent(env, name) {
+  return Boolean(env?.[name] && String(env[name]).trim());
+}
+
+function workerNumberEnv(env, name, fallback) {
+  const value = Number(env?.[name]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function buildConfigStatus(env = {}) {
+  const required = ["PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_URL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+  const sourceChecks = [
+    ["port_operation", ["PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_URL"]],
+    ["port_facility", ["PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_URL"]],
+    ["pilot_sources", ["PILOT_SOURCE_URLS"]],
+    ["berth_sources", ["BERTH_SOURCE_URLS", "PNC_SOURCE_URLS"]],
+    ["ulsan_core", ["ULSAN_BERTH_DETAIL_API_URL", "ULSAN_CARGO_PLAN_API_URL", "ULSAN_BERTH_OPERATION_API_URL", "ULSAN_TERMINAL_PROCESS_API_URL"]],
+    ["vessel_spec", ["VESSEL_SPEC_SERVICE_KEY", "VESSEL_SPEC_API_URL"]],
+    ["mof_vts", ["MOF_VTS_API_BASE", "MOF_VTS_SERVICE_KEY"]],
+    ["mof_ais_dynamic", ["MOF_AIS_DYNAMIC_API_URL", "MOF_AIS_DYNAMIC_SERVICE_KEY"]],
+    ["google_drive", ["GDRIVE_SERVICE_ACCOUNT_JSON", "GDRIVE_FOLDER_ID"]]
+  ];
+  const enabledSources = sourceChecks
+    .filter(([, keys]) => keys.some(key => workerEnvPresent(env, key)))
+    .map(([name]) => name);
+  const enrichmentSources = enabledSources.filter(name => !["port_operation", "google_drive"].includes(name));
+  return {
+    generated_at: new Date().toISOString(),
+    environment: env.ENVIRONMENT || env.UPDATE_MODE || "cloudflare_worker",
+    config_source_model: {
+      secrets: "Cloudflare/GitHub runtime secrets only",
+      csv_registry: PORT_REGISTRY_SOURCE,
+      env_vars: "runtime limits and toggles",
+      code_defaults: PORT_REGISTRY_GENERATED_FROM_CSV ? "generated safe fallback cache" : "manual fallback"
+    },
+    required_env_vars: required,
+    missing_required_config: required.filter(name => !workerEnvPresent(env, name)),
+    secrets_present: Object.fromEntries(required.map(name => [name, workerEnvPresent(env, name)])),
+    enabled_sources: enabledSources,
+    enabled_enrichment_sources: enrichmentSources,
+    enabled_ports_count: PORT_REGISTRY.length,
+    ports_registry_source: PORT_REGISTRY_SOURCE,
+    ports_registry_generated_from_csv: PORT_REGISTRY_GENERATED_FROM_CSV,
+    active_runtime_limits: {
+      SOURCE_TIMEOUT_MS: workerNumberEnv(env, "SOURCE_TIMEOUT_MS", 30000),
+      MAX_OUTPUT_ROWS: workerNumberEnv(env, "MAX_OUTPUT_ROWS", 10000),
+      MAX_SOURCE_ROWS: workerNumberEnv(env, "MAX_SOURCE_ROWS", 5000),
+      MAX_TARGET_VESSELS: workerNumberEnv(env, "MAX_TARGET_VESSELS", 5000),
+      MAX_CANDIDATES: workerNumberEnv(env, "MAX_CANDIDATES", 1000),
+      MAX_CHILD_ENRICHMENT_ROWS: workerNumberEnv(env, "MAX_CHILD_ENRICHMENT_ROWS", 100),
+      PORT_OPERATION_NUM_OF_ROWS: workerNumberEnv(env, "PORT_OPERATION_NUM_OF_ROWS", 50),
+      PORT_OPERATION_MAX_PAGES: workerNumberEnv(env, "PORT_OPERATION_MAX_PAGES", 20),
+      SOURCE_MAX_RETRIES: workerNumberEnv(env, "SOURCE_MAX_RETRIES", 2),
+      API_CACHE_SECONDS
+    },
+    diagnosis_help: {
+      missing_secret: "Check missing_required_config and secrets_present.",
+      disabled_source: "Check enabled_sources and the matching source env/secret pair.",
+      wrong_port_registry: `Ports are generated from ${PORT_REGISTRY_SOURCE}; update CSV before regenerating Worker constants.`,
+      hardcoded_limit: "Check active_runtime_limits.",
+      runtime_timeout: "Check SOURCE_TIMEOUT_MS and collector runtime budget in workflow env."
+    }
+  };
+}
+
+async function buildPipelineHealth(env) {
+  const pointer = await fetchActivePointer(env);
+  const runs = await supabaseGet(env, "/rest/v1/data_collection_runs?select=*&order=started_at.desc&limit=20");
+  const sourceLogs = await supabaseGet(env, "/rest/v1/source_collection_logs?select=*&order=started_at.desc&limit=200");
+  const runRows = runs.rows || [];
+  const logRows = sourceLogs.rows || [];
+  const lastSuccessfulRun = runRows.find(row => ["promoted", "promotable"].includes(String(row.status || "").toLowerCase())) || null;
+  const lastFailedRun = runRows.find(row => /failed|degraded|not_promoted|no_live_data/i.test(String(row.status || ""))) || null;
+  const failedSources = logRows.filter(row => ["failed", "skipped"].includes(String(row.status || "").toLowerCase()) && row.error_message);
+  const matchedRows = logRows.reduce((sum, row) => sum + Number(row.rows_matched || 0), 0);
+  const collectedRows = logRows.reduce((sum, row) => sum + Number(row.rows_collected || 0), 0);
+  const latestRun = runRows[0] || {};
+  const sourceSummary = Object.values(logRows.reduce((acc, row) => {
+    const key = row.source_name || "unknown_source";
+    acc[key] ||= { source_name: key, latest_status: row.status, attempts: 0, success_count: 0, failed_count: 0, rows_collected: 0, rows_matched: 0, last_error: null };
+    acc[key].attempts += 1;
+    acc[key].success_count += String(row.status || "").toLowerCase() === "success" ? 1 : 0;
+    acc[key].failed_count += String(row.status || "").toLowerCase() === "failed" ? 1 : 0;
+    acc[key].rows_collected += Number(row.rows_collected || 0);
+    acc[key].rows_matched += Number(row.rows_matched || 0);
+    if (row.error_message && !acc[key].last_error) acc[key].last_error = row.error_message;
+    return acc;
+  }, {}));
+  const targetRatio = Number(latestRun.target_ratio || latestRun.source_summary?.scoring_diagnostics?.target_ratio || 0);
+  const imoRecovery = latestRun.source_summary?.imo_recovery || {};
+  const enrichmentMatchRate = ratePercent(matchedRows, collectedRows);
+  const activeCollectedAt = pointer.active_collected_at || pointer.promoted_at || lastSuccessfulRun?.finished_at || null;
+  const dataAgeMinutes = activeCollectedAt ? Math.round((Date.now() - new Date(activeCollectedAt).getTime()) / 60000) : null;
+  const warnings = {
+    no_live_data: !pointer.active_run_id && !pointer.legacy_latest,
+    stale_data: Boolean(pointer.is_stale) || (dataAgeMinutes !== null && dataAgeMinutes > 24 * 60),
+    source_failure: failedSources.length > 0,
+    target_ratio_too_high: targetRatio > 30 || targetRatio > 0.3,
+    enrichment_match_rate_low: collectedRows > 0 && enrichmentMatchRate < 20,
+    imo_recovery_rate_low: Number(imoRecovery.imo_recovery_success_rate || 0) > 0 && Number(imoRecovery.imo_recovery_success_rate || 0) < 20,
+    prediction_error_high: Number(latestRun.source_summary?.prediction?.avg_prediction_error_hours || 0) > 48
+  };
+  return {
+    generated_at: new Date().toISOString(),
+    active_run_id: pointer.active_run_id || null,
+    active_pointer_source: pointer.pointer_source || null,
+    last_successful_run: lastSuccessfulRun,
+    last_failed_run: lastFailedRun,
+    source_health_summary: sourceSummary,
+    failed_sources: failedSources.slice(0, 50),
+    data_freshness: {
+      active_collected_at: activeCollectedAt,
+      data_age_minutes: dataAgeMinutes,
+      is_stale: warnings.stale_data
+    },
+    target_ratio: targetRatio,
+    imo_recovery_status: imoRecovery,
+    enrichment_match_rates: {
+      enrichment_rows_collected: collectedRows,
+      enrichment_rows_matched: matchedRows,
+      enrichment_match_rate: enrichmentMatchRate
+    },
+    warning_flags: warnings,
+    alert_ready_diagnostics: warnings,
+    query_status: {
+      runs_ok: runs.ok,
+      source_logs_ok: sourceLogs.ok,
+      runs_error: runs.error,
+      source_logs_error: sourceLogs.error
+    }
+  };
+}
+
 async function apiResponse(url, env) {
   const pathname = typeof url === "string" ? url : url.pathname;
   const searchParams = typeof url === "string" ? new URLSearchParams() : url.searchParams;
+  if (pathname === "/api/config-status.json" || pathname.endsWith("/config-status.json")) return json(buildConfigStatus(env), { headers: corsHeaders() });
+  if (pathname === "/api/health/pipeline.json" || pathname.endsWith("/health/pipeline.json")) return json(await buildPipelineHealth(env), { headers: corsHeaders() });
   if (pathname.startsWith("/api/history/")) {
     const historical = await historyApiResponse(pathname, searchParams, env);
     if (historical) return historical;

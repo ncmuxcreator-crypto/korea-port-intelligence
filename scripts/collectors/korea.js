@@ -14,6 +14,7 @@ const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
 const MAX_SOURCE_ROWS = Number(process.env.MAX_SOURCE_ROWS || 5000);
 const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.MAX_CHILD_ENRICHMENT_ROWS || 100);
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
+const SOURCE_MAX_RETRIES = Number(process.env.SOURCE_MAX_RETRIES || 2);
 const DEFAULT_PORT_OPERATION_API_URL = "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5";
 const DEFAULT_CARGO_HARBOR_USE_API_URL = "http://apis.data.go.kr/1192000/CargHarborUse2/Info";
 const PORTS_REGISTRY_PATH = path.join("data", "reference", "ports_registry.csv");
@@ -558,18 +559,50 @@ function decodeResponse(buffer, contentType = "") {
   return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isTransientCollectorError(error = {}) {
+  const status = Number(error.http_status || 0);
+  const message = String(error?.message || error?.name || "").toLowerCase();
+  return status === 429 ||
+    status >= 500 ||
+    message.includes("timeout") ||
+    message.includes("abort") ||
+    message.includes("network") ||
+    message.includes("fetch failed") ||
+    error?.name === "AbortError";
+}
+
+function isPermanentCollectorError(error = {}) {
+  const status = Number(error.http_status || 0);
+  const message = String(error?.message || "").toLowerCase();
+  return status === 400 ||
+    status === 401 ||
+    status === 403 ||
+    message.includes("missing_service_key") ||
+    message.includes("missing service key") ||
+    message.includes("invalid schema");
+}
+
 async function fetchText(source, extraParams = {}) {
   const variants = source.serviceKeyVariants?.length ? source.serviceKeyVariants : [{ name: "default", value: source.serviceKey }];
   let lastError = null;
   for (const variant of variants) {
     const sourceVariant = { ...source, serviceKey: variant.value };
-    try {
-      const result = await fetchTextOnce(sourceVariant, extraParams);
-      return { ...result, service_key_variant: variant.name };
-    } catch (error) {
-      lastError = error;
-      if (!source.serviceKeyVariants?.length) break;
+    for (let attempt = 0; attempt <= SOURCE_MAX_RETRIES; attempt += 1) {
+      try {
+        const result = await fetchTextOnce(sourceVariant, extraParams);
+        return { ...result, service_key_variant: variant.name, retry_count: attempt };
+      } catch (error) {
+        lastError = error;
+        error.retry_count = attempt;
+        if (isPermanentCollectorError(error) || !isTransientCollectorError(error) || attempt >= SOURCE_MAX_RETRIES) break;
+        await sleep(Math.min(5000, 500 * (2 ** attempt)));
+      }
     }
+    if (!source.serviceKeyVariants?.length || isPermanentCollectorError(lastError)) break;
   }
   throw lastError || new Error("request_failed");
 }
@@ -764,6 +797,8 @@ async function fetchPagedRows(source, rowLimit, deadline = Infinity) {
     pageNo: Number(source.defaultParams?.pageNo || 1),
     row_count: rows.length,
     http_status: firstPage.http_status,
+    latency_ms: firstPage.latency_ms || 0,
+    retry_count: firstPage.retry_count || 0,
     resultCode: firstPage.result_meta?.resultCode || null,
     totalCount: firstPage.result_meta?.totalCount || null,
     requested_url_without_service_key: maskServiceKey(firstPage.url)
@@ -781,6 +816,8 @@ async function fetchPagedRows(source, rowLimit, deadline = Infinity) {
         pageNo,
         row_count: pageRows.length,
         http_status: page.http_status,
+        latency_ms: page.latency_ms || 0,
+        retry_count: page.retry_count || 0,
         resultCode: page.result_meta?.resultCode || null,
         totalCount: page.result_meta?.totalCount || null,
         requested_url_without_service_key: maskServiceKey(page.url)
@@ -796,6 +833,7 @@ async function fetchPagedRows(source, rowLimit, deadline = Infinity) {
     url: firstPage.url,
     http_status: firstPage.http_status,
     latency_ms: pageSummaries.reduce((sum, page) => sum + Number(page.latency_ms || 0), firstPage.latency_ms || 0),
+    retry_count: pageSummaries.reduce((sum, page) => sum + Number(page.retry_count || 0), 0),
     result_meta: firstPage.result_meta,
     service_key_variant: firstPage.service_key_variant || last.service_key_variant,
     rows: rows.slice(0, rowLimit),
@@ -1584,46 +1622,66 @@ async function collectRealRows() {
     const diag = {
       key: source.key,
       label: source.label,
+      source_name: source.key,
+      started_at: new Date().toISOString(),
+      finished_at: null,
+      duration_ms: 0,
+      status: "pending",
       source_profile: sourceType(source),
       attempted: false,
       skipped: false,
       success: false,
       row_count: 0,
       normalized_count: 0,
+      rows_collected: 0,
+      rows_normalized: 0,
+      rows_matched: 0,
       actionable_count: 0,
+      retry_count: 0,
+      error_message: null,
       prtAgCd: source.prtAgCd || null,
       sde: source.defaultParams?.sde || null,
       ede: source.defaultParams?.ede || null
+    };
+    const finishDiag = status => {
+      diag.status = status;
+      diag.finished_at = new Date().toISOString();
+      diag.duration_ms = Math.max(0, new Date(diag.finished_at).getTime() - new Date(diag.started_at).getTime());
+      diag.rows_collected = Number(diag.rows_collected || diag.row_count || 0);
+      diag.rows_normalized = Number(diag.rows_normalized || diag.normalized_count || 0);
+      diag.rows_matched = Number(diag.rows_matched || diag.actionable_count || 0);
+      return diag;
     };
     if (Date.now() > deadline) {
       diag.skipped = true;
       diag.reason = "runtime_budget_exceeded";
       diagnostics.skipped_count += 1;
-      diagnostics.sources.push(diag);
+      diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
     if (!source.url) {
       diag.skipped = true;
       diag.reason = source.disabledReason || "missing_url";
       diagnostics.skipped_count += 1;
-      diagnostics.sources.push(diag);
+      diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
     if (!canAttempt(source)) {
       diag.skipped = true;
       diag.reason = "missing_service_key_or_embedded_key";
       diagnostics.skipped_count += 1;
-      diagnostics.sources.push(diag);
+      diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
     diag.attempted = true;
     diagnostics.attempted_count += 1;
     try {
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit, deadline);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, retry_count, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit, deadline);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
+      diag.retry_count = retry_count || 0;
       diag.requested_url_without_service_key = maskServiceKey(url);
       diag.service_key_variant = service_key_variant;
       if (debugVerboseEnabled()) diag.raw_response_preview = text.slice(0, 500);
@@ -1672,7 +1730,9 @@ async function collectRealRows() {
       }
       const sourceRecords = records.filter(record => record.source === source.key);
       diag.normalized_count = sourceRecords.length;
+      diag.rows_normalized = sourceRecords.length;
       diag.actionable_count = sourceRecords.filter(record => record.actionable_source_row).length;
+      diag.rows_matched = diag.actionable_count;
       diag.detail_rows_flattened_count = sourceRecords.filter(record => record.detail_rows_flattened).length;
       diag.detail_rows_missing_time_count = sourceRecords.filter(record => record.detail_rows_flattened && !record.eta && !record.etd && !record.ata && !record.atd && !record.etb && !record.atb).length;
       diag.ata_detected_count = sourceRecords.filter(record => record.ata).length;
@@ -1696,10 +1756,14 @@ async function collectRealRows() {
         diag.warning = "source_returned_rows_but_no_vessel_identity_fields_matched";
       }
       diagnostics.success_count += 1;
+      finishDiag("success");
     } catch (error) {
       diag.error = error?.message || String(error);
+      diag.error_message = diag.error;
       diag.http_status = error?.http_status || null;
+      diag.retry_count = error?.retry_count || 0;
       diagnostics.failed_count += 1;
+      finishDiag("failed");
     }
     diagnostics.sources.push(diag);
   }
@@ -1742,6 +1806,8 @@ async function collectRealRows() {
     ]))
   };
   Object.assign(diagnostics, diagnostics.coverage);
+  diagnostics.partial_failure = diagnostics.failed_count > 0 && diagnostics.success_count > 0;
+  diagnostics.partial_failure_policy = "failed enrichment/source collectors do not remove Port Operation vessels or stop the pipeline";
   return deduped;
 }
 

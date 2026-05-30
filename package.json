@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "update": "node scripts/update.js",
+    "reprocess": "node scripts/reprocess.js",
     "daily:enrich": "node scripts/daily-enrichment.js",
     "validate": "node scripts/validate.js",
     "build": "npm run update && npm run validate",

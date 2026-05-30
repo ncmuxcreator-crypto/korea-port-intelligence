@@ -377,11 +377,33 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
   const parseFailures = Number(diagnostics.failed_count || 0);
   const totalFinished = Number(diagnostics.success_count || 0) + parseFailures;
   const parseErrorRate = totalFinished ? parseFailures / totalFinished : 0;
+  const malformedRows = (diagnostics.sources || []).reduce((sum, source) => sum + Number(source.detail_rows_missing_time_count || 0), 0);
+  const normalizedRows = Math.max(1, Number(records.length || diagnostics.real_row_count || 0));
+  const malformedRowRate = malformedRows / normalizedRows;
+  const salesTargets = records.filter(isSalesTargetRecord).length;
+  const targetRatio = records.length ? salesTargets / records.length : 0;
+  const validationGates = {
+    all_vessels_count_positive: records.length > 0,
+    port_operation_success_count: portOperationSuccess,
+    malformed_row_rate_below_threshold: malformedRowRate < Number(process.env.MALFORMED_ROW_RATE_THRESHOLD || 0.35),
+    target_ratio_reasonable: targetRatio <= Number(process.env.TARGET_RATIO_MAX || 0.3),
+    no_fatal_db_write_error: true
+  };
   return {
-    promotable: attempted > 0 && portOperationSuccess >= 1 && records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length > 0 && parseErrorRate < 0.5,
+    promotable: attempted > 0 &&
+      portOperationSuccess >= 1 &&
+      records.length > 0 &&
+      records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length > 0 &&
+      parseErrorRate < 0.5 &&
+      validationGates.malformed_row_rate_below_threshold &&
+      validationGates.target_ratio_reasonable,
     attempted,
     portOperationSuccess,
-    parseErrorRate
+    parseErrorRate,
+    malformedRowRate,
+    targetRatio,
+    validationGates,
+    promotion_blockers: Object.entries(validationGates).filter(([, value]) => value === false).map(([key]) => key)
   };
 }
 
@@ -707,14 +729,35 @@ function retentionCutoff(days) {
   return new Date(Date.now() - Number(days || 0) * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function buildSourceCollectionLogRows(diagnostics = {}, runId) {
+  return (diagnostics.sources || []).map(source => ({
+    source_log_id: `${runId}:${source.key || source.source_name || source.label || randomUUID().slice(0, 8)}`,
+    run_id: runId,
+    source_name: source.source_name || source.key || source.label || "unknown_source",
+    source_profile: source.source_profile || null,
+    started_at: source.started_at || diagnostics.generated_at || new Date().toISOString(),
+    finished_at: source.finished_at || source.started_at || diagnostics.generated_at || new Date().toISOString(),
+    duration_ms: Number(source.duration_ms || source.latency_ms || 0),
+    status: source.status || (source.skipped ? "skipped" : source.success ? "success" : source.error ? "failed" : "unknown"),
+    rows_collected: Number(source.rows_collected || source.row_count || 0),
+    rows_normalized: Number(source.rows_normalized || source.normalized_count || 0),
+    rows_matched: Number(source.rows_matched || source.actionable_count || 0),
+    error_message: source.error_message || source.error || source.reason || null,
+    retry_count: Number(source.retry_count || 0),
+    http_status: source.http_status || null,
+    payload: source
+  }));
+}
+
 async function runLeanRetentionCleanup(supabase) {
   if (!leanStorageEnabled() || String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() === "false") {
-    return { skipped: true };
+    return { skipped: true, retention_groups: { daily_warehouse: "long_retention_not_deleted", raw_payloads: "google_drive_archive" } };
   }
   const retention = {
     vesselSnapshotsDays: Number(process.env.DB_RETENTION_VESSEL_SNAPSHOTS_DAYS || 3),
     riskHistoryDays: Number(process.env.DB_RETENTION_RISK_HISTORY_DAYS || 14),
     enrichmentDays: Number(process.env.DB_RETENTION_ENRICHMENT_DAYS || 7),
+    sourceLogsDays: Number(process.env.DB_RETENTION_SOURCE_LOGS_DAYS || 30),
     ruleDays: Number(process.env.DB_RETENTION_RULE_DAYS || 7),
     featureDays: Number(process.env.DB_RETENTION_FEATURE_DAYS || 7),
     modelDays: Number(process.env.DB_RETENTION_MODEL_DAYS || 14),
@@ -724,6 +767,7 @@ async function runLeanRetentionCleanup(supabase) {
     ["vessel_snapshots", "collected_at", retention.vesselSnapshotsDays],
     ["risk_history", "collected_at", retention.riskHistoryDays],
     ["enrichment_match_candidates", "created_at", retention.enrichmentDays],
+    ["source_collection_logs", "started_at", retention.sourceLogsDays],
     ["rule_evaluations", "collected_at", retention.ruleDays],
     ["feature_store", "collected_at", retention.featureDays],
     ["model_training_rows", "collected_at", retention.modelDays],
@@ -738,7 +782,15 @@ async function runLeanRetentionCleanup(supabase) {
       result[table] = { status: "skipped", error: error.message, retention_days: days, rows_deleted: 0 };
     }
   }
-  return result;
+  return {
+    ...result,
+    retention_groups: {
+      run_snapshots: "short_retention",
+      diagnostics: "medium_retention",
+      daily_warehouse: "long_retention_not_deleted",
+      raw_payloads: "google_drive_archive"
+    }
+  };
 }
 
 function lifecycleKey(record = {}) {
@@ -1052,6 +1104,7 @@ export async function saveToSupabase(records, options = {}) {
   const promotion = shouldPromoteRun(records, diagnostics);
   const runStatus = options.status === "failed" ? "failed" : promotion.promotable ? "promotable" : records.length ? "degraded_not_promoted" : "no_live_data";
   const storageMode = leanStorageEnabled() ? "lean" : "full";
+  const batchSize = Number(process.env.SUPABASE_BATCH_SIZE || 100);
   const preRetentionCleanup = await runLeanRetentionCleanup(supabase);
   const exclusionReasonCounts = records.reduce((acc, r) => {
     const score = Number(r.commercial_value_score || r.total_sales_priority_score || r.cleaning_candidate_score || 0);
@@ -1106,8 +1159,17 @@ export async function saveToSupabase(records, options = {}) {
     validation_status: promotion.promotable ? "passed" : "not_promoted",
     error_summary: { error: options.error || null, promotion }
   });
+  const sourceCollectionLogRows = buildSourceCollectionLogRows(diagnostics, runId);
+  if (sourceCollectionLogRows.length) {
+    for (let index = 0; index < sourceCollectionLogRows.length; index += batchSize) {
+      const batch = sourceCollectionLogRows.slice(index, index + batchSize);
+      const { error } = await supabase.from("source_collection_logs").upsert(batch, { onConflict: "source_log_id" });
+      if (error) throw error;
+    }
+  }
 
   const rows = records.map(r => ({
+    snapshot_uid: stableEntityId("SNAP", `${runId}-${buildPortCallId(r)}-${r.hybrid_entity_key || r.vessel_id || r.call_sign || r.vessel_name || ""}-${r.source || r.source_name || ""}`),
     run_id: runId,
     snapshot_date: now.slice(0, 10),
     master_vessel_id: fallbackMasterId(r),
@@ -1249,12 +1311,11 @@ export async function saveToSupabase(records, options = {}) {
   const previousSnapshotMap = await fetchPreviousSnapshotMap(supabase);
 
   let recordsSaved = 0;
-  const batchSize = Number(process.env.SUPABASE_BATCH_SIZE || 100);
   for (let index = 0; index < rows.length; index += batchSize) {
     const batch = rows.slice(index, index + batchSize);
     const { error } = await supabase
       .from("vessel_snapshots")
-      .insert(batch);
+      .upsert(batch, { onConflict: "snapshot_uid" });
     if (error) throw error;
     recordsSaved += batch.length;
   }
@@ -2525,6 +2586,7 @@ export async function saveToSupabase(records, options = {}) {
   const retentionCleanup = await runLeanRetentionCleanup(supabase);
   const dbRowsWrittenByTable = {
     vessel_snapshots: recordsSaved,
+    source_collection_logs: sourceCollectionLogRows.length,
     vessel_entities: entities.length,
     vessel_master: masterRows.length,
     port_call_master: portCallMasterRows.length,

@@ -125,6 +125,29 @@ create table if not exists active_dataset_pointer (
   is_stale boolean default false
 );
 
+create table if not exists source_collection_logs (
+  source_log_id text primary key,
+  run_id text,
+  source_name text not null,
+  source_profile text,
+  started_at timestamptz default now(),
+  finished_at timestamptz,
+  duration_ms int default 0,
+  status text default 'unknown',
+  rows_collected int default 0,
+  rows_normalized int default 0,
+  rows_matched int default 0,
+  error_message text,
+  retry_count int default 0,
+  http_status int,
+  payload jsonb default '{}'::jsonb
+);
+
+create index if not exists idx_source_collection_logs_run_id on source_collection_logs(run_id);
+create index if not exists idx_source_collection_logs_source_name on source_collection_logs(source_name);
+create index if not exists idx_source_collection_logs_started_at on source_collection_logs(started_at desc);
+create index if not exists idx_source_collection_logs_status on source_collection_logs(status);
+
 create table if not exists port_call_master (
   port_call_id text primary key,
   run_id text,
@@ -306,8 +329,10 @@ alter table vessel_snapshots add column if not exists data_quality_band text;
 alter table vessel_snapshots add column if not exists source_confidence_score int default 0;
 alter table vessel_snapshots add column if not exists port_call_identity text;
 alter table vessel_snapshots add column if not exists port_call_id text;
+alter table vessel_snapshots add column if not exists snapshot_uid text;
 alter table vessel_snapshots add column if not exists sub_port text;
 create index if not exists idx_vessel_snapshots_port_call_id on vessel_snapshots(port_call_id);
+create unique index if not exists idx_vessel_snapshots_snapshot_uid on vessel_snapshots(snapshot_uid);
 create index if not exists idx_vessel_snapshots_date on vessel_snapshots(snapshot_date desc);
 create index if not exists idx_vessel_snapshots_port_call_identity on vessel_snapshots(port_call_identity);
 
