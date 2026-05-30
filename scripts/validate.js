@@ -23,6 +23,7 @@ const required = [
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
   "dashboard/api/quality/basic-info-coverage.json",
+  "dashboard/api/quality/dataset-generation-audit.json",
   "dashboard/api/review/basic-info-missing.json",
   "dashboard/api/candidate-summary.json",
   "dashboard/api/contact-queue.json",

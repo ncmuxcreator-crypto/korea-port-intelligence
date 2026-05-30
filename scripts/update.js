@@ -3319,6 +3319,99 @@ function buildDataQualityLayerDiagnostics(records = [], matchingDiagnostics = bu
   };
 }
 
+function buildDatasetGenerationAudit({
+  report = {},
+  collectedRows = [],
+  allCollectedVessels = [],
+  targetVessels = [],
+  salesCandidates = [],
+  immediateTargets = [],
+  candidateList = [],
+  collectorDiagnostics = {},
+  supabaseWrite = {}
+} = {}) {
+  const sourceRowsCollected = Number(collectedRows.length || collectorDiagnostics.raw_row_count || collectorDiagnostics.actionable_row_count || 0);
+  const normalizedRows = Number(allCollectedVessels.length || 0);
+  const allVesselsGenerated = normalizedRows;
+  const watchlistGenerated = allCollectedVessels.filter(v => !isSalesCandidate(v) && isWatchlistVessel(v)).length;
+  const salesTargetsGenerated = Number(salesCandidates.length || 0);
+  const immediateTargetsGenerated = Number(immediateTargets.length || 0);
+  const vesselsJsonRows = Number(targetVessels.length || 0);
+  const candidatesJsonRows = Number(candidateList.length || 0);
+  const gateAudit = {
+    collection_gate: sourceRowsCollected > 0 ? "pass" : "blocked",
+    normalization_gate: sourceRowsCollected > 0 ? (normalizedRows > 0 ? "pass" : "blocked") : "not_reached",
+    all_vessels_gate: normalizedRows > 0 ? "pass" : "blocked",
+    candidate_generation_gate: normalizedRows > 0 ? "pass" : "not_reached",
+    supabase_promotion_gate: supabaseWrite?.status === "synced" ? "pass" : "not_promoted",
+    static_export_gate: vesselsJsonRows > 0 || report?.data_mode === "no_live_data" ? "completed" : "empty_export"
+  };
+  let failedStage = null;
+  let rootCause = "dataset_generation_completed";
+  if (sourceRowsCollected === 0) {
+    failedStage = "source_collection";
+    rootCause = report?.data_mode === "no_live_data"
+      ? "local_static_no_live_data_export_without_required_secrets"
+      : "source_collection_returned_zero_rows";
+  } else if (normalizedRows === 0) {
+    failedStage = "normalization";
+    rootCause = "source_rows_collected_but_no_valid_normalized_vessels";
+  } else if (!allVesselsGenerated) {
+    failedStage = "all_vessels_generation";
+    rootCause = "normalized_rows_exist_but_all_vessels_generation_empty";
+  } else if (!vesselsJsonRows && report?.record_count !== 0) {
+    failedStage = "api_export";
+    rootCause = "active_dataset_exists_but_vessels_json_export_empty";
+  }
+  const gateBlockReasons = [];
+  if (!sourceRowsCollected) gateBlockReasons.push("No source rows were collected in this local/static run.");
+  if (report?.data_mode === "no_live_data") gateBlockReasons.push("data_mode is no_live_data, so generated JSON intentionally contains zero vessels/candidates.");
+  if (report?.supabase_status === "not_configured") gateBlockReasons.push("Supabase is not configured for this run; production must use Worker/Supabase active_dataset_pointer instead of static fallback JSON.");
+  if (collectorDiagnostics?.fallback_used) gateBlockReasons.push("Collector fallback/no-live-data guard was used.");
+  if (supabaseWrite?.status && supabaseWrite.status !== "synced") gateBlockReasons.push(`Supabase write status: ${supabaseWrite.status}.`);
+  return {
+    generated_at: new Date().toISOString(),
+    audit_type: "dataset_generation",
+    root_cause: rootCause,
+    failed_stage: failedStage,
+    counts_by_stage: {
+      source_rows_collected: sourceRowsCollected,
+      normalized_rows: normalizedRows,
+      all_vessels_generated: allVesselsGenerated,
+      watchlist_generated: watchlistGenerated,
+      sales_targets_generated: salesTargetsGenerated,
+      immediate_targets_generated: immediateTargetsGenerated,
+      vessels_json_rows: vesselsJsonRows,
+      candidates_json_rows: candidatesJsonRows
+    },
+    source_rows_collected: sourceRowsCollected,
+    normalized_rows: normalizedRows,
+    all_vessels_generated: allVesselsGenerated,
+    watchlist_generated: watchlistGenerated,
+    sales_targets_generated: salesTargetsGenerated,
+    immediate_targets_generated: immediateTargetsGenerated,
+    vessels_json_rows: vesselsJsonRows,
+    candidates_json_rows: candidatesJsonRows,
+    active_dataset_audit: {
+      status_json_run_id: report?.run_id || null,
+      latest_successful_run: report?.latest_successful_summary_run_id || report?.summary_run_id || null,
+      current_run: report?.run_id || null,
+      status_json_generated_at: report?.completed_at || report?.generated_at || null,
+      vessels_json_basis: "dashboard/api/vessels.json is a static export of targetVessels from this run",
+      candidates_json_basis: "dashboard/api/candidates.json is a static export of candidateList from this run",
+      production_serving_rule: "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
+    },
+    gate_audit: gateAudit,
+    gate_block_reasons: gateBlockReasons,
+    recommended_fix: [
+      "Do not use stale dashboard/api/*.json files as the production dataset when Supabase/Worker active dataset is available.",
+      "Keep Cloudflare upload skip rules for generated dashboard/api JSON assets.",
+      "Use /api/dashboard-summary.json and /api/vessels?group=all from the Worker to verify the live active dataset.",
+      "If source_rows_collected is zero in GitHub Actions, check required secrets and source collector logs before debugging scoring."
+    ]
+  };
+}
+
 function buildBasicInfoMissingReview(records = []) {
   return sortCommercialPriority(records)
     .filter(v => isMainCommercialVessel(v) && ((v.vessel_basic_info_completeness_score || 0) < 75 || shouldPrioritizeVesselSpecEnrichment(v)))
@@ -4173,6 +4266,17 @@ try {
     immediateTargets,
     collectorDiagnostics: collectorDiagnosticsAfterCollection
   });
+  const datasetGenerationAudit = buildDatasetGenerationAudit({
+    report: baseReport,
+    collectedRows,
+    allCollectedVessels,
+    targetVessels,
+    salesCandidates,
+    immediateTargets,
+    candidateList,
+    collectorDiagnostics: collectorDiagnosticsAfterCollection,
+    supabaseWrite
+  });
   const report = {
     ...baseReport,
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
@@ -4197,6 +4301,7 @@ try {
     matching_diagnostics: matchingDiagnostics,
     prediction_diagnostics: predictionDiagnostics,
     data_quality_layer: dataQualityLayer,
+    dataset_generation_audit: datasetGenerationAudit,
     count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
     imo_recovery_kpis: buildImoRecoveryKpis(vessels),
@@ -4299,6 +4404,7 @@ try {
   fs.writeFileSync("dashboard/api/quality/basic-info-coverage.json", JSON.stringify(buildBasicInfoCoverage(vessels), null, 2));
   fs.writeFileSync("dashboard/api/quality/scoring-diagnostics.json", JSON.stringify(scoringDiagnostics, null, 2));
   fs.writeFileSync("dashboard/api/quality/matching-diagnostics.json", JSON.stringify(matchingDiagnostics, null, 2));
+  fs.writeFileSync("dashboard/api/quality/dataset-generation-audit.json", JSON.stringify(datasetGenerationAudit, null, 2));
   fs.writeFileSync("dashboard/api/quality/imo-recovery.json", JSON.stringify(buildImoRecoveryKpis(vessels), null, 2));
   fs.writeFileSync("dashboard/api/quality/prediction-feedback.json", JSON.stringify(predictionDiagnostics, null, 2));
   fs.writeFileSync("dashboard/api/quality/data-quality.json", JSON.stringify(dataQualityLayer, null, 2));

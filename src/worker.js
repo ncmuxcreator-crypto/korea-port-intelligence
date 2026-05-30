@@ -3644,6 +3644,85 @@ function buildVesselUniverseAudit(records = [], sourceCounts = []) {
   };
 }
 
+function buildDatasetGenerationAudit(records = [], source = {}, sourceCounts = []) {
+  const activeRecords = activeRecordsOnly(records);
+  const buckets = buildVisibilityBuckets(activeRecords);
+  const allRows = vesselGroupRows(activeRecords, "all");
+  const targetRows = vesselGroupRows(activeRecords, "target");
+  const sourceRowsCollected = sourceCounts.reduce((sum, row) => sum + Number(row.rows_collected || 0), 0) || activeRecords.reduce((sum, record) => sum + Math.max(1, Number(record.raw_row_count || record.detail_row_count || 1)), 0);
+  const normalizedRows = activeRecords.length;
+  const watchlistGenerated = activeRecords.filter(v => !isSalesCandidate(v) && isWatchlistVessel(v)).length;
+  const salesTargetsGenerated = buckets.sales_candidates.length;
+  const immediateTargetsGenerated = buckets.immediate_targets.length;
+  const sourceError = source?.error || source?.query_error || null;
+  let failedStage = null;
+  let rootCause = "dataset_generation_completed";
+  if (sourceError && !normalizedRows) {
+    failedStage = "active_dataset_fetch";
+    rootCause = "worker_could_not_fetch_active_dataset_from_supabase";
+  } else if (!sourceRowsCollected && !normalizedRows) {
+    failedStage = "source_collection_or_active_dataset";
+    rootCause = "no_source_rows_or_active_dataset_rows_available";
+  } else if (sourceRowsCollected > 0 && !normalizedRows) {
+    failedStage = "normalization_or_active_dataset_binding";
+    rootCause = "source_rows_exist_but_active_all_vessels_is_empty";
+  } else if (normalizedRows > 0 && !allRows.length) {
+    failedStage = "all_vessels_api_binding";
+    rootCause = "active_records_exist_but_group_all_returns_zero_rows";
+  }
+  const gateBlockReasons = [];
+  if (sourceError) gateBlockReasons.push(`Active dataset query error: ${sourceError}`);
+  if (source?.pointer?.active_dataset_empty) gateBlockReasons.push("active_dataset_pointer resolved to an empty dataset.");
+  if (!normalizedRows) gateBlockReasons.push("No active normalized vessel rows are available to Worker APIs.");
+  if (normalizedRows > 0 && !allRows.length) gateBlockReasons.push("group=all binding returned zero rows despite active records.");
+  return {
+    generated_at: new Date().toISOString(),
+    audit_type: "dataset_generation",
+    root_cause: rootCause,
+    failed_stage: failedStage,
+    counts_by_stage: {
+      source_rows_collected: sourceRowsCollected,
+      normalized_rows: normalizedRows,
+      all_vessels_generated: allRows.length,
+      watchlist_generated: watchlistGenerated,
+      sales_targets_generated: salesTargetsGenerated,
+      immediate_targets_generated: immediateTargetsGenerated,
+      vessels_json_rows: targetRows.length,
+      candidates_json_rows: salesTargetsGenerated
+    },
+    source_rows_collected: sourceRowsCollected,
+    normalized_rows: normalizedRows,
+    all_vessels_generated: allRows.length,
+    watchlist_generated: watchlistGenerated,
+    sales_targets_generated: salesTargetsGenerated,
+    immediate_targets_generated: immediateTargetsGenerated,
+    vessels_json_rows: targetRows.length,
+    candidates_json_rows: salesTargetsGenerated,
+    active_dataset_audit: {
+      active_dataset_pointer_run_id: source?.pointer?.active_run_id || null,
+      latest_successful_run: source?.latest_successful_run_id || null,
+      current_run: source?.pointer?.active_run_id || activeRecords.find(record => record.run_id)?.run_id || null,
+      status_json_basis: "Worker /api/status.json is generated from Supabase active_dataset_pointer or latest successful summary fallback.",
+      vessels_api_basis: "/api/vessels?group=all reads active normalized records; /api/vessels?group=target reads sales/immediate target rows.",
+      static_json_note: "Repository dashboard/api/*.json files may be stale local no-secret exports and are not the production source of truth."
+    },
+    gate_audit: {
+      active_dataset_fetch_gate: sourceError ? "blocked" : "pass",
+      normalization_gate: normalizedRows > 0 ? "pass" : "blocked",
+      all_vessels_gate: allRows.length > 0 ? "pass" : "blocked",
+      candidate_generation_gate: normalizedRows > 0 ? "pass" : "not_reached",
+      api_export_gate: allRows.length > 0 ? "pass" : "blocked"
+    },
+    gate_block_reasons: gateBlockReasons,
+    source_breakdown: sourceCounts,
+    recommended_fix: [
+      "If this audit is empty in production, inspect active_dataset_pointer and vessel_snapshots for the active_run_id.",
+      "If static dashboard/api/status.json shows record_count=0 but this Worker audit has rows, ignore the stale static export.",
+      "If source rows exist but all_vessels_generated is zero, inspect normalization and group=all filtering before scoring."
+    ]
+  };
+}
+
 function buildPortCongestion(records, portCode) {
   const requested = normalizePortCode(portCode);
   return buildPortHeatmap(records).find(p => normalizePortCode(p.port_code || portCodeFromName(p.port)) === requested) || {
@@ -4432,7 +4511,7 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/review/unknown-gt.json")) return json(buildUnknownGtReview(records), { headers: corsHeaders() });
   if (pathname.endsWith("/review/high-value-low-confidence.json")) return json(buildHighValueLowConfidence(records), { headers: corsHeaders() });
   if (pathname.endsWith("/review/congestion-watchlist.json")) return json(buildCongestionWatchlist(records), { headers: corsHeaders() });
-  if (pathname.endsWith("/quality/source-counts.json") || pathname.endsWith("/quality/vessel-universe-audit.json")) {
+  if (pathname.endsWith("/quality/source-counts.json") || pathname.endsWith("/quality/vessel-universe-audit.json") || pathname.endsWith("/quality/dataset-generation-audit.json")) {
     const logs = await supabaseGet(env, "/rest/v1/source_collection_logs?select=*&order=started_at.desc&limit=300");
     const activeRunId = source.pointer?.active_run_id || allRecords.find(record => record.run_id)?.run_id || null;
     const sourceCounts = buildSourceCountsFromLogs(logs.rows || [], activeRunId);
@@ -4443,6 +4522,12 @@ async function apiResponse(url, env) {
         query_status: { ok: logs.ok, error: logs.error || null },
         source_counts: sourceCounts
       }, { headers: corsHeaders() });
+    }
+    if (pathname.endsWith("/quality/dataset-generation-audit.json")) {
+      return json(buildDatasetGenerationAudit(allRecords, {
+        ...source,
+        latest_successful_run_id: latestSummarySnapshot?.run_id || null
+      }, sourceCounts), { headers: corsHeaders() });
     }
     return json({
       active_run_id: activeRunId,

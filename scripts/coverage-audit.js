@@ -1,22 +1,135 @@
 import fs from "node:fs";
 
+const registryPath = "data/reference/ports_registry.csv";
+const statusPath = "dashboard/api/status.json";
 const coveragePath = "dashboard/api/coverage-registry.json";
-const coverage = fs.existsSync(coveragePath) ? JSON.parse(fs.readFileSync(coveragePath, "utf8")) : {};
-const noLiveData = coverage.data_mode === "no_live_data";
-const tier1 = coverage.tier_1 || [];
-const tier2 = coverage.tier_2 || [];
 
-const requiredTier1 = ["Busan", "Yeosu/Gwangyang", "Ulsan", "Pyeongtaek-Dangjin", "Hadong/Samcheonpo", "Pohang"];
-const present = new Set(tier1.map((p) => p.port));
-const missing = requiredTier1.filter((p) => !present.has(p));
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+    if (quoted && char === "\"" && next === "\"") {
+      field += "\"";
+      i += 1;
+      continue;
+    }
+    if (char === "\"") {
+      quoted = !quoted;
+      continue;
+    }
+    if (!quoted && char === ",") {
+      row.push(field);
+      field = "";
+      continue;
+    }
+    if (!quoted && (char === "\n" || char === "\r")) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(field);
+      if (row.some(value => value !== "")) rows.push(row);
+      row = [];
+      field = "";
+      continue;
+    }
+    field += char;
+  }
+  row.push(field);
+  if (row.some(value => value !== "")) rows.push(row);
+  const [headers = [], ...body] = rows;
+  return body.map(values => Object.fromEntries(headers.map((header, index) => [header, values[index] || ""])));
+}
+
+function truthy(value) {
+  return ["true", "1", "yes", "y"].includes(String(value || "").trim().toLowerCase());
+}
+
+function normalize(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function readJson(path, fallback) {
+  try {
+    return fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function emptyTierStats(tier) {
+  return {
+    tier,
+    enabled_count: 0,
+    attempted_count: 0,
+    rows_collected: 0,
+    no_data_ports: [],
+    not_attempted_ports: []
+  };
+}
+
+const registry = fs.existsSync(registryPath) ? parseCsv(fs.readFileSync(registryPath, "utf8")) : [];
+const enabledPorts = registry.filter(row => truthy(row.enabled) && truthy(row.has_port_operation));
+const status = readJson(statusPath, {});
+const coverage = readJson(coveragePath, {});
+const sources = Array.isArray(status?.collector_diagnostics?.sources) ? status.collector_diagnostics.sources : [];
+
+const sourceMatchesRegistryRow = (source, row) => {
+  const sameCode = String(source.prtAgCd || source.portCode || source.port_code || "") === String(row.prtAgCd || row.port_code || "");
+  const sourceText = normalize([source.key, source.label, source.portName, source.portNameKo, source.subPort].filter(Boolean).join(" "));
+  const registryText = normalize([row.port_name_en, row.port_name_ko, row.sub_port, row.port_group].filter(Boolean).join(" "));
+  return sameCode && (!registryText || sourceText.includes(registryText) || registryText.includes(sourceText) || sourceText.includes(normalize(row.port_name_en)));
+};
+
+const sourceRowsForPort = row => sources.filter(source => String(source.key || "").startsWith("port_operation_") && (
+  sourceMatchesRegistryRow(source, row) ||
+  String(source.prtAgCd || source.portCode || source.port_code || "") === String(row.prtAgCd || row.port_code || "")
+));
+
+const byTier = { "1": emptyTierStats("1"), "2": emptyTierStats("2"), "3": emptyTierStats("3") };
+for (const row of enabledPorts) {
+  const tier = String(row.tier || "unknown").trim() || "unknown";
+  if (!byTier[tier]) byTier[tier] = emptyTierStats(tier);
+  const stats = byTier[tier];
+  const matchedSources = sourceRowsForPort(row);
+  const attemptedSources = matchedSources.filter(source => source.attempted);
+  const rowsCollected = attemptedSources.reduce((sum, source) => sum + Number(source.row_count || source.rows_collected || 0), 0);
+  const portLabel = row.port_name_en || row.port_name_ko || row.sub_port || row.prtAgCd || row.port_code;
+  stats.enabled_count += 1;
+  if (attemptedSources.length) stats.attempted_count += 1;
+  else stats.not_attempted_ports.push({ port: portLabel, prtAgCd: row.prtAgCd || row.port_code || "", tier });
+  stats.rows_collected += rowsCollected;
+  if (attemptedSources.length && rowsCollected === 0) stats.no_data_ports.push({ port: portLabel, prtAgCd: row.prtAgCd || row.port_code || "", tier });
+}
+
+const missingAttemptsByTier = Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.not_attempted_ports.length]));
+const ok = enabledPorts.length > 0 &&
+  Object.values(byTier).every(stats => stats.enabled_count === 0 || stats.attempted_count === stats.enabled_count);
 
 const report = {
   version: "17.7.0",
-  generatedAt: new Date().toISOString(),
-  tier1Count: tier1.length,
-  tier2Count: tier2.length,
-  missingRequiredTier1: missing,
-  ok: noLiveData || missing.length === 0
+  generated_at: new Date().toISOString(),
+  run_id: status.run_id || null,
+  status_run_id: status.run_id || null,
+  registry_source: registryPath,
+  coverage_registry_record_count: coverage.record_count || 0,
+  enabled_ports_count: enabledPorts.length,
+  tier1_enabled_count: byTier["1"].enabled_count,
+  tier2_enabled_count: byTier["2"].enabled_count,
+  tier3_enabled_count: byTier["3"].enabled_count,
+  tier1_attempted_count: byTier["1"].attempted_count,
+  tier2_attempted_count: byTier["2"].attempted_count,
+  tier3_attempted_count: byTier["3"].attempted_count,
+  tier1_rows_collected: byTier["1"].rows_collected,
+  tier2_rows_collected: byTier["2"].rows_collected,
+  tier3_rows_collected: byTier["3"].rows_collected,
+  no_data_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.no_data_ports])),
+  not_attempted_ports_by_tier: Object.fromEntries(Object.entries(byTier).map(([tier, stats]) => [tier, stats.not_attempted_ports])),
+  missing_attempts_by_tier: missingAttemptsByTier,
+  ok,
+  warning: ok ? null : "Enabled Tier 1/2/3 port-operation ports were not all attempted.",
+  data_mode: status.data_mode || coverage.data_mode || "unknown"
 };
 
 fs.mkdirSync("dashboard/api", { recursive: true });

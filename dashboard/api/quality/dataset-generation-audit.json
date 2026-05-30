@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-05-30T00:00:00.000Z",
+  "audit_type": "dataset_generation",
+  "root_cause": "local_static_no_live_data_export_without_required_secrets",
+  "failed_stage": "source_collection",
+  "counts_by_stage": {
+    "source_rows_collected": 0,
+    "normalized_rows": 0,
+    "all_vessels_generated": 0,
+    "watchlist_generated": 0,
+    "sales_targets_generated": 0,
+    "immediate_targets_generated": 0,
+    "vessels_json_rows": 0,
+    "candidates_json_rows": 0
+  },
+  "source_rows_collected": 0,
+  "normalized_rows": 0,
+  "all_vessels_generated": 0,
+  "watchlist_generated": 0,
+  "sales_targets_generated": 0,
+  "immediate_targets_generated": 0,
+  "vessels_json_rows": 0,
+  "candidates_json_rows": 0,
+  "active_dataset_audit": {
+    "status_json_run_id": "run_20260527074236927_8982db0f",
+    "latest_successful_run": null,
+    "current_run": "run_20260527074236927_8982db0f",
+    "status_json_generated_at": "2026-05-27T07:42:36.935Z",
+    "vessels_json_basis": "dashboard/api/vessels.json is a stale local no-live-data static export.",
+    "candidates_json_basis": "dashboard/api/candidates.json is a stale local no-live-data static export.",
+    "production_serving_rule": "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
+  },
+  "gate_audit": {
+    "collection_gate": "blocked",
+    "normalization_gate": "not_reached",
+    "all_vessels_gate": "blocked",
+    "candidate_generation_gate": "not_reached",
+    "supabase_promotion_gate": "not_promoted",
+    "static_export_gate": "completed"
+  },
+  "gate_block_reasons": [
+    "No source rows were collected in this local/static run.",
+    "data_mode is no_live_data, so generated JSON intentionally contains zero vessels/candidates.",
+    "Supabase is not configured for this local run; production must use Worker/Supabase active_dataset_pointer instead of static fallback JSON."
+  ],
+  "recommended_fix": [
+    "Do not use stale dashboard/api/*.json files as the production dataset when Supabase/Worker active dataset is available.",
+    "Keep Cloudflare upload skip rules for generated dashboard/api JSON assets.",
+    "Use /api/dashboard-summary.json and /api/vessels?group=all from the Worker to verify the live active dataset.",
+    "If source_rows_collected is zero in GitHub Actions, check required secrets and source collector logs before debugging scoring."
+  ]
+}
