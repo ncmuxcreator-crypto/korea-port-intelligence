@@ -40,7 +40,7 @@ const skippedCollectors = sources.filter(source => source.skipped).map(source =>
   reason: source.reason || source.error_message || source.status || "skipped"
 }));
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
-const staleSourceHealth = Boolean(previousRuntime?.run_id && statusRunId && String(previousRuntime.run_id) !== String(statusRunId));
+const previousSourceHealthWasStale = Boolean(previousRuntime?.run_id && statusRunId && String(previousRuntime.run_id) !== String(statusRunId));
 
 const report = {
   version: "17.7.0",
@@ -48,7 +48,8 @@ const report = {
   status_run_id: statusRunId,
   generated_at: new Date().toISOString(),
   status_generated_at: status.completed_at || status.generated_at || null,
-  stale_source_health: staleSourceHealth,
+  stale_source_health: false,
+  previous_source_health_was_stale: previousSourceHealthWasStale,
   previous_source_health_run_id: previousRuntime?.run_id || null,
   tracked: tracked.length,
   configured: configured.length,
