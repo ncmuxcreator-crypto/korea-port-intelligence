@@ -5,6 +5,7 @@ import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
 import { enrichWithReferenceDictionaries, loadReferenceDictionaries } from "./lib/reference-dictionaries.js";
+import { configDiagnostics, validateRequiredConfig } from "./lib/config.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 
 const VERSION = "17.7.0";
@@ -2109,6 +2110,7 @@ let vessels = [];
 let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
 let vesselMasterCacheDiagnostics = {};
+let startupConfigDiagnostics = configDiagnostics();
 
 function ensureDirs() {
   fs.mkdirSync("dashboard/api", { recursive: true });
@@ -3970,6 +3972,13 @@ function buildDeploymentReadiness(reportBase, records, apiSources = []) {
 }
 
 try {
+  startupConfigDiagnostics = validateRequiredConfig();
+  console.log("[HWK] config diagnostics", JSON.stringify({
+    required_config_ok: startupConfigDiagnostics.required_config_ok,
+    enabled_sources: startupConfigDiagnostics.enabled_sources,
+    enabled_ports_count: startupConfigDiagnostics.enabled_ports_count,
+    active_runtime_limits: startupConfigDiagnostics.active_runtime_limits
+  }));
   const apiSources = detectSecrets();
   console.log(`[HWK] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
   const dictionaries = loadReferenceDictionaries();
@@ -4037,6 +4046,7 @@ try {
     data_mode: buildDataMode(vessels, detectSecrets(), supabaseStatus).mode,
     data_mode_detail: buildDataMode(vessels, detectSecrets(), supabaseStatus),
     api_sources: detectSecrets(),
+    config_diagnostics: startupConfigDiagnostics,
     api_registry_version: "korea-port-secret-registry-v12-backend-stability",
     data_strategy: buildDataStrategy(detectSecrets()),
     collector_diagnostics: { ...collectorDiagnostics, actionable_row_count: collectorDiagnostics.actionable_row_count ?? actionableRows },
@@ -4173,6 +4183,7 @@ try {
   report.backend_architecture = {
     pipeline_stages: PIPELINE_STAGES,
     source_of_truth_tables: sourceOfTruthTables,
+    config_management: configDiagnostics(),
     production_serving_rule: "Dashboard APIs read the latest active dataset via active_dataset_pointer; generated no_live_data JSON must not replace promoted production data."
   };
 
