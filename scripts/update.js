@@ -796,7 +796,7 @@ function buildFleetOpportunityRows(records = []) {
         contact_ready_count: fleet.contact_ready,
         route_concentration_count: fleet.route_regions.size,
         top_vessels: topVessels,
-        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 30일 세척 수요 가능성은 ${cleaningProbability}점이며 평균 Biofouling Exposure ${averageBiofoulingExposure}점, 평균 체선노출 ${averageCongestionExposure}점입니다.`,
+        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 30일 세척 수요 가능성은 ${cleaningProbability}점이며 평균 바이오파울링 노출 ${averageBiofoulingExposure}점, 평균 체선노출 ${averageCongestionExposure}점입니다.`,
         recommended_action: cleaningProbability >= 65 ? "30일 선대 세척 수요 사전 제안" : fleet.contact_ready > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
       };
     })
@@ -1681,7 +1681,7 @@ function deriveRecommendedEmailDraft(v = {}) {
   const why = v.why_now || deriveWhyNow(v);
   const action = v.recommended_action || v.recommended_next_action || "선박 스케줄 확인";
   const contactPath = v.recommended_contact_path || deriveRecommendedContactPath(v);
-  return `안녕하세요, HullWiper Korea입니다.\n\n${vessel} 관련하여 ${port} 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\n${why}\n\n권장 다음 단계: ${action}\n연락 경로: ${contactPath}\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.`;
+  return `안녕하세요.\n\n${vessel} 관련하여 ${port} 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\n${why}\n\n권장 다음 단계: ${action}\n연락 경로: ${contactPath}\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.`;
 }
 
 function deriveLeadTimeline(v = {}, metrics = {}) {
@@ -2689,7 +2689,7 @@ function buildCommercialCommandCenter(records) {
   const imoRecoveryQueue = buildImoRecoveryQueue(records);
   return {
     generated_at: new Date().toISOString(),
-    focus_question: "Which vessel should HullWiper Korea contact now, and why?",
+    focus_question: "지금 어떤 선박에 연락해야 하며, 그 이유는 무엇인가?",
     hot_count: hot.length,
     full_count: records.length,
     immediate_targets: hot.filter(v => v.is_immediate_candidate).slice(0, 8),

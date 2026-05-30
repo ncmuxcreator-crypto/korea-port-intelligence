@@ -12,18 +12,18 @@ const PORT_REGISTRY = [
   { port_code: "622", port_name_ko: "하동항", sub_port: "Hadong", tier: 2, sort: 110 },
   { port_code: "622", port_name_ko: "삼천포항", sub_port: "Samcheonpo", tier: 2, sort: 120 },
   { port_code: "621", port_name_ko: "대산항", tier: 2, sort: 130 },
-  { port_code: "622", port_name_ko: "마산·진해항", sub_port: "Masan/Jinhae", tier: 2, sort: 140 },
-  { port_code: "622", port_name_ko: "통영항", sub_port: "Tongyeong", tier: 2, sort: 150 },
-  { port_code: "622", port_name_ko: "거제·옥포항", sub_port: "Geoje/Okpo", tier: 2, sort: 160 },
+  { port_code: "622", port_name_ko: "마산·진해항", sub_port: "마산·진해항", tier: 2, sort: 140 },
+  { port_code: "622", port_name_ko: "통영항", sub_port: "통영항", tier: 2, sort: 150 },
+  { port_code: "622", port_name_ko: "거제·옥포항", sub_port: "거제·옥포항", tier: 2, sort: 160 },
   { port_code: "070", port_name_ko: "목포항", tier: 2, sort: 170 },
   { port_code: "080", port_name_ko: "군산항", tier: 2, sort: 180 },
-  { port_code: "120", port_name_ko: "동해·묵호항", sub_port: "Donghae/Mukho", tier: 2, sort: 190 },
+  { port_code: "120", port_name_ko: "동해·묵호항", sub_port: "동해·묵호항", tier: 2, sort: 190 },
   { port_code: "940", port_name_ko: "제주항", tier: 3, sort: 210 },
-  { port_code: "120", port_name_ko: "속초항", sub_port: "Sokcho", tier: 3, sort: 220 },
-  { port_code: "031", port_name_ko: "보령항", sub_port: "Boryeong", tier: 3, sort: 230 },
-  { port_code: "030", port_name_ko: "영흥 터미널", sub_port: "Yeongheung", tier: 3, sort: 240 },
-  { port_code: "621", port_name_ko: "태안 터미널", sub_port: "Taean", tier: 3, sort: 250 },
-  { port_code: "031", port_name_ko: "당진 산업터미널", sub_port: "Dangjin Industrial", tier: 3, sort: 260 },
+  { port_code: "120", port_name_ko: "속초항", sub_port: "속초항", tier: 3, sort: 220 },
+  { port_code: "031", port_name_ko: "보령항", sub_port: "보령항", tier: 3, sort: 230 },
+  { port_code: "030", port_name_ko: "영흥 터미널", sub_port: "영흥 터미널", tier: 3, sort: 240 },
+  { port_code: "621", port_name_ko: "태안 터미널", sub_port: "태안 터미널", tier: 3, sort: 250 },
+  { port_code: "031", port_name_ko: "당진 산업터미널", sub_port: "당진 산업터미널", tier: 3, sort: 260 },
   { port_code: "820", port_name_ko: "LNG·산업 터미널", sub_port: "LNG/Industrial", tier: 3, sort: 270 }
 ];
 const BASIC_INFO_FIELDS = [
@@ -1386,7 +1386,7 @@ function deriveRecommendedEmailDraft(v = {}) {
   const why = v.why_now || deriveWhyNow(v);
   const action = v.recommended_action || v.recommended_next_action || "선박 스케줄 확인";
   const contactPath = v.recommended_contact_path || deriveRecommendedContactPath(v);
-  return `안녕하세요, HullWiper Korea입니다.\n\n${vessel} 관련하여 ${port} 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\n${why}\n\n권장 다음 단계: ${action}\n연락 경로: ${contactPath}\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.`;
+  return `안녕하세요.\n\n${vessel} 관련하여 ${port} 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\n${why}\n\n권장 다음 단계: ${action}\n연락 경로: ${contactPath}\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.`;
 }
 
 function deriveLeadTimeline(v = {}) {
@@ -1871,7 +1871,7 @@ function buildCommandCenter(records) {
   const hot = buildHot(records);
   return {
     generated_at: new Date().toISOString(),
-    focus_question: "Which vessel should HullWiper Korea contact now, and why?",
+    focus_question: "지금 어떤 선박에 연락해야 하며, 그 이유는 무엇인가?",
     hot_count: hot.length,
     full_count: records.length,
     immediate_targets: sortCommercialPriority(records).filter(isImmediateTarget).slice(0, 8),
@@ -2517,7 +2517,7 @@ function buildFleetOpportunityRows(records = []) {
         contact_ready_count: fleet.contact_ready,
         route_concentration_count: fleet.route_regions.size,
         top_vessels: topVessels,
-        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 30일 세척 수요 가능성은 ${cleaningProbability}점이며 평균 Biofouling Exposure ${averageBiofoulingExposure}점, 평균 체선노출 ${averageCongestionExposure}점입니다.`,
+        why_now: `${fleet.operator_name} 선사는 현재 한국 항만에 ${operatorVesselCount}척이 확인되며, 영업대상 ${fleet.target_vessels}척·즉시후보 ${fleet.immediate_targets}척이 포함됩니다. 30일 세척 수요 가능성은 ${cleaningProbability}점이며 평균 바이오파울링 노출 ${averageBiofoulingExposure}점, 평균 체선노출 ${averageCongestionExposure}점입니다.`,
         recommended_action: cleaningProbability >= 65 ? "30일 선대 세척 수요 사전 제안" : fleet.contact_ready > 0 ? "운영선사 선대 담당팀 접촉" : "운영선사/대리점 연락 경로 확인"
       };
     })
@@ -3167,7 +3167,7 @@ function buildStatus(records, source) {
       fallback_status: usingSnapshotFallback ? "showing_latest_supabase_snapshot" : null,
       pointer_diagnostics: source.pointer?.pointer_diagnostics || [],
       stale_warning: source.pointer?.fallback_pointer
-        ? "Active dataset pointer is missing or empty; showing latest available Supabase snapshot run."
+        ? "활성 데이터셋 포인터가 비어 있어 최신 사용 가능 스냅샷을 표시 중입니다."
         : null
     },
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
