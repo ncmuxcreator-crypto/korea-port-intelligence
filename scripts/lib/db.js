@@ -497,14 +497,44 @@ function storagePayload(record = {}) {
   return leanStorageEnabled() ? compactPayload(record) : record;
 }
 
+function analyticsScope() {
+  return String(process.env.DB_ANALYTICS_SCOPE || "candidate").toLowerCase();
+}
+
+function foundationWriteMode() {
+  return String(process.env.DB_FOUNDATION_WRITE_MODE || "minimal").toLowerCase();
+}
+
 function shouldPersistAnalyticalRow(record = {}) {
   const score = commercialScore(record);
   const gt = scoreNumber(record.gt || record.grtg || record.intrlGrtg);
-  return score >= 50 ||
+  const strategicReview = gt >= 30000 && (!record.imo || scoreNumber(record.stay_hours) >= 72 || scoreNumber(record.anchorage_hours) >= 72);
+  if (!leanStorageEnabled() || analyticsScope() === "broad") {
+    return score >= 50 ||
     gt >= 5000 ||
     scoreNumber(record.predicted_cleaning_opportunity_score) >= 35 ||
     scoreNumber(record.work_feasibility_score) >= 35 ||
     Boolean(record.is_immediate_candidate || record.is_cleaning_candidate || record.alert_candidate || record.information_enrichment_needed);
+  }
+  return score >= 65 ||
+    scoreNumber(record.predicted_cleaning_opportunity_score) >= 60 ||
+    strategicReview ||
+    Boolean(record.is_immediate_candidate || record.is_cleaning_candidate || record.alert_candidate || record.information_enrichment_needed);
+}
+
+function shouldPersistTrainingRow(record = {}) {
+  if (foundationWriteMode() === "off") return false;
+  if (foundationWriteMode() === "minimal") {
+    return commercialScore(record) >= 75 ||
+      scoreNumber(record.predicted_cleaning_opportunity_score) >= 75 ||
+      Boolean(record.is_immediate_candidate || record.alert_candidate);
+  }
+  return shouldPersistAnalyticalRow(record);
+}
+
+function shouldPersistFeatureRow(record = {}) {
+  if (foundationWriteMode() === "off") return false;
+  return shouldPersistAnalyticalRow(record);
 }
 
 function retentionCutoff(days) {
@@ -654,6 +684,7 @@ export async function saveToSupabase(records, options = {}) {
   const promotion = shouldPromoteRun(records, diagnostics);
   const runStatus = options.status === "failed" ? "failed" : promotion.promotable ? "promotable" : records.length ? "degraded_not_promoted" : "no_live_data";
   const storageMode = leanStorageEnabled() ? "lean" : "full";
+  const preRetentionCleanup = await runLeanRetentionCleanup(supabase);
   const exclusionReasonCounts = records.reduce((acc, r) => {
     const score = Number(r.commercial_value_score || r.total_sales_priority_score || r.cleaning_candidate_score || 0);
     const excluded = r.commercial_relevance_status === "excluded_non_commercial_type" ||
@@ -678,7 +709,10 @@ export async function saveToSupabase(records, options = {}) {
       ...diagnostics,
       imo_recovery: imoRecoveryDiagnostics,
       db_storage_mode: storageMode,
-      db_retention_cleanup: String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() !== "false"
+      db_analytics_scope: analyticsScope(),
+      db_foundation_write_mode: foundationWriteMode(),
+      db_retention_cleanup: String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() !== "false",
+      db_pre_retention_cleanup: preRetentionCleanup
     },
     total_rows: Number(diagnostics.real_row_count || records.length || 0),
     raw_collected_rows: Number(diagnostics.real_row_count || records.length || 0),
@@ -1705,7 +1739,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const featureStoreRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
+  const featureStoreRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistFeatureRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     const portCallKey = r.port_call_identity || r.port_call_key || r.raw_row_identity || r.port_code || r.port || "unknown";
     return {
@@ -1738,7 +1772,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const ruleEvaluationRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).flatMap(r => {
+  const ruleEvaluationRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistFeatureRow(r)).flatMap(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     return evaluateFoundationRules(r).filter(rule => !leanStorageEnabled() || rule.passed).map(rule => ({
       evaluation_id: stableEntityId("RULE", `${runId}-${entityKey}-${rule.rule_id}`),
@@ -1767,7 +1801,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const explainabilityRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
+  const explainabilityRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistFeatureRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     const rules = evaluateFoundationRules(r).filter(rule => rule.passed);
     return {
@@ -1893,7 +1927,7 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
-  const trainingRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => {
+  const trainingRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistTrainingRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     return {
       training_row_id: stableEntityId("TRAIN", `${runId}-${entityKey}-${r.port_call_identity || r.port_code || ""}`),
