@@ -2674,7 +2674,7 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   const predictedCleaningOpportunities = buildPredictedCleaningOpportunities(activeRecords).slice(0, 10);
   return {
     status: buildStatus(activeRecords, source),
-    ports: buildPorts(buckets.target_vessels),
+    ports: buildPorts(activeRecords),
     immediate_targets: immediateTargets,
     opportunities,
     predicted_arrivals: predictedArrivals,
@@ -3179,7 +3179,7 @@ function buildStatus(records, source) {
       exclude_from_main_view: ["GT under 5000", "non-commercial vessel types", "completed departure-only rows"]
     },
     commercial_command_center: buildCommandCenter(buckets.target_vessels),
-    port_intelligence: buildPorts(buckets.target_vessels),
+    port_intelligence: buildPorts(records),
     port_congestion_heatmap: buildPortHeatmap(buckets.target_vessels),
     all_port_congestion_heatmap: buildPortHeatmap(records),
     biofouling_timeline: buildBioTimeline(buckets.target_vessels)
@@ -3469,11 +3469,11 @@ async function apiResponse(url, env) {
   }, { headers: corsHeaders() });
   if (pathname.endsWith("/hot-candidates.json")) return json(buckets.immediate_targets, { headers: corsHeaders() });
   if (pathname.endsWith("/master/unknown-imo.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
-  if (pathname.endsWith("/ports.json")) return json(buildPorts(records), { headers: corsHeaders() });
+  if (pathname.endsWith("/ports.json")) return json(buildPorts(allRecords), { headers: corsHeaders() });
   if (pathname.endsWith("/port-opportunities.json")) return json(buildPortOpportunityRanking(records), { headers: corsHeaders() });
   const portMatch = pathname.match(new RegExp("^/api/ports/([^/]+)/(vessels|target-vessels|staying-vessels|arrivals|candidates|berths|congestion|anchorage)\\.json$"));
   if (portMatch) {
-    const rows = recordsForPort(records, decodeURIComponent(portMatch[1]));
+    const rows = recordsForPort(allRecords, decodeURIComponent(portMatch[1]));
     if (portMatch[2] === "vessels") return json(rows, { headers: corsHeaders() });
     if (portMatch[2] === "target-vessels") return json(rows.filter(isMainCommercialVessel), { headers: corsHeaders() });
     if (portMatch[2] === "staying-vessels") return json(rows.filter(v => ["arrived_staying", "berthed", "anchorage_waiting"].includes(v.status_bucket)), { headers: corsHeaders() });

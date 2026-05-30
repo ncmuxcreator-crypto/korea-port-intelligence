@@ -4098,7 +4098,7 @@ try {
   const commercialCommandCenter = buildCommercialCommandCenter(vessels);
   const portCongestionHeatmap = buildPortCongestionHeatmap(vessels);
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
-  const portIntelligence = buildPortIntelligence(vessels);
+  const portIntelligence = buildPortIntelligence(allCollectedVessels);
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -4305,7 +4305,7 @@ try {
     fs.writeFileSync(`${dir}/candidates.json`, JSON.stringify(port.sales_candidates, null, 2));
     fs.writeFileSync(`${dir}/berths.json`, JSON.stringify(port.berths, null, 2));
     fs.writeFileSync(`${dir}/congestion.json`, JSON.stringify(portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || null, null, 2));
-    fs.writeFileSync(`${dir}/anchorage.json`, JSON.stringify(buildPortAnchorage(vessels, port.port_code), null, 2));
+    fs.writeFileSync(`${dir}/anchorage.json`, JSON.stringify(buildPortAnchorage(allCollectedVessels, port.port_code), null, 2));
   }
   fs.writeFileSync("dashboard/api/commercial-command-center.json", JSON.stringify(commercialCommandCenter, null, 2));
   fs.writeFileSync("dashboard/api/port-congestion-heatmap.json", JSON.stringify(portCongestionHeatmap, null, 2));
