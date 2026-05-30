@@ -382,12 +382,16 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
   const malformedRowRate = malformedRows / normalizedRows;
   const salesTargets = records.filter(isSalesTargetRecord).length;
   const targetRatio = records.length ? salesTargets / records.length : 0;
+  const architectureDiagnostics = buildPortCallArchitectureDiagnostics(records);
   const validationGates = {
     all_vessels_count_positive: records.length > 0,
+    port_call_master_count_positive: architectureDiagnostics.port_call_master_count > 0,
+    port_call_id_coverage_above_threshold: architectureDiagnostics.port_call_id_coverage >= Number(process.env.PORT_CALL_ID_COVERAGE_MIN || 0.8),
+    candidate_band_exists_for_scored_vessels: architectureDiagnostics.scored_vessels_missing_candidate_band_count === 0,
     port_operation_success_count: portOperationSuccess,
     malformed_row_rate_below_threshold: malformedRowRate < Number(process.env.MALFORMED_ROW_RATE_THRESHOLD || 0.35),
     target_ratio_reasonable: targetRatio <= Number(process.env.TARGET_RATIO_MAX || 0.3),
-    no_fatal_db_write_error: true
+    no_fatal_db_write_error: diagnostics.fatal_db_write_error !== true
   };
   return {
     promotable: attempted > 0 &&
@@ -395,16 +399,72 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
       records.length > 0 &&
       records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length > 0 &&
       parseErrorRate < 0.5 &&
+      validationGates.port_call_master_count_positive &&
+      validationGates.port_call_id_coverage_above_threshold &&
+      validationGates.candidate_band_exists_for_scored_vessels &&
       validationGates.malformed_row_rate_below_threshold &&
-      validationGates.target_ratio_reasonable,
+      validationGates.target_ratio_reasonable &&
+      validationGates.no_fatal_db_write_error,
     attempted,
     portOperationSuccess,
     parseErrorRate,
     malformedRowRate,
     targetRatio,
+    target_ratio_max: Number(process.env.TARGET_RATIO_MAX || 0.3),
+    target_ratio_warning: targetRatio > Number(process.env.TARGET_RATIO_MAX || 0.3) ? "Target qualification is too broad." : "",
+    ...architectureDiagnostics,
     validationGates,
     promotion_blockers: Object.entries(validationGates).filter(([, value]) => value === false).map(([key]) => key)
   };
+}
+
+function buildPortCallArchitectureDiagnostics(records = []) {
+  const usefulRecords = records.filter(record => record.vessel_name || record.hybrid_entity_key || record.port_call_identity || record.port_call_key);
+  const portCallRows = uniqueBy(usefulRecords.filter(record => record.port_code || record.port).map(record => ({
+    port_call_id: buildPortCallId(record)
+  })), row => row.port_call_id);
+  const portCallIdRows = usefulRecords.filter(record => buildPortCallId(record));
+  const scoredRecords = usefulRecords.filter(record =>
+    commercialScore(record) > 0 ||
+    scoreNumber(record.total_sales_priority_score) > 0 ||
+    scoreNumber(record.predicted_cleaning_opportunity_score) > 0
+  );
+  const missingCandidateBand = scoredRecords.filter(record => !record.candidate_band && !record.sales_priority_band);
+  const opportunityRecords = usefulRecords.filter(isOpportunityEligible);
+  const explainedRecords = usefulRecords.filter(record =>
+    record.why_now ||
+    record.why_scored_high ||
+    record.candidate_summary_ko ||
+    (Array.isArray(record.reason_codes) && record.reason_codes.length) ||
+    (Array.isArray(record.score_reasons) && record.score_reasons.length)
+  );
+  return {
+    all_vessels_count: usefulRecords.length,
+    port_call_master_count: portCallRows.length,
+    port_call_id_coverage: usefulRecords.length ? Math.round((portCallIdRows.length / usefulRecords.length) * 1000) / 1000 : 0,
+    scored_vessels_count: scoredRecords.length,
+    scored_vessels_missing_candidate_band_count: missingCandidateBand.length,
+    candidate_band_coverage: scoredRecords.length ? Math.round(((scoredRecords.length - missingCandidateBand.length) / scoredRecords.length) * 1000) / 1000 : 1,
+    opportunity_created_count: opportunityRecords.length,
+    explainability_generated_count: explainedRecords.length,
+    high_score_without_explanation_count: usefulRecords.filter(record =>
+      commercialScore(record) >= 75 &&
+      !record.why_now &&
+      !record.why_scored_high &&
+      !record.candidate_summary_ko &&
+      !(Array.isArray(record.reason_codes) && record.reason_codes.length) &&
+      !(Array.isArray(record.score_reasons) && record.score_reasons.length)
+    ).length
+  };
+}
+
+function blockPromotion(promotion, gateName, warning) {
+  promotion.promotable = false;
+  promotion.validationGates = { ...(promotion.validationGates || {}), [gateName]: false };
+  promotion.promotion_blockers = [...new Set([...(promotion.promotion_blockers || []), gateName])];
+  if (warning) {
+    promotion.validation_warnings = [...new Set([...(promotion.validation_warnings || []), warning])];
+  }
 }
 
 function scoreNumber(value) {
@@ -448,6 +508,10 @@ function opportunityType(record = {}) {
   if (explicit) return explicit;
   if (scoreNumber(record.predicted_cleaning_opportunity_score) >= 60) return "predicted_hull_cleaning";
   return "hull_cleaning";
+}
+
+function buildOpportunityId(record = {}) {
+  return stableEntityId("OPPTY", `${buildPortCallId(record)}-${opportunityType(record)}`);
 }
 
 function isOpportunityEligible(record = {}) {
@@ -646,6 +710,25 @@ function groupBy(records = [], keyFn) {
     map.get(key).push(record);
   }
   return map;
+}
+
+function countBy(records = [], keyFn) {
+  const counts = {};
+  for (const record of records) {
+    const key = keyFn(record) || "unknown";
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return counts;
+}
+
+function topOpportunityRecord(records = []) {
+  return [...records]
+    .filter(isOpportunityEligible)
+    .sort((a, b) =>
+      scoreNumber(b.predicted_cleaning_opportunity_score) - scoreNumber(a.predicted_cleaning_opportunity_score) ||
+      commercialScore(b) - commercialScore(a) ||
+      scoreNumber(b.work_feasibility_score) - scoreNumber(a.work_feasibility_score)
+    )[0] || null;
 }
 
 function evaluateFoundationRules(record = {}) {
@@ -1014,11 +1097,14 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
   const usefulRecords = records.filter(record => record.vessel_name || record.hybrid_entity_key || record.port_call_identity || record.port_call_key);
   const vesselRows = uniqueBy(usefulRecords.map(record => {
     const portCallId = buildPortCallId(record);
+    const eligibleOpportunity = isOpportunityEligible(record);
+    const opportunityStatus = eligibleOpportunity ? opportunityState(record) : null;
     return {
       snapshot_date: snapshotDate,
       run_id: runId,
       master_vessel_id: fallbackMasterId(record),
       port_call_id: portCallId,
+      opportunity_id: eligibleOpportunity ? buildOpportunityId(record) : null,
       vessel_name: record.vessel_name || null,
       imo: record.imo || null,
       mmsi: record.mmsi || null,
@@ -1039,13 +1125,16 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
       work_feasibility_score: scoreNumber(record.work_feasibility_score),
       biofouling_exposure_score: scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score),
       commercial_value_score: commercialScore(record),
+      predicted_cleaning_opportunity_score: scoreNumber(record.predicted_cleaning_opportunity_score),
       candidate_band: historicalBand(record),
+      opportunity_status: opportunityStatus,
       data_confidence_score: scoreNumber(record.data_confidence_score),
       source_quality_score: scoreNumber(record.source_confidence_score || record.data_quality_score || record.data_confidence_score),
       created_at: now,
       payload: storagePayload({
         hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
         port_call_identity: record.port_call_identity || record.port_call_key || null,
+        opportunity_type: eligibleOpportunity ? opportunityType(record) : null,
         why_now: record.why_now || null,
         recommended_action: record.recommended_action || record.recommended_next_action || null,
         raw_archive_url: record.raw_archive_url || null,
@@ -1060,47 +1149,72 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
     const congestionScores = rows.map(row => row.congestion_score || row.port_congestion_score);
     const immediateTargets = rows.filter(isImmediateTargetRecord).length;
     const salesTargets = rows.filter(row => isSalesTargetRecord(row) && !isImmediateTargetRecord(row)).length;
+    const opportunityRecords = rows.filter(isOpportunityEligible);
+    const topOpportunity = topOpportunityRecord(rows);
     return {
       snapshot_date: snapshotDate,
       run_id: runId,
       port_code: portCode,
       port_name: rows.find(row => row.port_name || row.port)?.port_name || rows.find(row => row.port)?.port || null,
       sub_port: subPort || "",
+      top_port_call_id: topOpportunity ? buildPortCallId(topOpportunity) : null,
+      top_opportunity_id: topOpportunity ? buildOpportunityId(topOpportunity) : null,
       total_vessels: rows.length,
       target_vessels: rows.filter(isSalesTargetRecord).length,
       immediate_targets: immediateTargets,
       sales_targets: salesTargets,
       watchlist_count: rows.filter(isWatchlistRecord).length,
+      opportunity_count: opportunityRecords.length,
+      open_opportunities: opportunityRecords.filter(row => !["won", "lost", "closed"].includes(opportunityState(row))).length,
+      closed_opportunities: opportunityRecords.filter(row => ["won", "lost", "closed"].includes(opportunityState(row))).length,
       anchorage_vessels: rows.filter(row => row.is_anchorage_waiting || scoreNumber(row.anchorage_hours) > 0).length,
       long_stay_vessels: rows.filter(row => scoreNumber(row.stay_hours) >= 72 || scoreNumber(row.anchorage_hours) >= 72).length,
       avg_stay_hours: average(rows.map(row => row.stay_hours)),
       avg_anchorage_hours: average(rows.map(row => row.anchorage_hours)),
       avg_congestion_score: average(congestionScores),
       avg_commercial_value_score: average(scores),
+      avg_predicted_cleaning_opportunity_score: average(rows.map(row => row.predicted_cleaning_opportunity_score)),
       port_opportunity_score: Math.min(100, Math.round(average(scores) * 0.6 + immediateTargets * 8 + salesTargets * 4)),
       port_congestion_score: Math.round(average(congestionScores)),
       created_at: now,
-      payload: { high_value_vessel_count: rows.filter(row => commercialScore(row) >= 75).length }
+      payload: {
+        high_value_vessel_count: rows.filter(row => commercialScore(row) >= 75).length,
+        candidate_band_distribution: countBy(rows, historicalBand),
+        opportunity_status_distribution: countBy(opportunityRecords, opportunityState)
+      }
     };
   });
 
-  const operatorRows = [...groupBy(usefulRecords.filter(record => normalizeCompanyName(record.operator_name || record.operator)), record => normalizeCompanyName(record.operator_name || record.operator)).entries()].map(([operatorNormalized, rows]) => ({
-    snapshot_date: snapshotDate,
-    run_id: runId,
-    operator_name: rows.find(row => row.operator_name || row.operator)?.operator_name || rows.find(row => row.operator)?.operator || operatorNormalized,
-    operator_normalized: operatorNormalized,
-    active_vessels: new Set(rows.map(row => row.master_vessel_id || row.hybrid_entity_key || row.imo || row.mmsi || row.call_sign || row.vessel_name).filter(Boolean)).size,
-    target_vessels: rows.filter(isSalesTargetRecord).length,
-    immediate_targets: rows.filter(isImmediateTargetRecord).length,
-    avg_commercial_value_score: average(rows.map(commercialScore)),
-    avg_biofouling_exposure_score: average(rows.map(row => row.biofouling_exposure_score || row.biofouling_risk_score)),
-    avg_congestion_score: average(rows.map(row => row.congestion_score || row.port_congestion_score)),
-    repeat_caller_count: rows.filter(row => scoreNumber(row.repeat_caller_score) > 0 || scoreNumber(row.repeat_call_count) > 1).length,
-    fleet_opportunity_score: Math.round(average(rows.map(row => row.fleet_opportunity_score || row.commercial_value_score))),
-    contact_readiness_score: Math.round(average(rows.map(row => row.contact_readiness_score))),
-    created_at: now,
-    payload: { ports: [...new Set(rows.map(row => row.port_code || row.port_name || row.port).filter(Boolean))] }
-  }));
+  const operatorRows = [...groupBy(usefulRecords.filter(record => normalizeCompanyName(record.operator_name || record.operator)), record => normalizeCompanyName(record.operator_name || record.operator)).entries()].map(([operatorNormalized, rows]) => {
+    const opportunityRecords = rows.filter(isOpportunityEligible);
+    const topOpportunity = topOpportunityRecord(rows);
+    return {
+      snapshot_date: snapshotDate,
+      run_id: runId,
+      operator_name: rows.find(row => row.operator_name || row.operator)?.operator_name || rows.find(row => row.operator)?.operator || operatorNormalized,
+      operator_normalized: operatorNormalized,
+      top_port_call_id: topOpportunity ? buildPortCallId(topOpportunity) : null,
+      top_opportunity_id: topOpportunity ? buildOpportunityId(topOpportunity) : null,
+      active_vessels: new Set(rows.map(row => row.master_vessel_id || row.hybrid_entity_key || row.imo || row.mmsi || row.call_sign || row.vessel_name).filter(Boolean)).size,
+      target_vessels: rows.filter(isSalesTargetRecord).length,
+      immediate_targets: rows.filter(isImmediateTargetRecord).length,
+      opportunity_count: opportunityRecords.length,
+      open_opportunities: opportunityRecords.filter(row => !["won", "lost", "closed"].includes(opportunityState(row))).length,
+      avg_commercial_value_score: average(rows.map(commercialScore)),
+      avg_predicted_cleaning_opportunity_score: average(rows.map(row => row.predicted_cleaning_opportunity_score)),
+      avg_biofouling_exposure_score: average(rows.map(row => row.biofouling_exposure_score || row.biofouling_risk_score)),
+      avg_congestion_score: average(rows.map(row => row.congestion_score || row.port_congestion_score)),
+      repeat_caller_count: rows.filter(row => scoreNumber(row.repeat_caller_score) > 0 || scoreNumber(row.repeat_call_count) > 1).length,
+      fleet_opportunity_score: Math.round(average(rows.map(row => row.fleet_opportunity_score || row.commercial_value_score))),
+      contact_readiness_score: Math.round(average(rows.map(row => row.contact_readiness_score))),
+      created_at: now,
+      payload: {
+        ports: [...new Set(rows.map(row => row.port_code || row.port_name || row.port).filter(Boolean))],
+        candidate_band_distribution: countBy(rows, historicalBand),
+        opportunity_status_distribution: countBy(opportunityRecords, opportunityState)
+      }
+    };
+  });
 
   const routeRows = [...groupBy(usefulRecords.filter(record => record.previous_port || record.destination_port || record.next_port || record.route_region), record => [
     normalizeCompanyName(record.previous_port || ""),
@@ -1131,16 +1245,21 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
 
   const opportunityRows = uniqueBy(usefulRecords.filter(record => commercialScore(record) >= 50 || scoreNumber(record.predicted_cleaning_opportunity_score) >= 60).map(record => {
     const portCallId = buildPortCallId(record);
+    const state = opportunityState(record);
+    const type = opportunityType(record);
+    const closedAt = ["won", "lost", "closed"].includes(state) ? (record.closed_at || now) : null;
     return {
       snapshot_date: snapshotDate,
       run_id: runId,
-      opportunity_id: stableEntityId("OPPTY", `${portCallId}-${record.hybrid_entity_key || record.vessel_id || record.vessel_name || ""}`),
+      opportunity_id: buildOpportunityId(record),
       master_vessel_id: fallbackMasterId(record),
       port_call_id: portCallId,
       vessel_name: record.vessel_name || null,
       operator_name: record.operator_name || record.operator || null,
       agent_name: record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm || null,
       port_code: record.port_code || null,
+      opportunity_type: type,
+      opportunity_status: state,
       commercial_value_score: commercialScore(record),
       predicted_cleaning_opportunity_score: scoreNumber(record.predicted_cleaning_opportunity_score),
       work_feasibility_score: scoreNumber(record.work_feasibility_score),
@@ -1149,10 +1268,16 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
       why_now: record.why_now || record.candidate_summary_ko || null,
       recommended_action: record.recommended_action || record.recommended_next_action || null,
       lead_status: record.lead_status || "new_lead",
+      first_detected_at: record.first_detected_at || record.identified_at || now,
+      last_seen_at: now,
+      closed_at: closedAt,
+      close_reason: record.close_reason || null,
       created_at: now,
       payload: {
         hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
         port_call_identity: record.port_call_identity || record.port_call_key || null,
+        opportunity_type: type,
+        opportunity_status: state,
         score_reasons: buildScoreReasons(record),
         raw_archive_url: record.raw_archive_url || null,
         raw_archive_filename: record.raw_archive_filename || null
@@ -1988,7 +2113,7 @@ export async function saveToSupabase(records, options = {}) {
       const type = opportunityType(r);
       const closedAt = ["won", "lost", "closed"].includes(state) ? (r.closed_at || now) : null;
       return {
-        opportunity_id: stableEntityId("OPPTY", `${portCallId}-${type}`),
+        opportunity_id: buildOpportunityId(r),
         run_id: runId,
         master_vessel_id: fallbackMasterId(r),
         hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
@@ -2720,6 +2845,30 @@ export async function saveToSupabase(records, options = {}) {
     historicalSnapshotResult.route_snapshot_daily_rows_written +
     historicalSnapshotResult.commercial_opportunity_daily_rows_written;
 
+  const intelligencePopulationDiagnostics = {
+    port_call_master_count: portCallMasterRows.length,
+    opportunity_created_count: opportunityRows.length,
+    feature_snapshots_written: featureSnapshotRows.length,
+    event_rows_written: events.length,
+    explainability_generated_count: explainabilityRows.length,
+    high_score_without_explanation_count: records.filter(r =>
+      commercialScore(r) >= 75 &&
+      !r.why_now &&
+      !r.why_scored_high &&
+      !r.candidate_summary_ko &&
+      !(Array.isArray(r.reason_codes) && r.reason_codes.length) &&
+      !(Array.isArray(r.score_reasons) && r.score_reasons.length)
+    ).length,
+    historical_snapshot_generation_status: historicalSnapshotResult.historical_snapshot_generation_status
+  };
+
+  if (portCallMasterRows.length <= 0) {
+    blockPromotion(promotion, "port_call_master_count_positive", "Port Call Master rows were not generated.");
+  }
+  if (historicalSnapshotResult.historical_snapshot_generation_status === "failed") {
+    blockPromotion(promotion, "no_fatal_db_write_error", "Historical warehouse write failed before promotion.");
+  }
+
   let promoted = false;
   if (promotion.promotable) {
     const { error } = await supabase.from("active_dataset_pointer").upsert({
@@ -2762,6 +2911,30 @@ export async function saveToSupabase(records, options = {}) {
   };
   const retentionRowsDeletedByTable = Object.fromEntries(Object.entries(retentionCleanup || {}).map(([table, value]) => [table, Number(value?.rows_deleted || 0)]));
 
+  await supabase.from("data_collection_runs").update({
+    status: promoted ? "promoted" : runStatus === "promotable" ? "degraded_not_promoted" : runStatus,
+    validation_status: promoted ? "passed" : "not_promoted",
+    source_summary: {
+      ...diagnostics,
+      imo_recovery: imoRecoveryDiagnostics,
+      db_storage_mode: storageMode,
+      db_analytics_scope: analyticsScope(),
+      db_foundation_write_mode: foundationWriteMode(),
+      db_rows_written_by_table: dbRowsWrittenByTable,
+      retention_rows_deleted_by_table: retentionRowsDeletedByTable,
+      port_call_architecture: {
+        port_call_id_coverage: promotion.port_call_id_coverage,
+        port_call_master_count: intelligencePopulationDiagnostics.port_call_master_count,
+        opportunity_created_count: intelligencePopulationDiagnostics.opportunity_created_count,
+        feature_snapshots_written: intelligencePopulationDiagnostics.feature_snapshots_written,
+        event_rows_written: intelligencePopulationDiagnostics.event_rows_written,
+        explainability_generated_count: intelligencePopulationDiagnostics.explainability_generated_count,
+        high_score_without_explanation_count: intelligencePopulationDiagnostics.high_score_without_explanation_count
+      }
+    },
+    error_summary: { error: options.error || null, promotion, historical_snapshot: historicalSnapshotResult.historical_snapshot_error_summary }
+  }).eq("run_id", runId);
+
   return {
     runId,
     recordsSaved,
@@ -2787,6 +2960,7 @@ export async function saveToSupabase(records, options = {}) {
     operatorGraphRowsSaved: operatorGraphRows.length,
     modelTrainingRowsSaved: trainingRows.length,
     ...historicalSnapshotResult,
+    ...intelligencePopulationDiagnostics,
     db_rows_written_by_table: dbRowsWrittenByTable,
     retention_rows_deleted_by_table: retentionRowsDeletedByTable,
     retentionCleanup,

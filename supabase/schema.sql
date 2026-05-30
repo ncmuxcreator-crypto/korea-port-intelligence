@@ -826,6 +826,13 @@ create table if not exists opportunity_master (
   payload jsonb default '{}'::jsonb
 );
 
+alter table opportunity_master add column if not exists opportunity_type text default 'hull_cleaning';
+alter table opportunity_master add column if not exists opportunity_status text default 'identified';
+alter table opportunity_master add column if not exists first_detected_at timestamptz default now();
+alter table opportunity_master add column if not exists last_seen_at timestamptz default now();
+alter table opportunity_master add column if not exists close_reason text;
+alter table opportunity_master add column if not exists created_at timestamptz default now();
+alter table opportunity_master add column if not exists updated_at timestamptz default now();
 create index if not exists idx_opportunity_master_port_call on opportunity_master(port_call_id);
 create index if not exists idx_opportunity_master_state on opportunity_master(opportunity_state);
 create index if not exists idx_opportunity_master_status on opportunity_master(opportunity_status);
@@ -850,6 +857,7 @@ create table if not exists vessel_snapshot_daily (
   run_id text not null,
   master_vessel_id text,
   port_call_id text not null,
+  opportunity_id text,
   vessel_name text,
   imo text,
   mmsi text,
@@ -870,7 +878,9 @@ create table if not exists vessel_snapshot_daily (
   work_feasibility_score int default 0,
   biofouling_exposure_score int default 0,
   commercial_value_score int default 0,
+  predicted_cleaning_opportunity_score int default 0,
   candidate_band text,
+  opportunity_status text,
   data_confidence_score int default 0,
   source_quality_score int default 0,
   created_at timestamptz default now(),
@@ -884,17 +894,23 @@ create table if not exists port_snapshot_daily (
   port_code text not null,
   port_name text,
   sub_port text default '',
+  top_port_call_id text,
+  top_opportunity_id text,
   total_vessels int default 0,
   target_vessels int default 0,
   immediate_targets int default 0,
   sales_targets int default 0,
   watchlist_count int default 0,
+  opportunity_count int default 0,
+  open_opportunities int default 0,
+  closed_opportunities int default 0,
   anchorage_vessels int default 0,
   long_stay_vessels int default 0,
   avg_stay_hours numeric default 0,
   avg_anchorage_hours numeric default 0,
   avg_congestion_score numeric default 0,
   avg_commercial_value_score numeric default 0,
+  avg_predicted_cleaning_opportunity_score numeric default 0,
   port_opportunity_score int default 0,
   port_congestion_score int default 0,
   created_at timestamptz default now(),
@@ -907,10 +923,15 @@ create table if not exists operator_snapshot_daily (
   run_id text not null,
   operator_name text,
   operator_normalized text not null,
+  top_port_call_id text,
+  top_opportunity_id text,
   active_vessels int default 0,
   target_vessels int default 0,
   immediate_targets int default 0,
+  opportunity_count int default 0,
+  open_opportunities int default 0,
   avg_commercial_value_score numeric default 0,
+  avg_predicted_cleaning_opportunity_score numeric default 0,
   avg_biofouling_exposure_score numeric default 0,
   avg_congestion_score numeric default 0,
   repeat_caller_count int default 0,
@@ -950,6 +971,8 @@ create table if not exists commercial_opportunity_daily (
   operator_name text,
   agent_name text,
   port_code text,
+  opportunity_type text default 'hull_cleaning',
+  opportunity_status text default 'identified',
   commercial_value_score int default 0,
   predicted_cleaning_opportunity_score int default 0,
   work_feasibility_score int default 0,
@@ -958,26 +981,56 @@ create table if not exists commercial_opportunity_daily (
   why_now text,
   recommended_action text,
   lead_status text,
+  first_detected_at timestamptz,
+  last_seen_at timestamptz,
+  closed_at timestamptz,
+  close_reason text,
   created_at timestamptz default now(),
   payload jsonb default '{}'::jsonb,
   unique(snapshot_date, opportunity_id)
 );
 
+alter table vessel_snapshot_daily add column if not exists opportunity_id text;
+alter table vessel_snapshot_daily add column if not exists predicted_cleaning_opportunity_score int default 0;
+alter table vessel_snapshot_daily add column if not exists opportunity_status text;
+alter table port_snapshot_daily add column if not exists top_port_call_id text;
+alter table port_snapshot_daily add column if not exists top_opportunity_id text;
+alter table port_snapshot_daily add column if not exists opportunity_count int default 0;
+alter table port_snapshot_daily add column if not exists open_opportunities int default 0;
+alter table port_snapshot_daily add column if not exists closed_opportunities int default 0;
+alter table port_snapshot_daily add column if not exists avg_predicted_cleaning_opportunity_score numeric default 0;
+alter table operator_snapshot_daily add column if not exists top_port_call_id text;
+alter table operator_snapshot_daily add column if not exists top_opportunity_id text;
+alter table operator_snapshot_daily add column if not exists opportunity_count int default 0;
+alter table operator_snapshot_daily add column if not exists open_opportunities int default 0;
+alter table operator_snapshot_daily add column if not exists avg_predicted_cleaning_opportunity_score numeric default 0;
+alter table commercial_opportunity_daily add column if not exists opportunity_type text default 'hull_cleaning';
+alter table commercial_opportunity_daily add column if not exists opportunity_status text default 'identified';
+alter table commercial_opportunity_daily add column if not exists first_detected_at timestamptz;
+alter table commercial_opportunity_daily add column if not exists last_seen_at timestamptz;
+alter table commercial_opportunity_daily add column if not exists closed_at timestamptz;
+alter table commercial_opportunity_daily add column if not exists close_reason text;
 create index if not exists idx_vessel_snapshot_daily_date on vessel_snapshot_daily(snapshot_date desc);
 create index if not exists idx_vessel_snapshot_daily_master on vessel_snapshot_daily(master_vessel_id);
 create index if not exists idx_vessel_snapshot_daily_port on vessel_snapshot_daily(port_code, snapshot_date desc);
 create index if not exists idx_vessel_snapshot_daily_candidate on vessel_snapshot_daily(candidate_band);
+create index if not exists idx_vessel_snapshot_daily_opportunity on vessel_snapshot_daily(opportunity_id);
+create index if not exists idx_vessel_snapshot_daily_opportunity_status on vessel_snapshot_daily(opportunity_status);
 create index if not exists idx_vessel_snapshot_daily_score on vessel_snapshot_daily(commercial_value_score desc);
 create index if not exists idx_port_snapshot_daily_port on port_snapshot_daily(port_code, snapshot_date desc);
 create index if not exists idx_port_snapshot_daily_date on port_snapshot_daily(snapshot_date desc);
+create index if not exists idx_port_snapshot_daily_top_opportunity on port_snapshot_daily(top_opportunity_id);
 create index if not exists idx_operator_snapshot_daily_operator on operator_snapshot_daily(operator_normalized, snapshot_date desc);
 create index if not exists idx_operator_snapshot_daily_date on operator_snapshot_daily(snapshot_date desc);
+create index if not exists idx_operator_snapshot_daily_top_opportunity on operator_snapshot_daily(top_opportunity_id);
 create index if not exists idx_route_snapshot_daily_route on route_snapshot_daily(previous_port, destination_port, snapshot_date desc);
 create index if not exists idx_route_snapshot_daily_date on route_snapshot_daily(snapshot_date desc);
 create index if not exists idx_commercial_opportunity_daily_score on commercial_opportunity_daily(commercial_value_score desc);
 create index if not exists idx_commercial_opportunity_daily_date on commercial_opportunity_daily(snapshot_date desc);
 create index if not exists idx_commercial_opportunity_daily_id on commercial_opportunity_daily(opportunity_id);
 create index if not exists idx_commercial_opportunity_daily_band on commercial_opportunity_daily(candidate_band);
+create index if not exists idx_commercial_opportunity_daily_status on commercial_opportunity_daily(opportunity_status);
+create index if not exists idx_commercial_opportunity_daily_port_call on commercial_opportunity_daily(port_call_id);
 create unique index if not exists ux_vessel_snapshot_daily_date_port_call on vessel_snapshot_daily(snapshot_date, port_call_id);
 create unique index if not exists ux_port_snapshot_daily_date_port on port_snapshot_daily(snapshot_date, port_code, sub_port);
 create unique index if not exists ux_operator_snapshot_daily_date_operator on operator_snapshot_daily(snapshot_date, operator_normalized);
