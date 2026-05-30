@@ -1068,6 +1068,7 @@ create table if not exists feature_store (
   entity_type text,
   entity_id text,
   hybrid_entity_key text,
+  port_call_id text,
   port_call_identity text,
   master_vessel_id text,
   port_code text,
@@ -1167,9 +1168,12 @@ create table if not exists model_training_rows (
   payload jsonb default '{}'::jsonb
 );
 
+alter table feature_store add column if not exists port_call_id text;
 create index if not exists idx_feature_store_run on feature_store(run_id);
 create index if not exists idx_feature_store_entity on feature_store(entity_id);
+create index if not exists idx_feature_store_port_call on feature_store(port_call_id);
 create index if not exists idx_feature_store_namespace on feature_store(feature_namespace);
+comment on table feature_store is 'Model-ready feature snapshots per run. Primary namespace: model_ready_port_call.';
 create index if not exists idx_rule_evaluations_run on rule_evaluations(run_id);
 create index if not exists idx_rule_evaluations_rule on rule_evaluations(rule_id);
 create index if not exists idx_rule_evaluations_passed on rule_evaluations(passed);

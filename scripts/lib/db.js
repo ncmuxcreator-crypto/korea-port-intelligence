@@ -373,13 +373,22 @@ function opportunityTimestampFields(state, record = {}, now) {
 }
 
 function buildFoundationFeatureVector(record = {}) {
+  const operatorScore = Math.max(
+    scoreNumber(record.operator_score),
+    scoreNumber(record.operator_confidence),
+    scoreNumber(record.contact_readiness_score),
+    record.operator_name || record.operator ? 45 : 0
+  );
   return {
     gt: scoreNumber(record.gt || record.grtg || record.intrlGrtg),
+    vessel_type: record.vessel_type || record.vsslKndNm || null,
+    vessel_type_group: record.vessel_type_group || null,
     commercial_value_score: commercialScore(record),
     work_feasibility_score: scoreNumber(record.work_feasibility_score),
     congestion_score: scoreNumber(record.congestion_score || record.port_congestion_score),
     biofouling_exposure_score: scoreNumber(record.biofouling_exposure_score || record.biofouling_risk_score),
     performance_proxy_score: scoreNumber(record.performance_proxy_score),
+    operator_score: Math.min(100, operatorScore),
     contact_readiness_score: scoreNumber(record.contact_readiness_score),
     data_quality_score: scoreNumber(record.data_quality_score || record.data_confidence_score),
     arrival_opportunity_score: scoreNumber(record.arrival_opportunity_score),
@@ -394,7 +403,6 @@ function buildFoundationFeatureVector(record = {}) {
     has_operator: Boolean(record.operator_name || record.operator),
     has_agent: Boolean(record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm),
     has_contact_path: Boolean(record.contact_path_available || record.contact_path_status === "contact_available"),
-    vessel_type_group: record.vessel_type_group || null,
     status_bucket: record.status_bucket || null,
     facility_type: record.facility_type || null,
     route_region: record.route_region || null
@@ -1874,23 +1882,27 @@ export async function saveToSupabase(records, options = {}) {
   const featureStoreRows = uniqueBy(records.filter(r => !leanStorageEnabled() || shouldPersistFeatureRow(r)).map(r => {
     const entityKey = r.hybrid_entity_key || r.vessel_id || `${r.vessel_name || "UNKNOWN"}-${r.port_code || ""}`;
     const portCallKey = r.port_call_identity || r.port_call_key || r.raw_row_identity || r.port_code || r.port || "unknown";
+    const portCallId = buildPortCallId(r);
     return {
-      feature_id: stableEntityId("FEAT", `${runId}-${entityKey}-${portCallKey}`),
+      feature_id: stableEntityId("FEAT", `${runId}-${portCallId}-${entityKey}`),
       run_id: runId,
       collected_at: now,
       entity_type: "vessel_port_call",
-      entity_id: entityKey,
+      entity_id: portCallId,
       hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_id: portCallId,
       port_call_identity: r.port_call_identity || r.port_call_key || null,
       master_vessel_id: fallbackMasterId(r),
       port_code: r.port_code || null,
-      feature_namespace: "commercial_foundation",
-      feature_version: "foundation_v1",
+      feature_namespace: "model_ready_port_call",
+      feature_version: "model_ready_port_call_v1",
       features: buildFoundationFeatureVector(r),
       labels: buildFoundationLabels(r),
       payload: {
         vessel_name: r.vessel_name || null,
         port_name: r.port_name || r.port || null,
+        port_call_key: portCallKey,
+        model_ready_fields: ["gt", "vessel_type", "stay_hours", "anchorage_hours", "commercial_value_score", "congestion_score", "biofouling_exposure_score", "operator_score", "repeat_caller_score"],
         reason_codes: r.reason_codes || [],
         why_now: r.why_now || null,
         recommended_action: r.recommended_action || r.recommended_next_action || null
