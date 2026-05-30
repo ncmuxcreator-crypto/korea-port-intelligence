@@ -99,9 +99,14 @@ export function configDiagnostics() {
     .filter(source => source.enabled && ["pilotage", "berth", "port_master", "ulsan", "vts", "ais", "ais_master", "ais_stats", "vessel_master"].includes(source.type))
     .map(source => source.key);
   const missingRequiredConfig = REQUIRED_ENV_VARS.filter(name => !present(name));
+  const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+  const servingMode = process.env.SERVING_MODE || (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? "worker_supabase" : "static_json_fallback");
   return {
     generated_at: new Date().toISOString(),
     environment: process.env.UPDATE_MODE || process.env.NODE_ENV || "local",
+    validation_mode: validationMode,
+    serving_mode: servingMode,
+    production_data_source: servingMode === "worker_supabase" ? "supabase_active_dataset" : "static_json_fallback",
     config_types: {
       secrets: "API keys and credentials only",
       csv_registry: "port/source metadata from data/reference CSV files",

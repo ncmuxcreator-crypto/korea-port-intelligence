@@ -36,6 +36,28 @@ Important fields:
 
 If `run_id` does not match `status.json`, treat the report as stale.
 
+## Read backend-doctor
+
+Use:
+
+```powershell
+npm.cmd run doctor
+```
+
+Important fields:
+
+- `ok`
+- `production_ready`
+- `data_status`
+- `record_count`
+- `vessels_json_count`
+- `all_collected_vessels_count`
+- `target_vessels_count`
+- `serving_mode`
+- `production_data_source`
+
+If `record_count = 0`, `backend-doctor` must report `ok=false`, `production_ready=false`, and `data_status=empty_dataset`.
+
 ## Run the Port Operation smoke test
 
 The smoke test runs automatically before full collection.
@@ -89,6 +111,45 @@ Key questions:
 - Did normalization produce rows?
 - Did `all_vessels_generated` become zero after source rows existed?
 - Did validation or promotion gate block the dataset?
+
+## Debug target count mismatch
+
+Check these files or endpoints:
+
+1. `dashboard/api/dashboard-summary.json`
+2. `dashboard/api/target-vessels.json`
+3. `dashboard/api/vessels.json`
+4. `/api/vessels?group=target&page=1&pageSize=50`
+5. `/api/dashboard-summary.json`
+
+Compare:
+
+- `target_vessels_count`
+- `sales_target_count`
+- `immediate_target_count`
+- `target-vessels.json` row count
+- `dataset_run_id_summary`
+- `dataset_run_id_table`
+
+If the summary has targets but the table has zero rows, treat it as a binding issue rather than a scoring issue.
+
+## Check config status
+
+Use Worker route:
+
+```text
+/api/config-status.json
+```
+
+Confirm:
+
+- `missing_required_config`
+- `enabled_sources`
+- `enabled_ports_count`
+- `active_runtime_limits`
+- `validation_mode`
+- `serving_mode`
+- `production_data_source`
 
 ## Run regression tests
 

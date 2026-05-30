@@ -220,6 +220,30 @@ for (const vessel of vessels) {
 
 
 const status = readOutputJson("dashboard/api/status.json");
+const dashboardSummary = readOutputJson("dashboard/api/dashboard-summary.json");
+const commonApiFields = ["run_id", "active_run_id", "generated_at", "data_source_used", "fallback_used", "fallback_reason", "data_freshness", "record_count"];
+const vesselRowFields = ["port_call_id", "master_vessel_id", "vessel_name", "port_code", "port_name", "candidate_band", "commercial_value_score", "data_confidence_score"];
+function contractIssue(message) {
+  if (validationMode === "production") throw new Error(message);
+  validationWarnings.push(`Local data-contract warning: ${message}`);
+}
+function validateApiContract(name, payload, requiredFields = commonApiFields) {
+  for (const field of requiredFields) {
+    if (!(field in (payload || {}))) contractIssue(`${name} missing required API field: ${field}`);
+  }
+}
+function validateVesselRowContract(name, rows) {
+  const sample = rows.find(row => row && typeof row === "object");
+  if (!sample) return;
+  for (const field of vesselRowFields) {
+    if (!(field in sample)) contractIssue(`${name} vessel row missing required field: ${field}`);
+  }
+}
+validateApiContract("dashboard-summary.json", dashboardSummary);
+validateApiContract("status.json", status);
+validateVesselRowContract("all-collected-vessels.json", jsonRows(allCollectedVessels));
+validateVesselRowContract("target-vessels.json", jsonRows(targetVessels));
+validateVesselRowContract("vessels.json", jsonRows(vessels));
 if (outputExists("dashboard/api/backend-doctor.json")) {
   const doctor = readOutputJson("dashboard/api/backend-doctor.json");
   if (doctor.files_have_rows === false && doctor.ok === true) {
@@ -468,6 +492,9 @@ if (!workflow.includes("VALIDATION_MODE: production")) {
 for (const marker of ["buildConfigStatus", "missing_required_config", "enabled_sources", "enabled_ports_count", "active_runtime_limits"]) {
   if (!worker.includes(marker)) throw new Error(`Worker config status missing marker: ${marker}`);
 }
+for (const marker of ["validation_mode", "serving_mode", "production_data_source", "worker_supabase_available"]) {
+  if (!worker.includes(marker)) throw new Error(`Worker config status missing production-readiness marker: ${marker}`);
+}
 const referenceDictionaries = fs.readFileSync("scripts/lib/reference-dictionaries.js", "utf8");
 for (const marker of ["classifyAnchorage", "classifyBerth", "normalizeVesselType", "\\uB0A8\\uC678\\uD56D", "ANCH", "O A", "bulk_carrier", "pctc", "vesselMasterSeed", "berthAliases", "terminalAliases"]) {
   if (!referenceDictionaries.includes(marker)) throw new Error(`Reference dictionary enrichment missing marker: ${marker}`);
@@ -490,6 +517,9 @@ for (const marker of ["PIPELINE_STAGES", "sourceOfTruthTables", "config_diagnost
 const configLib = fs.readFileSync("scripts/lib/config.js", "utf8");
 for (const marker of ["REQUIRED_ENV_VARS", "PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_URL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "loadPortsRegistry", "configDiagnostics", "validateRequiredConfig", "active_runtime_limits", "enabled_enrichment_sources"]) {
   if (!configLib.includes(marker)) throw new Error(`Central config loader missing marker: ${marker}`);
+}
+for (const marker of ["validation_mode", "serving_mode", "production_data_source"]) {
+  if (!configLib.includes(marker)) throw new Error(`Central config diagnostics missing serving-mode marker: ${marker}`);
 }
 const scoreScript = fs.readFileSync("scripts/score.js", "utf8");
 if (!scoreScript.includes("Legacy compatibility shim") || !scoreScript.includes("commercial_value_score")) {
@@ -531,7 +561,7 @@ for (const file of [
   if (!fs.existsSync(file)) throw new Error(`Missing foundation safeguard file: ${file}`);
 }
 const dataContract = fs.readFileSync("docs/data-contract.md", "utf8");
-for (const marker of ["run_id", "generated_at", "data_source_used", "port_call_id", "master_vessel_id", "port_code", "candidate_band", "commercial_value_score"]) {
+for (const marker of ["run_id", "active_run_id", "generated_at", "data_source_used", "fallback_used", "fallback_reason", "data_freshness", "record_count", "port_call_id", "master_vessel_id", "vessel_name", "port_code", "port_name", "candidate_band", "commercial_value_score", "data_confidence_score"]) {
   if (!dataContract.includes(marker)) throw new Error(`Data contract missing required field marker: ${marker}`);
 }
 const dataDictionary = fs.readFileSync("docs/data-dictionary.md", "utf8");
@@ -547,7 +577,7 @@ if (migrationFiles.length < 1) {
   throw new Error("Schema migration discipline requires at least one versioned SQL file in migrations/.");
 }
 const regressionScript = fs.readFileSync("tests/regression-tests.js", "utf8");
-for (const marker of ["all_vessels_count must be > 0", "Duplicate port_call_id", "target_ratio > 30%", "no_live_data must not be treated as production-ready"]) {
+for (const marker of ["all_vessels_count must be > 0", "port_call_id coverage must be > 80%", "Duplicate port_call_id", "target_ratio > 30%", "Summary target count must match target-vessels output count", "backend-doctor must fail empty datasets", "no_live_data must not be treated as production-ready"]) {
   if (!regressionScript.includes(marker)) throw new Error(`Regression test missing marker: ${marker}`);
 }
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));

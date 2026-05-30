@@ -52,6 +52,7 @@ const summary = readJson("dashboard/api/dashboard-summary.json", {});
 const allVesselsPayload = readJson("dashboard/api/all-collected-vessels.json", []);
 const targetVesselsPayload = readJson("dashboard/api/target-vessels.json", []);
 const vesselsPayload = readJson("dashboard/api/vessels.json", []);
+const backendDoctor = readJson("dashboard/api/backend-doctor.json", {});
 
 const allVessels = rows(allVesselsPayload);
 const targetVessels = rows(targetVesselsPayload);
@@ -70,6 +71,10 @@ const allVesselsCount = Number(
 if (dataMode !== "no_live_data" && recordCount > 0) {
   assert(allVesselsCount > 0, "all_vessels_count must be > 0 after successful collection.");
   assert(allVessels.length > 0 || vessels.length > 0, "Static all/vessel output must contain rows after successful collection.");
+  const portCallCoverage = allVessels.length
+    ? allVessels.filter(row => row.port_call_id).length / allVessels.length
+    : 0;
+  assert(portCallCoverage > 0.8, "port_call_id coverage must be > 80% after successful collection.");
 }
 
 const portCallIds = allVessels.map(row => row.port_call_id).filter(Boolean);
@@ -102,6 +107,10 @@ const summaryTargetCount = Number(
 const tableTargetCount = Number(targetVessels.length || vessels.length || 0);
 if (summaryTargetCount > 0) {
   assert(tableTargetCount > 0, "Summary reports target vessels but target table/static output is empty.");
+  assert(
+    tableTargetCount === summaryTargetCount,
+    `Summary target count must match target-vessels output count. summary=${summaryTargetCount}, table=${tableTargetCount}`
+  );
 }
 
 if (dataMode === "no_live_data") {
@@ -112,6 +121,13 @@ if (dataMode === "no_live_data") {
     report.data_status === "empty_dataset" ||
     report.last_successful_dataset_lock?.locked === true,
     "no_live_data must not be treated as production-ready."
+  );
+}
+
+if (Number(backendDoctor.record_count || 0) === 0 || backendDoctor.data_status === "empty_dataset") {
+  assert(
+    backendDoctor.ok === false && backendDoctor.production_ready === false,
+    "backend-doctor must fail empty datasets."
   );
 }
 

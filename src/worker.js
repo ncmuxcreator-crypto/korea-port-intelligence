@@ -2964,6 +2964,7 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   const predictedCleaningOpportunities = buildPredictedCleaningOpportunities(activeRecords).slice(0, 10);
   const status = buildStatus(activeRecords, source);
   return {
+    run_id: status.active_run_id,
     active_run_id: status.active_run_id,
     data_source_used: status.data_source_used,
     fallback_used: status.fallback_used,
@@ -3016,6 +3017,7 @@ function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "la
     ? portSummary.reduce((sum, port) => sum + Number(port.anchorage_vessels || port.anchorage_waiting || 0), 0)
     : 0;
   return {
+    run_id: source.pointer?.active_run_id || snapshot.run_id || null,
     active_run_id: source.pointer?.active_run_id || null,
     summary_run_id: snapshot.run_id || null,
     data_source_used: "latest_successful_summary_snapshot",
@@ -3088,6 +3090,7 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
   const portSummary = parseJsonField(snapshot.port_summary, []);
   const ports = Array.isArray(portSummary) ? portSummary : [];
   return {
+    run_id: status.active_run_id || snapshot.run_id || null,
     active_run_id: status.active_run_id,
     summary_run_id: snapshot.run_id || null,
     data_source_used: status.data_source_used,
@@ -4114,6 +4117,7 @@ function buildStatus(records, source) {
   const dataAgeMinutes = activeCollectedAt ? Math.round((Date.now() - new Date(activeCollectedAt).getTime()) / 60000) : null;
   const dataIsStale = dataAgeMinutes === null ? Boolean(source.pointer?.is_stale) : dataAgeMinutes > AUTO_UPDATE_INTERVAL_HOURS * 60;
   return {
+    run_id: activeRunId,
     active_run_id: activeRunId,
     data_source_used: dataSourceUsed,
     fallback_used: fallbackUsed,
@@ -4311,9 +4315,16 @@ function buildConfigStatus(env = {}) {
     .filter(([, keys]) => keys.some(key => workerEnvPresent(env, key)))
     .map(([name]) => name);
   const enrichmentSources = enabledSources.filter(name => !["port_operation", "google_drive"].includes(name));
+  const workerSupabaseAvailable = workerEnvPresent(env, "SUPABASE_URL") && workerEnvPresent(env, "SUPABASE_SERVICE_ROLE_KEY");
   return {
     generated_at: new Date().toISOString(),
     environment: env.ENVIRONMENT || env.UPDATE_MODE || "cloudflare_worker",
+    validation_mode: env.VALIDATION_MODE || "production",
+    serving_mode: "worker_supabase",
+    production_data_source: "supabase_active_dataset",
+    worker_supabase_available: workerSupabaseAvailable,
+    fallback_used: false,
+    fallback_reason: null,
     config_source_model: {
       secrets: "Cloudflare/GitHub runtime secrets only",
       csv_registry: PORT_REGISTRY_SOURCE,
@@ -4330,11 +4341,14 @@ function buildConfigStatus(env = {}) {
     ports_registry_generated_from_csv: PORT_REGISTRY_GENERATED_FROM_CSV,
     active_runtime_limits: {
       SOURCE_TIMEOUT_MS: workerNumberEnv(env, "SOURCE_TIMEOUT_MS", 30000),
+      MAX_PORTS_PER_RUN: workerNumberEnv(env, "MAX_PORTS_PER_RUN", 50),
       MAX_OUTPUT_ROWS: workerNumberEnv(env, "MAX_OUTPUT_ROWS", 10000),
       MAX_SOURCE_ROWS: workerNumberEnv(env, "MAX_SOURCE_ROWS", 5000),
       MAX_TARGET_VESSELS: workerNumberEnv(env, "MAX_TARGET_VESSELS", 5000),
       MAX_CANDIDATES: workerNumberEnv(env, "MAX_CANDIDATES", 1000),
       MAX_CHILD_ENRICHMENT_ROWS: workerNumberEnv(env, "MAX_CHILD_ENRICHMENT_ROWS", 100),
+      MAX_IMO_RECOVERY_CALLS: workerNumberEnv(env, "MAX_IMO_RECOVERY_CALLS", 100),
+      MAX_API_RESPONSE_BYTES: workerNumberEnv(env, "MAX_API_RESPONSE_BYTES", 25000000),
       PORT_OPERATION_NUM_OF_ROWS: workerNumberEnv(env, "PORT_OPERATION_NUM_OF_ROWS", 50),
       PORT_OPERATION_MAX_PAGES: workerNumberEnv(env, "PORT_OPERATION_MAX_PAGES", 20),
       SOURCE_MAX_RETRIES: workerNumberEnv(env, "SOURCE_MAX_RETRIES", 2),

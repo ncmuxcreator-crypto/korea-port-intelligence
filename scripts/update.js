@@ -4354,13 +4354,33 @@ try {
     status = "degraded_sample_only";
   }
   const actionableRows = vessels.filter(v => v.actionable_source_row && !String(v.source_mode || "").includes("sample")).length;
+  const dataModeDetail = buildDataMode(vessels, detectSecrets(), supabaseStatus);
+  const dataMode = dataModeDetail.mode;
+  const isFallbackDataset = dataMode === "no_live_data" || dataMode === "degraded_sample_only" || vessels.length === 0;
   const baseReport = {
     version: VERSION,
     build_name: BUILD_NAME,
     status,
     run_id: runId,
+    active_run_id: runId,
+    generated_at: completedAt,
     started_at: startedAt,
     completed_at: completedAt,
+    data_source_used: isFallbackDataset ? "diagnostics_only_no_live_data" : "static_json_snapshot",
+    fallback_used: isFallbackDataset,
+    fallback_reason: isFallbackDataset ? "local_or_failed_run_without_live_source_rows" : null,
+    data_freshness: {
+      active_collected_at: completedAt,
+      data_age_minutes: 0,
+      is_stale: false,
+      freshness_policy: {
+        port_operation_hours: 24,
+        pilot_hours: 6,
+        berth_pnc_ulsan_hours: 12,
+        ais_vts_hours: 1,
+        operator_agent_days: 30
+      }
+    },
     record_count: vessels.length,
     actionable_rows: actionableRows,
     critical_count: vessels.filter(v => (v.risk_score || 0) >= 85).length,
@@ -4384,8 +4404,8 @@ try {
       expected_collection_runtime_minutes: "3-12",
       per_source_timeout_seconds: Math.round(Number(process.env.SOURCE_TIMEOUT_MS || 25000) / 1000)
     },
-    data_mode: buildDataMode(vessels, detectSecrets(), supabaseStatus).mode,
-    data_mode_detail: buildDataMode(vessels, detectSecrets(), supabaseStatus),
+    data_mode: dataMode,
+    data_mode_detail: dataModeDetail,
     api_sources: detectSecrets(),
     config_diagnostics: startupConfigDiagnostics,
     api_registry_version: "korea-port-secret-registry-v12-backend-stability",
@@ -4598,6 +4618,7 @@ try {
     raw_archive_index: rawArchiveIndex
   };
   const dashboardSummary = {
+    run_id: report?.run_id || runId,
     active_run_id: report?.source_runtime?.active_run_id || report?.run_id || runId,
     summary_run_id: report?.run_id || runId,
     generated_at: completedAt,
