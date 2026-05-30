@@ -430,7 +430,9 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
   const salesTargets = records.filter(isSalesTargetRecord).length;
   const targetRatio = records.length ? salesTargets / records.length : 0;
   const architectureDiagnostics = buildPortCallArchitectureDiagnostics(records);
+  const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
   const validationGates = {
+    no_live_data_not_promotable: records.length > 0,
     all_vessels_count_positive: records.length > 0,
     port_call_master_count_positive: architectureDiagnostics.port_call_master_count > 0,
     port_call_id_coverage_above_threshold: architectureDiagnostics.port_call_id_coverage >= Number(process.env.PORT_CALL_ID_COVERAGE_MIN || 0.8),
@@ -453,6 +455,7 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
       validationGates.target_ratio_reasonable &&
       validationGates.no_fatal_db_write_error,
     attempted,
+    validation_mode: validationMode,
     portOperationSuccess,
     parseErrorRate,
     malformedRowRate,

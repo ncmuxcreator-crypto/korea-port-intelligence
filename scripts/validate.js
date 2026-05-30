@@ -1,5 +1,11 @@
 import fs from "fs";
 
+const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+if (!["production", "local"].includes(validationMode)) {
+  throw new Error(`Invalid VALIDATION_MODE: ${validationMode}. Use production or local.`);
+}
+const validationWarnings = [];
+
 const required = [
   "data/latest-lite.json",
   "data/pipeline-report.json",
@@ -77,18 +83,38 @@ if (!Array.isArray(targetVessels)) {
 if (!report.status || typeof report.record_count !== "number") {
   throw new Error("Invalid pipeline-report.json");
 }
+const collectorSources = report?.collector_diagnostics?.sources || report?.collector_diagnostics?.source_results || [];
+const successfulPortOperationSources = collectorSources.filter(source =>
+  String(source.key || source.source_name || "").startsWith("port_operation_") &&
+  (source.success === true || String(source.status || "").toLowerCase() === "success") &&
+  Number(source.normalized_count || source.rows_normalized || source.row_count || source.rows_collected || 0) > 0
+);
 const vesselGroupValidation = {
   all_collected_vessels_exists: fs.existsSync("dashboard/api/all-collected-vessels.json"),
   all_collected_vessels_count: jsonRows(allCollectedVessels).length,
   target_vessels_exists: fs.existsSync("dashboard/api/target-vessels.json"),
   target_vessels_count: jsonRows(targetVessels).length,
-  vessels_json_count: jsonRows(vessels).length
+  vessels_json_count: jsonRows(vessels).length,
+  successful_port_operation_source_count: successfulPortOperationSources.length,
+  validation_mode: validationMode
 };
 if (!vesselGroupValidation.all_collected_vessels_exists || !vesselGroupValidation.target_vessels_exists) {
   throw new Error(`Missing vessel group static JSON outputs: ${JSON.stringify(vesselGroupValidation)}`);
 }
 if (report.data_mode !== "no_live_data" && report.record_count > 0 && vesselGroupValidation.all_collected_vessels_count === 0) {
   throw new Error(`all-collected-vessels.json must contain rows when live record_count > 0: ${JSON.stringify(vesselGroupValidation)}`);
+}
+const productionValidationFailures = [
+  report.data_mode === "no_live_data" ? "data_mode_no_live_data" : null,
+  Number(report.record_count || 0) <= 0 ? "record_count_zero" : null,
+  Number(report.all_collected_vessel_count || report.all_vessels_count || vesselGroupValidation.all_collected_vessels_count || 0) <= 0 ? "all_vessels_count_zero" : null,
+  successfulPortOperationSources.length < 1 ? "no_successful_port_operation_source" : null
+].filter(Boolean);
+if (validationMode === "production" && productionValidationFailures.length) {
+  throw new Error(`Production validation failed: ${productionValidationFailures.join(", ")}; ${JSON.stringify(vesselGroupValidation)}`);
+}
+if (validationMode === "local" && report.data_mode === "no_live_data") {
+  validationWarnings.push("Local validation warning: no_live_data snapshot is allowed in local mode only.");
 }
 
 for (const item of data) {
@@ -339,6 +365,9 @@ for (const marker of ["/all-collected-vessels.json", "/target-vessels.json", "gr
 for (const marker of ["data_source_used", "supabase_active_dataset", "local_static_snapshot", "diagnostics_only_no_live_data", "fallback_used", "fallback_reason"]) {
   if (!worker.includes(marker)) throw new Error(`Worker missing production data source marker: ${marker}`);
 }
+if (!workflow.includes("VALIDATION_MODE: production")) {
+  throw new Error("Longterm workflow must run validation in production mode");
+}
 for (const marker of ["buildConfigStatus", "missing_required_config", "enabled_sources", "enabled_ports_count", "active_runtime_limits"]) {
   if (!worker.includes(marker)) throw new Error(`Worker config status missing marker: ${marker}`);
 }
@@ -353,6 +382,9 @@ if (!gdriveLib.includes("supportsAllDrives=true") || !gdriveLib.includes("normal
 const dbLib = fs.readFileSync("scripts/lib/db.js", "utf8");
 if (!dbLib.includes("SUPABASE_BATCH_SIZE") || !dbLib.includes("batchSize")) {
   throw new Error("Supabase writes must be batched to avoid long single upserts");
+}
+for (const marker of ["validation_mode", "no_live_data_not_promotable"]) {
+  if (!dbLib.includes(marker)) throw new Error(`Supabase promotion validation missing marker: ${marker}`);
 }
 const updateScript = fs.readFileSync("scripts/update.js", "utf8");
 for (const marker of ["PIPELINE_STAGES", "sourceOfTruthTables", "config_diagnostics", "validateRequiredConfig", "candidate_threshold_used", "source_rows_collected", "source_rows_matched", "enrichment_match_rate", "db_rows_written_by_table", "retention_rows_deleted_by_table"]) {
@@ -412,5 +444,8 @@ if (!pushSmokeWorkflow.includes("name: Push Smoke Test") || !pushSmokeWorkflow.i
   throw new Error("Push smoke test workflow is incomplete");
 }
 
-console.log("[HWK] validation success");
+for (const warning of validationWarnings) {
+  console.warn(`[HWK] ${warning}`);
+}
+console.log(`[HWK] validation success (${validationMode})`);
 
