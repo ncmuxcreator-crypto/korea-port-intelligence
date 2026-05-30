@@ -858,9 +858,17 @@ function hasUsefulVesselIdentity(v = {}) {
 
 function exclusionReason(v = {}) {
   const status = v.commercial_relevance_status || deriveCommercialRelevance(v);
+  if (isSyntheticSample(v)) return "sample_or_demo_row";
+  if (isDepartedRecord(v)) return "departed_or_atd_present";
+  if (!hasUsefulVesselIdentity(v)) return "missing_useful_vessel_identity";
   if (status === "excluded_non_commercial_type") return "excluded_non_commercial_type";
   if (status === "non_target_small_vessel" && Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0 && Number(v.gt || v.grtg || v.intrlGrtg || 0) < Number(v.commercial_gt_threshold || 5000)) return "excluded_under_5000gt";
   if (v.excluded_from_commercial_targets === true) return v.exclusion_reason || "explicitly_excluded";
+  const score = commercialScore(v);
+  if (score >= IMMEDIATE_TARGET_THRESHOLD && !hasCurrentOrNearTermWorkFeasibility(v)) return "missing_current_or_near_term_work_feasibility";
+  if (score >= IMMEDIATE_TARGET_THRESHOLD && !withinCommercialPercentile(v, 10)) return "outside_immediate_top_10_percentile";
+  if (score >= SALES_CANDIDATE_THRESHOLD && !withinCommercialPercentile(v, 20)) return "outside_sales_top_20_percentile";
+  if (score >= 50 && !withinCommercialPercentile(v, 40)) return "outside_watchlist_top_40_percentile";
   return "";
 }
 
@@ -1745,6 +1753,17 @@ async function fetchSupabaseRows(env) {
 
   if (!response.ok) return { rows: [], configured: true, error: response.error, pointer };
   return { rows: [], configured: true, error: "empty_active_dataset", pointer };
+}
+
+async function fetchLatestSummarySnapshot(env) {
+  const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&is_latest_successful=eq.true&order=generated_at.desc&limit=1");
+  return response.ok && response.rows.length ? response.rows[0] : null;
+}
+
+async function fetchSummarySnapshotByRun(env, runId) {
+  if (!runId) return null;
+  const response = await supabaseGet(env, `/rest/v1/dashboard_summary_snapshots?select=*&run_id=eq.${encodeURIComponent(runId)}&limit=1`);
+  return response.ok && response.rows.length ? response.rows[0] : null;
 }
 
 function isBetterSnapshotRepresentative(next = {}, current = {}) {
@@ -2762,6 +2781,108 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   };
 }
 
+function snapshotDataFreshness(snapshot = {}) {
+  const generatedAt = snapshot.generated_at || snapshot.created_at || null;
+  return {
+    active_collected_at: generatedAt,
+    data_age_minutes: generatedAt ? Math.round((Date.now() - new Date(generatedAt).getTime()) / 60000) : null,
+    is_stale: true
+  };
+}
+
+function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "latest_successful_summary_snapshot") {
+  const freshness = snapshotDataFreshness(snapshot);
+  return {
+    active_run_id: source.pointer?.active_run_id || null,
+    summary_run_id: snapshot.run_id || null,
+    generated_at: new Date().toISOString(),
+    data_freshness: freshness,
+    is_fallback: true,
+    fallback_reason: reason,
+    latest_successful_summary_run_id: snapshot.run_id || null,
+    last_successful_generated_at: snapshot.generated_at || null,
+    version: "worker-live-api-v1",
+    status: "success",
+    data_mode: "latest_successful_summary_snapshot",
+    commercial_use_status: "review_required",
+    live_data_available: Number(snapshot.record_count || snapshot.all_vessels_count || 0) > 0,
+    displayable_vessel_count: Number(snapshot.record_count || 0),
+    completed_at: snapshot.generated_at || snapshot.created_at || null,
+    record_count: Number(snapshot.record_count || 0),
+    all_collected_vessel_count: Number(snapshot.all_vessels_count || 0),
+    all_vessels_count: Number(snapshot.all_vessels_count || 0),
+    target_count: Number(snapshot.target_vessels_count || 0),
+    target_vessel_count: Number(snapshot.target_vessels_count || 0),
+    sales_candidate_count: Number(snapshot.sales_target_count || 0),
+    immediate_target_count: Number(snapshot.immediate_target_count || 0),
+    opportunity_count: Number(snapshot.opportunity_count || 0),
+    watchlist_count: Number(snapshot.watchlist_count || 0),
+    port_count: Number(snapshot.port_count || 0),
+    source_runtime: {
+      provider: "supabase",
+      active_run_id: source.pointer?.active_run_id || null,
+      active_collected_at: source.pointer?.active_collected_at || null,
+      fallback_status: "showing_latest_successful_summary_snapshot",
+      using_latest_summary_fallback: true,
+      stale_warning: "최신 수집이 진행 중이거나 실패하여 마지막 정상 수치를 표시 중입니다."
+    },
+    summary_diagnostics: {
+      latest_successful_summary_run_id: snapshot.run_id || null,
+      current_active_run_id: source.pointer?.active_run_id || null,
+      summary_is_fallback: true,
+      summary_fallback_reason: reason,
+      last_successful_generated_at: snapshot.generated_at || null,
+      current_run_status: source.pointer?.active_run_id ? "unknown" : "missing_active_run",
+      current_run_validation_status: "unknown",
+      summary_snapshot_rows: 1,
+      summary_snapshot_write_status: "latest_successful_available"
+    },
+    scoring_diagnostics: {
+      all_vessels_count: Number(snapshot.all_vessels_count || 0),
+      sales_target_count: Number(snapshot.sales_target_count || 0),
+      immediate_target_count: Number(snapshot.immediate_target_count || 0),
+      watchlist_count: Number(snapshot.watchlist_count || 0)
+    }
+  };
+}
+
+function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = "latest_successful_summary_snapshot") {
+  const status = buildStatusFromSummarySnapshot(snapshot, source, reason);
+  const candidateSummary = snapshot.candidate_summary || {};
+  const congestionSummary = snapshot.congestion_summary || {};
+  return {
+    active_run_id: status.active_run_id,
+    summary_run_id: snapshot.run_id || null,
+    is_fallback: true,
+    fallback_reason: reason,
+    generated_at: snapshot.generated_at || status.generated_at,
+    data_freshness: status.data_freshness,
+    record_count: status.record_count,
+    all_vessels_count: status.all_vessels_count,
+    target_count: status.target_count,
+    target_vessels_count: status.target_vessel_count,
+    sales_target_count: status.sales_candidate_count,
+    immediate_target_count: status.immediate_target_count,
+    opportunity_count: status.opportunity_count,
+    watchlist_count: status.watchlist_count,
+    status,
+    ports: Array.isArray(snapshot.port_summary) ? snapshot.port_summary : [],
+    immediate_targets: Array.isArray(candidateSummary.immediate_targets) ? candidateSummary.immediate_targets : [],
+    opportunities: Array.isArray(candidateSummary.opportunities) ? candidateSummary.opportunities : [],
+    predicted_arrivals: [],
+    arrival_pipeline: [],
+    predicted_cleaning_opportunities: [],
+    port_opportunities: Array.isArray(snapshot.port_summary) ? snapshot.port_summary.slice(0, 5) : [],
+    congestion_summary: Array.isArray(congestionSummary.ports) ? congestionSummary.ports : [],
+    candidate_counts: {
+      target_vessels: status.target_vessel_count,
+      sales_candidates: status.sales_candidate_count,
+      immediate_targets: status.immediate_target_count
+    },
+    summary_diagnostics: status.summary_diagnostics
+  };
+}
+
 function portCodeFromName(port = "") {
   const text = String(port || "").toLowerCase();
   if (/^\d+$/.test(text.trim())) return normalizePortCode(text);
@@ -3080,6 +3201,22 @@ function buildScoringDiagnostics(records = []) {
   const percentileRankPresentCount = rankedTargetRows.filter(hasCommercialRank).length;
   const percentileRankMissingCount = rankedTargetRows.length - percentileRankPresentCount;
   const thresholdOnlySalesTargetCount = records.filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !isDepartedRecord(v) && !isHardCandidateExcluded(v)).length;
+  const candidateGenerationRows = records.filter(v => commercialScore(v) >= 50 && !isDepartedRecord(v) && !isHardCandidateExcluded(v));
+  const promotedCandidateRows = records.filter(v => isSalesCandidate(v) || isImmediateTarget(v));
+  const excludedCandidateRows = candidateGenerationRows
+    .filter(v => commercialScore(v) >= SALES_CANDIDATE_THRESHOLD && !isSalesCandidate(v))
+    .map((v, index) => ({
+      candidate_id: v.snapshot_id || v.port_call_id || v.port_call_identity || v.hybrid_entity_key || v.vessel_id || `excluded-${index}`,
+      vessel_name: v.vessel_name || v.name || "",
+      port_call_id: v.port_call_id || v.port_call_identity || "",
+      commercial_value_score: commercialScore(v),
+      candidate_band: v.candidate_band || v.sales_priority_band || (commercialScore(v) >= 75 ? "immediate_target_score_only" : "sales_target_score_only"),
+      exclusion_reason: exclusionReason(v) || "not_promoted"
+    }));
+  const candidateExclusionReasonCounts = excludedCandidateRows.reduce((acc, row) => {
+    acc[row.exclusion_reason] = (acc[row.exclusion_reason] || 0) + 1;
+    return acc;
+  }, {});
   const percentileLogicActive = percentileRankPresentCount > 0;
   const onlyThresholdLogicActive = false;
   const targetRatio = records.length ? Math.round((salesTargetCount / records.length) * 1000) / 10 : 0;
@@ -3121,6 +3258,11 @@ function buildScoringDiagnostics(records = []) {
     target_vessels_count: buckets.target_vessels.length,
     sales_candidates_count: buckets.sales_candidates.length,
     immediate_targets_count: buckets.immediate_targets.length,
+    candidate_generation_count: candidateGenerationRows.length,
+    candidate_promotion_count: promotedCandidateRows.length,
+    candidate_excluded_count: excludedCandidateRows.length,
+    excluded_candidates: excludedCandidateRows,
+    excluded_candidate_samples: excludedCandidateRows.slice(0, 50),
     ...scoreBuckets,
     commercial_score_bands: {
       critical: "90+",
@@ -3154,6 +3296,8 @@ function buildScoringDiagnostics(records = []) {
     },
     watchlist_count: records.filter(v => !isSalesCandidate(v) && isWatchlistVessel(v)).length,
     immediate_target_count: immediateTargetCount,
+    candidate_exclusion_reason_counts: candidateExclusionReasonCounts,
+    zero_sales_target_warning: records.length > 0 && salesTargetCount === 0 ? "영업대상 후보가 생성되지 않았습니다. 후보 생성 로직 또는 기준을 확인하세요." : "",
     target_ratio: targetRatio,
     immediate_target_ratio: immediateTargetRatio,
     target_ratio_warning: targetRatio > 30 ? "영업대상 기준이 너무 넓습니다." : "",
@@ -3239,6 +3383,7 @@ function buildStatus(records, source) {
   const matchingDiagnostics = buildMatchingDiagnostics(records);
   const predictionDiagnostics = buildPredictionDiagnostics(records);
   const dataQualityLayer = buildDataQualityLayerDiagnostics(records, matchingDiagnostics);
+  const scoringDiagnostics = buildScoringDiagnostics(records);
   const high = records.filter(v => (v.risk_score || 0) >= 70);
   const displayableRows = buckets.target_vessels.length || records.length;
   const allDisplayVessels = vesselGroupRows(records, "all");
@@ -3291,7 +3436,13 @@ function buildStatus(records, source) {
     high_value_low_confidence_count: buildHighValueLowConfidence(buckets.target_vessels).length,
     opportunity_usd: records.reduce((sum, v) => sum + (v.opportunity_usd || 0), 0),
     count_funnel: countFunnel,
-    scoring_diagnostics: buildScoringDiagnostics(records),
+    scoring_diagnostics: scoringDiagnostics,
+    candidate_generation_count: scoringDiagnostics.candidate_generation_count,
+    candidate_promotion_count: scoringDiagnostics.candidate_promotion_count,
+    candidate_excluded_count: scoringDiagnostics.candidate_excluded_count,
+    candidate_exclusion_reason_counts: scoringDiagnostics.candidate_exclusion_reason_counts,
+    candidate_excluded_samples: scoringDiagnostics.excluded_candidate_samples,
+    sales_target_warning: records.length > 0 && buckets.sales_candidates.length === 0 ? "영업대상 후보가 생성되지 않았습니다. 후보 생성 로직 또는 기준을 확인하세요." : "",
     high_score_visibility_audit: highScoreVisibilityAudit(records, 93),
     commercial_ranking_audit: commercialRankingAudit(records),
     matching_diagnostics: matchingDiagnostics,
@@ -3537,22 +3688,63 @@ async function apiResponse(url, env) {
     if (historical) return historical;
   }
   const source = await fetchSupabaseRows(env);
+  const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
   const allRecords = activeRecordsOnly(latestPerVesselPort(source.rows));
   const buckets = buildVisibilityBuckets(allRecords);
   const records = buckets.target_vessels;
-  if (pathname.endsWith("/dashboard-summary.json")) return json(buildDashboardSummary(allRecords, source), { headers: corsHeaders() });
-  if (pathname.endsWith("/status.json")) return json(buildStatus(allRecords, source), { headers: corsHeaders() });
-  if (pathname.endsWith("/changes.json")) {
+  const shouldUseSummaryFallback = latestSummarySnapshot && (!allRecords.length || source.error || source.pointer?.active_dataset_empty);
+  if (pathname.endsWith("/dashboard-summary.json")) {
+    if (shouldUseSummaryFallback) return json(buildDashboardSummaryFromSnapshot(latestSummarySnapshot, source, source.error || "active_dataset_missing_or_empty"), { headers: corsHeaders() });
+    const summary = buildDashboardSummary(allRecords, source);
+    summary.is_fallback = false;
+    summary.summary_run_id = summary.active_run_id;
+    summary.fallback_reason = null;
+    return json(summary, { headers: corsHeaders() });
+  }
+  if (pathname.endsWith("/status.json")) {
+    if (shouldUseSummaryFallback) return json(buildStatusFromSummarySnapshot(latestSummarySnapshot, source, source.error || "active_dataset_missing_or_empty"), { headers: corsHeaders() });
     const status = buildStatus(allRecords, source);
+    status.is_fallback = false;
+    status.summary_run_id = status.active_run_id;
+    status.fallback_reason = null;
+    return json(status, { headers: corsHeaders() });
+  }
+  if (pathname.endsWith("/changes.json")) {
+    const status = shouldUseSummaryFallback
+      ? buildStatusFromSummarySnapshot(latestSummarySnapshot, source, source.error || "active_dataset_missing_or_empty")
+      : buildStatus(allRecords, source);
+    const previousVersion = searchParams.get("since") || null;
+    const previousSnapshot = previousVersion ? await fetchSummarySnapshotByRun(env, previousVersion) : null;
+    const currentSnapshot = shouldUseSummaryFallback ? latestSummarySnapshot : {
+      run_id: status.active_run_id,
+      sales_target_count: status.sales_candidate_count,
+      immediate_target_count: status.immediate_target_count,
+      opportunity_count: status.opportunity_count,
+      port_summary: buildPorts(allRecords),
+      candidate_summary: { sales_target_count: status.sales_candidate_count, immediate_target_count: status.immediate_target_count }
+    };
+    const previousPorts = new Set((previousSnapshot?.port_summary || []).map(port => port.port_code || port.port_name).filter(Boolean));
+    const currentPorts = new Set((currentSnapshot?.port_summary || []).map(port => port.port_code || port.port_name).filter(Boolean));
+    const changedPorts = [...currentPorts].filter(port => !previousPorts.has(port));
     return json({
+      dataset_version: currentSnapshot?.run_id || status.summary_run_id || status.active_run_id,
+      previous_dataset_version: previousVersion,
       active_run_id: status.active_run_id,
+      summary_run_id: status.summary_run_id || currentSnapshot?.run_id || null,
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
       record_count: status.record_count,
       target_count: status.target_count,
       immediate_target_count: status.immediate_target_count,
       opportunity_count: status.opportunity_count,
-      changed: searchParams.get("since") ? String(searchParams.get("since")) !== String(status.active_run_id || "") : false
+      new_immediate_targets: Math.max(0, Number(currentSnapshot?.immediate_target_count || 0) - Number(previousSnapshot?.immediate_target_count || 0)),
+      new_sales_candidates: Math.max(0, Number(currentSnapshot?.sales_target_count || 0) - Number(previousSnapshot?.sales_target_count || 0)),
+      removed_targets: Math.max(0, Number(previousSnapshot?.sales_target_count || 0) - Number(currentSnapshot?.sales_target_count || 0)),
+      changed_ports: changedPorts,
+      changed_operators: [],
+      is_fallback: Boolean(shouldUseSummaryFallback),
+      fallback_reason: shouldUseSummaryFallback ? status.fallback_reason : null,
+      changed: previousVersion ? String(previousVersion) !== String(currentSnapshot?.run_id || status.active_run_id || "") : false
     }, { headers: corsHeaders() });
   }
   if (pathname.endsWith("/all-collected-vessels.json")) return json(allRecords, { headers: corsHeaders() });
@@ -3634,6 +3826,23 @@ async function apiResponse(url, env) {
   }
   if (pathname.endsWith("/candidates.json")) return json(buckets.sales_candidates, { headers: corsHeaders() });
   if (pathname.endsWith("/candidates/top.json")) {
+    if (shouldUseSummaryFallback) {
+      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, source, source.error || "active_dataset_missing_or_empty");
+      return json({
+        active_run_id: summary.active_run_id,
+        summary_run_id: summary.summary_run_id,
+        is_fallback: true,
+        fallback_reason: summary.fallback_reason,
+        generated_at: summary.generated_at,
+        data_freshness: summary.data_freshness,
+        record_count: summary.record_count,
+        target_count: summary.target_count,
+        immediate_target_count: summary.immediate_target_count,
+        opportunity_count: summary.opportunity_count,
+        immediate_targets: summary.immediate_targets,
+        opportunities: summary.opportunities
+      }, { headers: corsHeaders() });
+    }
     const status = buildStatus(allRecords, source);
     return json({
     active_run_id: status.active_run_id,
@@ -3650,6 +3859,22 @@ async function apiResponse(url, env) {
   if (pathname.endsWith("/hot-candidates.json")) return json(buckets.immediate_targets, { headers: corsHeaders() });
   if (pathname.endsWith("/master/unknown-imo.json")) return json(buildUnknownImo(records), { headers: corsHeaders() });
   if (pathname.endsWith("/ports.json")) {
+    if (shouldUseSummaryFallback) {
+      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, source, source.error || "active_dataset_missing_or_empty");
+      return json({
+        active_run_id: summary.active_run_id,
+        summary_run_id: summary.summary_run_id,
+        is_fallback: true,
+        fallback_reason: summary.fallback_reason,
+        generated_at: summary.generated_at,
+        data_freshness: summary.data_freshness,
+        record_count: summary.record_count,
+        target_count: summary.target_count,
+        immediate_target_count: summary.immediate_target_count,
+        opportunity_count: summary.opportunity_count,
+        data: summary.ports
+      }, { headers: corsHeaders() });
+    }
     const status = buildStatus(allRecords, source);
     return json({
       active_run_id: status.active_run_id,

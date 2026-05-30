@@ -2987,6 +2987,25 @@ function buildScoringDiagnostics(records = []) {
     const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
     return !isDepartedRecord(v) && !isHardCandidateExcluded(v) && score >= SALES_CANDIDATE_THRESHOLD;
   }).length;
+  const candidateGenerationRows = records.filter(v => {
+    const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+    return score >= 50 && !isDepartedRecord(v) && !isHardCandidateExcluded(v);
+  });
+  const promotedCandidateRows = records.filter(v => isSalesCandidate(v) || isImmediateTarget(v));
+  const excludedCandidateRows = candidateGenerationRows
+    .filter(v => Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0) >= SALES_CANDIDATE_THRESHOLD && !isSalesCandidate(v))
+    .map((v, index) => ({
+      candidate_id: v.snapshot_id || v.port_call_id || v.port_call_identity || v.hybrid_entity_key || v.vessel_id || `excluded-${index}`,
+      vessel_name: v.vessel_name || v.name || "",
+      port_call_id: v.port_call_id || v.port_call_identity || "",
+      commercial_value_score: Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0),
+      candidate_band: v.candidate_band || v.sales_priority_band || (Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0) >= 75 ? "immediate_target_score_only" : "sales_target_score_only"),
+      exclusion_reason: commercialExclusionReason(v) || (!withinCommercialPercentile(v, 20) ? "outside_sales_top_20_percentile" : "not_promoted")
+    }));
+  const candidateExclusionReasonCounts = excludedCandidateRows.reduce((acc, row) => {
+    acc[row.exclusion_reason] = (acc[row.exclusion_reason] || 0) + 1;
+    return acc;
+  }, {});
   const percentileLogicActive = percentileRankPresentCount > 0;
   const onlyThresholdLogicActive = percentileRankMissingCount === records.length;
   const targetRatio = records.length ? Math.round((salesTargetCount / records.length) * 1000) / 10 : 0;
@@ -3025,6 +3044,11 @@ function buildScoringDiagnostics(records = []) {
     },
     total_collected: records.length,
     target_vessels_5000gt_plus: records.filter(v => Number(v.gt || v.grtg || v.intrlGrtg || 0) >= COMMERCIAL_GT_THRESHOLD).length,
+    candidate_generation_count: candidateGenerationRows.length,
+    candidate_promotion_count: promotedCandidateRows.length,
+    candidate_excluded_count: excludedCandidateRows.length,
+    excluded_candidates: excludedCandidateRows,
+    excluded_candidate_samples: excludedCandidateRows.slice(0, 50),
     ...buckets,
     review_target_threshold: REVIEW_TARGET_THRESHOLD,
     sales_candidate_threshold: SALES_CANDIDATE_THRESHOLD,
@@ -3043,7 +3067,7 @@ function buildScoringDiagnostics(records = []) {
     },
     high_score_not_promoted_count: highScoreRows.filter(v => !isSalesCandidate(v)).length,
     candidate_promotion_error: highScoreRows.some(v => !isSalesCandidate(v) && !commercialExclusionReason(v) && !v.exclusion_reason),
-    exclusion_reason_counts: exclusionReasonCounts,
+    exclusion_reason_counts: { ...exclusionReasonCounts, ...candidateExclusionReasonCounts },
     missing_gt_count: records.filter(v => !Number(v.gt || v.grtg || v.intrlGrtg || 0)).length,
     missing_imo_count: records.filter(v => !v.imo).length,
     anchorage_detected_count: records.filter(v => v.is_anchorage_waiting || hasAnchorageSignal(v) || Number(v.anchorage_hours || 0) > 0).length,
@@ -3083,6 +3107,7 @@ function buildScoringDiagnostics(records = []) {
     },
     watchlist_count: records.filter(v => !isSalesCandidate(v) && isWatchlistVessel(v)).length,
     immediate_target_count: immediateTargetCount,
+    zero_sales_target_warning: records.length > 0 && salesTargetCount === 0 ? "영업대상 후보가 생성되지 않았습니다. 후보 생성 로직 또는 기준을 확인하세요." : "",
     target_ratio: targetRatio,
     immediate_target_ratio: immediateTargetRatio,
     target_ratio_warning: targetRatio > 30 ? "영업대상 기준이 너무 넓습니다." : "",

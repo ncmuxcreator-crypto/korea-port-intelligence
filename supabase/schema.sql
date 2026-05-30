@@ -125,6 +125,28 @@ create table if not exists active_dataset_pointer (
   is_stale boolean default false
 );
 
+create table if not exists dashboard_summary_snapshots (
+  snapshot_id text primary key,
+  run_id text not null,
+  generated_at timestamptz not null,
+  status text not null default 'success',
+  is_latest_successful boolean default false,
+  record_count int default 0,
+  all_vessels_count int default 0,
+  target_vessels_count int default 0,
+  sales_target_count int default 0,
+  immediate_target_count int default 0,
+  opportunity_count int default 0,
+  watchlist_count int default 0,
+  port_count int default 0,
+  port_summary jsonb default '[]'::jsonb,
+  candidate_summary jsonb default '{}'::jsonb,
+  congestion_summary jsonb default '{}'::jsonb,
+  data_quality_summary jsonb default '{}'::jsonb,
+  source_health_summary jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
+
 create table if not exists source_collection_logs (
   source_log_id text primary key,
   run_id text,
@@ -1241,6 +1263,8 @@ create index if not exists idx_vessel_identity_candidates_collected_at on vessel
 create index if not exists idx_port_congestion_snapshots_collected_at on port_congestion_snapshots(collected_at desc);
 create index if not exists idx_data_collection_runs_status on data_collection_runs(status);
 create index if not exists idx_active_dataset_pointer_active_run_id on active_dataset_pointer(active_run_id);
+create index if not exists idx_dashboard_summary_snapshots_latest on dashboard_summary_snapshots(is_latest_successful, generated_at desc);
+create index if not exists idx_dashboard_summary_snapshots_run on dashboard_summary_snapshots(run_id);
 create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
 alter table vessel_events add column if not exists event_uid text;
@@ -1557,6 +1581,25 @@ alter table data_collection_runs add column if not exists vessel_name_match_reco
 alter table data_collection_runs add column if not exists spec_api_recovery_count int default 0;
 alter table data_collection_runs add column if not exists high_value_low_confidence_count int default 0;
 alter table data_collection_runs add column if not exists validation_status text;
+alter table dashboard_summary_snapshots add column if not exists snapshot_id text;
+alter table dashboard_summary_snapshots add column if not exists run_id text;
+alter table dashboard_summary_snapshots add column if not exists generated_at timestamptz;
+alter table dashboard_summary_snapshots add column if not exists status text default 'success';
+alter table dashboard_summary_snapshots add column if not exists is_latest_successful boolean default false;
+alter table dashboard_summary_snapshots add column if not exists record_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists all_vessels_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists target_vessels_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists sales_target_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists immediate_target_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists opportunity_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists watchlist_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists port_count int default 0;
+alter table dashboard_summary_snapshots add column if not exists port_summary jsonb default '[]'::jsonb;
+alter table dashboard_summary_snapshots add column if not exists candidate_summary jsonb default '{}'::jsonb;
+alter table dashboard_summary_snapshots add column if not exists congestion_summary jsonb default '{}'::jsonb;
+alter table dashboard_summary_snapshots add column if not exists data_quality_summary jsonb default '{}'::jsonb;
+alter table dashboard_summary_snapshots add column if not exists source_health_summary jsonb default '{}'::jsonb;
+alter table dashboard_summary_snapshots add column if not exists created_at timestamptz default now();
 alter table risk_history add column if not exists commercial_value_score int default 0;
 alter table risk_history add column if not exists data_confidence_score int default 0;
 alter table vessel_master add column if not exists vessel_type_group text;
