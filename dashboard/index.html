@@ -97,6 +97,12 @@ th{position:sticky;top:0;background:#0b1220;color:#93c5fd;font-size:12px;z-index
       <select id="pageSizeSelect"><option value="50">50개</option><option value="100">100개</option><option value="200">200개</option></select>
       <button id="reloadBtn" type="button">새로고침</button>
     </div>
+    <div id="updateBanner" class="notice" style="display:none">
+      <strong>새로운 데이터 수집 완료</strong><br>
+      주요 수치가 자동 갱신되었습니다. 전체 선박 목록을 새 데이터로 갱신하려면 클릭하세요.
+      <button id="refreshTableBtn" type="button">목록 갱신</button>
+    </div>
+    <div id="tableStaleNotice" class="small" style="display:none">목록은 이전 데이터 기준입니다. 새 목록으로 갱신하려면 클릭하세요.</div>
     <div class="panel">
       <div class="ph">
         <div><strong id="tableTitle">영업대상선박</strong><div class="small" id="tableSub">상업 가치와 작업 가능성을 기준으로 선별된 영업 후보 선박입니다.</div></div>
@@ -134,9 +140,11 @@ th{position:sticky;top:0;background:#0b1220;color:#93c5fd;font-size:12px;z-index
 </div>
 
 <script>
-const state={status:null,ports:[],portOpportunities:[],targets:[],all:[],immediate:[],opportunities:[],cleaning:[],congestion:[],group:"target",page:1,pageSize:50,total:0,totalPages:1,sort:{key:"commercial_value_score",dir:"desc"}};
+const state={status:null,ports:[],portOpportunities:[],targets:[],all:[],immediate:[],opportunities:[],cleaning:[],congestion:[],group:"target",page:1,pageSize:50,total:0,totalPages:1,sort:{key:"commercial_value_score",dir:"desc"},currentSummaryRunId:null,currentTableRunId:null,latestActiveRunId:null,tablesStale:false};
 const api=p=>fetch(p,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
 const arr=v=>Array.isArray(v)?v:(Array.isArray(v?.data)?v.data:(Array.isArray(v?.vessels)?v.vessels:(Array.isArray(v?.candidates)?v.candidates:[])));
+const runIdFrom=p=>p?.active_run_id||p?.status?.active_run_id||p?.source_runtime?.active_run_id||p?.status?.source_runtime?.active_run_id||null;
+function setTableStale(stale){state.tablesStale=stale;const banner=document.getElementById("updateBanner");const notice=document.getElementById("tableStaleNotice");if(banner)banner.style.display=stale?"block":"none";if(notice)notice.style.display=stale?"block":"none"}
 const n=v=>Number.isFinite(Number(v))?Number(v):0;
 const fmt=v=>Number.isFinite(Number(v))?Number(v).toLocaleString("ko-KR"):"-";
 const text=(...vals)=>vals.find(v=>v!==undefined&&v!==null&&String(v).trim()!=="")||"-";
@@ -174,14 +182,19 @@ function renderDiagnostics(){const s=state.status||{};const d=s.collector_diagno
 function renderDetail(v){document.getElementById("detailBand").className=`chip ${band(v)[1]}`;document.getElementById("detailBand").textContent=band(v)[0];document.getElementById("detail").innerHTML=`<h3 style="margin:0 0 8px">${vesselTitle(v)}</h3><div class="kv"><span class="k">항만</span><span>${portDisplayName(v)}</span><span class="k">상태</span><span>${statusBucket(v)}</span><span class="k">운영선사</span><span>${operatorDisplay(v)}</span><span class="k">대리점</span><span>${agentDisplay(v)}</span><span class="k">선종</span><span>${vesselTypeKo(v)}</span><span class="k">GT</span><span>${fmt(gt(v))}</span><span class="k">상업 가치</span><span>${fmt(score(v))}</span><span class="k">작업창</span><span>${workWindow(v)}</span><span class="k">왜 지금</span><span>${whyNow(v)}</span><span class="k">추천 행동</span><span>${nextAction(v)}</span></div>`}
 function bindClicks(){document.querySelectorAll("[data-key]").forEach(el=>el.onclick=()=>{const key=el.getAttribute("data-key");const pool=[...state.targets,...state.all,...state.immediate,...state.cleaning];const v=pool.find(x=>vesselKey(x)===key);if(v)renderDetail(v)})}
 function renderAll(){renderMetrics();renderPortOpportunities();renderPorts();renderImmediate();renderCleaning();renderTable();renderCongestion();renderDiagnostics();bindClicks();document.getElementById("targetTabCount").textContent=fmt(state.targets.length);document.getElementById("allTabCount").textContent=fmt(state.status?.all_collected_vessel_count||state.all.length)}
-async function loadVessels(group=state.group,page=1){state.group=group;state.page=page;const payload=await api(`/api/vessels?group=${encodeURIComponent(group)}&page=${page}&pageSize=${state.pageSize}&sort=commercial_value_score&dir=desc`);const rows=arr(payload);state.total=n(payload?.total)||rows.length;state.totalPages=n(payload?.totalPages)||1;if(group==="all")state.all=rows;else state.targets=rows;renderAll()}
-async function load(){const summary=await api("/api/dashboard-summary.json")||{};state.status=summary.status||{};state.ports=arr(summary.ports);state.portOpportunities=arr(summary.port_opportunities);state.immediate=arr(summary.immediate_targets);state.opportunities=arr(summary.opportunities);state.cleaning=arr(summary.predicted_cleaning_opportunities);state.congestion=arr(summary.congestion_summary);state.targets=[...state.immediate,...state.opportunities,...state.cleaning];renderAll();await loadVessels("target",1)}
+async function loadVessels(group=state.group,page=1){state.group=group;state.page=page;const payload=await api(`/api/vessels?group=${encodeURIComponent(group)}&page=${page}&pageSize=${state.pageSize}&sort=commercial_value_score&dir=desc`);const rows=arr(payload);state.total=n(payload?.total)||rows.length;state.totalPages=n(payload?.totalPages)||1;if(group==="all")state.all=rows;else state.targets=rows;state.currentTableRunId=runIdFrom(payload)||state.latestActiveRunId||state.currentSummaryRunId;setTableStale(state.currentSummaryRunId&&state.currentTableRunId&&state.currentSummaryRunId!==state.currentTableRunId);renderAll()}
+function applySummary(summary={},top={},portsPayload={}){state.status=summary.status||state.status||{};state.ports=arr(portsPayload).length?arr(portsPayload):arr(summary.ports);state.portOpportunities=arr(summary.port_opportunities);state.immediate=arr(top.immediate_targets).length?arr(top.immediate_targets):arr(summary.immediate_targets);state.opportunities=arr(top.opportunities).length?arr(top.opportunities):arr(summary.opportunities);state.cleaning=arr(summary.predicted_cleaning_opportunities);state.congestion=arr(summary.congestion_summary);state.currentSummaryRunId=runIdFrom(summary)||runIdFrom(top)||runIdFrom(portsPayload)||state.currentSummaryRunId;state.latestActiveRunId=state.currentSummaryRunId;state.targets=[...state.immediate,...state.opportunities,...state.cleaning];renderAll()}
+async function refreshLightweightSummary(markStale=false){const [summary,status,changes,top,ports]=await Promise.all([api("/api/dashboard-summary.json"),api("/api/status.json"),api(`/api/changes.json?since=${encodeURIComponent(state.currentSummaryRunId||"")}`),api("/api/candidates/top.json"),api("/api/ports.json")]);if(summary){summary.status={...(summary.status||{}),...(status||{})};applySummary(summary,top||{},ports||{});if(markStale||changes?.changed){setTableStale(true)}}}
+async function load(){await refreshLightweightSummary(false);await loadVessels("target",1);state.currentTableRunId=state.currentSummaryRunId;setTableStale(false)}
+async function pollForDatasetChange(){const status=await api("/api/status.json");const latest=runIdFrom(status);if(latest&&state.currentSummaryRunId&&latest!==state.currentSummaryRunId){await refreshLightweightSummary(true)}else if(!state.currentSummaryRunId&&latest){await refreshLightweightSummary(false)}}
 ["searchBox","portFilter","statusFilter","gtFilter"].forEach(id=>document.getElementById(id).addEventListener("input",()=>{renderTable();bindClicks()}));
 document.getElementById("targetTab").onclick=()=>loadVessels("target",1);
 document.getElementById("allTab").onclick=()=>loadVessels("all",1);
 document.getElementById("pageSizeSelect").onchange=e=>{state.pageSize=n(e.target.value)||50;loadVessels(state.group,1)};
 document.getElementById("reloadBtn").onclick=load;
+document.getElementById("refreshTableBtn").onclick=async()=>{await loadVessels(state.group,1);state.currentTableRunId=state.currentSummaryRunId;setTableStale(false)};
 load();
+setInterval(pollForDatasetChange,60000);
 </script>
 </body>
 </html>
