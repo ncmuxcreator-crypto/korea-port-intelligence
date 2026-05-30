@@ -977,6 +977,101 @@ async function fetchPagedRows(source, rowLimit, deadline = Infinity) {
   };
 }
 
+function smokeFailureReason(error = {}) {
+  if (error.failure_reason) return error.failure_reason;
+  if (error.http_status) return `smoke_http_status_${error.http_status}`;
+  const message = String(error?.message || "unknown_error").trim();
+  return message ? `smoke_${message.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").toLowerCase()}` : "smoke_unknown_error";
+}
+
+async function runPortOperationSmokeTest(sources = []) {
+  const source = sources.find(candidate =>
+    String(candidate.key || "").startsWith("port_operation_") &&
+    String(candidate.portTier || candidate.tier || "") === "1"
+  ) || sources.find(candidate => String(candidate.key || "").startsWith("port_operation_"));
+  const startedAt = new Date().toISOString();
+  if (!source) {
+    return {
+      smoke_test_status: "failed",
+      smoke_test_failure_reason: "smoke_no_port_operation_source_available",
+      started_at: startedAt,
+      finished_at: new Date().toISOString()
+    };
+  }
+  try {
+    const response = await fetchText(source, { pageNo: "1", numOfRows: "1" });
+    let rows = [];
+    try {
+      rows = parseRows(response.text, 1);
+    } catch (parseError) {
+      parseError.failure_reason = "smoke_parse_failed";
+      throw parseError;
+    }
+    const resultCode = response.result_meta?.resultCode !== undefined
+      ? String(response.result_meta.resultCode).trim()
+      : null;
+    const resultMsg = response.result_meta?.resultMsg || null;
+    if (resultCode && !["0", "00", "000", "NORMAL_CODE", "INFO-000"].includes(resultCode.toUpperCase())) {
+      const error = new Error(`Port Operation smoke test API resultCode ${resultCode}: ${resultMsg || "unknown"}`);
+      error.failure_reason = `smoke_api_result_code_${resultCode}`;
+      error.http_status = response.http_status;
+      throw error;
+    }
+    const totalCount = response.result_meta?.totalCount !== undefined
+      ? Number(response.result_meta.totalCount)
+      : null;
+    const validEmptyResponse = rows.length === 0 &&
+      (totalCount === 0 || /<response\b|<body\b|^{|\[/i.test(String(response.text || "").trim()));
+    if (rows.length === 0 && !validEmptyResponse) {
+      const error = new Error("Port Operation smoke test returned an invalid empty response.");
+      error.failure_reason = "smoke_empty_response_invalid";
+      error.http_status = response.http_status;
+      throw error;
+    }
+    const finishedAt = new Date().toISOString();
+    return {
+      smoke_test_status: "passed",
+      smoke_test_failure_reason: null,
+      started_at: startedAt,
+      finished_at: finishedAt,
+      duration_ms: Math.max(0, new Date(finishedAt).getTime() - new Date(startedAt).getTime()),
+      source_name: source.key,
+      label: source.label,
+      prtAgCd: source.prtAgCd || null,
+      port_code: source.portCode || null,
+      port_name: source.portName || null,
+      deGb: source.defaultParams?.deGb || null,
+      http_status: response.http_status,
+      latency_ms: response.latency_ms,
+      item_count: rows.length,
+      total_count: Number.isFinite(totalCount) ? totalCount : null,
+      valid_empty_response: validEmptyResponse,
+      result_meta: response.result_meta || {},
+      requested_url_without_service_key: maskServiceKey(response.url),
+      service_key_variant: response.service_key_variant || null,
+      retry_count: response.retry_count || 0
+    };
+  } catch (error) {
+    const finishedAt = new Date().toISOString();
+    return {
+      smoke_test_status: "failed",
+      smoke_test_failure_reason: smokeFailureReason(error),
+      error_message: error?.message || String(error),
+      started_at: startedAt,
+      finished_at: finishedAt,
+      duration_ms: Math.max(0, new Date(finishedAt).getTime() - new Date(startedAt).getTime()),
+      source_name: source.key,
+      label: source.label,
+      prtAgCd: source.prtAgCd || null,
+      port_code: source.portCode || null,
+      port_name: source.portName || null,
+      deGb: source.defaultParams?.deGb || null,
+      http_status: error?.http_status || null,
+      response_preview: error?.response_text || null
+    };
+  }
+}
+
 function normalizeStatus(value) {
   const text = String(value || "").trim();
   if (/berth|alongside|moored/i.test(text)) return "At Berth";
@@ -1781,7 +1876,68 @@ async function collectRealRows() {
   }
 
   const debugOnly = env("COLLECTOR_DEBUG_ONLY");
-  for (const source of allSourceConfigs().filter(source => !debugOnly || source.key === debugOnly)) {
+  const configuredSources = allSourceConfigs();
+  const smokeTest = await runPortOperationSmokeTest(configuredSources);
+  diagnostics.port_operation_smoke_test = smokeTest;
+  diagnostics.smoke_test_status = smokeTest.smoke_test_status;
+  diagnostics.smoke_test_failure_reason = smokeTest.smoke_test_failure_reason || null;
+  if (smokeTest.smoke_test_status !== "passed") {
+    diagnostics.fallback_used = true;
+    diagnostics.skip_reason = "unknown_error";
+    diagnostics.attempted_count = 1;
+    diagnostics.failed_count = 1;
+    diagnostics.skipped_count = preflight.enabled_ports_passed_to_collector_count * Math.max(1, preflight.deGb_values.length);
+    diagnostics.sources = [
+      {
+        key: "port_operation_smoke_test",
+        source_name: "port_operation_smoke_test",
+        label: "Port Operation smoke test",
+        source_profile: "schedule_or_berth",
+        attempted: true,
+        skipped: false,
+        success: false,
+        status: "failed",
+        started_at: smokeTest.started_at || now,
+        finished_at: smokeTest.finished_at || new Date().toISOString(),
+        duration_ms: smokeTest.duration_ms || 0,
+        row_count: 0,
+        normalized_count: 0,
+        rows_collected: 0,
+        rows_normalized: 0,
+        rows_matched: 0,
+        retry_count: smokeTest.retry_count || 0,
+        error_message: smokeTest.error_message || smokeTest.smoke_test_failure_reason,
+        smoke_test_status: smokeTest.smoke_test_status,
+        smoke_test_failure_reason: smokeTest.smoke_test_failure_reason,
+        http_status: smokeTest.http_status || null,
+        prtAgCd: smokeTest.prtAgCd || null
+      },
+      ...preflight.planned_port_operation_sources.map(source => ({
+        ...source,
+        started_at: now,
+        finished_at: now,
+        duration_ms: 0,
+        status: "skipped",
+        success: false,
+        row_count: 0,
+        normalized_count: 0,
+        rows_collected: 0,
+        rows_normalized: 0,
+        rows_matched: 0,
+        actionable_count: 0,
+        retry_count: 0,
+        skip_reason: "unknown_error",
+        reason: "unknown_error",
+        raw_skip_reason: smokeTest.smoke_test_failure_reason
+      }))
+    ];
+    diagnostics.coverage.port_operation_skip_reason_breakdown = { unknown_error: preflight.planned_port_operation_sources.length };
+    const error = new Error(`Port Operation smoke test failed: ${smokeTest.smoke_test_failure_reason}`);
+    error.smoke_test = smokeTest;
+    throw error;
+  }
+
+  for (const source of configuredSources.filter(source => !debugOnly || source.key === debugOnly)) {
     const diag = {
       key: source.key,
       label: source.label,

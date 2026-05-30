@@ -72,7 +72,10 @@ const report = {
     enabled_ports_passed_to_collector_count: Number(diagnostics.port_operation_collection_plan?.enabled_ports_passed_to_collector_count || 0),
     ports_attempted_count: Number(diagnostics.coverage?.ports_attempted_count || diagnostics.ports_attempted_count || 0),
     ports_skipped_reason: diagnostics.port_operation_collection_plan?.ports_skipped_reason || diagnostics.skip_reason || null,
-    first_5_ports_to_attempt: diagnostics.port_operation_collection_plan?.first_5_ports_to_attempt || []
+    first_5_ports_to_attempt: diagnostics.port_operation_collection_plan?.first_5_ports_to_attempt || [],
+    smoke_test_status: diagnostics.smoke_test_status || diagnostics.port_operation_smoke_test?.smoke_test_status || null,
+    smoke_test_failure_reason: diagnostics.smoke_test_failure_reason || diagnostics.port_operation_smoke_test?.smoke_test_failure_reason || null,
+    smoke_test: diagnostics.port_operation_smoke_test || null
   },
   preflight: diagnostics.preflight || null,
   preflight_status: diagnostics.preflight_status || null,

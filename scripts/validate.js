@@ -309,6 +309,12 @@ for (const source of status.collector_diagnostics.sources || []) {
 if (status.data_mode === "no_live_data" && !status.preflight_failure_reason && status.collector_diagnostics.preflight_status === "failed") {
   throw new Error("No-live-data preflight failures must expose preflight_failure_reason");
 }
+if (status.collector_diagnostics.smoke_test_status === "failed" && !status.collector_diagnostics.smoke_test_failure_reason) {
+  throw new Error("Failed Port Operation smoke test must expose smoke_test_failure_reason");
+}
+if (status.collector_diagnostics.port_operation_smoke_test?.smoke_test_status === "failed" && !status.collector_diagnostics.port_operation_smoke_test?.smoke_test_failure_reason) {
+  throw new Error("Port Operation smoke test diagnostics must include exact failure reason");
+}
 if (!status.commercial_command_center || !Array.isArray(status.port_congestion_heatmap) || !Array.isArray(status.biofouling_timeline)) {
   throw new Error("Missing commercial command-center frontend outputs");
 }
@@ -317,9 +323,10 @@ if (typeof status.actionable_rows !== "number" || typeof status.collector_diagno
 }
 if (status.collector_diagnostics?.fallback_used) {
   const preflightFailed = status.collector_diagnostics?.preflight_status === "failed";
-  const allowedStatus = status.status === "degraded_sample_only" || (preflightFailed && status.status === "failed");
+  const smokeFailed = status.collector_diagnostics?.smoke_test_status === "failed";
+  const allowedStatus = status.status === "degraded_sample_only" || ((preflightFailed || smokeFailed) && status.status === "failed");
   if (status.data_mode !== "no_live_data" || !allowedStatus) {
-    throw new Error("Collector fallback must publish no_live_data with degraded_sample_only status or failed preflight status");
+    throw new Error("Collector fallback must publish no_live_data with degraded_sample_only status, failed preflight status, or failed smoke-test status");
   }
 }
 for (const forbidden of ["MV HF ZHOUSHAN", "MAERSK DEMO", "YEOSU TARGET", "integrated_vts_sample", "sample_snapshot"]) {
