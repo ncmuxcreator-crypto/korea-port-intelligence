@@ -583,6 +583,16 @@ function lifecycleKey(record = {}) {
   return `NAME|${portCode}|${normalizeVesselName(record.vessel_name)}`;
 }
 
+function buildPortCallId(record = {}) {
+  if (record.port_call_id) return record.port_call_id;
+  const portCode = record.port_code || record.port || "";
+  const explicitIdentity = record.port_call_identity || record.port_call_key || record.raw_port_call_identity;
+  if (explicitIdentity) return stableEntityId("PCALL", `${portCode}-${explicitIdentity}`);
+  const vesselIdentity = record.master_vessel_id || record.hybrid_entity_key || record.imo || record.mmsi || record.call_sign || normalizeVesselName(record.vessel_name);
+  const arrivalKey = record.ata || record.eta || record.etryptDt || record.etryptYear || record.collected_at || "";
+  return stableEntityId("PCALL", `${portCode}-${vesselIdentity}-${arrivalKey}`);
+}
+
 function isAnchorageState(record = {}) {
   const facility = String(record.facility_type || "").toLowerCase();
   const status = String(record.status_bucket || record.status || "").toLowerCase();
@@ -610,7 +620,7 @@ async function fetchPreviousSnapshotMap(supabase) {
   try {
     const { data, error } = await supabase
       .from("vessel_snapshots")
-      .select("hybrid_entity_key,vessel_id,port_call_identity,port_code,port,berth_name,anchorage_name,facility_type,status_bucket,status,ata,atd,etd,pilot_time,pilot_direction,movement_type,stay_hours,anchorage_hours,collected_at")
+      .select("hybrid_entity_key,vessel_id,port_call_id,port_call_identity,port_code,port,berth_name,anchorage_name,facility_type,status_bucket,status,ata,atd,etd,pilot_time,pilot_direction,movement_type,stay_hours,anchorage_hours,collected_at")
       .order("collected_at", { ascending: false })
       .limit(Number(process.env.EVENT_PREVIOUS_SNAPSHOT_LIMIT || 5000));
     if (error) return new Map();
@@ -632,7 +642,7 @@ function eventRow(record, runId, now, type, eventTime, confidence, reason, previ
     master_vessel_id: fallbackMasterId(record),
     run_id: runId,
     vessel_id: record.vessel_id || null,
-    port_call_id: record.port_call_identity || record.port_call_key || null,
+    port_call_id: buildPortCallId(record),
     event_type: type,
     event_time: eventTime || now,
     port_code: record.port_code || null,
@@ -850,6 +860,7 @@ export async function saveToSupabase(records, options = {}) {
     global_percentile: r.global_percentile || null,
     port_rank: r.port_rank || null,
     port_percentile: r.port_percentile || null,
+    port_call_id: buildPortCallId(r),
     port_call_identity: r.port_call_identity || r.port_call_key || null,
     sub_port: r.sub_port || null,
     source_confidence_score: Number(r.source_confidence_score || r.data_confidence_score || r.data_quality_score || 0),
@@ -887,6 +898,56 @@ export async function saveToSupabase(records, options = {}) {
       .insert(batch);
     if (error) throw error;
     recordsSaved += batch.length;
+  }
+
+  const portCallMasterRows = uniqueBy(records
+    .filter(r => r.port_code || r.port)
+    .map(r => ({
+      port_call_id: buildPortCallId(r),
+      run_id: runId,
+      master_vessel_id: fallbackMasterId(r),
+      hybrid_entity_key: r.hybrid_entity_key || r.vessel_id || null,
+      port_call_identity: r.port_call_identity || r.port_call_key || null,
+      vessel_name: r.vessel_name || null,
+      call_sign: r.call_sign || null,
+      imo: r.imo || null,
+      mmsi: r.mmsi || null,
+      port_code: r.port_code || r.port || null,
+      port_name: r.port_name || r.port || null,
+      sub_port: r.sub_port || null,
+      arrival: r.ata || r.eta || null,
+      departure: r.atd || r.etd || null,
+      eta: r.eta || null,
+      etd: r.etd || null,
+      berth: r.berth || r.berth_name || null,
+      berth_name: r.berth_name || r.berth || null,
+      terminal: r.terminal || r.terminal_name || null,
+      terminal_name: r.terminal_name || r.terminal || null,
+      anchorage_name: r.anchorage_name || r.anchorage_zone || null,
+      operator: r.operator || r.operator_name || null,
+      operator_name: r.operator_name || r.operator || null,
+      operator_normalized: r.operator_normalized || normalizeCompanyName(r.operator_name || r.operator) || null,
+      agent: r.agent || r.agent_name || r.satmntEntrpsNm || r.entrpsCdNm || null,
+      agent_name: r.agent_name || r.agent || r.satmntEntrpsNm || r.entrpsCdNm || null,
+      agent_normalized: r.agent_normalized || normalizeCompanyName(r.agent_name || r.agent || r.satmntEntrpsNm || r.entrpsCdNm) || null,
+      status_bucket: r.status_bucket || r.status || null,
+      commercial_value_score: Number(r.commercial_value_score || r.total_sales_priority_score || 0),
+      candidate_band: r.candidate_band || r.sales_priority_band || "general",
+      work_feasibility_score: Number(r.work_feasibility_score || 0),
+      contact_readiness_score: Number(r.contact_readiness_score || 0),
+      last_seen: now,
+      payload: storagePayload({
+        ...r,
+        port_call_master_role: "unique_port_visit_commercial_opportunity"
+      })
+    })), row => row.port_call_id);
+
+  for (let index = 0; index < portCallMasterRows.length; index += batchSize) {
+    const batch = portCallMasterRows.slice(index, index + batchSize);
+    const { error } = await supabase
+      .from("port_call_master")
+      .upsert(batch, { onConflict: "port_call_id" });
+    if (error) throw error;
   }
 
   const entities = records.map(r => ({

@@ -125,6 +125,49 @@ create table if not exists active_dataset_pointer (
   is_stale boolean default false
 );
 
+create table if not exists port_call_master (
+  port_call_id text primary key,
+  run_id text,
+  master_vessel_id text,
+  hybrid_entity_key text,
+  port_call_identity text,
+  vessel_name text,
+  call_sign text,
+  imo text,
+  mmsi text,
+  port_code text not null,
+  port_name text,
+  sub_port text,
+  arrival timestamptz,
+  departure timestamptz,
+  eta timestamptz,
+  etd timestamptz,
+  berth text,
+  berth_name text,
+  terminal text,
+  terminal_name text,
+  anchorage_name text,
+  operator text,
+  operator_name text,
+  operator_normalized text,
+  agent text,
+  agent_name text,
+  agent_normalized text,
+  status_bucket text,
+  commercial_value_score int default 0,
+  candidate_band text,
+  work_feasibility_score int default 0,
+  contact_readiness_score int default 0,
+  first_seen timestamptz default now(),
+  last_seen timestamptz default now(),
+  payload jsonb default '{}'::jsonb
+);
+
+create index if not exists idx_port_call_master_port on port_call_master(port_code);
+create index if not exists idx_port_call_master_master_vessel on port_call_master(master_vessel_id);
+create index if not exists idx_port_call_master_last_seen on port_call_master(last_seen desc);
+create index if not exists idx_port_call_master_score on port_call_master(commercial_value_score desc);
+
 create index if not exists idx_port_calls_collected_at on port_calls(collected_at desc);
 create index if not exists idx_port_calls_port on port_calls(port);
 create index if not exists idx_port_calls_risk_score on port_calls(risk_score desc);
@@ -262,7 +305,9 @@ alter table vessel_snapshots add column if not exists data_quality_score int def
 alter table vessel_snapshots add column if not exists data_quality_band text;
 alter table vessel_snapshots add column if not exists source_confidence_score int default 0;
 alter table vessel_snapshots add column if not exists port_call_identity text;
+alter table vessel_snapshots add column if not exists port_call_id text;
 alter table vessel_snapshots add column if not exists sub_port text;
+create index if not exists idx_vessel_snapshots_port_call_id on vessel_snapshots(port_call_id);
 create index if not exists idx_vessel_snapshots_date on vessel_snapshots(snapshot_date desc);
 create index if not exists idx_vessel_snapshots_port_call_identity on vessel_snapshots(port_call_identity);
 
