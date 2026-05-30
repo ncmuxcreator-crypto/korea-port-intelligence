@@ -1,6 +1,6 @@
 ﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
-import { createRunId, enrichWithVesselMasterCache, saveToSupabase } from "./lib/db.js";
+import { createRunId, enrichWithVesselMasterCache, recordRawArchiveIndex, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
@@ -2103,6 +2103,7 @@ let errorMessage = null;
 let supabaseStatus = "not_configured";
 let supabaseWrite = { status: "not_configured" };
 let gdriveArchive = { status: "not_configured" };
+let rawArchiveIndex = { status: "not_indexed" };
 let vessels = [];
 let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
@@ -4174,13 +4175,36 @@ try {
       supabaseWrite
     });
     gdriveArchive = await archiveRawToGDrive(rawArchivePayload, { namePrefix: "hwk-port-raw" });
+    rawArchiveIndex = await recordRawArchiveIndex({
+      runId,
+      archive: gdriveArchive,
+      generatedAt: completedAt,
+      counts: {
+        raw_records: collectedRows.length,
+        normalized_records: allCollectedVessels.length,
+        target_records: targetVessels.length
+      }
+    });
   } catch (archiveError) {
     gdriveArchive = { status: "failed", error: archiveError?.message || String(archiveError) };
+    rawArchiveIndex = { status: "skipped", reason: "archive_failed" };
+  }
+  if (supabaseWrite?.status === "synced") {
+    supabaseWrite = {
+      ...supabaseWrite,
+      raw_payload_archive_status: gdriveArchive.status,
+      raw_archive_index_status: rawArchiveIndex.status,
+      raw_payloads_archived_to_gdrive: gdriveArchive.status === "uploaded" ? collectedRows.length : 0,
+      raw_payloads_db_insert_blocked: collectedRows.length
+    };
+    report.supabase_write = supabaseWrite;
   }
   report.gdrive_archive = gdriveArchive;
+  report.raw_archive_index = rawArchiveIndex;
   report.storage_status = {
     supabase: supabaseWrite,
-    gdrive: gdriveArchive
+    gdrive: gdriveArchive,
+    raw_archive_index: rawArchiveIndex
   };
 
   fs.writeFileSync("dashboard/api/all-collected-vessels.json", JSON.stringify(allCollectedVessels, null, 2));
