@@ -4090,8 +4090,8 @@ try {
     gdrive_archive: gdriveArchive,
     frontend_poll_interval_seconds: 900,
     collection_schedule: {
-      github_actions_cron: "0 */6 * * *",
-      meaning: "GitHub Actions collects public data every 6 hours or when manually triggered. The dashboard reads generated JSON files; it does not collect APIs every 30 seconds.",
+      github_actions_cron: "0 */4 * * *",
+      meaning: "GitHub Actions collects public data every 4 hours or when manually triggered. The dashboard reads the latest successful Supabase snapshot first and does not collect source APIs in the browser.",
       expected_collection_runtime_minutes: "3-12",
       per_source_timeout_seconds: Math.round(Number(process.env.SOURCE_TIMEOUT_MS || 25000) / 1000)
     },

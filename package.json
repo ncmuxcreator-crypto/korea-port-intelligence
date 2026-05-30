@@ -14,6 +14,7 @@
     "gdrive:check": "node scripts/gdrive-check.js",
     "doctor": "node scripts/doctor.js",
     "candidate:audit": "node scripts/candidate-audit.js",
+    "vessel:audit": "node scripts/vessel-universe-audit.js",
     "coverage:audit": "node scripts/coverage-audit.js",
     "health": "npm run doctor && npm run candidate:audit && npm run coverage:audit && npm run risk:calibrate && npm run candidate:explain && npm run snapshot:guard && npm run source:health && npm run candidate:dedupe && npm run candidate:window && npm run collector:plan && npm run pipeline:sla && npm run candidate:daily && npm run readiness:gate && npm run candidate:confidence && npm run snapshot:diff",
     "risk:calibrate": "node scripts/risk-calibrate.js",
