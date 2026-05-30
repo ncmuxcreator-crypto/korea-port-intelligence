@@ -1,10 +1,21 @@
 {
-  "ok": true,
-  "checkedAt": "2026-05-27T04:43:34.377Z",
+  "ok": false,
+  "checked_at": "2026-05-30T13:27:35.076Z",
+  "files_exist": true,
+  "files_have_rows": false,
+  "record_count": 0,
+  "vessel_rows": 0,
+  "candidate_count": 0,
+  "candidate_rows": 0,
+  "data_mode": "no_live_data",
+  "data_status": "empty_dataset",
+  "production_ready": false,
   "files": {
     "package.json": "ok",
     ".github/workflows/longterm-update.yml": "ok",
+    "dashboard/api/status.json": "ok",
     "dashboard/api/vessels.json": "ok",
+    "dashboard/api/candidates.json": "ok",
     "dashboard/api/candidate-summary.json": "ok",
     "dashboard/api/coverage-registry.json": "ok"
   },
@@ -18,5 +29,13 @@
     "VESSEL_SPEC_SERVICE_KEY": "missing_or_not_in_ci",
     "PORT_OPERATION_SERVICE_KEY": "missing_or_not_in_ci"
   },
-  "notes": []
+  "notes": [
+    "vessels.json/status.json indicate an empty dataset.",
+    "Backend is not production-ready from static JSON outputs. Use Worker/Supabase active dataset if available."
+  ],
+  "failure_reasons": [
+    "empty_dataset",
+    "status_record_count_zero",
+    "data_mode_no_live_data"
+  ]
 }

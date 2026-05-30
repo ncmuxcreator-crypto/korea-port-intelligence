@@ -140,6 +140,18 @@ for (const vessel of vessels) {
 
 
 const status = JSON.parse(fs.readFileSync("dashboard/api/status.json", "utf8"));
+if (fs.existsSync("dashboard/api/backend-doctor.json")) {
+  const doctor = JSON.parse(fs.readFileSync("dashboard/api/backend-doctor.json", "utf8"));
+  if (doctor.files_have_rows === false && doctor.ok === true) {
+    throw new Error("Backend doctor must not return ok=true for empty vessel data");
+  }
+  if (Number(doctor.record_count || 0) === 0 && doctor.production_ready === true) {
+    throw new Error("Backend doctor must not mark record_count=0 as production_ready");
+  }
+  if (Number(doctor.record_count || 0) === 0 && doctor.data_status !== "empty_dataset") {
+    throw new Error("Backend doctor must mark record_count=0 as empty_dataset");
+  }
+}
 if (!status.candidate_ops || !status.backend_health || !status.seven_pack_summary) {
   throw new Error("Missing stability bundle outputs");
 }
