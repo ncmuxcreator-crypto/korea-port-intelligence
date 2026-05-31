@@ -69,6 +69,7 @@ const workerSource = fs.readFileSync("src/worker.js", "utf8");
 const dbSource = fs.readFileSync("scripts/lib/db.js", "utf8");
 const updateSource = fs.readFileSync("scripts/update.js", "utf8");
 const dashboardSource = fs.readFileSync("dashboard/index.html", "utf8");
+const publicDashboardSource = fs.readFileSync("public/index.html", "utf8");
 
 const allVessels = rows(allVesselsPayload);
 const targetVessels = rows(targetVesselsPayload);
@@ -99,6 +100,11 @@ assert(
     dashboardSource.includes("최근 갱신 시간 확인 불가") &&
     dashboardSource.includes("setTimeout(()=>{if(!currentLastUpdatedAt())setLastUpdatedBadge()},5000)"),
   "Dashboard must normalize last-updated fields and stop showing infinite loading after 5 seconds."
+);
+assert(
+  publicDashboardSource.includes("function getLastUpdatedAt(payload)") &&
+    publicDashboardSource.includes("최근 갱신 시간 확인 불가"),
+  "Deployed public dashboard must include the same last-updated fallback logic as dashboard/index.html."
 );
 assert(
   updateSource.includes('"dashboard/api/health.json"') &&
