@@ -4685,7 +4685,7 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
-    if (latestSummarySnapshot) {
+    if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
       const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
