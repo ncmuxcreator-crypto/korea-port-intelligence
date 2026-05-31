@@ -2024,6 +2024,22 @@ async function fetchLatestSummarySnapshot(env) {
   const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&status=eq.success&order=generated_at.desc&limit=10");
   if (!response.ok || !response.rows.length) return null;
   const latest = response.rows[0];
+  const commercialCount = row => Number(row?.sales_target_count || row?.opportunity_count || row?.immediate_target_count || 0);
+  const bestCommercial = response.rows
+    .filter(row => commercialCount(row) > 0)
+    .sort((a, b) =>
+      commercialCount(b) - commercialCount(a) ||
+      Number(b.all_vessels_count || b.record_count || 0) - Number(a.all_vessels_count || a.record_count || 0)
+    )[0];
+  if (bestCommercial && commercialCount(latest) === 0) {
+    return {
+      ...bestCommercial,
+      fallback_reason: "latest_summary_sales_target_drop_guard",
+      guarded_latest_run_id: latest.run_id,
+      guarded_latest_sales_target_count: Number(latest.sales_target_count || 0),
+      guarded_reference_sales_target_count: Number(bestCommercial.sales_target_count || bestCommercial.opportunity_count || 0)
+    };
+  }
   const bestRecent = response.rows
     .slice()
     .sort((a, b) => Number(b.all_vessels_count || b.record_count || 0) - Number(a.all_vessels_count || a.record_count || 0))[0];
