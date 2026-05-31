@@ -134,6 +134,10 @@ function jsonRows(value) {
   return [];
 }
 
+const vesselRows = jsonRows(vessels);
+const allCollectedRows = jsonRows(allCollectedVessels);
+const targetRows = jsonRows(targetVessels);
+
 function statusText(value) {
   return String(value || "").toLowerCase();
 }
@@ -175,10 +179,10 @@ const successfulPortOperationSources = collectorSources.filter(source =>
 );
 const vesselGroupValidation = {
   all_collected_vessels_exists: outputExists("dashboard/api/all-collected-vessels.json"),
-  all_collected_vessels_count: jsonRows(allCollectedVessels).length,
+  all_collected_vessels_count: allCollectedRows.length,
   target_vessels_exists: outputExists("dashboard/api/target-vessels.json"),
-  target_vessels_count: jsonRows(targetVessels).length,
-  vessels_json_count: jsonRows(vessels).length,
+  target_vessels_count: targetRows.length,
+  vessels_json_count: vesselRows.length,
   successful_port_operation_source_count: successfulPortOperationSources.length,
   validation_mode: validationMode
 };
@@ -275,7 +279,7 @@ if (report.data_mode === "no_live_data" && (report.record_count !== 0 || report.
   throw new Error("No-live-data mode must expose zero vessels, zero actionable rows, and zero candidates");
 }
 
-for (const vessel of vessels) {
+for (const vessel of vesselRows) {
   const isSample = String(vessel.source_mode || "").includes("sample");
   if (isSample && vessel.commercial_use_status !== "do_not_use_for_outreach") {
     throw new Error(`Sample vessel is not blocked from outreach: ${vessel.vessel_name || vessel.vessel_id}`);
@@ -392,18 +396,18 @@ if (validationMode === "production") {
   const realDatasetExists = Number(status.record_count || report.record_count || dashboardSummary.record_count || 0) > 0 ||
     Number(status.all_vessels_count || status.all_collected_vessel_count || report.all_vessels_count || report.all_collected_vessel_count || dashboardSummary.all_vessels_count || 0) > 0 ||
     Boolean(status.latest_successful_run_id || status.latest_successful_summary_run_id || dashboardSummary.latest_successful_run_id) ||
-    jsonRows(allCollectedVessels).length > 0 ||
-    jsonRows(vessels).length > 0;
+    allCollectedRows.length > 0 ||
+    vesselRows.length > 0;
   if (!realDatasetExists) {
     throw new Error("Production validation requires at least one real active, fallback, or static dataset.");
   }
-  if (status.status === "failed" && status.fallback_used === true && !status.latest_successful_run_id && !dashboardSummary.latest_successful_run_id && !jsonRows(allCollectedVessels).length) {
+  if (status.status === "failed" && status.fallback_used === true && !status.latest_successful_run_id && !dashboardSummary.latest_successful_run_id && !allCollectedRows.length) {
     validationWarnings.push("Failed production run has no latest successful fallback yet; update failure remains the primary production blocker.");
   }
 }
-validateVesselRowContract("all-collected-vessels.json", jsonRows(allCollectedVessels));
-validateVesselRowContract("target-vessels.json", jsonRows(targetVessels));
-validateVesselRowContract("vessels.json", jsonRows(vessels));
+validateVesselRowContract("all-collected-vessels.json", allCollectedRows);
+validateVesselRowContract("target-vessels.json", targetRows);
+validateVesselRowContract("vessels.json", vesselRows);
 if (outputExists("dashboard/api/backend-doctor.json")) {
   const doctor = readOutputJson("dashboard/api/backend-doctor.json");
   if ("generated_by" in doctor) validateRunOrigin("backend-doctor.json", doctor);
