@@ -1,8 +1,10 @@
 import fs from "node:fs";
+import { baseDatasetFields, getBaseDatasetState, markDerivedReport, rowsFromJson } from "./lib/dataset-state.js";
 
 const path = "dashboard/api/vessels.json";
 const vessels = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, "utf8")) : [];
-const list = Array.isArray(vessels) ? vessels : (vessels.vessels || vessels.items || vessels.data || []);
+const datasetState = getBaseDatasetState();
+const list = rowsFromJson(vessels);
 
 const explanations = list.slice(0, 50).map((v, idx) => ({
   rank: v.rank || idx + 1,
@@ -17,10 +19,12 @@ const explanations = list.slice(0, 50).map((v, idx) => ({
 }));
 
 fs.mkdirSync("dashboard/api", { recursive: true });
-fs.writeFileSync("dashboard/api/candidate-explanations.json", JSON.stringify({
+fs.writeFileSync("dashboard/api/candidate-explanations.json", JSON.stringify(markDerivedReport({
   version: "17.7.0",
   generatedAt: new Date().toISOString(),
+  ...baseDatasetFields(datasetState),
+  ok: !datasetState.base_dataset_empty,
   explanations
-}, null, 2));
+}, datasetState), null, 2));
 
 console.log("Candidate explanations generated");

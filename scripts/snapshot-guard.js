@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { buildRunOrigin } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState } from "./lib/dataset-state.js";
 
 const required = [
   "dashboard/api/vessels.json",
@@ -41,6 +42,12 @@ function countRows(value) {
 
 const status = readJson(outputPath("dashboard/api/status.json"), {});
 const dashboardSummary = readJson(outputPath("dashboard/api/dashboard-summary.json"), {});
+const datasetState = getBaseDatasetState({
+  statusPath: outputPath("dashboard/api/status.json"),
+  vesselsPath: outputPath("dashboard/api/vessels.json"),
+  allCollectedPath: outputPath("dashboard/api/all-collected-vessels.json"),
+  summaryPath: outputPath("dashboard/api/dashboard-summary.json")
+});
 const fileRows = {};
 const missing = [];
 const empty = [];
@@ -72,7 +79,7 @@ const guardSeverity = emptyDataset
 const runOrigin = buildRunOrigin({
   runId: status.run_id || status.active_run_id || status.summary_run_id || null,
   validationMode,
-  servingMode: emptyDataset ? "debug_diagnostics_only" : "production_api"
+  servingMode: emptyDataset ? "local_diagnostics" : "static_json"
 });
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
 const diagnosticRunId = runOrigin.run_id || null;
@@ -86,6 +93,7 @@ const report = {
   active_run_id: status.active_run_id || statusRunId,
   stale_diagnostic: staleDiagnostic,
   placeholder: false,
+  ...baseDatasetFields(datasetState),
   validation_mode: validationMode,
   data_mode: dataMode || "unknown",
   record_count: recordCount,

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { buildRunOrigin } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState } from "./lib/dataset-state.js";
 
 function readJson(path, fallback = {}) {
   try {
@@ -10,6 +11,7 @@ function readJson(path, fallback = {}) {
 }
 
 const status = readJson("dashboard/api/status.json", {});
+const datasetState = getBaseDatasetState();
 const validationMode = String(process.env.VALIDATION_MODE || status.validation_mode || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
 const runOrigin = buildRunOrigin({
@@ -27,6 +29,7 @@ const report = {
   active_run_id: status.active_run_id || statusRunId,
   stale_diagnostic: false,
   placeholder: true,
+  ...baseDatasetFields(datasetState),
   mode: "placeholder_until_history",
   status: "placeholder",
   categories: ["new_candidate","tier_upgraded","score_jump_10plus","port_changed","stale_candidate","candidate_removed"],

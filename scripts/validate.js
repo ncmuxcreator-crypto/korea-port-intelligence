@@ -258,6 +258,14 @@ function validateApiContract(name, payload, requiredFields = commonApiFields) {
     contractIssue(`${name} has unsupported serving_mode: ${payload.serving_mode}`);
   }
 }
+function validateEmptyBaseDerivedReport(name, payload) {
+  const baseEmpty = Number(status.all_collected_vessel_count || status.all_vessels_count || status.record_count || 0) === 0 ||
+    ["no_live_data", "degraded_sample_only"].includes(String(status.data_mode || status.data_mode_detail?.mode || "").toLowerCase());
+  if (!baseEmpty || !payload || typeof payload !== "object") return;
+  if (payload.base_dataset_empty !== true) contractIssue(`${name} must mark base_dataset_empty=true when source vessel dataset is empty`);
+  if (payload.derived_from_empty_dataset !== true) contractIssue(`${name} must mark derived_from_empty_dataset=true when source vessel dataset is empty`);
+  if (payload.ok === true) contractIssue(`${name} must not return ok=true when source vessel dataset is empty`);
+}
 function validateVesselRowContract(name, rows) {
   const sample = rows.find(row => row && typeof row === "object");
   if (!sample) return;
@@ -267,6 +275,24 @@ function validateVesselRowContract(name, rows) {
 }
 validateApiContract("dashboard-summary.json", dashboardSummary);
 validateApiContract("status.json", status);
+for (const [name, path] of [
+  ["backend-doctor.json", "dashboard/api/backend-doctor.json"],
+  ["readiness-gate.json", "dashboard/api/readiness-gate.json"],
+  ["snapshot-guard.json", "dashboard/api/snapshot-guard.json"],
+  ["source-health-runtime.json", "dashboard/api/source-health-runtime.json"],
+  ["collector-plan-runtime.json", "dashboard/api/collector-plan-runtime.json"],
+  ["candidate-audit.json", "dashboard/api/candidate-audit.json"],
+  ["candidate-confidence-runtime.json", "dashboard/api/candidate-confidence-runtime.json"],
+  ["candidate-dedupe.json", "dashboard/api/candidate-dedupe.json"],
+  ["candidate-explanations.json", "dashboard/api/candidate-explanations.json"],
+  ["contact-windows.json", "dashboard/api/contact-windows.json"],
+  ["daily-candidate-report-runtime.json", "dashboard/api/daily-candidate-report-runtime.json"],
+  ["risk-calibration.json", "dashboard/api/risk-calibration.json"],
+  ["pipeline-sla-runtime.json", "dashboard/api/pipeline-sla-runtime.json"],
+  ["dataset-generation-audit.json", "dashboard/api/quality/dataset-generation-audit.json"]
+]) {
+  if (outputExists(path)) validateEmptyBaseDerivedReport(name, readOutputJson(path));
+}
 for (const [name, payload] of [
   ["vessels.json", vessels],
   ["all-collected-vessels.json", allCollectedVessels],

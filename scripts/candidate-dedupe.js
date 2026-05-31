@@ -1,8 +1,10 @@
 import fs from "node:fs";
+import { baseDatasetFields, getBaseDatasetState, markDerivedReport, rowsFromJson } from "./lib/dataset-state.js";
 
 const path = "dashboard/api/vessels.json";
 const data = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, "utf8")) : [];
-const vessels = Array.isArray(data) ? data : (data.vessels || data.items || data.data || []);
+const datasetState = getBaseDatasetState();
+const vessels = rowsFromJson(data);
 
 function stableSnapshotKey(v = {}) {
   return String(
@@ -38,27 +40,30 @@ const repeatedNames = [...nameCounts.entries()]
   .sort((a, b) => b.count - a.count || a.vessel_name.localeCompare(b.vessel_name))
   .slice(0, 100);
 
-const report = {
+const report = markDerivedReport({
   version: "17.7.0",
   generatedAt: new Date().toISOString(),
   total: vessels.length,
+  ...baseDatasetFields(datasetState),
   duplicate_snapshot_count: duplicateSnapshots.length,
   duplicate_snapshots: duplicateSnapshots.slice(0, 100),
   repeated_vessel_name_count: repeatedNames.length,
   repeated_vessel_names: repeatedNames,
-  ok: true,
-  severity: duplicateSnapshots.length ? "warn" : "pass",
+  ok: !datasetState.base_dataset_empty,
+  severity: datasetState.base_dataset_empty ? "empty_dataset" : duplicateSnapshots.length ? "warn" : "pass",
   note: "Repeated vessel names and repeated vessel/port snapshot keys are expected with multi-source public data. This audit reports merge pressure but does not fail the pipeline."
-};
+}, datasetState);
 
 fs.mkdirSync("dashboard/api", { recursive: true });
 fs.writeFileSync("dashboard/api/candidate-dedupe.json", JSON.stringify(report, null, 2));
 
-if (duplicateSnapshots.length) {
+if (datasetState.base_dataset_empty) {
+  console.warn("Candidate dedupe derived from empty base dataset", report);
+} else if (duplicateSnapshots.length) {
   console.warn("Duplicate stable candidate snapshots observed; reporting as warning", duplicateSnapshots.slice(0, 20));
 }
 if (repeatedNames.length) {
   console.warn(`Repeated vessel names observed: ${repeatedNames.length}. Treated as warning, not failure.`);
 }
 
-console.log("Candidate dedupe passed");
+if (!datasetState.base_dataset_empty) console.log("Candidate dedupe passed");

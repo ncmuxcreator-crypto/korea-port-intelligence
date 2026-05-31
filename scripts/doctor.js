@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { buildRunOrigin, buildRuntimeConfigAudit, missingRequiredEnvNames } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState } from "./lib/dataset-state.js";
 
 const requiredFiles = [
   "package.json",
@@ -75,6 +76,7 @@ const dashboardSummaryPayload = readJson("dashboard/api/dashboard-summary.json",
 const candidatesPayload = readJson("dashboard/api/candidates.json", []);
 const candidateSummary = readJson("dashboard/api/candidate-summary.json", {});
 const runtimeConfigAudit = buildRuntimeConfigAudit();
+const datasetState = getBaseDatasetState();
 const vessels = rowsFromJson(vesselsPayload);
 const allCollectedVessels = rowsFromJson(allCollectedPayload);
 const targetVessels = rowsFromJson(targetVesselsPayload);
@@ -140,6 +142,7 @@ const report = {
   }),
   ok: productionReady,
   checked_at: new Date().toISOString(),
+  ...baseDatasetFields(datasetState),
   serving_mode: servingMode,
   supported_serving_modes: supportedServingModes,
   production_data_source: workerSupabaseRequired

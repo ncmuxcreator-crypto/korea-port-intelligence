@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { buildRunOrigin } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState } from "./lib/dataset-state.js";
 
 const vesselsPath = "dashboard/api/vessels.json";
 const statusPath = "dashboard/api/status.json";
@@ -26,6 +27,7 @@ function outputPath(path) {
 
 const status = readJson(outputPath(statusPath), {});
 const data = readJson(outputPath(vesselsPath), []);
+const datasetState = getBaseDatasetState({ statusPath: outputPath(statusPath), vesselsPath: outputPath(vesselsPath) });
 const previousReports = outputPaths.map(path => readJson(path, null)).filter(Boolean);
 const vessels = Array.isArray(data) ? data : (data.vessels || data.items || data.data || []);
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
@@ -43,7 +45,7 @@ const productionReady = !staleReadinessGate && !emptyDataset && !noLiveData;
 const runOrigin = buildRunOrigin({
   runId: statusRunId,
   validationMode,
-  servingMode: dataMode === "no_live_data" ? "debug_diagnostics_only" : "production_api"
+  servingMode: dataMode === "no_live_data" ? "local_diagnostics" : "static_json"
 });
 
 const report = {
@@ -55,6 +57,7 @@ const report = {
   active_run_id: statusRunId,
   stale_diagnostic: staleReadinessGate,
   placeholder: false,
+  ...baseDatasetFields(datasetState),
   previous_readiness_run_id: previousReports[0]?.run_id || null,
   previous_readiness_run_ids: [...new Set(previousReports.map(previous => previous.run_id).filter(Boolean))],
   generated_at: new Date().toISOString(),

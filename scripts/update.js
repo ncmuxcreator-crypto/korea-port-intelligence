@@ -3468,6 +3468,24 @@ function normalizeServingMode(mode, fallback = "static_json") {
   return fallback;
 }
 
+function baseDatasetEmptyFields({ dataMode = "", recordCount = 0, allCollectedCount = 0, vesselCount = 0 } = {}) {
+  const mode = String(dataMode || "").toLowerCase();
+  const baseRows = Math.max(Number(recordCount || 0), Number(allCollectedCount || 0), Number(vesselCount || 0));
+  const empty = baseRows <= 0 || mode === "no_live_data" || mode === "degraded_sample_only";
+  return {
+    base_dataset_empty: empty,
+    derived_from_empty_dataset: empty,
+    source_vessel_dataset_count: baseRows,
+    base_dataset_empty_reasons: [
+      baseRows <= 0 ? "base_dataset_rows_zero" : null,
+      Number(recordCount || 0) <= 0 ? "record_count_zero" : null,
+      Number(allCollectedCount || 0) <= 0 ? "all_collected_vessels_zero" : null,
+      mode === "no_live_data" ? "no_live_data" : null,
+      mode === "degraded_sample_only" ? "degraded_sample_only" : null
+    ].filter(Boolean)
+  };
+}
+
 function buildStaticApiPayload(path, payload, report = {}) {
   const normalizedPath = String(path || "").replace(/\\/g, "/");
   if (!normalizedPath.startsWith("dashboard/api/") || !Array.isArray(payload)) return payload;
@@ -3534,7 +3552,13 @@ function buildReadinessGateReport({ report = {}, vessels = [], generatedAt = new
   const dataMode = String(report.data_mode || report.data_mode_detail?.mode || "").toLowerCase();
   const total = vessels.length;
   const recordCount = Number(report.record_count || 0);
-  const emptyDataset = total === 0 || recordCount === 0;
+  const baseDatasetState = baseDatasetEmptyFields({
+    dataMode,
+    recordCount,
+    allCollectedCount: report.all_collected_vessel_count || 0,
+    vesselCount: total
+  });
+  const emptyDataset = baseDatasetState.base_dataset_empty || total === 0 || recordCount === 0;
   const noLiveData = dataMode === "no_live_data";
   const productionReady = !staleReadinessGate && !emptyDataset && !noLiveData;
   return {
@@ -3545,6 +3569,7 @@ function buildReadinessGateReport({ report = {}, vessels = [], generatedAt = new
     active_run_id: statusRunId,
     generated_at: generatedAt,
     status_generated_at: report.completed_at || report.generated_at || null,
+    ...baseDatasetState,
     total,
     salesReady: vessels.filter(v => v.commercial_use_status === "sales_review_ready").length,
     blockedSample: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach").length,
@@ -3584,7 +3609,13 @@ function buildSnapshotGuardRuntimeReport({ report = {}, dashboardSummary = {}, a
   const targetVesselsRows = Number(fileRows["dashboard/api/target-vessels.json"] || 0);
   const dashboardSummaryRecordCount = Number(dashboardSummary.record_count || 0);
   const dataMode = String(report.data_mode || report.data_mode_detail?.mode || "").toLowerCase();
-  const emptyDataset = recordCount === 0 || vesselsJsonRows === 0 || allCollectedRows === 0 || dashboardSummaryRecordCount === 0;
+  const baseDatasetState = baseDatasetEmptyFields({
+    dataMode,
+    recordCount,
+    allCollectedCount: allCollectedRows,
+    vesselCount: vesselsJsonRows
+  });
+  const emptyDataset = baseDatasetState.base_dataset_empty || recordCount === 0 || vesselsJsonRows === 0 || allCollectedRows === 0 || dashboardSummaryRecordCount === 0;
   const localNoLiveData = VALIDATION_MODE === "local" && dataMode === "no_live_data";
   const statusRunId = report.run_id || report.active_run_id || runId;
   const diagnosticRunId = report.run_id || runId;
@@ -3597,6 +3628,7 @@ function buildSnapshotGuardRuntimeReport({ report = {}, dashboardSummary = {}, a
     active_run_id: report.active_run_id || statusRunId,
     generated_at: generatedAt,
     stale_diagnostic: staleDiagnostic,
+    ...baseDatasetState,
     validation_mode: VALIDATION_MODE,
     data_mode: dataMode || "unknown",
     record_count: recordCount,
@@ -3646,12 +3678,20 @@ function buildCollectorPlanRuntimeReport({ report = {}, collectorDiagnostics = {
   const plan = collectorDiagnostics.port_operation_collection_plan || {};
   const preflight = collectorDiagnostics.preflight || {};
   const coverage = collectorDiagnostics.coverage || {};
+  const baseDatasetState = baseDatasetEmptyFields({
+    dataMode: report.data_mode || report.data_mode_detail?.mode,
+    recordCount: report.record_count,
+    allCollectedCount: report.all_collected_vessel_count,
+    vesselCount: report.target_vessel_count
+  });
   return {
     version: VERSION,
     run_id: report.run_id || runId,
     active_run_id: report.active_run_id || report.run_id || runId,
     generated_at: generatedAt,
-    status: report.data_mode === "no_live_data" ? "blocked" : "ready",
+    status: baseDatasetState.base_dataset_empty ? "empty_dataset" : report.data_mode === "no_live_data" ? "blocked" : "ready",
+    ...baseDatasetState,
+    ok: !baseDatasetState.base_dataset_empty,
     validation_mode: VALIDATION_MODE,
     sequence: ["config_preflight", "source_health", "port_operation", "normalization", "candidate_engine", "snapshot_guard"],
     target: "safe port-operation collection and current-run diagnostics",
@@ -3677,6 +3717,12 @@ function buildSourceHealthRuntimeReport({ report = {}, collectorDiagnostics = {}
   const coverage = collectorDiagnostics.coverage || {};
   const runtimeAudit = report.runtime_config_audit || runtimeConfigAudit;
   const attemptedCollectors = sources.filter(source => source.attempted).map(source => source.key || source.source_name);
+  const baseDatasetState = baseDatasetEmptyFields({
+    dataMode: report.data_mode || report.data_mode_detail?.mode,
+    recordCount: report.record_count,
+    allCollectedCount: report.all_collected_vessel_count,
+    vesselCount: report.target_vessel_count
+  });
   const skippedCollectors = sources.filter(source => source.skipped).map(source => ({
     source_name: source.key || source.source_name || source.label || "unknown_source",
     reason: source.skip_reason || source.reason || source.error_message || source.status || "unknown_error",
@@ -3689,6 +3735,8 @@ function buildSourceHealthRuntimeReport({ report = {}, collectorDiagnostics = {}
     generated_at: generatedAt,
     validation_mode: VALIDATION_MODE,
     serving_mode: normalizeServingMode(report.output_mode || (shouldWriteDebugApiOutputs(report) ? "local_diagnostics" : "static_json")),
+    ...baseDatasetState,
+    ok: !baseDatasetState.base_dataset_empty,
     update_mode: process.env.UPDATE_MODE || null,
     process_env_CI: process.env.CI || null,
     is_github_actions: process.env.GITHUB_ACTIONS === "true",
@@ -3772,6 +3820,12 @@ function buildDatasetGenerationAudit({
   const allCollectedJsonRows = Number(allCollectedVessels.length || 0);
   const targetJsonRows = Number(targetVessels.length || 0);
   const candidatesJsonRows = Number(candidateList.length || 0);
+  const baseDatasetState = baseDatasetEmptyFields({
+    dataMode: report?.data_mode || report?.data_mode_detail?.mode,
+    recordCount: report?.record_count,
+    allCollectedCount: allCollectedJsonRows,
+    vesselCount: vesselsJsonRows
+  });
   const requiredSecretsMissing = detectSecrets()
     .filter(item => item.status !== "enabled" && Array.isArray(item.missing) && item.missing.length)
     .flatMap(item => item.missing);
@@ -3824,6 +3878,8 @@ function buildDatasetGenerationAudit({
   return {
     generated_at: new Date().toISOString(),
     audit_type: "dataset_generation",
+    ...baseDatasetState,
+    ok: !baseDatasetState.base_dataset_empty,
     root_cause: rootCause,
     failed_stage: failedStage,
     counts_by_stage: {

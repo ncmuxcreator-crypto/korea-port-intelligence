@@ -1,8 +1,10 @@
 import fs from "node:fs";
+import { baseDatasetFields, getBaseDatasetState, markDerivedReport, rowsFromJson } from "./lib/dataset-state.js";
 
 const path = "dashboard/api/vessels.json";
 const vessels = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, "utf8")) : [];
-const list = Array.isArray(vessels) ? vessels : (vessels.vessels || vessels.items || vessels.data || []);
+const datasetState = getBaseDatasetState();
+const list = rowsFromJson(vessels);
 
 const counts = {
   total: list.length,
@@ -25,12 +27,14 @@ for (const v of list) {
   if (!v.port && !v.current_port && !v.location) counts.missingPort++;
 }
 
-const report = {
+const report = markDerivedReport({
   version: "17.7.0",
   generatedAt: new Date().toISOString(),
+  ...baseDatasetFields(datasetState),
   counts,
-  status: list.length > 0 ? "ok" : "empty"
-};
+  status: datasetState.base_dataset_empty ? "empty_dataset" : list.length > 0 ? "ok" : "empty",
+  ok: !datasetState.base_dataset_empty
+}, datasetState);
 
 fs.mkdirSync("dashboard/api", { recursive: true });
 fs.writeFileSync("dashboard/api/candidate-audit.json", JSON.stringify(report, null, 2));

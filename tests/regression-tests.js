@@ -131,6 +131,25 @@ if (Number(backendDoctor.record_count || 0) === 0 || backendDoctor.data_status =
   );
 }
 
+const baseDatasetEmpty = Number(status.all_collected_vessel_count || status.all_vessels_count || status.record_count || 0) === 0 ||
+  ["no_live_data", "degraded_sample_only"].includes(dataMode);
+if (baseDatasetEmpty) {
+  for (const file of [
+    "dashboard/api/backend-doctor.json",
+    "dashboard/api/readiness-gate.json",
+    "dashboard/api/snapshot-guard.json",
+    "dashboard/api/source-health-runtime.json",
+    "dashboard/api/collector-plan-runtime.json",
+    "dashboard/api/quality/dataset-generation-audit.json"
+  ]) {
+    if (!fs.existsSync(file)) continue;
+    const payload = readJson(file, {});
+    assert(payload.base_dataset_empty === true, `${file} must mark base_dataset_empty=true.`);
+    assert(payload.derived_from_empty_dataset === true, `${file} must mark derived_from_empty_dataset=true.`);
+    assert(payload.ok !== true, `${file} must not return ok=true when source vessel dataset is empty.`);
+  }
+}
+
 const migrationFiles = fs.existsSync("migrations")
   ? fs.readdirSync("migrations").filter(file => /\.sql$/i.test(file))
   : [];

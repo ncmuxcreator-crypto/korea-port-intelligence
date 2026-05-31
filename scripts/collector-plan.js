@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { buildRunOrigin } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState, markDerivedReport } from "./lib/dataset-state.js";
 
 function readJson(path, fallback = {}) {
   try {
@@ -14,14 +15,15 @@ const debugStatus = readJson("dashboard/api/debug/status.json", null);
 const validationMode = String(process.env.VALIDATION_MODE || mainStatus.validation_mode || debugStatus?.validation_mode || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const status = validationMode === "production" ? mainStatus : (debugStatus || mainStatus);
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
+const datasetState = getBaseDatasetState();
 const runOrigin = buildRunOrigin({
   runId: statusRunId,
   validationMode,
-  servingMode: status.output_mode || status.serving_mode || (status.data_mode === "no_live_data" ? "debug_diagnostics_only" : "production_api")
+  servingMode: status.data_mode === "no_live_data" ? "local_diagnostics" : status.serving_mode || status.output_mode || "static_json"
 });
 const generatedAt = new Date().toISOString();
 
-const plan = {
+const plan = markDerivedReport({
   ...runOrigin,
   version: "17.7.0",
   generated_at: generatedAt,
@@ -30,7 +32,9 @@ const plan = {
   active_run_id: status.active_run_id || statusRunId,
   stale_diagnostic: false,
   placeholder: false,
-  status: "ready",
+  status: datasetState.base_dataset_empty ? "empty_dataset" : "ready",
+  ...baseDatasetFields(datasetState),
+  ok: !datasetState.base_dataset_empty,
   validation_mode: validationMode,
   sequence: ["source_health","vessel_spec","port_operation","mof_ais_dynamic","candidate_engine","snapshot_guard"],
   target: "fast cleaning candidate detection",
@@ -41,7 +45,7 @@ const plan = {
   enabled_ports_loaded_count: Number(status.collector_diagnostics?.port_operation_collection_plan?.enabled_ports_loaded_count || 0),
   ports_attempted_count: Number(status.collector_diagnostics?.coverage?.ports_attempted_count || status.collector_diagnostics?.ports_attempted_count || 0),
   preflight_failure_reason: status.preflight_failure_reason || status.collector_diagnostics?.preflight_failure_reason || null
-};
+}, datasetState);
 fs.mkdirSync("dashboard/api",{recursive:true});
 fs.writeFileSync("dashboard/api/collector-plan-runtime.json", JSON.stringify(plan,null,2));
 console.log("Collector plan generated");

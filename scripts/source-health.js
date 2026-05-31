@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { buildRunOrigin, buildRuntimeConfigAudit, portOperationApiUrlInfo, portOperationServiceKeyPresent } from "./lib/runtime-config-audit.js";
+import { baseDatasetFields, getBaseDatasetState, markDerivedReport } from "./lib/dataset-state.js";
 
 const tracked = [
   "SUPABASE_URL",
@@ -48,6 +49,7 @@ function pickCurrentStatus() {
 }
 
 const { status, status_path: statusPath, diagnostics_only: diagnosticsOnly } = pickCurrentStatus();
+const datasetState = getBaseDatasetState({ statusPath });
 const runtimePath = "dashboard/api/source-health-runtime.json";
 const registryPath = "dashboard/api/source-health.json";
 const debugRuntimePath = "dashboard/api/debug/source-health-runtime.json";
@@ -66,7 +68,15 @@ const skippedCollectors = sources.filter(source => source.skipped).map(source =>
 const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || "unknown_current_run";
 const previousSourceHealthWasStale = Boolean(previousRuntime?.run_id && statusRunId && String(previousRuntime.run_id) !== String(statusRunId));
 const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
-const servingMode = String(process.env.SERVING_MODE || status.serving_mode || status.output_mode || (diagnosticsOnly ? "local_diagnostics" : "static_json")).toLowerCase();
+function normalizeServingMode(mode, fallback = "static_json") {
+  const value = String(mode || "").trim().toLowerCase();
+  if (["worker_supabase", "static_json", "local_diagnostics"].includes(value)) return value;
+  if (value === "production_api" || value === "mixed") return "worker_supabase";
+  if (value === "debug_diagnostics_only" || value === "diagnostics_only") return "local_diagnostics";
+  return fallback;
+}
+
+const servingMode = normalizeServingMode(process.env.SERVING_MODE || status.serving_mode || status.output_mode || (diagnosticsOnly ? "local_diagnostics" : "static_json"), diagnosticsOnly ? "local_diagnostics" : "static_json");
 const runtimeConfigAudit = buildRuntimeConfigAudit();
 const portOperationApiUrl = portOperationApiUrlInfo();
 const missingPortOperationSecret = !portOperationServiceKeyPresent();
@@ -83,7 +93,7 @@ const runOrigin = buildRunOrigin({
   servingMode
 });
 
-const report = {
+const report = markDerivedReport({
   ...runOrigin,
   version: "17.7.0",
   run_id: statusRunId,
@@ -91,6 +101,8 @@ const report = {
   active_run_id: status.active_run_id || statusRunId,
   stale_diagnostic: false,
   placeholder: false,
+  ...baseDatasetFields(datasetState),
+  ok: !datasetState.base_dataset_empty,
   status_source_path: statusPath,
   diagnostics_only: diagnosticsOnly,
   validation_mode: validationMode,
@@ -145,7 +157,7 @@ const report = {
   collector_not_attempted_reason: collectorNotAttemptedReason,
   realDataReady: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && Number(status.record_count || 0) > 0),
   note: "Current-run source health. If run_id differs from status.json, treat this file as stale."
-};
+}, datasetState);
 
 fs.mkdirSync("dashboard/api", { recursive: true });
 if (diagnosticsOnly) fs.mkdirSync("dashboard/api/debug", { recursive: true });
