@@ -2184,6 +2184,11 @@ function writeApiJson(filePath, payload, report = {}) {
   const target = routeApiOutputPath(filePath, report);
   fs.mkdirSync(target.split("/").slice(0, -1).join("/"), { recursive: true });
   fs.writeFileSync(target, JSON.stringify(payload, null, 2));
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (target !== normalized && normalized.startsWith("dashboard/api/") && !fs.existsSync(normalized)) {
+    fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
+    fs.writeFileSync(normalized, JSON.stringify(payload, null, 2));
+  }
   return target;
 }
 
@@ -3542,9 +3547,15 @@ function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
     const incomingRows = countJsonRows(outputPayload);
     fs.mkdirSync(outputPath.split("/").slice(0, -1).join("/"), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(outputPayload, null, 2));
+    const rootOutputCreated = !fs.existsSync(path);
+    if (rootOutputCreated) {
+      fs.mkdirSync(path.split("/").slice(0, -1).join("/"), { recursive: true });
+      fs.writeFileSync(path, JSON.stringify(outputPayload, null, 2));
+    }
     manifest[path] = {
       status: "written_to_debug_only",
       output_path: outputPath,
+      root_output_created_if_missing: rootOutputCreated,
       rows: incomingRows,
       reason: "no_live_data_must_not_overwrite_production_api_files"
     };

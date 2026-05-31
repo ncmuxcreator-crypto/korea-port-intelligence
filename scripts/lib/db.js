@@ -1474,6 +1474,10 @@ function stripColumnsFromRows(rows, columns = []) {
   });
 }
 
+function stripColumnsFromRow(row = {}, columns = []) {
+  return stripColumnsFromRows([row], columns)[0] || {};
+}
+
 async function upsertWithSchemaCompatibility(supabase, table, rows, options = {}, compatibility = {}) {
   const optionalColumns = new Set(compatibility.optional_columns || compatibility.optionalColumns || []);
   const strippedColumns = new Set(compatibility.stripped_optional_columns || []);
@@ -1499,6 +1503,62 @@ async function upsertWithSchemaCompatibility(supabase, table, rows, options = {}
     compatibility.last_error = compactDbError(error);
     compatibility.status = "optional_columns_stripped";
     console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
+  }
+}
+
+async function insertWithSchemaCompatibility(supabase, table, row, compatibility = {}) {
+  const optionalColumns = new Set(compatibility.optional_columns || compatibility.optionalColumns || []);
+  const strippedColumns = new Set(compatibility.stripped_optional_columns || []);
+  let retryCount = 0;
+
+  while (true) {
+    const writeRow = stripColumnsFromRow(row, Array.from(strippedColumns));
+    const { error } = await supabase.from(table).insert(writeRow);
+    if (!error) {
+      compatibility.stripped_optional_columns = Array.from(strippedColumns);
+      compatibility.retry_count = Number(compatibility.retry_count || 0) + retryCount;
+      compatibility.status = strippedColumns.size ? "optional_columns_stripped" : "native_schema";
+      return { error: null, stripped_optional_columns: Array.from(strippedColumns), retry_count: retryCount };
+    }
+
+    const missingColumn = missingSchemaColumnName(error);
+    if (!missingColumn || !optionalColumns.has(missingColumn) || strippedColumns.has(missingColumn)) {
+      return { error };
+    }
+
+    strippedColumns.add(missingColumn);
+    retryCount += 1;
+    compatibility.last_error = compactDbError(error);
+    compatibility.status = "optional_columns_stripped";
+    console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying insert without optional column.`);
+  }
+}
+
+async function updateRunWithSchemaCompatibility(supabase, table, row, runId, compatibility = {}) {
+  const optionalColumns = new Set(compatibility.optional_columns || compatibility.optionalColumns || []);
+  const strippedColumns = new Set(compatibility.stripped_optional_columns || []);
+  let retryCount = 0;
+
+  while (true) {
+    const writeRow = stripColumnsFromRow(row, Array.from(strippedColumns));
+    const { error } = await supabase.from(table).update(writeRow).eq("run_id", runId);
+    if (!error) {
+      compatibility.stripped_optional_columns = Array.from(strippedColumns);
+      compatibility.retry_count = Number(compatibility.retry_count || 0) + retryCount;
+      compatibility.status = strippedColumns.size ? "optional_columns_stripped" : "native_schema";
+      return { error: null, stripped_optional_columns: Array.from(strippedColumns), retry_count: retryCount };
+    }
+
+    const missingColumn = missingSchemaColumnName(error);
+    if (!missingColumn || !optionalColumns.has(missingColumn) || strippedColumns.has(missingColumn)) {
+      return { error };
+    }
+
+    strippedColumns.add(missingColumn);
+    retryCount += 1;
+    compatibility.last_error = compactDbError(error);
+    compatibility.status = "optional_columns_stripped";
+    console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying update without optional column.`);
   }
 }
 
@@ -1988,6 +2048,34 @@ export async function saveToSupabase(records, options = {}) {
       optional_columns: ["gt_source", "eta_source", "operator_source", "congestion_source", "score_source"],
       stripped_optional_columns: [],
       retry_count: 0
+    },
+    data_collection_runs: {
+      status: "native_schema",
+      optional_columns: [
+        "raw_collected_rows",
+        "normalized_rows",
+        "all_vessels_count",
+        "target_vessels_count",
+        "gt_5000_plus_count",
+        "unknown_gt_review_count",
+        "staying_vessels_count",
+        "arrival_pipeline_count",
+        "scored_vessels_count",
+        "candidates_count",
+        "watchlist_count",
+        "sales_candidates_count",
+        "immediate_targets_count",
+        "high_score_not_promoted_count",
+        "candidate_promotion_error",
+        "exclusion_reason_counts",
+        "imo_missing_count",
+        "imo_recovered_count",
+        "high_value_low_confidence_count",
+        "actionable_rows",
+        "validation_status"
+      ],
+      stripped_optional_columns: [],
+      retry_count: 0
     }
   };
   const preRetentionCleanup = await runLeanRetentionCleanup(supabase);
@@ -2007,7 +2095,7 @@ export async function saveToSupabase(records, options = {}) {
   const highScoreNotPromotedCount = highScoreNotPromoted.length;
   const imoRecoveryDiagnostics = buildImoRecoveryDiagnostics(records);
 
-  const runInsert = await supabase.from("data_collection_runs").insert({
+  const runInsert = await insertWithSchemaCompatibility(supabase, "data_collection_runs", {
     run_id: runId,
     started_at: options.startedAt || now,
     finished_at: now,
@@ -2056,7 +2144,7 @@ export async function saveToSupabase(records, options = {}) {
     actionable_rows: records.filter(r => r.actionable_source_row !== false).length,
     validation_status: promotion.promotable ? "passed" : "not_promoted",
     error_summary: { error: options.error || null, promotion }
-  });
+  }, schemaCompatibility.data_collection_runs);
   if (runInsert.error) throw runInsert.error;
   const sourceCollectionLogRows = buildSourceCollectionLogRows(diagnostics, runId);
   if (sourceCollectionLogRows.length) {
@@ -3738,7 +3826,7 @@ export async function saveToSupabase(records, options = {}) {
   });
   const storageFinalized = postWriteVerification.status === "completed";
 
-  const finalRunUpdate = await supabase.from("data_collection_runs").update({
+  const finalRunUpdate = await updateRunWithSchemaCompatibility(supabase, "data_collection_runs", {
     status: storageFinalized ? promoted ? "promoted" : "completed" : "storage_finalization_failed",
     validation_status: storageFinalized ? promoted ? "passed" : "promotion_blocked" : "failed",
     source_summary: {
@@ -3766,7 +3854,7 @@ export async function saveToSupabase(records, options = {}) {
       }
     },
     error_summary: { error: options.error || (storageFinalized ? null : "Supabase write did not finalize."), promotion, post_write_verification: postWriteVerification, historical_snapshot: historicalSnapshotResult.historical_snapshot_error_summary }
-  }).eq("run_id", runId);
+  }, runId, schemaCompatibility.data_collection_runs);
   if (finalRunUpdate.error) throw finalRunUpdate.error;
 
   return {

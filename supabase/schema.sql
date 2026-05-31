@@ -105,6 +105,7 @@ create table if not exists data_collection_runs (
   arrival_pipeline_count int default 0,
   scored_vessels_count int default 0,
   candidates_count int default 0,
+  watchlist_count int default 0,
   sales_candidates_count int default 0,
   immediate_targets_count int default 0,
   imo_missing_count int default 0,
@@ -1666,6 +1667,7 @@ alter table data_collection_runs add column if not exists gt_5000_plus_count int
 alter table data_collection_runs add column if not exists unknown_gt_review_count int default 0;
 alter table data_collection_runs add column if not exists staying_vessels_count int default 0;
 alter table data_collection_runs add column if not exists arrival_pipeline_count int default 0;
+alter table data_collection_runs add column if not exists watchlist_count int default 0;
 alter table data_collection_runs add column if not exists sales_candidates_count int default 0;
 alter table data_collection_runs add column if not exists immediate_targets_count int default 0;
 alter table data_collection_runs add column if not exists high_score_not_promoted_count int default 0;
