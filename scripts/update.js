@@ -39,6 +39,8 @@ const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
 const VALIDATION_MODE = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const DEBUG_API_DIR = "dashboard/api/debug";
+const SUCCESSFUL_DATASET_DIR = "data/successful";
+const SUCCESSFUL_DATASET_MANIFEST = `${SUCCESSFUL_DATASET_DIR}/latest.json`;
 
 function envPresent(name) {
   return Boolean(process.env[name] && String(process.env[name]).trim());
@@ -2192,6 +2194,175 @@ function writeApiJson(filePath, payload, report = {}) {
   return target;
 }
 
+function readJsonSafe(filePath, fallback = null) {
+  try {
+    return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function rowCountFromPayload(payload) {
+  if (Array.isArray(payload)) return payload.length;
+  if (Array.isArray(payload?.data)) return payload.data.length;
+  if (Array.isArray(payload?.items)) return payload.items.length;
+  if (Array.isArray(payload?.vessels)) return payload.vessels.length;
+  if (Array.isArray(payload?.candidates)) return payload.candidates.length;
+  if (Array.isArray(payload?.opportunities)) return payload.opportunities.length;
+  if (payload && typeof payload === "object") {
+    return Number(payload.all_vessels_count || payload.all_collected_vessel_count || payload.record_count || payload.target_vessels_count || payload.candidate_count || 0);
+  }
+  return 0;
+}
+
+function loadSuccessfulDatasetManifest() {
+  return readJsonSafe(SUCCESSFUL_DATASET_MANIFEST, null);
+}
+
+function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healthPayload = {}, outputs = {}, generatedAt = new Date().toISOString() } = {}) {
+  const rows = Number(report.all_collected_vessel_count || rowCountFromPayload(outputs["dashboard/api/all-collected-vessels.json"]) || 0);
+  const storedSuccessfully = isSupabaseWriteCompleted(report.supabase_write?.status) ||
+    report.output_mode === "static_json" ||
+    String(report.data_mode || "").toLowerCase() === "api_ready_snapshot" ||
+    String(report.data_mode || "").toLowerCase() === "static_snapshot";
+  if (rows <= 0 || !storedSuccessfully || report.fallback_used === true || shouldWriteDebugApiOutputs(report)) {
+    return {
+      status: "skipped",
+      reason: rows <= 0 ? "empty_dataset" : report.fallback_used ? "fallback_run" : "not_successful_dataset",
+      rows
+    };
+  }
+
+  const snapshotId = report.run_id || `snapshot_${generatedAt.replace(/[:.]/g, "")}`;
+  const dir = `${SUCCESSFUL_DATASET_DIR}/${snapshotId}`;
+  fs.mkdirSync(dir, { recursive: true });
+  const files = {
+    "dashboard/api/dashboard-summary.json": dashboardSummary,
+    "dashboard/api/status.json": report,
+    "dashboard/api/health.json": healthPayload,
+    ...outputs
+  };
+  const fileManifest = [];
+  for (const [filePath, payload] of Object.entries(files)) {
+    const normalized = String(filePath).replace(/\\/g, "/");
+    const target = `${dir}/${normalized}`;
+    fs.mkdirSync(target.split("/").slice(0, -1).join("/"), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify(payload, null, 2));
+    fileManifest.push({
+      path: normalized,
+      rows: rowCountFromPayload(payload),
+      bytes: Buffer.byteLength(JSON.stringify(payload))
+    });
+  }
+  const manifest = {
+    status: "saved",
+    snapshot_id: snapshotId,
+    run_id: report.run_id || null,
+    generated_at: generatedAt,
+    source: "successful_dataset_bundle",
+    rows,
+    target_vessels_count: Number(report.target_vessel_count || rowCountFromPayload(outputs["dashboard/api/target-vessels.json"]) || 0),
+    sales_candidate_count: Number(report.sales_candidate_count || 0),
+    immediate_target_count: Number(report.immediate_target_count || 0),
+    storage_status: {
+      supabase: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
+      promotion: report.promotion_status || "unknown"
+    },
+    files: fileManifest
+  };
+  fs.writeFileSync(`${dir}/manifest.json`, JSON.stringify(manifest, null, 2));
+  fs.mkdirSync(SUCCESSFUL_DATASET_DIR, { recursive: true });
+  fs.writeFileSync(SUCCESSFUL_DATASET_MANIFEST, JSON.stringify(manifest, null, 2));
+  return manifest;
+}
+
+function restoreSuccessfulDatasetBundle({ report = {}, outputs = {} } = {}) {
+  const manifest = loadSuccessfulDatasetManifest();
+  if (!manifest?.snapshot_id) {
+    return {
+      status: "unavailable",
+      reason: "no_successful_dataset_manifest",
+      rows: 0
+    };
+  }
+  const restored = [];
+  const skipped = [];
+  const dir = `${SUCCESSFUL_DATASET_DIR}/${manifest.snapshot_id}`;
+  for (const [filePath] of Object.entries(outputs)) {
+    const normalized = String(filePath).replace(/\\/g, "/");
+    const source = `${dir}/${normalized}`;
+    if (!fs.existsSync(source)) {
+      skipped.push({ path: normalized, reason: "missing_in_bundle" });
+      continue;
+    }
+    const current = readJsonSafe(normalized, null);
+    if (rowCountFromPayload(current) > 0) {
+      skipped.push({ path: normalized, reason: "current_output_has_rows" });
+      continue;
+    }
+    fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
+    fs.copyFileSync(source, normalized);
+    restored.push(normalized);
+  }
+  return {
+    status: restored.length ? "restored" : "not_needed",
+    reason: restored.length ? "latest_successful_dataset_bundle" : "no_empty_outputs_to_restore",
+    manifest_snapshot_id: manifest.snapshot_id,
+    manifest_run_id: manifest.run_id || null,
+    manifest_generated_at: manifest.generated_at || null,
+    rows: Number(manifest.rows || 0),
+    restored,
+    skipped
+  };
+}
+
+function buildDataContinuityReport({ report = {}, dashboardSummary = {}, healthPayload = {}, successfulDataset = {}, restoreResult = {}, generatedAt = new Date().toISOString() } = {}) {
+  const manifest = loadSuccessfulDatasetManifest();
+  const currentRows = Number(report.all_collected_vessel_count || report.all_vessels_count || report.record_count || 0);
+  const fallbackOrder = [
+    { step: 1, source: "active_dataset_pointer", status: report.active_run_id && currentRows > 0 ? "available" : "unavailable", rows: currentRows },
+    { step: 2, source: "latest_successful_dataset_bundle", status: manifest?.rows > 0 ? "available" : "unavailable", rows: Number(manifest?.rows || 0), run_id: manifest?.run_id || null },
+    { step: 3, source: "latest_successful_dataset", status: report.latest_successful_fallback?.latest_successful_snapshot_available ? "available" : "unavailable", rows: Number(report.latest_successful_fallback?.latest_successful_fallback_rows || 0) },
+    { step: 4, source: "latest_snapshot", status: report.latest_successful_fallback?.latest_successful_fallback_source ? "available" : "unavailable", rows: Number(report.latest_successful_fallback?.latest_successful_fallback_rows || 0) },
+    { step: 5, source: "static_backup", status: rowCountFromPayload(readJsonSafe("data/latest-lite.json", [])) > 0 ? "available" : "unavailable", rows: rowCountFromPayload(readJsonSafe("data/latest-lite.json", [])) },
+    { step: 6, source: "sample_mode", status: "available_final_fallback", rows: 3 }
+  ];
+  const blocking = currentRows <= 0 || report.fallback_used === true || String(report.data_mode || "").toLowerCase() === "no_live_data";
+  return {
+    generated_at: generatedAt,
+    status: blocking ? "fallback_active" : "healthy",
+    objective: "Dashboard must never become empty when collection or storage fails.",
+    current_run: {
+      run_id: report.run_id || null,
+      data_mode: report.data_mode || null,
+      data_status: report.data_status || null,
+      rows: currentRows,
+      target_vessels_count: Number(report.target_vessel_count || 0),
+      fallback_used: Boolean(report.fallback_used),
+      fallback_reason: report.fallback_reason || null
+    },
+    storage_verification: {
+      supabase_write_status: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
+      post_write_verification_status: report.supabase_write?.post_write_verification?.status || "unknown",
+      promotion_status: report.promotion_status || "unknown",
+      rows_written_by_table: report.rows_written_by_table || {},
+      successful_dataset_bundle_status: successfulDataset.status || "unknown",
+      successful_dataset_rows: Number(successfulDataset.rows || manifest?.rows || 0),
+      restore_status: restoreResult.status || "not_run"
+    },
+    health: {
+      api_health_status: healthPayload.status || report.status || "unknown",
+      summary_generated_at: dashboardSummary.generated_at || null,
+      last_success_at: healthPayload.last_success_at || dashboardSummary.last_success_at || null,
+      production_ready: Boolean(dashboardSummary.production_ready || report.production_ready)
+    },
+    fallback_order: fallbackOrder,
+    operator_message_ko: blocking
+      ? "현재 실행은 운영 데이터로 승격되지 않았습니다. 마지막 성공 데이터 또는 샘플 최종 fallback으로 화면을 유지합니다."
+      : "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다."
+  };
+}
+
 function withRunOrigin(payload = {}, origin = {}) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
   const runId = payload.run_id || origin.run_id || null;
@@ -3081,20 +3252,248 @@ function buildCongestionWatchlist(records = []) {
 
 function buildAgentFollowupQueue(records = []) {
   return sortCommercialPriority(records)
-    .filter(v => v.agent && (!v.operator || !v.imo || (v.data_confidence_score || 0) < 70))
+    .filter(v => {
+      const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+      const hasAgent = Boolean(v.agent || v.agent_name || v.satmntEntrpsNm || v.entrpsCdNm);
+      const missingDecisionPath = !v.operator || !v.imo || (v.data_confidence_score || 0) < 70;
+      const commerciallyRelevant = score >= REVIEW_TARGET_THRESHOLD || v.is_cleaning_candidate || v.is_immediate_candidate;
+      return commerciallyRelevant && (hasAgent || missingDecisionPath);
+    })
     .map(v => ({
       vessel_name: v.vessel_name,
       port: v.port,
       port_code: v.port_code,
-      agent: v.agent,
+      agent: v.agent || v.agent_name || v.satmntEntrpsNm || v.entrpsCdNm || "",
       operator: v.operator || "",
+      company: v.operator || v.operator_name || v.agent || v.agent_name || "",
       imo: v.imo || "",
       call_sign: v.call_sign || "",
       commercial_value_score: v.commercial_value_score || 0,
       data_confidence_score: v.data_confidence_score || 0,
-      next_action: "Confirm IMO/operator and cleaning decision path via local agent.",
+      urgency: salesPriorityBand(salesPriorityScore(v)),
+      reason: v.why_now || v.candidate_summary_ko || salesPriorityReasonCodes(v).join(", ") || "Commercially relevant candidate needs contact path confirmation.",
+      recommended_message_angle: regulatedRouteSignal(v)
+        ? "Biofouling compliance and pre-departure cleaning readiness."
+        : Number(v.stay_hours || v.anchorage_hours || 0) >= 72
+          ? "Long-stay hull performance and fuel-efficiency opportunity."
+          : "Work-window confirmation and HullWiper Korea service fit.",
+      next_action: v.agent || v.agent_name
+        ? "Confirm IMO/operator and cleaning decision path via local agent."
+        : "Identify local agent or operator contact before outreach.",
       reason_codes: v.reason_codes || []
     }));
+}
+
+function regulatedRouteSignal(v = {}) {
+  const route = [v.destination, v.destination_port, v.next_port, v.previous_port, v.route_region].filter(Boolean).join(" ").toLowerCase();
+  return /australia|port hedland|new zealand|brazil|ponta da madeira|santos|호주|뉴질랜드|브라질/.test(route);
+}
+
+function salesPriorityScore(v = {}) {
+  const commercial = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  const biofouling = Number(v.biofouling_exposure_score || v.biofouling_score || v.risk_score || 0);
+  const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0);
+  const staySignal = Math.min(100, Math.round(stayHours / 2));
+  const workWindow = Number(v.work_feasibility_score || v.cleaning_window_score || 0);
+  const confidence = Number(v.data_confidence_score || v.candidate_confidence || 0);
+  const contact = Number(v.contact_readiness_score || 0);
+  const regulated = regulatedRouteSignal(v) ? 100 : 0;
+  const arrival = v.predicted_arrival_pipeline || v.status_bucket === "arriving_soon" ? Number(v.arrival_opportunity_score || 65) : 0;
+  return Math.min(100, Math.round(
+    commercial * 0.34 +
+    biofouling * 0.18 +
+    staySignal * 0.15 +
+    regulated * 0.13 +
+    Math.max(workWindow, arrival) * 0.10 +
+    confidence * 0.06 +
+    contact * 0.04
+  ));
+}
+
+function salesPriorityBand(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 80) return "HOT";
+  if (value >= 60) return "WARM";
+  return "LOW";
+}
+
+function salesPriorityReasonCodes(v = {}) {
+  const reasons = [];
+  if (Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD) reasons.push("HIGH_COMMERCIAL_SCORE");
+  if (Number(v.biofouling_exposure_score || v.biofouling_score || v.risk_score || 0) >= 65) reasons.push("BIOFOULING_RISK");
+  if (Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0) >= 72) reasons.push("LONG_STAY_72H_PLUS");
+  if (regulatedRouteSignal(v)) reasons.push("BRAZIL_AU_NZ_COMPLIANCE_ROUTE");
+  if (v.predicted_arrival_pipeline || v.status_bucket === "arriving_soon") reasons.push("ARRIVAL_PIPELINE");
+  if (v.contact_path_available || v.agent || v.agent_name || v.operator || v.operator_name) reasons.push("CONTACT_PATH_AVAILABLE");
+  return [...new Set([...(v.reason_codes || []), ...reasons])].slice(0, 8);
+}
+
+function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], salesCandidates = [], hotVessels = [], generatedAt = new Date().toISOString() } = {}) {
+  const opportunities = dedupeCandidateRows([
+    ...candidateList,
+    ...immediateTargets,
+    ...salesCandidates,
+    ...hotVessels
+  ])
+    .map(v => {
+      const priorityScore = salesPriorityScore(v);
+      const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0);
+      const reasonSummary = v.reason_summary || v.why_now || v.candidate_summary_ko || [
+        priorityScore >= 80 ? "오늘 연락 우선순위가 높은 후보입니다." : null,
+        regulatedRouteSignal(v) ? "Brazil/Australia/New Zealand 규제 항로 가능성이 있습니다." : null,
+        stayHours >= 72 ? "장기 체류 또는 묘박 신호가 있습니다." : null,
+        Number(v.biofouling_exposure_score || v.biofouling_score || v.risk_score || 0) >= 65 ? "Biofouling 위험 신호가 높습니다." : null
+      ].filter(Boolean).join(" ") || "상업 점수와 항만 체류 신호를 확인하세요.";
+      return {
+        ...v,
+        port: v.port_name || v.port,
+        stay_hours: stayHours,
+        stay_days: Math.round((stayHours / 24) * 10) / 10,
+        opportunity_score: priorityScore,
+        sales_priority_score: priorityScore,
+        priority_label: salesPriorityBand(priorityScore),
+        sales_priority_band: salesPriorityBand(priorityScore),
+        reason_codes: salesPriorityReasonCodes(v),
+        reason_summary: reasonSummary,
+        recommended_action: v.recommended_action || v.recommended_next_action || v.candidate_next_action || "Confirm contact path and work window.",
+        why_now: v.why_now || reasonSummary
+      };
+    })
+    .sort((a, b) =>
+      Number(b.sales_priority_score || 0) - Number(a.sales_priority_score || 0) ||
+      Number(b.commercial_value_score || b.total_sales_priority_score || 0) - Number(a.commercial_value_score || a.total_sales_priority_score || 0) ||
+      Number(b.stay_hours || b.cumulative_stay_hours || 0) - Number(a.stay_hours || a.cumulative_stay_hours || 0)
+    )
+    .slice(0, 50)
+    .map((v, index) => ({ ...v, rank: index + 1 }));
+  return {
+    generated_at: generatedAt,
+    focus_question: "Which vessel should HullWiper Korea contact next and why?",
+    ranking_model: "sales_priority_v3",
+    immediate_targets: opportunities.filter(v => v.sales_priority_band === "HOT" || v.is_immediate_candidate || Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 10),
+    opportunities,
+    operating_rule: "Sales priority blends commercial score, biofouling risk, long stay, Brazil/Australia/New Zealand compliance route, work window, confidence, and contact readiness."
+  };
+}
+
+function buildCandidateChangesPayload(candidateChanges = {}, generatedAt = new Date().toISOString()) {
+  return {
+    generated_at: generatedAt,
+    new_immediate_targets: candidateChanges.new_immediate_targets || candidateChanges.new_hot_candidates || [],
+    new_sales_candidates: candidateChanges.new_sales_candidates || candidateChanges.added_candidates || [],
+    removed_targets: candidateChanges.removed_targets || candidateChanges.removed_candidates || [],
+    changed_ports: candidateChanges.changed_ports || [],
+    changed_operators: candidateChanges.changed_operators || [],
+    source: "snapshot_candidate_changes"
+  };
+}
+
+function buildSalesAlertsPayload({ topCandidates = {}, dataContinuity = {}, report = {}, generatedAt = new Date().toISOString() } = {}) {
+  const opportunities = topCandidates.opportunities || [];
+  const alertDate = String(generatedAt || new Date().toISOString()).slice(0, 10);
+  const hot = opportunities.filter(v => v.sales_priority_band === "HOT").slice(0, 10);
+  const compliance = opportunities.filter(regulatedRouteSignal).slice(0, 10);
+  const longStay = opportunities
+    .filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0) >= 72)
+    .slice(0, 10);
+  const alerts = [];
+  if (dataContinuity.status === "fallback_active") {
+    alerts.push({
+      alert_key: `DATA_FALLBACK_ACTIVE|platform|all|${alertDate}`,
+      severity: "warning",
+      type: "DATA_FALLBACK_ACTIVE",
+      title: "데이터 fallback 사용 중",
+      message: dataContinuity.operator_message_ko,
+      next_action: "Collector/Supabase 설정과 마지막 성공 데이터 묶음 상태를 확인하세요."
+    });
+  }
+  if (hot.length) {
+    alerts.push({
+      alert_key: `HOT_SALES_QUEUE|platform|all|${alertDate}`,
+      severity: "high",
+      type: "HOT_SALES_QUEUE",
+      title: `${hot.length}척 HOT 영업 후보`,
+      message: "오늘 연락 우선순위가 높은 후보가 있습니다.",
+      next_action: "상위 10척의 대리점/선사 연락 경로를 확인하세요."
+    });
+  }
+  if (compliance.length) {
+    alerts.push({
+      alert_key: `COMPLIANCE_ROUTE|platform|all|${alertDate}`,
+      severity: "medium",
+      type: "COMPLIANCE_ROUTE",
+      title: `${compliance.length}척 규제 항로 후보`,
+      message: "Brazil, Australia 또는 New Zealand biofouling compliance 각도로 접근할 수 있습니다.",
+      next_action: "목적지와 출항 전 작업 가능 시간을 확인하세요."
+    });
+  }
+  if (longStay.length) {
+    alerts.push({
+      alert_key: `LONG_STAY|platform|all|${alertDate}`,
+      severity: "medium",
+      type: "LONG_STAY",
+      title: `${longStay.length}척 장기 체류 후보`,
+      message: "장기 묘박/체류로 hull performance와 fuel efficiency 기회가 커질 수 있습니다.",
+      next_action: "체류 원인과 작업 가능 창을 확인하세요."
+    });
+  }
+  return {
+    generated_at: generatedAt,
+    automation_status: "static_report_ready",
+    delivery_channels: {
+      dashboard_json: true,
+      email: false,
+      webhook: false,
+      reason: "Email/webhook credentials are not configured in this local run."
+    },
+    alert_count: alerts.length,
+    alerts,
+    hot_queue: hot,
+    compliance_queue: compliance,
+    long_stay_queue: longStay,
+    storage_status: {
+      supabase_write_status: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
+      promotion_status: report.promotion_status || "unknown"
+    }
+  };
+}
+
+function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {}, report = {}, dashboardSummary = {}, generatedAt = new Date().toISOString() } = {}) {
+  const opportunities = topCandidates.opportunities || [];
+  const hot = opportunities.filter(v => v.sales_priority_band === "HOT");
+  const warm = opportunities.filter(v => v.sales_priority_band === "WARM");
+  const compliance = opportunities.filter(regulatedRouteSignal);
+  return {
+    generated_at: generatedAt,
+    report_type: "daily_sales_intelligence",
+    title: "HWK Daily Sales Intelligence Report",
+    executive_summary_ko: dataContinuity.status === "fallback_active"
+      ? "현재 실행은 운영 데이터로 승격되지 않았습니다. 영업 판단 전 데이터 상태를 먼저 확인하세요."
+      : `${hot.length}척 HOT 후보와 ${warm.length}척 WARM 후보가 선별되었습니다.`,
+    kpis: {
+      total_vessels: Number(dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
+      hot_candidates: hot.length,
+      warm_candidates: warm.length,
+      compliance_candidates: compliance.length,
+      fallback_active: dataContinuity.status === "fallback_active"
+    },
+    contact_today: opportunities.slice(0, 10).map((v, index) => ({
+      rank: index + 1,
+      vessel_name: v.vessel_name,
+      port: v.port_name || v.port,
+      score: v.sales_priority_score || v.commercial_value_score || v.total_sales_priority_score || 0,
+      band: v.sales_priority_band || "LOW",
+      why_now: v.why_now || "",
+      next_action: v.recommended_action || v.recommended_next_action || v.candidate_next_action || "Confirm contact path and work window.",
+      reason_codes: (v.reason_codes || []).slice(0, 6)
+    })),
+    data_continuity: {
+      status: dataContinuity.status,
+      fallback_order: dataContinuity.fallback_order,
+      storage_verification: dataContinuity.storage_verification
+    },
+    automation_next_step: "Configure email/webhook secrets to deliver this JSON as a scheduled alert."
+  };
 }
 
 function buildScoringDiagnostics(records = []) {
@@ -5318,9 +5717,91 @@ try {
     latest_successful_run_id: latestSuccessfulRunId,
     status: report.status || status
   }, finalRunOrigin);
+  const topCandidatesPayload = buildTopCandidatesPayload({
+    candidateList,
+    immediateTargets,
+    salesCandidates,
+    hotVessels,
+    generatedAt: completedAt
+  });
+  const candidateChangesPayload = buildCandidateChangesPayload(snapshotOutputs.candidateChanges, completedAt);
+  const candidateSummaryPayload = buildCandidateSummary(vessels);
+  const agentFollowupQueue = buildAgentFollowupQueue(vessels);
+  const contactQueuePayload = candidateList.slice(0, 50).map((v, index) => ({
+    rank: index + 1,
+    vessel_name: v.vessel_name,
+    port: v.port,
+    port_code: v.port_code,
+    operator: v.operator || null,
+    agent: v.agent || null,
+    score: v.total_sales_priority_score || 0,
+    commercial_value_score: v.commercial_value_score || v.total_sales_priority_score || 0,
+    sales_priority_score: salesPriorityScore(v),
+    band: salesPriorityBand(salesPriorityScore(v)),
+    contact_window: v.contact_window,
+    next_action: v.candidate_next_action || v.recommended_action,
+    reason_codes: salesPriorityReasonCodes(v)
+  }));
+  const successfulBundleOutputs = {
+    "dashboard/api/all-collected-vessels.json": allCollectedVessels,
+    "dashboard/api/target-vessels.json": targetVessels,
+    "dashboard/api/vessels.json": vessels,
+    "dashboard/api/candidates.json": candidateList,
+    "dashboard/api/candidates/top.json": topCandidatesPayload,
+    "dashboard/api/contact-queue.json": contactQueuePayload,
+    "dashboard/api/agent-followup-queue.json": agentFollowupQueue,
+    "dashboard/api/ports.json": portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
+    "dashboard/api/arrival-pipeline.json": arrivalPipeline,
+    "dashboard/api/staying-vessels.json": stayingVessels
+  };
+  const successfulDatasetBundle = saveSuccessfulDatasetBundle({
+    report,
+    dashboardSummary,
+    healthPayload,
+    outputs: successfulBundleOutputs,
+    generatedAt: completedAt
+  });
+  const restoreResult = lastSuccessfulDatasetLocked
+    ? restoreSuccessfulDatasetBundle({ report, outputs: successfulBundleOutputs })
+    : { status: "not_needed", reason: "current_run_not_locked" };
+  const dataContinuityReport = buildDataContinuityReport({
+    report,
+    dashboardSummary,
+    healthPayload,
+    successfulDataset: successfulDatasetBundle,
+    restoreResult,
+    generatedAt: completedAt
+  });
+  const salesAlertsPayload = buildSalesAlertsPayload({
+    topCandidates: topCandidatesPayload,
+    dataContinuity: dataContinuityReport,
+    report,
+    generatedAt: completedAt
+  });
+  const dailySalesReportPayload = buildDailySalesReportPayload({
+    topCandidates: topCandidatesPayload,
+    dataContinuity: dataContinuityReport,
+    report,
+    dashboardSummary,
+    generatedAt: completedAt
+  });
+  report.successful_dataset_bundle = successfulDatasetBundle;
+  report.successful_dataset_restore = restoreResult;
+  report.data_continuity = dataContinuityReport;
+  dashboardSummary.data_continuity = {
+    status: dataContinuityReport.status,
+    fallback_order: dataContinuityReport.fallback_order,
+    storage_verification: dataContinuityReport.storage_verification
+  };
   report.backend_ops = withRunOrigin(report.backend_ops || snapshotOutputs.backendOps, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/health.json", healthPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/health/pipeline.json", healthPayload, report);
+  writeRuntimeDiagnosticJson("dashboard/api/data-continuity.json", dataContinuityReport, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/alerts/sales-alerts.json", salesAlertsPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/alerts/latest.json", salesAlertsPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/reports/daily-sales-report.json", dailySalesReportPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/reports/daily-summary.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);
@@ -5338,7 +5819,7 @@ try {
   writeApiJson("dashboard/api/unknown-gt-review.json", buildUnknownGtReview(vessels), report);
   writeApiJson("dashboard/api/high-value-low-confidence.json", buildHighValueLowConfidence(vessels), report);
   writeApiJson("dashboard/api/congestion-watchlist.json", buildCongestionWatchlist(vessels), report);
-  writeApiJson("dashboard/api/agent-followup-queue.json", buildAgentFollowupQueue(vessels), report);
+  writeApiJson("dashboard/api/agent-followup-queue.json", agentFollowupQueue, report);
   fs.mkdirSync(routeApiOutputPath("dashboard/api/quality/basic-info-coverage.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
   fs.mkdirSync(routeApiOutputPath("dashboard/api/review/basic-info-missing.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
   writeApiJson("dashboard/api/quality/basic-info-coverage.json", buildBasicInfoCoverage(vessels), report);
@@ -5353,23 +5834,13 @@ try {
   writeStaticDatasetJson("dashboard/api/vessels.json", vessels, report, staticOutputManifest);
   writeStaticDatasetJson("data/latest-lite.json", vessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/candidates.json", candidateList, report, staticOutputManifest);
+  writeApiJson("dashboard/api/candidates/top.json", topCandidatesPayload, report);
+  writeApiJson("dashboard/api/changes.json", candidateChangesPayload, report);
   writeApiJson("dashboard/api/contact-ready-vessels.json", contactReadyVessels, report);
   writeApiJson("dashboard/api/fleet-opportunities.json", fleetOpportunities, report);
   writeApiJson("dashboard/api/predicted-cleaning-opportunities.json", predictedCleaningOpportunities, report);
-  writeApiJson("dashboard/api/candidate-summary.json", buildCandidateSummary(vessels), report);
-  writeApiJson("dashboard/api/contact-queue.json", candidateList.slice(0, 50).map((v, index) => ({
-    rank: index + 1,
-    vessel_name: v.vessel_name,
-    port: v.port,
-    port_code: v.port_code,
-    operator: v.operator || null,
-    agent: v.agent || null,
-    score: v.total_sales_priority_score || 0,
-    band: v.sales_priority_band || "low_priority",
-    contact_window: v.contact_window,
-    next_action: v.candidate_next_action || v.recommended_action,
-    reason_codes: v.reason_codes || []
-  })), report);
+  writeApiJson("dashboard/api/candidate-summary.json", candidateSummaryPayload, report);
+  writeApiJson("dashboard/api/contact-queue.json", contactQueuePayload, report);
   writeApiJson("dashboard/api/hot-candidates.json", candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), report);
   writeApiJson("dashboard/api/hot-vessels.json", hotVessels, report);
   writeStaticDatasetJson("dashboard/api/ports.json", portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), report, staticOutputManifest);

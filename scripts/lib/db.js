@@ -1297,8 +1297,174 @@ function shouldPersistFeatureRow(record = {}) {
   return shouldPersistAnalyticalRow(record);
 }
 
-function retentionCutoff(days) {
-  return new Date(Date.now() - Number(days || 0) * 24 * 60 * 60 * 1000).toISOString();
+function retentionCutoff(days, dateOnly = false) {
+  const cutoff = new Date(Date.now() - Number(days || 0) * 24 * 60 * 60 * 1000).toISOString();
+  return dateOnly ? cutoff.slice(0, 10) : cutoff;
+}
+
+async function activeDatasetRunId(supabase) {
+  try {
+    const { data, error } = await supabase
+      .from("active_dataset_pointer")
+      .select("active_run_id")
+      .eq("id", "current")
+      .limit(1);
+    if (error) return null;
+    return data?.[0]?.active_run_id || null;
+  } catch {
+    return null;
+  }
+}
+
+async function latestPromotedRunIds(supabase, limit = 1) {
+  try {
+    const { data, error } = await supabase
+      .from("data_collection_runs")
+      .select("run_id,started_at,promoted_at")
+      .eq("status", "promoted")
+      .order("started_at", { ascending: false })
+      .limit(Math.max(1, Number(limit || 1)));
+    if (error) return [];
+    return (data || []).map(row => row.run_id).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function retentionNumberEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === null || String(raw).trim() === "") return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+const RETENTION_PROFILES = {
+  free_500mb: {
+    targetMb: 450,
+    hardCapMb: 500,
+    keepPromotedRuns: 1,
+    vesselSnapshotsDays: 1,
+    portCallMasterDays: 7,
+    riskHistoryDays: 3,
+    enrichmentDays: 2,
+    sourceLogsDays: 7,
+    dashboardSummaryDays: 14,
+    currentStaleDays: 2,
+    eventDays: 3,
+    pilotEventDays: 3,
+    congestionDays: 3,
+    identityDays: 3,
+    historyDays: 3,
+    routePredictionDays: 3,
+    dailyWarehouseDays: 7,
+    rawArchiveIndexDays: 14,
+    ruleDays: 3,
+    featureDays: 3,
+    modelDays: 3,
+    explainabilityDays: 3
+  },
+  ideal: {
+    targetMb: 4096,
+    hardCapMb: 8192,
+    keepPromotedRuns: 14,
+    vesselSnapshotsDays: 30,
+    portCallMasterDays: 180,
+    riskHistoryDays: 90,
+    enrichmentDays: 30,
+    sourceLogsDays: 90,
+    dashboardSummaryDays: 180,
+    currentStaleDays: 14,
+    eventDays: 90,
+    pilotEventDays: 90,
+    congestionDays: 90,
+    identityDays: 90,
+    historyDays: 180,
+    routePredictionDays: 90,
+    dailyWarehouseDays: 365,
+    rawArchiveIndexDays: 365,
+    ruleDays: 90,
+    featureDays: 90,
+    modelDays: 180,
+    explainabilityDays: 90
+  }
+};
+
+function retentionProfileName() {
+  const raw = String(process.env.DB_RETENTION_PROFILE || "free_500mb").trim().toLowerCase();
+  if (["ideal", "analytics", "growth"].includes(raw)) return "ideal";
+  if (["free", "free_500", "500mb", "free_500mb", "lean"].includes(raw)) return "free_500mb";
+  return "free_500mb";
+}
+
+function retentionPolicyFromEnv() {
+  const profile = retentionProfileName();
+  const defaults = RETENTION_PROFILES[profile] || RETENTION_PROFILES.free_500mb;
+  return {
+    profile,
+    targetMb: retentionNumberEnv("DB_RETENTION_TARGET_MB", defaults.targetMb),
+    hardCapMb: retentionNumberEnv("DB_RETENTION_HARD_CAP_MB", defaults.hardCapMb),
+    keepPromotedRuns: retentionNumberEnv("DB_RETENTION_KEEP_PROMOTED_RUNS", defaults.keepPromotedRuns),
+    vesselSnapshotsDays: retentionNumberEnv("DB_RETENTION_VESSEL_SNAPSHOTS_DAYS", defaults.vesselSnapshotsDays),
+    portCallMasterDays: retentionNumberEnv("DB_RETENTION_PORT_CALL_MASTER_DAYS", defaults.portCallMasterDays),
+    riskHistoryDays: retentionNumberEnv("DB_RETENTION_RISK_HISTORY_DAYS", defaults.riskHistoryDays),
+    enrichmentDays: retentionNumberEnv("DB_RETENTION_ENRICHMENT_DAYS", defaults.enrichmentDays),
+    sourceLogsDays: retentionNumberEnv("DB_RETENTION_SOURCE_LOGS_DAYS", defaults.sourceLogsDays),
+    dashboardSummaryDays: retentionNumberEnv("DB_RETENTION_DASHBOARD_SUMMARY_DAYS", defaults.dashboardSummaryDays),
+    currentStaleDays: retentionNumberEnv("DB_RETENTION_CURRENT_STALE_DAYS", defaults.currentStaleDays),
+    eventDays: retentionNumberEnv("DB_RETENTION_EVENT_DAYS", defaults.eventDays),
+    pilotEventDays: retentionNumberEnv("DB_RETENTION_PILOT_EVENT_DAYS", defaults.pilotEventDays),
+    congestionDays: retentionNumberEnv("DB_RETENTION_CONGESTION_DAYS", defaults.congestionDays),
+    identityDays: retentionNumberEnv("DB_RETENTION_IDENTITY_DAYS", defaults.identityDays),
+    historyDays: retentionNumberEnv("DB_RETENTION_HISTORY_DAYS", defaults.historyDays),
+    routePredictionDays: retentionNumberEnv("DB_RETENTION_ROUTE_PREDICTION_DAYS", defaults.routePredictionDays),
+    dailyWarehouseDays: retentionNumberEnv("DB_RETENTION_DAILY_WAREHOUSE_DAYS", defaults.dailyWarehouseDays),
+    rawArchiveIndexDays: retentionNumberEnv("DB_RETENTION_RAW_ARCHIVE_INDEX_DAYS", defaults.rawArchiveIndexDays),
+    ruleDays: retentionNumberEnv("DB_RETENTION_RULE_DAYS", defaults.ruleDays),
+    featureDays: retentionNumberEnv("DB_RETENTION_FEATURE_DAYS", defaults.featureDays),
+    modelDays: retentionNumberEnv("DB_RETENTION_MODEL_DAYS", defaults.modelDays),
+    explainabilityDays: retentionNumberEnv("DB_RETENTION_EXPLAINABILITY_DAYS", defaults.explainabilityDays)
+  };
+}
+
+async function deleteRowsOlderThan(supabase, job, activeRunId) {
+  const days = Number(job.days);
+  if (!Number.isFinite(days) || days <= 0) {
+    return { status: "skipped", reason: "retention_disabled", retention_days: days || 0, rows_deleted: 0 };
+  }
+  try {
+    let query = supabase
+      .from(job.table)
+      .delete({ count: "exact" })
+      .lt(job.column, retentionCutoff(days, job.dateOnly));
+    if (job.preserveActiveRun && activeRunId) query = query.neq("run_id", activeRunId);
+    for (const filter of job.filters || []) {
+      if (filter.op === "eq") query = query.eq(filter.column, filter.value);
+      if (filter.op === "neq") query = query.neq(filter.column, filter.value);
+    }
+    const { error, count } = await query;
+    return error
+      ? { status: "skipped", error: error.message, retention_days: days, rows_deleted: 0 }
+      : { status: "retained", retention_days: days, rows_deleted: Number(count || 0) };
+  } catch (error) {
+    return { status: "skipped", error: error.message, retention_days: days, rows_deleted: 0 };
+  }
+}
+
+async function deleteRowsOutsideKeepRuns(supabase, table, keepRunIds = []) {
+  const keep = [...new Set(keepRunIds.filter(Boolean))];
+  if (!keep.length) return { status: "skipped", reason: "missing_keep_runs", rows_deleted: 0 };
+  try {
+    const { error, count } = await supabase
+      .from(table)
+      .delete({ count: "exact" })
+      .not("run_id", "is", null)
+      .not("run_id", "in", `(${keep.join(",")})`);
+    return error
+      ? { status: "skipped", error: error.message, keep_runs: keep, rows_deleted: 0 }
+      : { status: "pruned_to_keep_runs", keep_runs: keep, rows_deleted: Number(count || 0) };
+  } catch (error) {
+    return { status: "skipped", error: error.message, keep_runs: keep, rows_deleted: 0 };
+  }
 }
 
 function buildSourceCollectionLogRows(diagnostics = {}, runId) {
@@ -1325,41 +1491,94 @@ async function runLeanRetentionCleanup(supabase) {
   if (!leanStorageEnabled() || String(process.env.DB_RETENTION_CLEANUP || "true").toLowerCase() === "false") {
     return { skipped: true, retention_groups: { daily_warehouse: "long_retention_not_deleted", raw_payloads: "google_drive_archive" } };
   }
-  const retention = {
-    vesselSnapshotsDays: Number(process.env.DB_RETENTION_VESSEL_SNAPSHOTS_DAYS || 3),
-    riskHistoryDays: Number(process.env.DB_RETENTION_RISK_HISTORY_DAYS || 14),
-    enrichmentDays: Number(process.env.DB_RETENTION_ENRICHMENT_DAYS || 7),
-    sourceLogsDays: Number(process.env.DB_RETENTION_SOURCE_LOGS_DAYS || 30),
-    ruleDays: Number(process.env.DB_RETENTION_RULE_DAYS || 7),
-    featureDays: Number(process.env.DB_RETENTION_FEATURE_DAYS || 7),
-    modelDays: Number(process.env.DB_RETENTION_MODEL_DAYS || 14),
-    explainabilityDays: Number(process.env.DB_RETENTION_EXPLAINABILITY_DAYS || 7)
-  };
+  const retention = retentionPolicyFromEnv();
+  const activeRunId = await activeDatasetRunId(supabase);
+  const promotedRunIds = await latestPromotedRunIds(supabase, retention.keepPromotedRuns);
+  const keepRunIds = [...new Set([activeRunId, ...promotedRunIds].filter(Boolean))];
+  const runScopedBulkyTables = [
+    "vessel_snapshots",
+    "operator_contact_history",
+    "operator_history",
+    "vessel_operator_history",
+    "predicted_arrivals",
+    "vessel_identity_candidates",
+    "vessel_route_history",
+    "rule_evaluations",
+    "explainability_snapshots",
+    "risk_history",
+    "feature_store",
+    "feature_snapshots",
+    "model_training_rows",
+    "source_collection_logs",
+    "port_call_master",
+    "vessel_snapshot_daily",
+    "commercial_opportunity_daily"
+  ];
+  const runPruneResult = {};
+  for (const table of runScopedBulkyTables) {
+    runPruneResult[table] = await deleteRowsOutsideKeepRuns(supabase, table, keepRunIds);
+  }
   const jobs = [
-    ["vessel_snapshots", "collected_at", retention.vesselSnapshotsDays],
-    ["risk_history", "collected_at", retention.riskHistoryDays],
-    ["enrichment_match_candidates", "created_at", retention.enrichmentDays],
-    ["source_collection_logs", "started_at", retention.sourceLogsDays],
-    ["rule_evaluations", "collected_at", retention.ruleDays],
-    ["feature_store", "collected_at", retention.featureDays],
-    ["model_training_rows", "collected_at", retention.modelDays],
-    ["explainability_snapshots", "collected_at", retention.explainabilityDays]
+    { table: "port_calls", column: "collected_at", days: retention.enrichmentDays },
+    { table: "vessel_snapshots", column: "collected_at", days: retention.vesselSnapshotsDays, preserveActiveRun: true },
+    { table: "port_call_master", column: "last_seen", days: retention.portCallMasterDays, preserveActiveRun: true },
+    { table: "risk_history", column: "collected_at", days: retention.riskHistoryDays, preserveActiveRun: true },
+    { table: "enrichment_match_candidates", column: "created_at", days: retention.enrichmentDays, preserveActiveRun: true },
+    { table: "source_collection_logs", column: "started_at", days: retention.sourceLogsDays, preserveActiveRun: true },
+    { table: "dashboard_summary_snapshots", column: "generated_at", days: retention.dashboardSummaryDays, preserveActiveRun: true, filters: [{ op: "neq", column: "is_latest_successful", value: true }] },
+    { table: "sales_candidates_current", column: "updated_at", days: retention.currentStaleDays, preserveActiveRun: true, filters: [{ op: "eq", column: "is_current", value: false }] },
+    { table: "immediate_targets_current", column: "updated_at", days: retention.currentStaleDays, preserveActiveRun: true, filters: [{ op: "eq", column: "is_current", value: false }] },
+    { table: "port_summary_current", column: "updated_at", days: retention.currentStaleDays, preserveActiveRun: true, filters: [{ op: "eq", column: "is_current", value: false }] },
+    { table: "vessel_events", column: "created_at", days: retention.eventDays, preserveActiveRun: true },
+    { table: "pilot_schedule_events", column: "created_at", days: retention.pilotEventDays, preserveActiveRun: true },
+    { table: "port_congestion_snapshots", column: "collected_at", days: retention.congestionDays, preserveActiveRun: true },
+    { table: "anchorage_clusters", column: "collected_at", days: retention.congestionDays, preserveActiveRun: true },
+    { table: "berth_occupancy_history", column: "collected_at", days: retention.congestionDays, preserveActiveRun: true },
+    { table: "vessel_identity_candidates", column: "collected_at", days: retention.identityDays, preserveActiveRun: true },
+    { table: "vessel_operator_history", column: "collected_at", days: retention.historyDays, preserveActiveRun: true },
+    { table: "operator_history", column: "collected_at", days: retention.historyDays, preserveActiveRun: true },
+    { table: "operator_contact_history", column: "collected_at", days: retention.historyDays, preserveActiveRun: true },
+    { table: "predicted_arrivals", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
+    { table: "vessel_route_history", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
+    { table: "operator_fleet_opportunities", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
+    { table: "commercial_leads", column: "updated_at", days: retention.routePredictionDays, preserveActiveRun: true },
+    { table: "raw_archive_index", column: "created_at", days: retention.rawArchiveIndexDays, preserveActiveRun: true },
+    { table: "feature_store", column: "collected_at", days: retention.featureDays, preserveActiveRun: true },
+    { table: "feature_snapshots", column: "snapshot_time", days: retention.featureDays, preserveActiveRun: true },
+    { table: "rule_evaluations", column: "collected_at", days: retention.ruleDays, preserveActiveRun: true },
+    { table: "model_training_rows", column: "collected_at", days: retention.modelDays, preserveActiveRun: true },
+    { table: "explainability_snapshots", column: "collected_at", days: retention.explainabilityDays, preserveActiveRun: true },
+    { table: "vessel_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "port_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "operator_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "route_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "commercial_opportunity_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "data_collection_runs", column: "started_at", days: retention.dashboardSummaryDays, preserveActiveRun: true },
+    { table: "pipeline_runs", column: "run_started_at", days: retention.dashboardSummaryDays }
   ];
   const result = {};
-  for (const [table, column, days] of jobs) {
-    try {
-      const { error, count } = await supabase.from(table).delete({ count: "exact" }).lt(column, retentionCutoff(days));
-      result[table] = error ? { status: "skipped", error: error.message, retention_days: days, rows_deleted: 0 } : { status: "retained", retention_days: days, rows_deleted: Number(count || 0) };
-    } catch (error) {
-      result[table] = { status: "skipped", error: error.message, retention_days: days, rows_deleted: 0 };
-    }
+  for (const job of jobs) {
+    result[job.table] = await deleteRowsOlderThan(supabase, job, activeRunId);
   }
   return {
     ...result,
+    active_run_preserved: activeRunId || null,
+    promoted_runs_preserved: promotedRunIds,
+    keep_run_ids: keepRunIds,
+    size_policy: {
+      profile: retention.profile,
+      target_mb: retention.targetMb,
+      hard_cap_mb: retention.hardCapMb,
+      keep_promoted_runs: retention.keepPromotedRuns,
+      strategy: retention.profile === "ideal"
+        ? "retain broader analytical history while still pruning stale run-scoped rows"
+        : "keep active run plus latest promoted run, archive/fallback outside Supabase"
+    },
+    run_prune: runPruneResult,
     retention_groups: {
       run_snapshots: "short_retention",
       diagnostics: "medium_retention",
-      daily_warehouse: "long_retention_not_deleted",
+      daily_warehouse: `${retention.dailyWarehouseDays}_days`,
       raw_payloads: "google_drive_archive"
     }
   };
