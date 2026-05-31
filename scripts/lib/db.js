@@ -326,6 +326,9 @@ const OPTIONAL_DB_WRITE_TABLES = new Set([
   "model_training_rows",
   "vessel_snapshot_daily",
   "port_snapshot_daily",
+  "port_daily_summary",
+  "port_weekly_summary",
+  "port_monthly_summary",
   "operator_snapshot_daily",
   "route_snapshot_daily",
   "commercial_opportunity_daily"
@@ -1323,6 +1326,129 @@ async function deleteRowsOutsideKeepRuns(supabase, table, keepRunIds = []) {
   }
 }
 
+async function deleteOldPortRunSnapshots(supabase, retention, keepRunIds = []) {
+  const days = Number(retention.portRunSnapshotDays);
+  if (!Number.isFinite(days) || days <= 0) {
+    return { status: "skipped", reason: "port_run_snapshot_retention_disabled", retention_days: days || 0, rows_deleted: 0 };
+  }
+  const keep = [...new Set(keepRunIds.filter(Boolean))];
+  try {
+    let query = supabase
+      .from("port_snapshot_daily")
+      .delete({ count: "exact" })
+      .lt("snapshot_date", retentionCutoff(days, true));
+    if (keep.length) query = query.not("run_id", "in", `(${keep.join(",")})`);
+    const { error, count } = await query;
+    return error
+      ? { status: "skipped", error: error.message, retention_days: days, keep_runs: keep, rows_deleted: 0 }
+      : { status: "compacted_then_pruned", retention_days: days, keep_runs: keep, rows_deleted: Number(count || 0) };
+  } catch (error) {
+    return { status: "skipped", error: error.message, retention_days: days, keep_runs: keep, rows_deleted: 0 };
+  }
+}
+
+function isoDateOnly(value) {
+  const date = new Date(value || Date.now());
+  return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+}
+
+function startOfUtcWeek(dateText) {
+  const date = new Date(`${isoDateOnly(dateText)}T00:00:00.000Z`);
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() - day + 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function endOfUtcWeek(dateText) {
+  const date = new Date(`${startOfUtcWeek(dateText)}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + 6);
+  return date.toISOString().slice(0, 10);
+}
+
+function startOfUtcMonth(dateText) {
+  return `${isoDateOnly(dateText).slice(0, 7)}-01`;
+}
+
+function endOfUtcMonth(dateText) {
+  const [year, month] = startOfUtcMonth(dateText).split("-").map(Number);
+  return new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
+}
+
+function portSummaryBase(row = {}) {
+  return {
+    run_id: row.run_id,
+    latest_run_id: row.run_id,
+    port_code: row.port_code,
+    port_name: row.port_name,
+    sub_port: row.sub_port || "",
+    top_port_call_id: row.top_port_call_id || null,
+    top_opportunity_id: row.top_opportunity_id || null,
+    total_vessels: Number(row.total_vessels || 0),
+    target_vessels: Number(row.target_vessels || 0),
+    immediate_targets: Number(row.immediate_targets || 0),
+    sales_targets: Number(row.sales_targets || 0),
+    watchlist_count: Number(row.watchlist_count || 0),
+    opportunity_count: Number(row.opportunity_count || 0),
+    open_opportunities: Number(row.open_opportunities || 0),
+    closed_opportunities: Number(row.closed_opportunities || 0),
+    anchorage_vessels: Number(row.anchorage_vessels || 0),
+    long_stay_vessels: Number(row.long_stay_vessels || 0),
+    avg_stay_hours: Number(row.avg_stay_hours || 0),
+    avg_anchorage_hours: Number(row.avg_anchorage_hours || 0),
+    avg_congestion_score: Number(row.avg_congestion_score || 0),
+    avg_commercial_value_score: Number(row.avg_commercial_value_score || 0),
+    avg_predicted_cleaning_opportunity_score: Number(row.avg_predicted_cleaning_opportunity_score || 0),
+    port_opportunity_score: Number(row.port_opportunity_score || 0),
+    port_congestion_score: Number(row.port_congestion_score || 0),
+    source_run_count: 1,
+    created_at: row.created_at || new Date().toISOString(),
+    updated_at: row.created_at || new Date().toISOString(),
+    payload: {
+      ...(row.payload || {}),
+      compacted_from: "port_snapshot_daily",
+      compaction_policy: "retain_detailed_port_snapshots_24_48h_or_latest_20_runs"
+    }
+  };
+}
+
+function buildPortSummaryRollups(portRows = []) {
+  const dailyRows = portRows.map(row => ({
+    ...portSummaryBase(row),
+    summary_date: row.snapshot_date
+  }));
+  const weeklyRows = portRows.map(row => ({
+    ...portSummaryBase(row),
+    week_start_date: startOfUtcWeek(row.snapshot_date),
+    week_end_date: endOfUtcWeek(row.snapshot_date)
+  }));
+  const monthlyRows = portRows.map(row => ({
+    ...portSummaryBase(row),
+    month_start_date: startOfUtcMonth(row.snapshot_date),
+    month_end_date: endOfUtcMonth(row.snapshot_date)
+  }));
+  return { dailyRows, weeklyRows, monthlyRows };
+}
+
+async function upsertOptionalHistoricalRows(supabase, table, rows = [], onConflict, batchSize = 100) {
+  const result = { status: rows.length ? "written" : "skipped_empty", rows_written: 0, error: null };
+  if (!rows.length) return result;
+  try {
+    for (let index = 0; index < rows.length; index += batchSize) {
+      const batch = rows.slice(index, index + batchSize);
+      const { error } = await supabase.from(table).upsert(batch, { onConflict });
+      if (error) {
+        result.status = "skipped";
+        result.error = error.message;
+        return result;
+      }
+      result.rows_written += batch.length;
+    }
+    return result;
+  } catch (error) {
+    return { ...result, status: "skipped", error: error.message, rows_written: result.rows_written || 0 };
+  }
+}
+
 function buildSourceCollectionLogRows(diagnostics = {}, runId) {
   return (diagnostics.sources || []).map(source => ({
     source_log_id: `${runId}:${source.key || source.source_name || source.label || randomUUID().slice(0, 8)}`,
@@ -1350,25 +1476,18 @@ async function runLeanRetentionCleanup(supabase) {
   const retention = retentionPolicyFromEnv();
   const activeRunId = await activeDatasetRunId(supabase);
   const promotedRunIds = await latestPromotedRunIds(supabase, retention.keepPromotedRuns);
+  const portSnapshotRunIds = await latestPromotedRunIds(supabase, retention.portRunSnapshotKeepRuns);
   const keepRunIds = [...new Set([activeRunId, ...promotedRunIds].filter(Boolean))];
+  const portSnapshotKeepRunIds = [...new Set([activeRunId, ...portSnapshotRunIds].filter(Boolean))];
   const runScopedBulkyTables = [
     "vessel_snapshots",
-    "operator_contact_history",
-    "operator_history",
-    "vessel_operator_history",
-    "predicted_arrivals",
     "vessel_identity_candidates",
-    "vessel_route_history",
     "rule_evaluations",
     "explainability_snapshots",
-    "risk_history",
     "feature_store",
     "feature_snapshots",
     "model_training_rows",
-    "source_collection_logs",
-    "port_call_master",
-    "vessel_snapshot_daily",
-    "commercial_opportunity_daily"
+    "source_collection_logs"
   ];
   const runPruneResult = {};
   for (const table of runScopedBulkyTables) {
@@ -1397,7 +1516,7 @@ async function runLeanRetentionCleanup(supabase) {
     { table: "predicted_arrivals", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
     { table: "vessel_route_history", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
     { table: "operator_fleet_opportunities", column: "created_at", days: retention.routePredictionDays, preserveActiveRun: true },
-    { table: "commercial_leads", column: "updated_at", days: retention.routePredictionDays, preserveActiveRun: true },
+    { table: "commercial_leads", column: "updated_at", days: retention.salesPipelineDays, preserveActiveRun: true },
     { table: "raw_archive_index", column: "created_at", days: retention.rawArchiveIndexDays, preserveActiveRun: true },
     { table: "feature_store", column: "collected_at", days: retention.featureDays, preserveActiveRun: true },
     { table: "feature_snapshots", column: "snapshot_time", days: retention.featureDays, preserveActiveRun: true },
@@ -1405,10 +1524,12 @@ async function runLeanRetentionCleanup(supabase) {
     { table: "model_training_rows", column: "collected_at", days: retention.modelDays, preserveActiveRun: true },
     { table: "explainability_snapshots", column: "collected_at", days: retention.explainabilityDays, preserveActiveRun: true },
     { table: "vessel_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
-    { table: "port_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "port_daily_summary", column: "summary_date", days: retention.portDailySummaryDays, preserveActiveRun: true, dateOnly: true },
+    { table: "port_weekly_summary", column: "week_start_date", days: retention.portWeeklySummaryDays, preserveActiveRun: true, dateOnly: true },
+    { table: "port_monthly_summary", column: "month_start_date", days: retention.portMonthlySummaryDays, preserveActiveRun: true, dateOnly: true },
     { table: "operator_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
     { table: "route_snapshot_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
-    { table: "commercial_opportunity_daily", column: "snapshot_date", days: retention.dailyWarehouseDays, preserveActiveRun: true, dateOnly: true },
+    { table: "commercial_opportunity_daily", column: "snapshot_date", days: retention.opportunityScoreDays, preserveActiveRun: true, dateOnly: true },
     { table: "data_collection_runs", column: "started_at", days: retention.dashboardSummaryDays, preserveActiveRun: true },
     { table: "pipeline_runs", column: "run_started_at", days: retention.dashboardSummaryDays }
   ];
@@ -1416,16 +1537,20 @@ async function runLeanRetentionCleanup(supabase) {
   for (const job of jobs) {
     result[job.table] = await deleteRowsOlderThan(supabase, job, activeRunId);
   }
+  result.port_snapshot_daily = await deleteOldPortRunSnapshots(supabase, retention, portSnapshotKeepRunIds);
   return {
     ...result,
     active_run_preserved: activeRunId || null,
     promoted_runs_preserved: promotedRunIds,
     keep_run_ids: keepRunIds,
+    port_snapshot_keep_run_ids: portSnapshotKeepRunIds,
     size_policy: {
       profile: retention.profile,
       target_mb: retention.targetMb,
       hard_cap_mb: retention.hardCapMb,
       keep_promoted_runs: retention.keepPromotedRuns,
+      port_run_snapshot_days: retention.portRunSnapshotDays,
+      port_run_snapshot_keep_runs: retention.portRunSnapshotKeepRuns,
       strategy: retention.profile === "ideal"
         ? "retain broader analytical history while still pruning stale run-scoped rows"
         : retention.profile === "pro_7_5gb"
@@ -1434,9 +1559,11 @@ async function runLeanRetentionCleanup(supabase) {
     },
     run_prune: runPruneResult,
     retention_groups: {
-      run_snapshots: "short_retention",
+      port_run_snapshots: `${retention.portRunSnapshotDays}_days_or_latest_${retention.portRunSnapshotKeepRuns}_runs`,
+      vessel_intelligence_history: "12_to_24_months_or_longer",
       diagnostics: "medium_retention",
-      daily_warehouse: `${retention.dailyWarehouseDays}_days`,
+      daily_warehouse: `${retention.dailyWarehouseDays}_days_except_port_run_snapshots`,
+      port_summaries: `daily_${retention.portDailySummaryDays}_days_weekly_${retention.portWeeklySummaryDays}_days_monthly_${retention.portMonthlySummaryDays}_days`,
       raw_payloads: "google_drive_archive"
     }
   };
@@ -3820,6 +3947,9 @@ export async function saveToSupabase(records, options = {}) {
     historical_snapshot_generation_status: promotion.promotable ? "generated" : "skipped_not_promoted",
     vessel_snapshot_daily_rows_written: 0,
     port_snapshot_daily_rows_written: 0,
+    port_daily_summary_rows_written: 0,
+    port_weekly_summary_rows_written: 0,
+    port_monthly_summary_rows_written: 0,
     operator_snapshot_daily_rows_written: 0,
     route_snapshot_daily_rows_written: 0,
     commercial_opportunity_daily_rows_written: 0,
@@ -3848,6 +3978,19 @@ export async function saveToSupabase(records, options = {}) {
       if (error) throw error;
       historicalSnapshotResult.port_snapshot_daily_rows_written += batch.length;
     }
+    const portSummaryRollups = buildPortSummaryRollups(historicalWarehouse.portRows);
+    const dailySummary = await upsertOptionalHistoricalRows(supabase, "port_daily_summary", portSummaryRollups.dailyRows, "summary_date,port_code,sub_port", batchSize);
+    const weeklySummary = await upsertOptionalHistoricalRows(supabase, "port_weekly_summary", portSummaryRollups.weeklyRows, "week_start_date,port_code,sub_port", batchSize);
+    const monthlySummary = await upsertOptionalHistoricalRows(supabase, "port_monthly_summary", portSummaryRollups.monthlyRows, "month_start_date,port_code,sub_port", batchSize);
+    historicalSnapshotResult.port_daily_summary_rows_written = dailySummary.rows_written;
+    historicalSnapshotResult.port_weekly_summary_rows_written = weeklySummary.rows_written;
+    historicalSnapshotResult.port_monthly_summary_rows_written = monthlySummary.rows_written;
+    historicalSnapshotResult.port_summary_rollup_status = {
+      port_daily_summary: dailySummary,
+      port_weekly_summary: weeklySummary,
+      port_monthly_summary: monthlySummary,
+      retention_intent: "detailed port_snapshot_daily is short-lived; summaries carry long-term port trend history"
+    };
     for (let index = 0; index < historicalWarehouse.operatorRows.length; index += batchSize) {
       const batch = historicalWarehouse.operatorRows.slice(index, index + batchSize);
       const { error } = await supabase.from("operator_snapshot_daily").upsert(batch, { onConflict: "snapshot_date,operator_normalized" });
@@ -3874,6 +4017,9 @@ export async function saveToSupabase(records, options = {}) {
   historicalSnapshotResult.daily_snapshot_rows_written =
     historicalSnapshotResult.vessel_snapshot_daily_rows_written +
     historicalSnapshotResult.port_snapshot_daily_rows_written +
+    historicalSnapshotResult.port_daily_summary_rows_written +
+    historicalSnapshotResult.port_weekly_summary_rows_written +
+    historicalSnapshotResult.port_monthly_summary_rows_written +
     historicalSnapshotResult.operator_snapshot_daily_rows_written +
     historicalSnapshotResult.route_snapshot_daily_rows_written +
     historicalSnapshotResult.commercial_opportunity_daily_rows_written;
@@ -4060,6 +4206,9 @@ export async function saveToSupabase(records, options = {}) {
     model_training_rows: trainingRows.length,
     vessel_snapshot_daily: historicalSnapshotResult.vessel_snapshot_daily_rows_written,
     port_snapshot_daily: historicalSnapshotResult.port_snapshot_daily_rows_written,
+    port_daily_summary: historicalSnapshotResult.port_daily_summary_rows_written,
+    port_weekly_summary: historicalSnapshotResult.port_weekly_summary_rows_written,
+    port_monthly_summary: historicalSnapshotResult.port_monthly_summary_rows_written,
     operator_snapshot_daily: historicalSnapshotResult.operator_snapshot_daily_rows_written,
     route_snapshot_daily: historicalSnapshotResult.route_snapshot_daily_rows_written,
     commercial_opportunity_daily: historicalSnapshotResult.commercial_opportunity_daily_rows_written,

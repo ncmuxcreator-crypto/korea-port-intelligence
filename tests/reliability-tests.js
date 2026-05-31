@@ -111,6 +111,10 @@ const dashboardSource = readText("dashboard/index.html");
 const publicSource = readText("public/index.html");
 const dashboardMainSource = readText("dashboard/app/dashboard-main.js");
 const workerSource = readText("src/worker.js");
+const dbSource = readText("scripts/lib/db.js");
+const retentionSource = readText("scripts/lib/db/retention.js");
+const auditDataSource = readText("scripts/audit-data-health.js");
+const schemaSource = readText("supabase/schema.sql");
 
 for (const scriptName of ["update", "validate", "audit:data", "health", "build", "test", "test:reliability"]) {
   assert(packageJson.scripts?.[scriptName], `package.json missing required script: ${scriptName}`);
@@ -186,6 +190,39 @@ for (const modulePath of ["dashboard/app/api-client.js", "dashboard/app/kpi-reso
 }
 for (const modulePath of ["scripts/lib/db/client.js", "scripts/lib/db/runs.js", "scripts/lib/db/promotion.js", "scripts/lib/db/summary-snapshot.js", "scripts/lib/db/retention.js", "scripts/lib/db/verification.js"]) {
   assert(fs.existsSync(modulePath), `DB architecture module missing: ${modulePath}`);
+}
+
+for (const marker of [
+  "portRunSnapshotDays",
+  "portRunSnapshotKeepRuns",
+  "opportunityScoreDays",
+  "candidateHistoryDays",
+  "salesPipelineDays",
+  "portDailySummaryDays",
+  "portWeeklySummaryDays",
+  "portMonthlySummaryDays",
+  "DB_RETENTION_PORT_RUN_SNAPSHOT_DAYS",
+  "DB_RETENTION_PORT_RUN_SNAPSHOT_KEEP_RUNS"
+]) {
+  assert(retentionSource.includes(marker), `Retention policy missing marker: ${marker}`);
+}
+
+for (const table of ["port_daily_summary", "port_weekly_summary", "port_monthly_summary"]) {
+  assert(schemaSource.includes(`create table if not exists ${table}`), `Schema missing port rollup table: ${table}`);
+  assert(dbSource.includes(table), `DB persistence/cleanup missing port rollup table: ${table}`);
+}
+
+const runScopedBlock = dbSource.match(/const runScopedBulkyTables = \[([\s\S]*?)\];/)?.[1] || "";
+for (const table of ["vessel_snapshot_daily", "port_call_master", "commercial_opportunity_daily", "commercial_leads", "risk_history"]) {
+  assert(!runScopedBlock.includes(`"${table}"`), `Vessel intelligence history table must not be pruned by run-id only: ${table}`);
+}
+assert(dbSource.includes("deleteOldPortRunSnapshots"), "Port detail cleanup must use a dedicated port snapshot retention policy.");
+assert(dbSource.includes("port_snapshot_keep_run_ids"), "Port snapshot cleanup must preserve active/latest successful run ids.");
+assert(dbSource.includes("compacted_then_pruned"), "Old detailed port snapshots must be compacted before deletion.");
+assert(dbSource.includes("port_summary_rollup_status"), "Port snapshots must be converted into daily/weekly/monthly summaries before cleanup.");
+assert(workerSource.includes("portHistoryTable") && workerSource.includes("port_daily_summary"), "Dashboard port history must render from port_daily_summary after detailed cleanup.");
+for (const marker of ["port_snapshot_count", "oldest_port_snapshot", "newest_port_snapshot", "vessel_history_count", "candidate_history_count", "cleanup_candidates"]) {
+  assert(auditDataSource.includes(marker), `audit:data missing retention audit output: ${marker}`);
 }
 
 const fallbackChoiceCases = [

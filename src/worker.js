@@ -4380,23 +4380,23 @@ function historyLimit(searchParams) {
   return Math.min(1000, Math.max(1, Number(searchParams.get("limit") || 180)));
 }
 
-function appendHistoryFilters(path, searchParams, fieldMap = {}) {
+function appendHistoryFilters(path, searchParams, fieldMap = {}, dateColumn = "snapshot_date") {
   const params = [];
   const from = searchParams.get("from");
   const to = searchParams.get("to");
-  if (from) params.push(`snapshot_date=gte.${encodeURIComponent(from)}`);
-  if (to) params.push(`snapshot_date=lte.${encodeURIComponent(to)}`);
+  if (from) params.push(`${dateColumn}=gte.${encodeURIComponent(from)}`);
+  if (to) params.push(`${dateColumn}=lte.${encodeURIComponent(to)}`);
   for (const [queryKey, column] of Object.entries(fieldMap)) {
     const value = searchParams.get(queryKey);
     if (value) params.push(`${column}=eq.${encodeURIComponent(value)}`);
   }
-  params.push("order=snapshot_date.desc");
+  params.push(`order=${dateColumn}.desc`);
   params.push(`limit=${historyLimit(searchParams)}`);
   return `${path}${path.includes("?") ? "&" : "?"}${params.join("&")}`;
 }
 
-async function historyTable(env, table, searchParams, fieldMap = {}) {
-  const response = await supabaseGet(env, appendHistoryFilters(`/rest/v1/${table}?select=*`, searchParams, fieldMap));
+async function historyTable(env, table, searchParams, fieldMap = {}, dateColumn = "snapshot_date") {
+  const response = await supabaseGet(env, appendHistoryFilters(`/rest/v1/${table}?select=*`, searchParams, fieldMap, dateColumn));
   return {
     table,
     rows: response.rows,
@@ -4413,13 +4413,31 @@ async function historyTable(env, table, searchParams, fieldMap = {}) {
   };
 }
 
+async function portHistoryTable(env, searchParams) {
+  const summary = await historyTable(env, "port_daily_summary", searchParams, { port: "port_code" }, "summary_date");
+  if (summary.ok) {
+    return {
+      ...summary,
+      rows: summary.rows.map(row => ({ ...row, snapshot_date: row.snapshot_date || row.summary_date })),
+      source_table: "port_daily_summary",
+      detailed_snapshot_retention: "port_snapshot_daily_kept_24_48h_or_latest_20_runs"
+    };
+  }
+  const detailed = await historyTable(env, "port_snapshot_daily", searchParams, { port: "port_code" });
+  return {
+    ...detailed,
+    source_table: "port_snapshot_daily",
+    fallback_reason: summary.error || "port_daily_summary_unavailable"
+  };
+}
+
 async function historyApiResponse(pathname, searchParams, env) {
-  if (pathname === "/api/history/ports.json") return json(await historyTable(env, "port_snapshot_daily", searchParams, { port: "port_code" }), { headers: corsHeaders() });
+  if (pathname === "/api/history/ports.json") return json(await portHistoryTable(env, searchParams), { headers: corsHeaders() });
   const portMatch = pathname.match(new RegExp("^/api/history/ports/([^/]+)\\.json$"));
   if (portMatch) {
     const localParams = new URLSearchParams(searchParams);
     localParams.set("port", decodeURIComponent(portMatch[1]));
-    return json(await historyTable(env, "port_snapshot_daily", localParams, { port: "port_code" }), { headers: corsHeaders() });
+    return json(await portHistoryTable(env, localParams), { headers: corsHeaders() });
   }
   if (pathname === "/api/history/operators.json") return json(await historyTable(env, "operator_snapshot_daily", searchParams, { operator: "operator_normalized" }), { headers: corsHeaders() });
   const operatorMatch = pathname.match(new RegExp("^/api/history/operators/([^/]+)\\.json$"));
