@@ -298,6 +298,16 @@ if (outputExists("dashboard/api/snapshot-guard.json")) {
   if (Number(status.record_count || 0) === 0 && guard.production_ready === true) {
     throw new Error("Snapshot guard must not mark zero-row outputs as production_ready");
   }
+  const guardRows = guard.file_rows || {};
+  const vesselsJsonRows = Number(guard.vessels_json_count ?? guardRows["dashboard/api/vessels.json"] ?? 0);
+  const allCollectedRows = Number(guard.all_collected_vessels_count ?? guardRows["dashboard/api/all-collected-vessels.json"] ?? 0);
+  const summaryRecordCount = Number(guard.dashboard_summary_record_count ?? 0);
+  if ((vesselsJsonRows === 0 || allCollectedRows === 0 || summaryRecordCount === 0) && guard.status !== "empty_dataset") {
+    throw new Error("Snapshot guard must mark zero-row core outputs as empty_dataset");
+  }
+  if (validationMode === "production" && (vesselsJsonRows === 0 || allCollectedRows === 0 || summaryRecordCount === 0) && guard.ok !== false) {
+    throw new Error("Snapshot guard must fail production validation for zero-row core outputs");
+  }
 }
 if (outputExists("dashboard/api/source-health-runtime.json")) {
   const sourceHealth = readOutputJson("dashboard/api/source-health-runtime.json");

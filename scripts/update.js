@@ -3533,30 +3533,66 @@ function buildSnapshotGuardRuntimeReport({ report = {}, dashboardSummary = {}, a
     "dashboard/api/dashboard-summary.json": Number(dashboardSummary.record_count || 0)
   };
   const recordCount = Number(report.record_count || 0);
+  const vesselsJsonRows = Number(fileRows["dashboard/api/vessels.json"] || 0);
   const allCollectedRows = Number(report.all_collected_vessel_count || allCollectedVessels.length || 0);
+  const targetVesselsRows = Number(fileRows["dashboard/api/target-vessels.json"] || 0);
+  const dashboardSummaryRecordCount = Number(dashboardSummary.record_count || 0);
   const dataMode = String(report.data_mode || report.data_mode_detail?.mode || "").toLowerCase();
-  const emptyDataset = recordCount === 0 || allCollectedRows === 0;
+  const emptyDataset = recordCount === 0 || vesselsJsonRows === 0 || allCollectedRows === 0 || dashboardSummaryRecordCount === 0;
   const localNoLiveData = VALIDATION_MODE === "local" && dataMode === "no_live_data";
-  const ok = !emptyDataset;
+  const statusRunId = report.run_id || report.active_run_id || runId;
+  const diagnosticRunId = report.run_id || runId;
+  const staleDiagnostic = Boolean(statusRunId && diagnosticRunId && String(statusRunId) !== String(diagnosticRunId));
+  const ok = !emptyDataset && !staleDiagnostic;
   return {
     version: VERSION,
-    run_id: report.run_id || runId,
-    active_run_id: report.active_run_id || report.run_id || runId,
+    run_id: diagnosticRunId,
+    status_run_id: statusRunId,
+    active_run_id: report.active_run_id || statusRunId,
     generated_at: generatedAt,
+    stale_diagnostic: staleDiagnostic,
     validation_mode: VALIDATION_MODE,
     data_mode: dataMode || "unknown",
     record_count: recordCount,
-    dashboard_summary_record_count: Number(dashboardSummary.record_count || 0),
+    dashboard_summary_record_count: dashboardSummaryRecordCount,
+    vessels_json_count: vesselsJsonRows,
+    all_collected_vessels_count: allCollectedRows,
+    target_vessels_count: targetVesselsRows,
     required: Object.keys(fileRows),
     missing: [],
     empty: Object.entries(fileRows).filter(([, rows]) => Number(rows || 0) === 0).map(([file]) => file),
     file_rows: fileRows,
+    row_count_validation: {
+      "dashboard/api/vessels.json": {
+        rows: vesselsJsonRows,
+        ok: vesselsJsonRows > 0
+      },
+      "dashboard/api/all-collected-vessels.json": {
+        rows: allCollectedRows,
+        ok: allCollectedRows > 0
+      },
+      "dashboard/api/target-vessels.json": {
+        rows: targetVesselsRows,
+        ok: targetVesselsRows > 0,
+        severity: targetVesselsRows > 0 ? "ready" : "warning"
+      },
+      "dashboard/api/dashboard-summary.json": {
+        record_count: dashboardSummaryRecordCount,
+        ok: dashboardSummaryRecordCount > 0
+      }
+    },
     status: emptyDataset ? "empty_dataset" : "ready",
     guard_severity: emptyDataset ? localNoLiveData ? "diagnostics_only" : "fatal" : "ready",
     ok,
     production_ready: ok && VALIDATION_MODE === "production",
     diagnostics_only: localNoLiveData && emptyDataset,
-    warning: localNoLiveData && emptyDataset ? "local/no-secret no_live_data snapshot has no rows and is diagnostics-only" : null
+    warning: localNoLiveData && emptyDataset
+      ? "local/no-secret no_live_data snapshot has no rows and is diagnostics-only"
+      : targetVesselsRows === 0
+        ? "target-vessels.json has zero rows; validate candidate generation separately"
+        : staleDiagnostic
+          ? "snapshot-guard run_id does not match status.json run_id"
+          : null
   };
 }
 

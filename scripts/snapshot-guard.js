@@ -19,7 +19,10 @@ function readJson(path, fallback = null) {
   }
 }
 
+const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+
 function outputPath(path) {
+  if (validationMode === "production") return path;
   const debugPath = path.startsWith("dashboard/api/") ? `dashboard/api/debug/${path.slice("dashboard/api/".length)}` : path;
   return fs.existsSync(debugPath) ? debugPath : path;
 }
@@ -36,7 +39,6 @@ function countRows(value) {
   return 0;
 }
 
-const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const status = readJson(outputPath("dashboard/api/status.json"), {});
 const dashboardSummary = readJson(outputPath("dashboard/api/dashboard-summary.json"), {});
 const fileRows = {};
@@ -57,8 +59,11 @@ for (const file of required) {
 
 const dataMode = String(status.data_mode || dashboardSummary.status?.data_mode || "").toLowerCase();
 const recordCount = Number(status.record_count || dashboardSummary.record_count || 0);
+const vesselsRows = Number(fileRows["dashboard/api/vessels.json"] || 0);
 const allCollectedRows = Number(fileRows["dashboard/api/all-collected-vessels.json"] || 0);
-const emptyDataset = recordCount === 0 || allCollectedRows === 0;
+const targetVesselsRows = Number(fileRows["dashboard/api/target-vessels.json"] || 0);
+const dashboardSummaryRecordCount = Number(dashboardSummary.record_count || 0);
+const emptyDataset = recordCount === 0 || vesselsRows === 0 || allCollectedRows === 0 || dashboardSummaryRecordCount === 0;
 const localNoLiveData = validationMode === "local" && dataMode === "no_live_data";
 const ok = missing.length === 0 && !emptyDataset;
 const guardSeverity = emptyDataset
@@ -69,25 +74,59 @@ const runOrigin = buildRunOrigin({
   validationMode,
   servingMode: emptyDataset ? "debug_diagnostics_only" : "production_api"
 });
+const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
+const diagnosticRunId = runOrigin.run_id || null;
+const staleDiagnostic = Boolean(statusRunId && diagnosticRunId && String(statusRunId) !== String(diagnosticRunId));
 
 const report = {
   ...runOrigin,
   version: "17.7.0",
   generated_at: new Date().toISOString(),
+  status_run_id: statusRunId,
+  active_run_id: status.active_run_id || statusRunId,
+  stale_diagnostic: staleDiagnostic,
   validation_mode: validationMode,
   data_mode: dataMode || "unknown",
   record_count: recordCount,
-  dashboard_summary_record_count: Number(dashboardSummary.record_count || 0),
+  dashboard_summary_record_count: dashboardSummaryRecordCount,
+  vessels_json_count: vesselsRows,
+  all_collected_vessels_count: allCollectedRows,
+  target_vessels_count: targetVesselsRows,
   required,
   missing,
   empty,
   file_rows: fileRows,
+  row_count_validation: {
+    "dashboard/api/vessels.json": {
+      rows: vesselsRows,
+      ok: vesselsRows > 0
+    },
+    "dashboard/api/all-collected-vessels.json": {
+      rows: allCollectedRows,
+      ok: allCollectedRows > 0
+    },
+    "dashboard/api/target-vessels.json": {
+      rows: targetVesselsRows,
+      ok: targetVesselsRows > 0,
+      severity: targetVesselsRows > 0 ? "ready" : "warning"
+    },
+    "dashboard/api/dashboard-summary.json": {
+      record_count: dashboardSummaryRecordCount,
+      ok: dashboardSummaryRecordCount > 0
+    }
+  },
   status: emptyDataset ? "empty_dataset" : "ready",
   guard_severity: guardSeverity,
-  ok,
-  production_ready: ok && validationMode === "production",
+  ok: ok && !staleDiagnostic,
+  production_ready: ok && !staleDiagnostic && validationMode === "production",
   diagnostics_only: localNoLiveData && emptyDataset,
-  warning: localNoLiveData && emptyDataset ? "local/no-secret no_live_data snapshot has no rows and is diagnostics-only" : null
+  warning: localNoLiveData && emptyDataset
+    ? "local/no-secret no_live_data snapshot has no rows and is diagnostics-only"
+    : targetVesselsRows === 0
+      ? "target-vessels.json has zero rows; validate candidate generation separately"
+      : staleDiagnostic
+        ? "snapshot-guard run_id does not match status.json run_id"
+        : null
 };
 
 fs.mkdirSync("dashboard/api", { recursive: true });
