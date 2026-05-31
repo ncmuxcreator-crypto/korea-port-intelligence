@@ -3,6 +3,20 @@ function knownPositiveNumber(value) {
   return Number.isFinite(number) && number > 0 ? number : null;
 }
 
+function knownNumber(value) {
+  if (value === undefined || value === null || String(value).trim() === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function firstKnownNumber(...values) {
+  for (const value of values) {
+    const number = knownNumber(value);
+    if (number !== null) return number;
+  }
+  return 0;
+}
+
 function uniquePortCount(rows = []) {
   const ports = new Set();
   for (const row of rows) {
@@ -27,29 +41,39 @@ export function buildKpiRows({ state, score, riskScore = score, statusText, sale
   const candidates = salesRows(rows);
   const hasRows = rows.length > 0;
 
-  const totalVessels = hasRows
-    ? rows.length
-    : summary.all_vessels_count ?? summary.total_vessels ?? status.all_vessels_count ?? status.record_count ?? 0;
+  const totalVessels = firstKnownNumber(
+    summary.all_vessels_count,
+    summary.total_vessels,
+    status.all_vessels_count,
+    status.record_count,
+    rows.length
+  );
 
   const salesTargetCount = hasRows
     ? candidates.length
-    : summary.sales_target_count ?? status.sales_candidate_count ?? 0;
+    : firstKnownNumber(summary.sales_target_count, status.sales_candidate_count);
 
   const immediateTargetCount = hasRows
     ? candidates.filter(vessel => score(vessel) >= 75).length
-    : summary.immediate_target_count ?? status.immediate_target_count ?? 0;
+    : firstKnownNumber(summary.immediate_target_count, status.immediate_target_count);
 
-  const highRiskCount = hasRows
-    ? rows.filter(vessel => riskScore(vessel) >= 65).length
-    : summary.high_risk_vessel_count ?? status.high_risk_vessel_count ?? 0;
+  const highRiskCount = firstKnownNumber(
+    summary.high_risk_vessel_count,
+    status.high_risk_vessel_count,
+    hasRows ? rows.filter(vessel => riskScore(vessel) >= 65).length : undefined
+  );
 
-  const arrivalCount = hasRows
-    ? rows.filter(vessel => statusText(vessel) === "입항예정" || vessel.eta || vessel.predicted_arrival_time).length
-    : status.arrival_pipeline_count ?? summary.arrival_pipeline_count ?? 0;
+  const arrivalCount = firstKnownNumber(
+    status.arrival_pipeline_count,
+    summary.arrival_pipeline_count,
+    hasRows ? rows.filter(vessel => statusText(vessel) === "입항예정" || vessel.eta || vessel.predicted_arrival_time).length : undefined
+  );
 
-  const waitingCount = hasRows
-    ? rows.filter(vessel => ["묘박/대기", "대기"].includes(statusText(vessel))).length
-    : summary.anchorage_waiting_count ?? status.anchorage_waiting_count ?? 0;
+  const waitingCount = firstKnownNumber(
+    summary.anchorage_waiting_count,
+    status.anchorage_waiting_count,
+    hasRows ? rows.filter(vessel => ["묘박/대기", "대기"].includes(statusText(vessel))).length : undefined
+  );
 
   return [
     ["영업대상", salesTargetCount, "후보 목록과 동일"],

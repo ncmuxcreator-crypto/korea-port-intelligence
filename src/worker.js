@@ -1,4 +1,5 @@
 ﻿const API_CACHE_SECONDS = 300;
+const UI_ASSET_CACHE_CONTROL = "no-store, max-age=0, must-revalidate";
 const AUTO_UPDATE_INTERVAL_HOURS = 4;
 const SALES_CANDIDATE_THRESHOLD = 65;
 const IMMEDIATE_TARGET_THRESHOLD = 75;
@@ -4668,7 +4669,7 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
-    if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
+    if (latestSummarySnapshot) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
       const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
@@ -5057,6 +5058,25 @@ function isWorkerCacheableApi(pathname = "") {
     pathname.endsWith("/ports.json");
 }
 
+function shouldBypassAssetCache(pathname = "") {
+  return pathname === "/" ||
+    pathname.endsWith(".html") ||
+    pathname.endsWith(".js") ||
+    pathname.endsWith(".css");
+}
+
+function withUiAssetCacheHeaders(request, response) {
+  const pathname = new URL(request.url).pathname;
+  if (!shouldBypassAssetCache(pathname)) return response;
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", UI_ASSET_CACHE_CONTROL);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders() });
@@ -5077,6 +5097,6 @@ export default {
       const response = await apiResponse(url, env);
       if (response) return response;
     }
-    return env.ASSETS.fetch(request);
+    return withUiAssetCacheHeaders(request, await env.ASSETS.fetch(request));
   }
 };

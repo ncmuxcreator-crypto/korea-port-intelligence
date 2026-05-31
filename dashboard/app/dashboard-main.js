@@ -1,8 +1,8 @@
-import { arr, n, fmt, esc, pick, uniqueBy } from "./utils.js";
-import { apiFactory } from "./api-client.js";
-import { buildKpiRows } from "./kpi-resolver.js";
-import { buildHealthRows } from "./data-health-renderer.js";
-import { renderCandidateCards, renderCandidateTableRows } from "./candidate-table-renderer.js";
+import { arr, n, fmt, esc, pick, uniqueBy } from "./utils.js?v=20260601-db-snapshot-3";
+import { apiFactory } from "./api-client.js?v=20260601-db-snapshot-3";
+import { buildKpiRows } from "./kpi-resolver.js?v=20260601-db-snapshot-3";
+import { buildHealthRows } from "./data-health-renderer.js?v=20260601-db-snapshot-3";
+import { renderCandidateCards, renderCandidateTableRows } from "./candidate-table-renderer.js?v=20260601-db-snapshot-3";
 
 const $ = id => document.getElementById(id);
 const state = {
@@ -321,9 +321,10 @@ function renderStatus() {
     state.rows.length
   );
   const sample = state.sample || state.status.data_mode === "sample_mode";
-  const noLive = state.status.data_mode === "no_live_data" || state.summary.data_source_used === "diagnostics_only_no_live_data";
-  const fallback = Boolean(state.summary.fallback_used || state.status.fallback_used || sample || noLive);
   const source = inferDataSourceLabel();
+  const dbSnapshot = source === "DB 스냅샷";
+  const noLive = !dbSnapshot && (state.status.data_mode === "no_live_data" || state.summary.data_source_used === "diagnostics_only_no_live_data");
+  const fallback = !dbSnapshot && Boolean(state.summary.fallback_used || state.status.fallback_used || sample || noLive);
   const statusLabel = sample ? "샘플" : fallback || noLive ? "주의" : "정상";
 
   $("sourceBadge").className = `status-pill ${sample || fallback || noLive ? "warn" : "ok"}`;
@@ -398,6 +399,7 @@ function portRowsFromVessels() {
 
 function renderPorts() {
   let rows = arr(state.ports);
+  if (!rows.length) rows = arr(state.summary?.ports);
   if (!rows.length) rows = portRowsFromVessels();
 
   $("portCount").textContent = `${fmt(rows.length)}개 항만`;
@@ -435,7 +437,8 @@ function renderPorts() {
 }
 
 function renderHotList() {
-  const rows = getSalesCandidates(state.rows).slice(0, 10);
+  const sourceRows = state.rows.length ? state.rows : summaryCandidateRows();
+  const rows = getSalesCandidates(sourceRows).slice(0, 10);
   $("hotList").innerHTML = rows.length
     ? rows.map((vessel, index) => `
       <details class="hot-detail">
@@ -518,19 +521,27 @@ function mergeRows(...groups) {
   return uniqueBy(groups.flatMap(group => arr(group)), vesselKey);
 }
 
+function summaryCandidateRows() {
+  return mergeRows(
+    state.summary?.immediate_targets,
+    state.summary?.opportunities,
+    state.summary?.contact_ready_vessels,
+    state.summary?.alert_candidates,
+    state.top?.immediate_targets,
+    state.top?.opportunities
+  );
+}
+
 async function loadRows() {
-  const [targetLive, targetStatic, topStatic, pipeline, allStatic, vesselsStatic] = await Promise.all([
-    api("target", "/api/vessels?group=target&page=1&pageSize=500", 4500),
-    api("targetStatic", "/api/target-vessels.json", 4500),
-    api("top", "/api/candidates/top.json", 3500),
-    api("pipeline", "/api/sales-pipeline.json", 3500),
-    api("all", "/api/all-collected-vessels.json", 4500),
-    api("vesselsStatic", "/api/vessels.json", 4500)
+  const [candidateStatic, topStatic] = await Promise.all([
+    api("candidates", "/api/vessels.json", 15000),
+    api("top", "/api/candidates/top.json", 6000)
   ]);
 
-  const candidateRows = mergeRows(targetLive, targetStatic, topStatic, pipeline, state.top);
-  const baseRows = mergeRows(allStatic, vesselsStatic);
-  state.rows = mergeRows(candidateRows, baseRows);
+  state.top = topStatic || state.top || {};
+  const snapshotRows = summaryCandidateRows();
+  const liveRows = mergeRows(candidateStatic);
+  state.rows = liveRows.length ? liveRows : mergeRows(topStatic, snapshotRows);
 }
 
 async function loadSummary() {
@@ -542,8 +553,15 @@ async function loadSummary() {
 
   state.summary = summary || {};
   state.status = status || {};
+  state.ports = arr(state.summary?.ports);
+  state.top = {
+    immediate_targets: arr(state.summary?.immediate_targets),
+    opportunities: arr(state.summary?.opportunities)
+  };
   renderKpi();
   renderStatus();
+  renderPorts();
+  renderHotList();
 
   const [health, continuity, alerts, ports, top, changes, followups] = await Promise.all([
     api("health", "/api/health/pipeline.json", 3000),
@@ -558,8 +576,8 @@ async function loadSummary() {
   state.health = health || {};
   state.continuity = continuity || {};
   state.alerts = alerts || {};
-  state.ports = arr(ports);
-  state.top = top || {};
+  state.ports = arr(ports).length ? arr(ports) : arr(state.summary?.ports);
+  state.top = top || state.top || {};
   state.changes = changes || {};
   state.followups = arr(followups);
 
