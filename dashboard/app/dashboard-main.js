@@ -264,14 +264,30 @@ function useSampleFallback() {
 }
 
 function inferDataSourceLabel() {
+  const finalSource = [
+    state.summary.data_source_used,
+    state.status.data_source_used,
+    state.summary.data_mode,
+    state.status.data_mode,
+    state.summary.serving_mode,
+    state.status.serving_mode
+  ].join(" ").toLowerCase();
   const text = JSON.stringify({ summary: state.summary, status: state.status, health: state.health }).toLowerCase();
-  if (state.sample || /sample_mode|sample/.test(text)) return "샘플 데이터";
-  if (/csv|source_csv/.test(text)) return "CSV";
+  if (/supabase|active_dataset|latest_successful|summary_snapshot|db_snapshot/.test(finalSource)) return "DB 스냅샷";
+  if (/csv|source_csv/.test(finalSource)) return "CSV";
+  if (state.sample || /sample_mode/.test(finalSource)) return "샘플 데이터";
   if (/supabase|worker_supabase|api|live/.test(text)) return "API";
   return "API";
 }
 
 function csvFailed() {
+  const finalSource = [
+    state.summary.data_source_used,
+    state.status.data_source_used,
+    state.summary.data_mode,
+    state.status.data_mode
+  ].join(" ").toLowerCase();
+  if (/supabase|active_dataset|latest_successful|summary_snapshot|db_snapshot/.test(finalSource)) return false;
   const text = JSON.stringify({ summary: state.summary, status: state.status, health: state.health }).toLowerCase();
   return /csv|source_csv/.test(text) && /fail|error|timeout|unavailable|실패|오류/.test(text);
 }
