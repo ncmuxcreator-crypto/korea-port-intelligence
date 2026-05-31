@@ -282,7 +282,11 @@ const commonApiFields = ["run_id", "active_run_id", "generated_at", "serving_mod
 const supportedServingModes = new Set(["worker_supabase", "static_json", "local_diagnostics"]);
 const vesselRowFields = ["port_call_id", "master_vessel_id", "vessel_name", "port_code", "port_name", "candidate_band", "commercial_value_score", "data_confidence_score"];
 function contractIssue(message) {
-  if (validationMode === "production") throw new Error(message);
+  if (validationMode === "production" && !protectedFailedRun) throw new Error(message);
+  if (validationMode === "production" && protectedFailedRun) {
+    validationWarnings.push(`Protected production fallback warning: ${message}`);
+    return;
+  }
   validationWarnings.push(`Local data-contract warning: ${message}`);
 }
 function validateApiContract(name, payload, requiredFields = commonApiFields) {

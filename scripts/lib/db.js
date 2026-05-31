@@ -1,6 +1,6 @@
 ﻿import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 const COMMERCIAL_RULE_VERSION = process.env.COMMERCIAL_RULE_VERSION || "commercial_rules_v2026_05_31";
 const CANDIDATE_RULE_VERSION = process.env.CANDIDATE_RULE_VERSION || "candidate_hybrid_percentile_v2026_05_31";
@@ -43,6 +43,14 @@ function normalizeCompanyName(value) {
 function stableEntityId(prefix, value) {
   const normalized = normalizeVesselName(value);
   return `${prefix}-${normalized || randomUUID().slice(0, 10)}`;
+}
+
+function stableHashId(prefix, value) {
+  const hash = createHash("sha1")
+    .update(String(value || "unknown"))
+    .digest("hex")
+    .slice(0, 16);
+  return `${prefix}-${hash}`;
 }
 
 function fallbackMasterId(record = {}) {
@@ -2824,7 +2832,7 @@ export async function saveToSupabase(records, options = {}) {
       const vesselTypeGroup = r.vessel_type_group || "unknown";
       if (!fromPort && !toPort) return null;
       return {
-        route_pattern_id: stableEntityId("ROUTE", `${fromPort}-${toPort}-${vesselTypeGroup}`),
+        route_pattern_id: stableHashId("ROUTE", `${fromPort}|${toPort}|${vesselTypeGroup}`),
         from_port: fromPort || null,
         to_port: toPort || null,
         vessel_type_group: vesselTypeGroup,
@@ -2865,7 +2873,7 @@ export async function saveToSupabase(records, options = {}) {
       actual_arrival_time: r.actual_arrival_time || r.ata || null,
       prediction_error_hours: r.prediction_error_hours ?? null,
       prediction_confidence: Number(r.arrival_prediction_confidence || r.prediction_confidence || 0),
-      route_pattern_id: stableEntityId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}-${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}-${r.vessel_type_group || "unknown"}`),
+      route_pattern_id: stableHashId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}|${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}|${r.vessel_type_group || "unknown"}`),
       arrival_prediction_confidence: Number(r.arrival_prediction_confidence || 0),
       payload: storagePayload(r)
     })), row => row.route_history_id);
@@ -2892,7 +2900,7 @@ export async function saveToSupabase(records, options = {}) {
       actual_arrival_time: r.actual_arrival_time || r.ata || null,
       prediction_error_hours: r.prediction_error_hours ?? null,
       prediction_confidence: Number(r.arrival_prediction_confidence || r.prediction_confidence || 0),
-      route_pattern_id: stableEntityId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}-${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}-${r.vessel_type_group || "unknown"}`),
+      route_pattern_id: stableHashId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}|${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}|${r.vessel_type_group || "unknown"}`),
       arrival_prediction_confidence: Number(r.arrival_prediction_confidence || 0),
       predicted_congestion: Number(r.predicted_congestion || 0),
       predicted_cleaning_window: Number(r.predicted_cleaning_window || 0),
