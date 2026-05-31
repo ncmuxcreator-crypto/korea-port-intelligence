@@ -3856,14 +3856,31 @@ export async function saveToSupabase(records, options = {}) {
         blockPromotion(promotion, "summary_count_drop_guard", dashboardSummarySnapshotResult.summary_snapshot_error);
         throw new Error(dashboardSummarySnapshotResult.summary_snapshot_error);
       }
-      await supabase
-        .from("dashboard_summary_snapshots")
-        .update({ is_latest_successful: false })
-        .eq("is_latest_successful", true);
       const { error } = await supabase
         .from("dashboard_summary_snapshots")
         .upsert(summarySnapshot, { onConflict: "snapshot_id" });
       if (error) throw error;
+      const verifySummary = await supabase
+        .from("dashboard_summary_snapshots")
+        .select("snapshot_id,run_id,record_count,all_vessels_count,is_latest_successful")
+        .eq("snapshot_id", summarySnapshot.snapshot_id)
+        .limit(1);
+      if (verifySummary.error) throw verifySummary.error;
+      const writtenSummary = verifySummary.data?.[0] || null;
+      if (!writtenSummary || Number(writtenSummary.record_count || writtenSummary.all_vessels_count || 0) <= 0) {
+        throw new Error("Dashboard summary snapshot verification failed after write.");
+      }
+      const clearPrevious = await supabase
+        .from("dashboard_summary_snapshots")
+        .update({ is_latest_successful: false })
+        .eq("is_latest_successful", true)
+        .neq("snapshot_id", summarySnapshot.snapshot_id);
+      if (clearPrevious.error) throw clearPrevious.error;
+      const markCurrent = await supabase
+        .from("dashboard_summary_snapshots")
+        .update({ is_latest_successful: true })
+        .eq("snapshot_id", summarySnapshot.snapshot_id);
+      if (markCurrent.error) throw markCurrent.error;
       dashboardSummarySnapshotResult.summary_snapshot_write_status = "written";
       dashboardSummarySnapshotResult.summary_snapshot_rows = 1;
       dashboardSummarySnapshotResult.latest_successful_summary_run_id = runId;

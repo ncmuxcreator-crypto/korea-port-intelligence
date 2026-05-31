@@ -65,6 +65,8 @@ const allVesselsPayload = readJson("dashboard/api/all-collected-vessels.json", [
 const targetVesselsPayload = readJson("dashboard/api/target-vessels.json", []);
 const vesselsPayload = readJson("dashboard/api/vessels.json", []);
 const backendDoctor = readJson("dashboard/api/backend-doctor.json", {});
+const workerSource = fs.readFileSync("src/worker.js", "utf8");
+const dbSource = fs.readFileSync("scripts/lib/db.js", "utf8");
 
 const allVessels = rows(allVesselsPayload);
 const targetVessels = rows(targetVesselsPayload);
@@ -88,6 +90,30 @@ for (const file of [
 ]) {
   assert(fs.existsSync(file), `Missing required API output file: ${file}`);
 }
+
+assert(
+  !workerSource.includes("promoted.error"),
+  "Worker fallback must not reference undefined promoted.error."
+);
+assert(
+  workerSource.includes('active.error || latestRun.error || legacy.error || "missing_active_dataset"'),
+  "Worker missing-active fallback must resolve without throwing ReferenceError."
+);
+for (const marker of ["active_dataset_pointer", "latest_completed_real_run", "latest_snapshot_run", "legacy_latest_snapshots", "missing_active_dataset"]) {
+  assert(workerSource.includes(marker), `Worker fallback regression missing marker: ${marker}`);
+}
+assert(
+  dbSource.indexOf('.upsert(summarySnapshot, { onConflict: "snapshot_id" })') <
+    dbSource.indexOf('.update({ is_latest_successful: false })'),
+  "dashboard_summary_snapshots must write new summary before clearing previous latest pointer."
+);
+assert(
+  dbSource.includes('.select("snapshot_id,run_id,record_count,all_vessels_count,is_latest_successful")') &&
+    dbSource.includes("Dashboard summary snapshot verification failed after write.") &&
+    dbSource.includes('.neq("snapshot_id", summarySnapshot.snapshot_id)') &&
+    dbSource.includes('.update({ is_latest_successful: true })'),
+  "dashboard_summary_snapshots latest pointer update must verify current snapshot before replacing previous latest."
+);
 
 if (dataMode !== "no_live_data" && recordCount > 0) {
   assert(allVesselsCount > 0, "all_vessels_count must be > 0 after successful collection.");

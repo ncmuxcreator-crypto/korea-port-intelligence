@@ -1849,7 +1849,7 @@ async function fetchActivePointer(env) {
   return {
     configured: true,
     active_run_id: null,
-    error: active.error || promoted.error || latestRun.error || legacy.error || "missing_active_dataset",
+    error: active.error || latestRun.error || legacy.error || "missing_active_dataset",
     pointer_source: "none",
     auth_key_type: base.keyType,
     pointer_diagnostics: diagnostics
