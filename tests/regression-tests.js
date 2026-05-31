@@ -105,9 +105,17 @@ assert(
   "Dashboard must normalize last-updated fields, timeout slow APIs, and render summary before optional panels."
 );
 assert(
+  dashboardSource.includes("function resolveKpiValue") &&
+    dashboardSource.includes("[KPI DEBUG]") &&
+    dashboardSource.includes("확인 불가") &&
+    dashboardSource.includes("isValidKpiValue"),
+  "Dashboard KPI cards must resolve missing numeric fields without infinite skeleton loading."
+);
+assert(
   publicDashboardSource.includes("function getLastUpdatedAt(payload)") &&
     publicDashboardSource.includes("최근 갱신 시간 확인 불가") &&
-    publicDashboardSource.includes("AbortController"),
+    publicDashboardSource.includes("AbortController") &&
+    publicDashboardSource.includes("function resolveKpiValue"),
   "Deployed public dashboard must include the same last-updated fallback logic as dashboard/index.html."
 );
 assert(
