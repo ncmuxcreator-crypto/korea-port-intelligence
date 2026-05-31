@@ -4685,6 +4685,26 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
+    if (latestSummarySnapshot && pathname.endsWith("/candidates/top.json")) {
+      const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
+      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || "summary_snapshot_top_route");
+      return json({
+        active_run_id: summary.active_run_id,
+        summary_run_id: summary.summary_run_id,
+        data_source_used: summary.data_source_used,
+        is_fallback: summary.is_fallback,
+        fallback_used: summary.fallback_used,
+        fallback_reason: summary.fallback_reason,
+        generated_at: summary.generated_at,
+        data_freshness: summary.data_freshness,
+        record_count: summary.record_count,
+        target_count: summary.target_count,
+        immediate_target_count: summary.immediate_target_count,
+        opportunity_count: summary.opportunity_count,
+        immediate_targets: summary.immediate_targets,
+        opportunities: summary.opportunities
+      }, { headers: corsHeaders() });
+    }
     if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
       const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
