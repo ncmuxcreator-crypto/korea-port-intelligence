@@ -124,6 +124,11 @@ assert(
   "Port cards must not report partial sub-port breakdowns as total-count mismatches."
 );
 assert(
+  dashboardSource.includes("기준 충족 없음") &&
+    publicDashboardSource.includes("기준 충족 없음"),
+  "Immediate-target KPI must clearly indicate when no vessel meets the current threshold."
+);
+assert(
   publicDashboardSource.includes("function getLastUpdatedAt(payload)") &&
     publicDashboardSource.includes("최근 갱신 시간 확인 불가") &&
     publicDashboardSource.includes("AbortController") &&
