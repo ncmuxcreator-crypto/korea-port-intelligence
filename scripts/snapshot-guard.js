@@ -85,6 +85,7 @@ const report = {
   status_run_id: statusRunId,
   active_run_id: status.active_run_id || statusRunId,
   stale_diagnostic: staleDiagnostic,
+  placeholder: false,
   validation_mode: validationMode,
   data_mode: dataMode || "unknown",
   record_count: recordCount,

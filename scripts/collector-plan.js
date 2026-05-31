@@ -9,19 +9,27 @@ function readJson(path, fallback = {}) {
   }
 }
 
-const status = readJson("dashboard/api/debug/status.json", readJson("dashboard/api/status.json", {}));
-const validationMode = String(process.env.VALIDATION_MODE || status.validation_mode || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+const mainStatus = readJson("dashboard/api/status.json", {});
+const debugStatus = readJson("dashboard/api/debug/status.json", null);
+const validationMode = String(process.env.VALIDATION_MODE || mainStatus.validation_mode || debugStatus?.validation_mode || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+const status = validationMode === "production" ? mainStatus : (debugStatus || mainStatus);
+const statusRunId = status.run_id || status.active_run_id || status.summary_run_id || null;
 const runOrigin = buildRunOrigin({
-  runId: status.run_id || status.active_run_id || null,
+  runId: statusRunId,
   validationMode,
   servingMode: status.output_mode || status.serving_mode || (status.data_mode === "no_live_data" ? "debug_diagnostics_only" : "production_api")
 });
+const generatedAt = new Date().toISOString();
 
 const plan = {
   ...runOrigin,
   version: "17.7.0",
-  generated_at: new Date().toISOString(),
-  generatedAt: new Date().toISOString(),
+  generated_at: generatedAt,
+  generatedAt,
+  status_run_id: statusRunId,
+  active_run_id: status.active_run_id || statusRunId,
+  stale_diagnostic: false,
+  placeholder: false,
   status: "ready",
   validation_mode: validationMode,
   sequence: ["source_health","vessel_spec","port_operation","mof_ais_dynamic","candidate_engine","snapshot_guard"],

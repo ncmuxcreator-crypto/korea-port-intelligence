@@ -2182,10 +2182,19 @@ function writeApiJson(filePath, payload, report = {}) {
 
 function withRunOrigin(payload = {}, origin = {}) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
+  const runId = payload.run_id || origin.run_id || null;
+  const statusRunId = payload.status_run_id || origin.status_run_id || payload.active_run_id || origin.active_run_id || runId;
+  const activeRunId = payload.active_run_id || origin.active_run_id || statusRunId;
+  const staleDiagnostic = Boolean(statusRunId && runId && String(statusRunId) !== String(runId));
   return {
     ...origin,
     ...payload,
-    run_id: payload.run_id || origin.run_id || null,
+    run_id: runId,
+    generated_at: payload.generated_at || origin.generated_at || new Date().toISOString(),
+    status_run_id: statusRunId || null,
+    active_run_id: activeRunId || null,
+    stale_diagnostic: payload.stale_diagnostic ?? staleDiagnostic,
+    placeholder: payload.placeholder === true,
     validation_mode: payload.validation_mode || origin.validation_mode,
     serving_mode: payload.serving_mode || origin.serving_mode,
     generated_by: payload.generated_by || origin.generated_by,

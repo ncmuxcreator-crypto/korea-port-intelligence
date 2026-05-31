@@ -53,6 +53,8 @@ const report = {
   status_run_id: statusRunId,
   vessels_run_id: inferredRunId,
   active_run_id: statusRunId,
+  stale_diagnostic: staleReadinessGate,
+  placeholder: false,
   previous_readiness_run_id: previousReports[0]?.run_id || null,
   previous_readiness_run_ids: [...new Set(previousReports.map(previous => previous.run_id).filter(Boolean))],
   generated_at: new Date().toISOString(),

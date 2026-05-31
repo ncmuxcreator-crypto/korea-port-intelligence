@@ -37,6 +37,10 @@ function readJson(path, fallback = {}) {
 function pickCurrentStatus() {
   const debug = readJson("dashboard/api/debug/status.json", null);
   const main = readJson("dashboard/api/status.json", {});
+  const validationMode = String(process.env.VALIDATION_MODE || main.validation_mode || debug?.validation_mode || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+  if (validationMode === "production") {
+    return { status: main, status_path: "dashboard/api/status.json", diagnostics_only: false };
+  }
   if (debug?.run_id && (!main?.run_id || String(debug.run_id) !== String(main.run_id))) {
     return { status: debug, status_path: "dashboard/api/debug/status.json", diagnostics_only: true };
   }
@@ -84,6 +88,9 @@ const report = {
   version: "17.7.0",
   run_id: statusRunId,
   status_run_id: statusRunId,
+  active_run_id: status.active_run_id || statusRunId,
+  stale_diagnostic: false,
+  placeholder: false,
   status_source_path: statusPath,
   diagnostics_only: diagnosticsOnly,
   validation_mode: validationMode,
@@ -147,6 +154,10 @@ const registryReport = {
   ...runOrigin,
   version: "17.7.0",
   run_id: statusRunId,
+  status_run_id: statusRunId,
+  active_run_id: status.active_run_id || statusRunId,
+  stale_diagnostic: false,
+  placeholder: false,
   generated_at: report.generated_at,
   mode: "readiness_registry",
   required_for_real_data: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],

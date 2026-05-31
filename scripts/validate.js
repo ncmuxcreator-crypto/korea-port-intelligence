@@ -31,6 +31,19 @@ function validateRunOrigin(label, payload) {
   }
 }
 
+function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } = {}) {
+  validateRunOrigin(label, payload);
+  for (const marker of ["generated_at", "status_run_id", "active_run_id", "stale_diagnostic"]) {
+    if (!(marker in (payload || {}))) throw new Error(`${label} missing runtime diagnostic field: ${marker}`);
+  }
+  if (payload.placeholder === true && !allowPlaceholder) {
+    throw new Error(`${label} is a placeholder and must not be used as runtime truth`);
+  }
+  if (status?.run_id && payload?.run_id && String(status.run_id) !== String(payload.run_id) && payload.stale_diagnostic !== true) {
+    throw new Error(`${label} must mark stale_diagnostic=true when run_id differs from status.json`);
+  }
+}
+
 const required = [
   "data/latest-lite.json",
   "data/pipeline-report.json",
@@ -275,7 +288,7 @@ if (outputExists("dashboard/api/backend-doctor.json")) {
 }
 if (outputExists("dashboard/api/readiness-gate.json")) {
   const readiness = readOutputJson("dashboard/api/readiness-gate.json");
-  validateRunOrigin("readiness-gate.json", readiness);
+  validateRuntimeDiagnostic("readiness-gate.json", readiness);
   if (!readiness.run_id || !readiness.generated_at) {
     throw new Error("Readiness gate must include run_id and generated_at");
   }
@@ -300,7 +313,7 @@ if (outputExists("dashboard/api/readiness-gate.json")) {
 }
 if (outputExists("dashboard/api/snapshot-guard.json")) {
   const guard = readOutputJson("dashboard/api/snapshot-guard.json");
-  validateRunOrigin("snapshot-guard.json", guard);
+  validateRuntimeDiagnostic("snapshot-guard.json", guard);
   if (Number(status.record_count || 0) === 0 && guard.status !== "empty_dataset") {
     throw new Error("Snapshot guard must mark zero-row outputs as empty_dataset");
   }
@@ -320,7 +333,7 @@ if (outputExists("dashboard/api/snapshot-guard.json")) {
 }
 if (outputExists("dashboard/api/source-health-runtime.json")) {
   const sourceHealth = readOutputJson("dashboard/api/source-health-runtime.json");
-  validateRunOrigin("source-health-runtime.json", sourceHealth);
+  validateRuntimeDiagnostic("source-health-runtime.json", sourceHealth);
   const sourceHealthHasCurrentRunFields = ["run_id", "generated_at", "secrets_present", "enabled_collectors", "attempted_collectors", "skipped_collectors"].every(marker => marker in sourceHealth);
   const localDebugStatusWithStaleMainSourceHealth = validationMode === "local" &&
     String(status.data_mode || "") === "no_live_data" &&
@@ -339,10 +352,17 @@ if (outputExists("dashboard/api/source-health-runtime.json")) {
   }
 }
 if (outputExists("dashboard/api/collector-plan-runtime.json")) {
-  validateRunOrigin("collector-plan-runtime.json", readOutputJson("dashboard/api/collector-plan-runtime.json"));
+  validateRuntimeDiagnostic("collector-plan-runtime.json", readOutputJson("dashboard/api/collector-plan-runtime.json"));
 }
 if (outputExists("dashboard/api/backend-ops.json")) {
-  validateRunOrigin("backend-ops.json", readOutputJson("dashboard/api/backend-ops.json"));
+  validateRuntimeDiagnostic("backend-ops.json", readOutputJson("dashboard/api/backend-ops.json"));
+}
+if (outputExists("dashboard/api/snapshot-diff-runtime.json")) {
+  const snapshotDiff = readOutputJson("dashboard/api/snapshot-diff-runtime.json");
+  validateRuntimeDiagnostic("snapshot-diff-runtime.json", snapshotDiff, { allowPlaceholder: true });
+  if (snapshotDiff.placeholder === true && snapshotDiff.ok === true) {
+    throw new Error("snapshot-diff-runtime placeholder must not return ok=true");
+  }
 }
 if (!status.candidate_ops || !status.backend_health || !status.seven_pack_summary) {
   throw new Error("Missing stability bundle outputs");
