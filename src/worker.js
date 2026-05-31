@@ -2021,7 +2021,7 @@ async function fetchLocalStaticSnapshot(env, reason = "supabase_unavailable") {
 }
 
 async function fetchLatestSummarySnapshot(env) {
-  const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&status=eq.success&order=generated_at.desc&limit=10");
+  const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&status=eq.success&order=generated_at.desc&limit=100");
   if (!response.ok || !response.rows.length) return null;
   const latest = response.rows[0];
   const commercialCount = row => Number(row?.sales_target_count || row?.opportunity_count || row?.immediate_target_count || 0);
