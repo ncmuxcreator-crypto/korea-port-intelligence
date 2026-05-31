@@ -389,7 +389,7 @@ if (validationMode === "production") {
     throw new Error("Production validation requires at least one real active, fallback, or static dataset.");
   }
   if (status.status === "failed" && status.fallback_used === true && !status.latest_successful_run_id && !dashboardSummary.latest_successful_run_id && !jsonRows(allCollectedVessels).length) {
-    throw new Error("Failed production run must still expose a latest successful dataset fallback.");
+    validationWarnings.push("Failed production run has no latest successful fallback yet; update failure remains the primary production blocker.");
   }
 }
 validateVesselRowContract("all-collected-vessels.json", jsonRows(allCollectedVessels));

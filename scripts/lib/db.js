@@ -2850,7 +2850,7 @@ export async function saveToSupabase(records, options = {}) {
 
   for (let index = 0; index < routePatternRows.length; index += batchSize) {
     const batch = routePatternRows.slice(index, index + batchSize);
-    const { error } = await supabase.from("route_patterns").upsert(batch, { onConflict: "from_port,to_port,vessel_type_group" });
+    const { error } = await supabase.from("route_patterns").upsert(batch, { onConflict: "route_pattern_id" });
     if (error) throw error;
   }
 
