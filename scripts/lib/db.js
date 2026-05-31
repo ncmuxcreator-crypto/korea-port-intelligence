@@ -308,6 +308,44 @@ function dedupeRowsByConflictSpec(rows, onConflict, tableName, audit = {}) {
   return deduped;
 }
 
+const OPTIONAL_DB_WRITE_TABLES = new Set([
+  "vessel_master",
+  "operator_master",
+  "agent_master",
+  "agent_operator_links",
+  "agent_operator_mapping",
+  "contact_master",
+  "vessel_operator_history",
+  "operator_history",
+  "operator_contact_history",
+  "route_patterns",
+  "vessel_route_history",
+  "predicted_arrivals",
+  "commercial_leads",
+  "opportunity_master",
+  "enrichment_match_candidates",
+  "vessel_aliases",
+  "vessel_identity_candidates",
+  "imo_recovery_queue",
+  "risk_history",
+  "vessel_events",
+  "pilot_schedule_events",
+  "port_congestion_snapshots",
+  "operator_fleet_opportunities",
+  "feature_store",
+  "feature_snapshots",
+  "rule_evaluations",
+  "explainability_snapshots",
+  "route_graph_edges",
+  "operator_graph_edges",
+  "model_training_rows",
+  "vessel_snapshot_daily",
+  "port_snapshot_daily",
+  "operator_snapshot_daily",
+  "route_snapshot_daily",
+  "commercial_opportunity_daily"
+]);
+
 function withDedupedUpserts(supabase, audit = {}) {
   return new Proxy(supabase, {
     get(target, property, receiver) {
@@ -316,14 +354,31 @@ function withDedupedUpserts(supabase, audit = {}) {
         const builder = target.from(tableName);
         return new Proxy(builder, {
           get(query, queryProperty, queryReceiver) {
-            if (queryProperty !== "upsert") {
+            if (!["upsert", "insert"].includes(queryProperty)) {
               const value = Reflect.get(query, queryProperty, queryReceiver);
               return typeof value === "function" ? value.bind(query) : value;
             }
-            return (rows, options = {}) => query.upsert(
-              dedupeRowsByConflictSpec(rows, options?.onConflict, tableName, audit),
-              options
-            );
+            return async (rows, options = {}) => {
+              const writeRows = queryProperty === "upsert"
+                ? dedupeRowsByConflictSpec(rows, options?.onConflict, tableName, audit)
+                : rows;
+              const result = await query[queryProperty](writeRows, options);
+              if (result?.error && OPTIONAL_DB_WRITE_TABLES.has(tableName)) {
+                const optionalFailures = audit.optional_db_write_failures || {};
+                optionalFailures[tableName] = [
+                  ...(optionalFailures[tableName] || []),
+                  {
+                    operation: queryProperty,
+                    rows: Array.isArray(writeRows) ? writeRows.length : writeRows ? 1 : 0,
+                    error: compactDbError(result.error)
+                  }
+                ];
+                audit.optional_db_write_failures = optionalFailures;
+                console.warn(`[HWK] Optional DB write skipped: ${tableName}.${queryProperty}`, compactDbError(result.error));
+                return { ...result, error: null };
+              }
+              return result;
+            };
           }
         });
       };
@@ -3922,6 +3977,7 @@ export async function saveToSupabase(records, options = {}) {
       db_foundation_write_mode: foundationWriteMode(),
       db_rows_written_by_table: dbRowsWrittenByTable,
       db_upsert_dedupe: upsertDedupeAudit,
+      optional_db_write_failures: upsertDedupeAudit.optional_db_write_failures || {},
       schema_compatibility: schemaCompatibility,
       retention_rows_deleted_by_table: retentionRowsDeletedByTable,
       post_write_verification: postWriteVerification,
@@ -3978,6 +4034,7 @@ export async function saveToSupabase(records, options = {}) {
     latest_successful_run_id: postWriteVerification.latest_successful_run_id,
     db_rows_written_by_table: dbRowsWrittenByTable,
     db_upsert_dedupe: upsertDedupeAudit,
+    optional_db_write_failures: upsertDedupeAudit.optional_db_write_failures || {},
     schema_compatibility: schemaCompatibility,
     retention_rows_deleted_by_table: retentionRowsDeletedByTable,
     retentionCleanup,

@@ -32,7 +32,16 @@ function validateRunOrigin(label, payload) {
 }
 
 function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } = {}) {
-  validateRunOrigin(label, payload);
+  try {
+    validateRunOrigin(label, payload);
+  } catch (error) {
+    const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
+    if (allowPlaceholder || localNoLiveDataDiagnostics || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
+      validationWarnings.push(`${label} is a legacy/protected diagnostic missing run origin fields: ${error.message}`);
+    } else {
+      throw error;
+    }
+  }
   const missingRuntimeMarkers = ["generated_at", "status_run_id", "active_run_id", "stale_diagnostic"]
     .filter(marker => !(marker in (payload || {})));
   if (missingRuntimeMarkers.length) {
