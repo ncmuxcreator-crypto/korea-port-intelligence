@@ -16,7 +16,10 @@ function readJson(path, fallback) {
   }
 }
 
+const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+
 function outputPath(path) {
+  if (validationMode === "production") return path;
   const debugPath = path.startsWith("dashboard/api/") ? `dashboard/api/debug/${path.slice("dashboard/api/".length)}` : path;
   return fs.existsSync(debugPath) ? debugPath : path;
 }
@@ -31,9 +34,10 @@ const inferredRunId = vesselRunIds.length === 1 ? vesselRunIds[0] : statusRunId;
 const staleReadinessGate = Boolean(statusRunId && inferredRunId && String(statusRunId) !== String(inferredRunId));
 const stalePreviousReports = previousReports.filter(previous => previous?.run_id && statusRunId && String(previous.run_id) !== String(statusRunId));
 const previousStale = stalePreviousReports.length > 0;
-const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const dataMode = String(status.data_mode || status.data_mode_detail?.mode || "").toLowerCase();
-const emptyDataset = vessels.length === 0 || Number(status.record_count || 0) === 0;
+const total = vessels.length;
+const recordCount = Number(status.record_count || 0);
+const emptyDataset = total === 0 || recordCount === 0;
 const noLiveData = dataMode === "no_live_data";
 const productionReady = !staleReadinessGate && !emptyDataset && !noLiveData;
 const runOrigin = buildRunOrigin({
@@ -53,14 +57,19 @@ const report = {
   previous_readiness_run_ids: [...new Set(previousReports.map(previous => previous.run_id).filter(Boolean))],
   generated_at: new Date().toISOString(),
   status_generated_at: status.completed_at || status.generated_at || null,
-  total: vessels.length,
+  total,
   salesReady: vessels.filter(v => v.commercial_use_status === "sales_review_ready").length,
   blockedSample: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach").length,
   sampleImmediateBlocked: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach" && v.is_immediate_candidate).length,
   operatingImmediate: vessels.filter(v => v.is_operating_immediate_candidate).length,
   readiness_status: emptyDataset || noLiveData ? "empty_dataset" : staleReadinessGate ? "stale" : "ready",
+  empty_dataset_reasons: [
+    total === 0 ? "total_is_zero" : null,
+    recordCount === 0 ? "record_count_is_zero" : null,
+    noLiveData ? "no_live_data" : null
+  ].filter(Boolean),
   data_mode: status.data_mode || null,
-  record_count: Number(status.record_count || 0),
+  record_count: recordCount,
   production_ready: productionReady,
   validation_mode: validationMode,
   stale_readiness_gate: staleReadinessGate,

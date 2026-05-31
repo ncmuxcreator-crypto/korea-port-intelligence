@@ -3493,7 +3493,9 @@ function buildReadinessGateReport({ report = {}, vessels = [], generatedAt = new
   const inferredRunId = vesselRunIds.length === 1 ? vesselRunIds[0] : statusRunId;
   const staleReadinessGate = Boolean(statusRunId && inferredRunId && String(statusRunId) !== String(inferredRunId));
   const dataMode = String(report.data_mode || report.data_mode_detail?.mode || "").toLowerCase();
-  const emptyDataset = vessels.length === 0 || Number(report.record_count || 0) === 0;
+  const total = vessels.length;
+  const recordCount = Number(report.record_count || 0);
+  const emptyDataset = total === 0 || recordCount === 0;
   const noLiveData = dataMode === "no_live_data";
   const productionReady = !staleReadinessGate && !emptyDataset && !noLiveData;
   return {
@@ -3504,14 +3506,19 @@ function buildReadinessGateReport({ report = {}, vessels = [], generatedAt = new
     active_run_id: statusRunId,
     generated_at: generatedAt,
     status_generated_at: report.completed_at || report.generated_at || null,
-    total: vessels.length,
+    total,
     salesReady: vessels.filter(v => v.commercial_use_status === "sales_review_ready").length,
     blockedSample: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach").length,
     sampleImmediateBlocked: vessels.filter(v => v.commercial_use_status === "do_not_use_for_outreach" && v.is_immediate_candidate).length,
     operatingImmediate: vessels.filter(v => v.is_operating_immediate_candidate).length,
     readiness_status: emptyDataset || noLiveData ? "empty_dataset" : staleReadinessGate ? "stale" : "ready",
+    empty_dataset_reasons: [
+      total === 0 ? "total_is_zero" : null,
+      recordCount === 0 ? "record_count_is_zero" : null,
+      noLiveData ? "no_live_data" : null
+    ].filter(Boolean),
     data_mode: report.data_mode || null,
-    record_count: Number(report.record_count || 0),
+    record_count: recordCount,
     production_ready: productionReady,
     validation_mode: process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local"),
     stale_readiness_gate: staleReadinessGate,

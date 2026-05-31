@@ -285,6 +285,15 @@ if (outputExists("dashboard/api/readiness-gate.json")) {
   if (Number(readiness.total || 0) === 0 && readiness.ok === true) {
     throw new Error("Readiness gate must not return ok=true for an empty dataset");
   }
+  if ((Number(readiness.total || 0) === 0 || Number(readiness.record_count || 0) === 0) && readiness.readiness_status !== "empty_dataset") {
+    throw new Error("Readiness gate must mark total=0 or record_count=0 as empty_dataset");
+  }
+  if ((Number(readiness.total || 0) === 0 || Number(readiness.record_count || 0) === 0) && readiness.ok !== false) {
+    throw new Error("Readiness gate must not pass total=0 or record_count=0 datasets");
+  }
+  if ((Number(readiness.total || 0) === 0 || Number(readiness.record_count || 0) === 0) && readiness.production_ready !== false) {
+    throw new Error("Readiness gate must not mark total=0 or record_count=0 datasets as production_ready");
+  }
   if (String(readiness.data_mode || "") === "no_live_data" && readiness.production_ready === true) {
     throw new Error("Readiness gate must not mark no_live_data as production_ready");
   }
