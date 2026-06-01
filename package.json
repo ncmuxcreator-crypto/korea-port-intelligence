@@ -14,6 +14,7 @@
     "audit:db": "node scripts/with-env.js scripts/audit-db.js",
     "audit:normalize": "node scripts/with-env.js scripts/audit-normalize.js",
     "audit:features": "node scripts/audit-features.js",
+    "audit:truth": "node scripts/with-env.js scripts/audit-truth.js",
     "db:migrate": "node scripts/apply-migrations.js",
     "db:migrate:dry-run": "node scripts/apply-migrations.js --dry-run",
     "db:dedupe": "node scripts/with-env.js scripts/dedupe-production.js",

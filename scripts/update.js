@@ -3718,6 +3718,121 @@ function buildCommercialIntelligenceSummary({ topCandidates = {}, commercialComm
   });
 }
 
+function salesPriorityIdentityKey(record = {}) {
+  const imo = firstNonEmpty(record.imo, record.imo_no);
+  const mmsi = firstNonEmpty(record.mmsi);
+  if (imo) return `IMO|${imo}`;
+  if (mmsi) return `MMSI|${mmsi}`;
+  const name = normalizeVesselName(firstNonEmpty(record.vessel_name, record.name, record.ship_name));
+  const vesselType = normalizeIdentityToken(firstNonEmpty(record.vessel_type_group, record.vessel_type, record.ship_type));
+  if (name) return `NAME|${name}|${vesselType}`;
+  return `VESSEL|${firstNonEmpty(record.master_vessel_id, record.hybrid_entity_key, record.vessel_id)}`;
+}
+
+function salesPriorityDataSources(record = {}) {
+  const sources = new Set();
+  if (salesPriorityScore(record) > 0 || firstNonEmpty(record.opportunity_id, record.opportunity_status, record.opportunity_state)) sources.add("opportunity_master");
+  if (firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.operational_risk_score)) sources.add("risk_history");
+  if (compactReasonSummary(record) || compactInsightFactors(record).length) {
+    sources.add("explainability_snapshots");
+    sources.add("rule_evaluations");
+  }
+  if (firstNonEmpty(record.commercial_opportunity_id, record.lead_status, record.why_now) || salesPriorityScore(record) > 0) sources.add("commercial_opportunity_daily");
+  if (firstNonEmpty(record.previous_port, record.departure_port, record.destination_port, record.destination, record.next_port)) sources.add("route_snapshot_daily");
+  if (firstNonEmpty(record.operator_name, record.operator, record.operator_normalized)) sources.add("operator_snapshot_daily");
+  return [...sources];
+}
+
+function buildSalesPriorityIntelligenceSummary({
+  records = [],
+  candidateList = [],
+  salesCandidates = [],
+  immediateTargets = [],
+  topCandidates = {},
+  commercialCommandCenter = {},
+  generatedAt,
+  dataMode
+} = {}) {
+  const source = [
+    ...(topCandidates.opportunities || []),
+    ...(commercialCommandCenter.immediate_targets || []),
+    ...(commercialCommandCenter.high_value_targets || []),
+    ...candidateList,
+    ...immediateTargets,
+    ...salesCandidates,
+    ...records
+  ];
+  const byIdentity = new Map();
+  for (const record of source) {
+    const opportunityScore = firstFiniteNumber(
+      record.opportunity_score,
+      record.sales_score,
+      record.commercial_value_score,
+      record.total_sales_priority_score,
+      record.cleaning_candidate_score,
+      record.predicted_cleaning_opportunity_score
+    );
+    const riskScore = firstFiniteNumber(
+      record.risk_score,
+      record.biofouling_exposure_score,
+      record.biofouling_risk_score,
+      record.biofouling_score,
+      record.operational_risk_score,
+      record.congestion_score
+    );
+    if (!Number.isFinite(Number(opportunityScore)) && !Number.isFinite(Number(riskScore))) continue;
+    const identity = salesPriorityIdentityKey(record);
+    if (!identity || identity === "VESSEL||") continue;
+    const reasonSummary = compactReasonSummary(record);
+    const topFactors = compactInsightFactors(record);
+    const item = {
+      rank: 0,
+      master_vessel_id: firstNonEmpty(record.master_vessel_id, record.hybrid_entity_key, record.vessel_id) || null,
+      source_id: firstNonEmpty(record.opportunity_id, record.port_call_id, record.snapshot_id, record.master_vessel_id, record.hybrid_entity_key) || null,
+      vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+      imo: firstNonEmpty(record.imo, record.imo_no) || null,
+      mmsi: firstNonEmpty(record.mmsi) || null,
+      port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination) || null,
+      opportunity_score: Number.isFinite(Number(opportunityScore)) ? Number(opportunityScore) : null,
+      risk_score: Number.isFinite(Number(riskScore)) ? Number(riskScore) : null,
+      confidence_score: firstFiniteNumber(record.data_confidence_score, record.source_confidence_score, record.confidence, record.confidence_score) ?? null,
+      reason_summary: reasonSummary || (topFactors.length ? topFactors.join(", ") : "점수 근거가 있는 기존 인텔리전스 항목입니다."),
+      recommended_action: compactRecommendedAction(record),
+      data_sources: salesPriorityDataSources(record),
+      last_seen_at: firstNonEmpty(record.last_seen_at, record.last_seen, record.updated_at, record.collected_at, record.generated_at) || generatedAt || null,
+      top_factors: topFactors.slice(0, 4)
+    };
+    if (!item.reason_summary) item.reason_summary = "추천 사유 확인 필요";
+    if (!item.recommended_action) item.recommended_action = "선사 또는 대리점 연락 가능 여부를 확인하세요.";
+    if (!item.data_sources.length) item.data_sources = ["opportunity_master"];
+    const existing = byIdentity.get(identity);
+    const itemSortScore = Number(item.opportunity_score ?? item.risk_score ?? 0);
+    const existingSortScore = Number(existing?.opportunity_score ?? existing?.risk_score ?? 0);
+    if (!existing || itemSortScore > existingSortScore || (itemSortScore === existingSortScore && Number(item.confidence_score || 0) > Number(existing.confidence_score || 0))) {
+      byIdentity.set(identity, item);
+    }
+  }
+  const items = [...byIdentity.values()]
+    .sort((a, b) =>
+      Number(b.opportunity_score ?? b.risk_score ?? 0) - Number(a.opportunity_score ?? a.risk_score ?? 0) ||
+      Number(b.risk_score ?? 0) - Number(a.risk_score ?? 0) ||
+      String(a.vessel_name || "").localeCompare(String(b.vessel_name || ""), "ko")
+    )
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "opportunity_master,explainability_snapshots,risk_history,commercial_opportunity_daily,route_snapshot_daily,operator_snapshot_daily",
+    items,
+    summary: {
+      focus_question: "오늘 어떤 선박에 먼저 연락해야 하는가?",
+      sort_rule: "opportunity_score desc, fallback risk_score",
+      max_items: 10
+    }
+  });
+}
+
 function buildIntelligenceSummaries({
   records = [],
   candidateList = [],
@@ -3740,7 +3855,8 @@ function buildIntelligenceSummaries({
     "prediction-summary": buildPredictionIntelligenceSummary({ arrivalPipeline, predictedCleaningOpportunities, predictionDiagnostics, generatedAt, dataMode }),
     "operator-summary": buildOperatorIntelligenceSummary({ fleetOpportunities, operatorDiagnostics, generatedAt, dataMode }),
     "route-summary": buildRouteIntelligenceSummary({ records, generatedAt, dataMode }),
-    "commercial-summary": buildCommercialIntelligenceSummary({ topCandidates, commercialCommandCenter, candidateList, generatedAt, dataMode })
+    "commercial-summary": buildCommercialIntelligenceSummary({ topCandidates, commercialCommandCenter, candidateList, generatedAt, dataMode }),
+    "sales-priority": buildSalesPriorityIntelligenceSummary({ records, candidateList, salesCandidates, immediateTargets, topCandidates, commercialCommandCenter, generatedAt, dataMode })
   };
 }
 
@@ -6160,7 +6276,8 @@ try {
     "dashboard/api/intelligence/prediction-summary.json": intelligenceSummaries["prediction-summary"],
     "dashboard/api/intelligence/operator-summary.json": intelligenceSummaries["operator-summary"],
     "dashboard/api/intelligence/route-summary.json": intelligenceSummaries["route-summary"],
-    "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"]
+    "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"],
+    "dashboard/api/intelligence/sales-priority.json": intelligenceSummaries["sales-priority"]
   };
   const successfulDatasetBundle = saveSuccessfulDatasetBundle({
     report,

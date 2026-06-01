@@ -17,7 +17,8 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/prediction-summary.json",
   "dashboard/api/intelligence/operator-summary.json",
   "dashboard/api/intelligence/route-summary.json",
-  "dashboard/api/intelligence/commercial-summary.json"
+  "dashboard/api/intelligence/commercial-summary.json",
+  "dashboard/api/intelligence/sales-priority.json"
 ];
 
 const AUTOMATION_FILES = [
@@ -118,7 +119,8 @@ const intelligencePayloads = {
   prediction: readJson("dashboard/api/intelligence/prediction-summary.json"),
   operator: readJson("dashboard/api/intelligence/operator-summary.json"),
   route: readJson("dashboard/api/intelligence/route-summary.json"),
-  commercial: readJson("dashboard/api/intelligence/commercial-summary.json")
+  commercial: readJson("dashboard/api/intelligence/commercial-summary.json"),
+  salesPriority: readJson("dashboard/api/intelligence/sales-priority.json")
 };
 
 for (const [name, payload] of Object.entries({ summary, status, health, pipelineHealth, continuity })) {
@@ -213,6 +215,9 @@ for (const marker of [
   "숨겨진 인사이트 / 고급 분석",
   "데이터 준비 중",
   "/api/intelligence/explainability.json",
+  "/api/intelligence/sales-priority.json",
+  "오늘의 영업 우선순위",
+  "renderSalesPriority",
   "renderIntelligence",
   "예측 신호 / 실험 기능"
 ]) {
@@ -229,6 +234,13 @@ for (const [name, payload] of Object.entries(intelligencePayloads)) {
 }
 for (const item of rows(intelligencePayloads.explainability)) {
   assert(String(item.reason_summary || "").length > 0, "Explainability item must include reason_summary.");
+}
+for (const item of rows(intelligencePayloads.salesPriority)) {
+  for (const field of ["rank", "vessel_name", "port", "opportunity_score", "risk_score", "confidence_score", "reason_summary", "recommended_action", "data_sources", "last_seen_at"]) {
+    assert(field in item, `Sales priority item missing required field: ${field}`);
+  }
+  assert(String(item.reason_summary || "").length > 0, "Sales priority item must explain why it is recommended.");
+  assert(Array.isArray(item.data_sources) && item.data_sources.length > 0, "Sales priority item must include data_sources.");
 }
 
 const fallbackChoiceCases = [

@@ -35,6 +35,12 @@ const FEATURES = [
     ui: ["상업 기회", "/api/intelligence/commercial-summary.json"]
   },
   {
+    feature: "sales_priority",
+    tables: ["opportunity_master", "explainability_snapshots", "risk_history", "commercial_opportunity_daily", "route_snapshot_daily", "operator_snapshot_daily"],
+    json: ["dashboard/api/intelligence/sales-priority.json"],
+    ui: ["오늘의 영업 우선순위", "/api/intelligence/sales-priority.json", "renderSalesPriority"]
+  },
+  {
     feature: "sales_candidates",
     tables: ["sales_candidates_current"],
     json: ["dashboard/api/candidates.json", "dashboard/api/candidates/top.json"],
