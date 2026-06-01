@@ -3123,6 +3123,96 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
   };
 }
 
+function compactVesselRow(row = {}) {
+  const keys = [
+    "vessel_id",
+    "master_vessel_id",
+    "port_call_id",
+    "hybrid_entity_key",
+    "vessel_name",
+    "normalized_vessel_name",
+    "imo",
+    "mmsi",
+    "call_sign",
+    "vessel_type",
+    "vessel_type_group",
+    "gt",
+    "dwt",
+    "flag",
+    "operator_name",
+    "operator",
+    "owner_name",
+    "manager_name",
+    "agent_name",
+    "agent",
+    "port",
+    "port_code",
+    "port_name",
+    "port_name_ko",
+    "sub_port",
+    "berth",
+    "berth_name",
+    "anchorage_name",
+    "status_bucket",
+    "status",
+    "eta",
+    "etb",
+    "ata",
+    "atb",
+    "etd",
+    "atd",
+    "stay_hours",
+    "current_call_stay_hours",
+    "cumulative_stay_hours",
+    "cumulative_stay_days",
+    "anchorage_hours",
+    "berth_hours",
+    "collected_at",
+    "last_seen_at",
+    "generated_at",
+    "updated_at",
+    "source_label",
+    "data_source_used",
+    "source",
+    "data_confidence_score",
+    "confidence_score",
+    "identity_confidence",
+    "match_score",
+    "commercial_value_score",
+    "total_sales_priority_score",
+    "sales_score",
+    "opportunity_score",
+    "cleaning_candidate_score",
+    "biofouling_exposure_score",
+    "biofouling_score",
+    "risk_score",
+    "predicted_cleaning_opportunity_score",
+    "priority_label",
+    "sales_priority_band",
+    "candidate_band",
+    "reason_codes",
+    "commercial_signal_flags",
+    "why_now",
+    "opportunity_summary",
+    "reason_summary",
+    "recommended_action",
+    "recommended_next_action",
+    "contact_path_label_ko",
+    "destination",
+    "destination_port",
+    "next_port",
+    "high_regulation_route",
+    "is_anchorage_waiting",
+    "recommended_email_draft"
+  ];
+  const compact = {};
+  for (const key of keys) {
+    const value = row[key];
+    if (value !== undefined && value !== null && value !== "") compact[key] = value;
+  }
+  return compact;
+}
+
 function vesselGroupRows(allRecords = [], group = "target") {
   const usefulRows = annotateCommercialRanks(activeRecordsOnly(allRecords).filter(hasUsefulVesselIdentity));
   const rows = group === "all"
@@ -4877,9 +4967,20 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
-    if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
+    if (latestSummarySnapshot) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
-      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
+      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : null));
+      if (pointer.active_run_id && pointer.active_run_id === latestSummarySnapshot.run_id) {
+        summary.is_fallback = false;
+        summary.fallback_used = false;
+        summary.fallback_reason = null;
+        summary.data_source_used = "supabase_live_snapshot";
+        if (summary.status) {
+          summary.status.fallback_used = false;
+          summary.status.fallback_reason = null;
+          summary.status.data_source_used = "supabase_live_snapshot";
+        }
+      }
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
       if (pathname.endsWith("/status.json")) return json(summary.status, { headers: corsHeaders() });
       if (pathname.endsWith("/candidates/top.json")) return json({
@@ -5132,6 +5233,7 @@ async function apiResponse(url, env) {
     const group = String(searchParams.get("group") || "target").toLowerCase();
     const sourceRows = vesselGroupRows(allRecords, group);
     const paged = pageRows(sourceRows, searchParams);
+    const responseRows = searchParams.get("full") === "1" ? paged.data : paged.data.map(compactVesselRow);
     const groupCounts = {
       target: vesselGroupRows(allRecords, "target").length,
       all: vesselGroupRows(allRecords, "all").length
@@ -5153,7 +5255,8 @@ async function apiResponse(url, env) {
       immediate_target_count: status.immediate_target_count,
       opportunity_count: status.opportunity_count,
       ...paged,
-      vessels: paged.data,
+      data: responseRows,
+      vessels: responseRows,
       groupCounts,
       all_vessels_api_count: groupCounts.all,
       target_vessels_api_count: groupCounts.target,
