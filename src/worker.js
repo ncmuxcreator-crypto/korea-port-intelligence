@@ -5552,6 +5552,47 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       extra: { alert_count: alerts.length, alerts, hot_queue: hot }
     });
   }
+  if (pathname.endsWith("/staying-vessels.json")) {
+    const payload = publicItemsEnvelope({
+      ...common,
+      sourceTable: "vessel_snapshots,dashboard_summary_snapshots",
+      items: items.filter(item => ["arrived_staying", "berthed", "anchorage_waiting"].includes(String(item.status_bucket || item.status || ""))).slice(0, 20)
+    });
+    payload.record_count = Number(summary.status?.staying_vessel_count || summary.staying_vessel_count || payload.items.length);
+    return payload;
+  }
+  if (pathname.endsWith("/arrival-pipeline.json")) {
+    const payload = publicItemsEnvelope({
+      ...common,
+      sourceTable: "vessel_snapshots,dashboard_summary_snapshots",
+      items: (summary.arrival_pipeline || summary.predicted_arrivals || items).slice(0, 20)
+    });
+    payload.record_count = Number(summary.status?.arrival_pipeline_count || summary.arrival_pipeline_count || payload.items.length);
+    return payload;
+  }
+  if (pathname.endsWith("/congestion-watchlist.json")) {
+    const congestionItems = Array.isArray(summary.congestion_summary) && summary.congestion_summary.length
+      ? summary.congestion_summary.slice(0, 20)
+      : (summary.ports || []).slice(0, 20);
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "port_summary_current,dashboard_summary_snapshots",
+      items: congestionItems
+    });
+  }
+  if (pathname.endsWith("/agent-followup-queue.json")) {
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "sales_candidates_current,opportunity_master,dashboard_summary_snapshots",
+      items: items.slice(0, 20).map(item => ({
+        ...item,
+        reason: item.reason_summary || compactReasonSummary(item),
+        recommended_message_angle: item.reason_summary || compactReasonSummary(item),
+        urgency: item.priority_label || item.sales_priority_band || salesPriorityBand(item.opportunity_score || item.risk_score || 0),
+        next_action: item.recommended_action || compactRecommendedAction(item)
+      }))
+    });
+  }
   const intelligence = pathname.match(/^\/api\/intelligence\/([^/]+)\.json$/);
   if (intelligence) {
     const name = intelligence[1];
@@ -5711,6 +5752,10 @@ async function apiResponse(url, env) {
   }
   const summaryFirstRoute = pathname.endsWith("/targets/current.json") ||
     pathname.endsWith("/targets/static.json") ||
+    pathname.endsWith("/staying-vessels.json") ||
+    pathname.endsWith("/arrival-pipeline.json") ||
+    pathname.endsWith("/congestion-watchlist.json") ||
+    pathname.endsWith("/agent-followup-queue.json") ||
     pathname.endsWith("/continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
@@ -5729,6 +5774,13 @@ async function apiResponse(url, env) {
       const payload = lightweightSummaryEndpoint(pathname, summary, summarySource);
       if (payload) return json(payload, { headers: corsHeaders() });
     }
+    return json(publicItemsEnvelope({
+      generatedAt: new Date().toISOString(),
+      dataMode: "fallback",
+      source: { data_source_used: "summary_unavailable", fallback_used: true },
+      sourceTable: "dashboard_summary_snapshots",
+      items: []
+    }), { headers: corsHeaders() });
   }
   if ((pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) && String(searchParams.get("group") || "target").toLowerCase() === "all") {
     const directPage = await directAllVesselPage(env, searchParams);
