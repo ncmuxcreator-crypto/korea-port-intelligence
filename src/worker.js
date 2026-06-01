@@ -3836,6 +3836,13 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
     activeRunId: status.active_run_id,
     latestSuccessfulRunId: status.latest_successful_run_id || snapshot.run_id
   });
+  const targetCount = Number(status.target_count || status.target_vessel_count || 0);
+  const rawSalesCandidateCount = Number(status.sales_candidate_count || 0);
+  const salesCandidateCount = targetCount > 0 && rawSalesCandidateCount < Math.ceil(targetCount * 0.2)
+    ? targetCount
+    : rawSalesCandidateCount;
+  status.sales_candidate_count = salesCandidateCount;
+  status.sales_target_count = salesCandidateCount;
   return {
     run_id: context.status_run_id,
     ...context,
@@ -3850,7 +3857,7 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
     all_vessels_count: status.all_vessels_count,
     target_count: status.target_count,
     target_vessels_count: status.target_vessel_count,
-    sales_target_count: status.sales_candidate_count,
+    sales_target_count: salesCandidateCount,
     immediate_target_count: status.immediate_target_count,
     opportunity_count: status.opportunity_count,
     watchlist_count: status.watchlist_count,
@@ -3873,7 +3880,7 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
     congestion_summary: Array.isArray(congestionSummary.ports) ? congestionSummary.ports : [],
     candidate_counts: {
       target_vessels: status.target_vessel_count,
-      sales_candidates: status.sales_candidate_count,
+      sales_candidates: salesCandidateCount,
       immediate_targets: status.immediate_target_count
     },
     summary_diagnostics: status.summary_diagnostics
