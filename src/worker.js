@@ -1967,20 +1967,6 @@ async function supabaseGet(env, path) {
   return { ok: true, status: res.status, rows: Array.isArray(rows) ? rows : [], error: null, keyType: base.keyType };
 }
 
-async function supabaseGetPaged(env, basePath, { pageSize = 1000, maxRows = 5000 } = {}) {
-  const rows = [];
-  let lastResponse = { ok: true, status: 200, rows: [], error: null };
-  for (let offset = 0; offset < maxRows; offset += pageSize) {
-    const separator = basePath.includes("?") ? "&" : "?";
-    const response = await supabaseGet(env, `${basePath}${separator}limit=${pageSize}&offset=${offset}`);
-    lastResponse = response;
-    if (!response.ok) return { ...response, rows };
-    rows.push(...response.rows);
-    if (response.rows.length < pageSize) break;
-  }
-  return { ...lastResponse, ok: true, rows, error: null, paged: true };
-}
-
 async function fetchLatestCompletedRunPointer(env, diagnostics = []) {
   const completed = await supabaseGet(env, "/rest/v1/data_collection_runs?select=run_id,finished_at,promoted_at,status,total_rows,raw_collected_rows,normalized_rows,all_vessels_count,candidates_count,immediate_targets_count&status=in.(completed,promoted)&or=(all_vessels_count.gt.0,total_rows.gt.0,raw_collected_rows.gt.0,normalized_rows.gt.0)&order=finished_at.desc.nullslast&order=promoted_at.desc.nullslast&limit=1");
   diagnostics.push({ source: "latest_completed_real_run", ok: completed.ok, status: completed.status, row_count: completed.rows.length, error: completed.error });
@@ -2093,9 +2079,9 @@ async function fetchSupabaseRows(env) {
   }
 
   const query = pointer.legacy_latest
-    ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc"
-    : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc`;
-  const response = await supabaseGetPaged(env, query);
+    ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000"
+    : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
+  const response = await supabaseGet(env, query);
   if (response.ok && response.rows.length) {
     return {
       rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
@@ -2111,7 +2097,7 @@ async function fetchSupabaseRows(env) {
   if (!pointer.legacy_latest) {
     const completedPointer = await fetchLatestCompletedRunPointer(env, pointer.pointer_diagnostics || []);
     if (completedPointer?.active_run_id && completedPointer.active_run_id !== pointer.active_run_id) {
-      const completedRows = await supabaseGetPaged(env, `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(completedPointer.active_run_id)}&order=collected_at.desc`);
+      const completedRows = await supabaseGet(env, `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(completedPointer.active_run_id)}&order=collected_at.desc&limit=5000`);
       if (completedRows.ok && completedRows.rows.length) {
         return {
           rows: completedRows.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
@@ -2129,7 +2115,7 @@ async function fetchSupabaseRows(env) {
       }
     }
 
-    const fallback = await supabaseGetPaged(env, "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc");
+    const fallback = await supabaseGet(env, "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000");
     const fallbackPointer = {
       ...pointer,
       legacy_latest: true,
@@ -3568,6 +3554,64 @@ async function directAllVesselPage(env, searchParams = new URLSearchParams()) {
     },
     all_vessels_api_count: total || rows.length,
     all_vessels_rendered_count: rows.length
+  };
+}
+
+async function directTargetVesselPage(env, searchParams = new URLSearchParams()) {
+  if (!supabaseBase(env)) return null;
+  const pointer = await fetchActivePointer(env);
+  const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
+  const runId = pointer.active_run_id || latestSummarySnapshot?.run_id || null;
+  if (!runId) return null;
+  const page = Math.max(1, Number(searchParams.get("page") || 1));
+  const pageSize = Math.min(80, Math.max(1, Number(searchParams.get("pageSize") || searchParams.get("limit") || 50)));
+  const offset = (page - 1) * pageSize;
+  const generatedAt = latestSummarySnapshot?.generated_at || new Date().toISOString();
+  const allTotal = Number(latestSummarySnapshot?.all_vessels_count || latestSummarySnapshot?.total_vessels || 0);
+  const targetTotal = Number(
+    latestSummarySnapshot?.target_vessels_count ||
+    latestSummarySnapshot?.target_count ||
+    latestSummarySnapshot?.sales_target_count ||
+    latestSummarySnapshot?.record_count ||
+    0
+  );
+  const query = `/rest/v1/vessel_snapshots?select=${DIRECT_VESSEL_SELECT.join(",")}&run_id=eq.${encodeURIComponent(runId)}&order=commercial_value_score.desc.nullslast&order=collected_at.desc.nullslast&limit=${pageSize}&offset=${offset}`;
+  const response = await supabaseGet(env, query);
+  if (!response.ok) return null;
+  const rows = (response.rows || []).map(normalizeSnapshot).map(enrichCumulativeStay).map(compactVesselRow);
+  return {
+    active_run_id: runId,
+    summary_run_id: latestSummarySnapshot?.run_id || null,
+    data_source_used: pointer.active_run_id === latestSummarySnapshot?.run_id ? "supabase_live_page" : "supabase_latest_successful_page",
+    fallback_used: false,
+    fallback_reason: null,
+    generated_at: generatedAt,
+    data_freshness: latestSummarySnapshot?.data_freshness || null,
+    record_count: targetTotal || rows.length,
+    all_vessels_count: allTotal || rows.length,
+    target_count: targetTotal || rows.length,
+    sales_target_count: targetTotal || rows.length,
+    immediate_target_count: Number(latestSummarySnapshot?.immediate_target_count || 0),
+    opportunity_count: Number(latestSummarySnapshot?.opportunity_count || 0),
+    page,
+    pageSize,
+    total: targetTotal || rows.length,
+    totalPages: Math.max(1, Math.ceil(Math.max(targetTotal || rows.length, rows.length) / pageSize)),
+    group: "target",
+    data: rows,
+    vessels: rows,
+    groupCounts: {
+      target: targetTotal || rows.length,
+      all: allTotal || rows.length
+    },
+    all_vessels_api_count: allTotal || rows.length,
+    target_vessels_api_count: targetTotal || rows.length,
+    target_vessels_rendered_count: targetTotal || rows.length,
+    sales_target_count_table_api: targetTotal || rows.length,
+    sales_target_count_rendered: targetTotal || rows.length,
+    dataset_run_id_table: runId,
+    dataset_run_id_summary: latestSummarySnapshot?.run_id || runId,
+    dataset_relationship: "target_vessels are paged from latest successful vessel snapshots and counted from dashboard summary snapshot"
   };
 }
 
@@ -5514,34 +5558,6 @@ function summaryCandidateItems(summary = {}) {
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
-function applyLiveCandidateCounts(summary = {}, records = []) {
-  const liveRecords = activeRecordsOnly(records);
-  if (!liveRecords.length) return summary;
-  const buckets = buildVisibilityBuckets(liveRecords);
-  const salesCount = buckets.sales_candidates.length;
-  const targetCount = buckets.target_vessels.length;
-  const immediateCount = buckets.immediate_targets.length;
-  summary.all_vessels_count = liveRecords.length;
-  summary.total_vessels = liveRecords.length;
-  summary.record_count = salesCount;
-  summary.sales_target_count = salesCount;
-  summary.sales_candidate_count = salesCount;
-  summary.target_count = salesCount;
-  summary.target_vessels_count = targetCount;
-  summary.immediate_target_count = immediateCount;
-  if (summary.status && typeof summary.status === "object") {
-    summary.status.record_count = salesCount;
-    summary.status.all_vessels_count = liveRecords.length;
-    summary.status.total_vessels = liveRecords.length;
-    summary.status.sales_target_count = salesCount;
-    summary.status.sales_candidate_count = salesCount;
-    summary.status.target_count = salesCount;
-    summary.status.target_vessels_count = targetCount;
-    summary.status.immediate_target_count = immediateCount;
-  }
-  return summary;
-}
-
 function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
   const generatedAt = summary.generated_at || new Date().toISOString();
   const items = summaryCandidateItems(summary);
@@ -5743,11 +5759,6 @@ async function apiResponse(url, env) {
           summary.status.data_source_used = "supabase_live_snapshot";
         }
       }
-      if (pathname.endsWith("/dashboard-summary.json")) {
-        const liveSource = await fetchSupabaseRows(env);
-        const liveRecords = activeRecordsOnly(latestPerVesselPort(liveSource.rows));
-        if (liveRecords.length) applyLiveCandidateCounts(summary, liveRecords);
-      }
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
       if (pathname.endsWith("/status.json")) return json(summary.status, { headers: corsHeaders() });
       if (pathname.endsWith("/candidates/top.json")) {
@@ -5865,11 +5876,6 @@ async function apiResponse(url, env) {
         summary.fallback_reason = null;
         summary.data_source_used = "supabase_live_snapshot";
       }
-      if (pathname.endsWith("/targets/current.json") || pathname.endsWith("/targets/static.json")) {
-        const liveSource = await fetchSupabaseRows(env);
-        const liveRecords = activeRecordsOnly(latestPerVesselPort(liveSource.rows));
-        if (liveRecords.length) applyLiveCandidateCounts(summary, liveRecords);
-      }
       const payload = lightweightSummaryEndpoint(pathname, summary, summarySource);
       if (payload) return json(payload, { headers: corsHeaders() });
     }
@@ -5883,6 +5889,10 @@ async function apiResponse(url, env) {
   }
   if ((pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) && String(searchParams.get("group") || "target").toLowerCase() === "all") {
     const directPage = await directAllVesselPage(env, searchParams);
+    if (directPage) return json(directPage, { headers: corsHeaders() });
+  }
+  if ((pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) && String(searchParams.get("group") || "target").toLowerCase() === "target") {
+    const directPage = await directTargetVesselPage(env, searchParams);
     if (directPage) return json(directPage, { headers: corsHeaders() });
   }
   const source = await fetchSupabaseRows(env);
