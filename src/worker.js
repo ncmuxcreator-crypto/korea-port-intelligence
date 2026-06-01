@@ -5529,15 +5529,31 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
     return payload;
   }
   if (pathname.endsWith("/continuity.json") || pathname.endsWith("/data-continuity.json")) {
+    const liveRows = Number(summary.all_vessels_count || summary.record_count || 0);
+    const status = summary.fallback_used ? "fallback_active" : "healthy";
     return publicItemsEnvelope({
       ...common,
       sourceTable: "active_dataset_pointer,dashboard_summary_snapshots",
       items: [{
-        status: summary.fallback_used ? "fallback_active" : "healthy",
+        status,
         active_run_id: summary.active_run_id || null,
         latest_successful_run_id: summary.latest_successful_run_id || summary.summary_run_id || summary.run_id || null,
         fallback_reason: summary.fallback_reason || null
-      }]
+      }],
+      extra: {
+        status,
+        current_run: {
+          run_id: summary.active_run_id || summary.run_id || null,
+          rows: liveRows,
+          status: summary.status?.current_run_status || summary.status || "success"
+        },
+        storage_verification: {
+          successful_dataset_rows: liveRows,
+          restore_status: summary.fallback_used ? "fallback_active" : "active_dataset_available",
+          supabase_write_status: summary.supabase_write_status || summary.status?.supabase_write_status || (liveRows ? "completed" : "확인 필요"),
+          promotion_status: summary.promotion_status || summary.status?.promotion_status || (liveRows ? "promoted" : "확인 필요")
+        }
+      }
     });
   }
   if (pathname.endsWith("/health.json")) {
