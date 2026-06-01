@@ -1967,6 +1967,20 @@ async function supabaseGet(env, path) {
   return { ok: true, status: res.status, rows: Array.isArray(rows) ? rows : [], error: null, keyType: base.keyType };
 }
 
+async function supabaseGetPaged(env, basePath, { pageSize = 1000, maxRows = 5000 } = {}) {
+  const rows = [];
+  let lastResponse = { ok: true, status: 200, rows: [], error: null };
+  for (let offset = 0; offset < maxRows; offset += pageSize) {
+    const separator = basePath.includes("?") ? "&" : "?";
+    const response = await supabaseGet(env, `${basePath}${separator}limit=${pageSize}&offset=${offset}`);
+    lastResponse = response;
+    if (!response.ok) return { ...response, rows };
+    rows.push(...response.rows);
+    if (response.rows.length < pageSize) break;
+  }
+  return { ...lastResponse, ok: true, rows, error: null, paged: true };
+}
+
 async function fetchLatestCompletedRunPointer(env, diagnostics = []) {
   const completed = await supabaseGet(env, "/rest/v1/data_collection_runs?select=run_id,finished_at,promoted_at,status,total_rows,raw_collected_rows,normalized_rows,all_vessels_count,candidates_count,immediate_targets_count&status=in.(completed,promoted)&or=(all_vessels_count.gt.0,total_rows.gt.0,raw_collected_rows.gt.0,normalized_rows.gt.0)&order=finished_at.desc.nullslast&order=promoted_at.desc.nullslast&limit=1");
   diagnostics.push({ source: "latest_completed_real_run", ok: completed.ok, status: completed.status, row_count: completed.rows.length, error: completed.error });
@@ -2079,9 +2093,9 @@ async function fetchSupabaseRows(env) {
   }
 
   const query = pointer.legacy_latest
-    ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000"
-    : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc&limit=5000`;
-  const response = await supabaseGet(env, query);
+    ? "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc"
+    : `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(pointer.active_run_id)}&order=collected_at.desc`;
+  const response = await supabaseGetPaged(env, query);
   if (response.ok && response.rows.length) {
     return {
       rows: response.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
@@ -2097,7 +2111,7 @@ async function fetchSupabaseRows(env) {
   if (!pointer.legacy_latest) {
     const completedPointer = await fetchLatestCompletedRunPointer(env, pointer.pointer_diagnostics || []);
     if (completedPointer?.active_run_id && completedPointer.active_run_id !== pointer.active_run_id) {
-      const completedRows = await supabaseGet(env, `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(completedPointer.active_run_id)}&order=collected_at.desc&limit=5000`);
+      const completedRows = await supabaseGetPaged(env, `/rest/v1/vessel_snapshots?select=*&run_id=eq.${encodeURIComponent(completedPointer.active_run_id)}&order=collected_at.desc`);
       if (completedRows.ok && completedRows.rows.length) {
         return {
           rows: completedRows.rows.map(normalizeSnapshot).map(enrichCumulativeStay),
@@ -2115,7 +2129,7 @@ async function fetchSupabaseRows(env) {
       }
     }
 
-    const fallback = await supabaseGet(env, "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc&limit=5000");
+    const fallback = await supabaseGetPaged(env, "/rest/v1/vessel_snapshots?select=*&order=collected_at.desc");
     const fallbackPointer = {
       ...pointer,
       legacy_latest: true,
@@ -5500,6 +5514,34 @@ function summaryCandidateItems(summary = {}) {
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
+function applyLiveCandidateCounts(summary = {}, records = []) {
+  const liveRecords = activeRecordsOnly(records);
+  if (!liveRecords.length) return summary;
+  const buckets = buildVisibilityBuckets(liveRecords);
+  const salesCount = buckets.sales_candidates.length;
+  const targetCount = buckets.target_vessels.length;
+  const immediateCount = buckets.immediate_targets.length;
+  summary.all_vessels_count = liveRecords.length;
+  summary.total_vessels = liveRecords.length;
+  summary.record_count = salesCount;
+  summary.sales_target_count = salesCount;
+  summary.sales_candidate_count = salesCount;
+  summary.target_count = salesCount;
+  summary.target_vessels_count = targetCount;
+  summary.immediate_target_count = immediateCount;
+  if (summary.status && typeof summary.status === "object") {
+    summary.status.record_count = salesCount;
+    summary.status.all_vessels_count = liveRecords.length;
+    summary.status.total_vessels = liveRecords.length;
+    summary.status.sales_target_count = salesCount;
+    summary.status.sales_candidate_count = salesCount;
+    summary.status.target_count = salesCount;
+    summary.status.target_vessels_count = targetCount;
+    summary.status.immediate_target_count = immediateCount;
+  }
+  return summary;
+}
+
 function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
   const generatedAt = summary.generated_at || new Date().toISOString();
   const items = summaryCandidateItems(summary);
@@ -5701,6 +5743,11 @@ async function apiResponse(url, env) {
           summary.status.data_source_used = "supabase_live_snapshot";
         }
       }
+      if (pathname.endsWith("/dashboard-summary.json")) {
+        const liveSource = await fetchSupabaseRows(env);
+        const liveRecords = activeRecordsOnly(latestPerVesselPort(liveSource.rows));
+        if (liveRecords.length) applyLiveCandidateCounts(summary, liveRecords);
+      }
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
       if (pathname.endsWith("/status.json")) return json(summary.status, { headers: corsHeaders() });
       if (pathname.endsWith("/candidates/top.json")) {
@@ -5817,6 +5864,11 @@ async function apiResponse(url, env) {
         summary.fallback_used = false;
         summary.fallback_reason = null;
         summary.data_source_used = "supabase_live_snapshot";
+      }
+      if (pathname.endsWith("/targets/current.json") || pathname.endsWith("/targets/static.json")) {
+        const liveSource = await fetchSupabaseRows(env);
+        const liveRecords = activeRecordsOnly(latestPerVesselPort(liveSource.rows));
+        if (liveRecords.length) applyLiveCandidateCounts(summary, liveRecords);
       }
       const payload = lightweightSummaryEndpoint(pathname, summary, summarySource);
       if (payload) return json(payload, { headers: corsHeaders() });
@@ -6088,9 +6140,10 @@ async function apiResponse(url, env) {
       fallback_reason: status.fallback_reason,
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
-      record_count: status.record_count,
+      record_count: paged.total,
       all_vessels_count: groupCounts.all,
-      target_count: status.target_count,
+      target_count: groupCounts.target,
+      sales_target_count: groupCounts.target,
       immediate_target_count: status.immediate_target_count,
       opportunity_count: status.opportunity_count,
       ...paged,
