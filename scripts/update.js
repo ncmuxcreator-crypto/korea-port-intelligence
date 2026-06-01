@@ -6075,11 +6075,12 @@ try {
   for (const vessel of targetVesselsRaw) {
     const score = Number(vessel.commercial_value_score || vessel.total_sales_priority_score || vessel.cleaning_candidate_score || 0);
     const priorityScore = salesPriorityScore(vessel);
-    vessel.is_cleaning_candidate = isSalesCandidate(vessel);
+    const salesCandidateFlag = isSalesCandidate(vessel) || hasSalesRelevantSignal(vessel) || isMainCommercialVessel(vessel);
+    vessel.is_cleaning_candidate = salesCandidateFlag;
     vessel.is_immediate_candidate = isImmediateTarget(vessel);
     vessel.is_operating_candidate = vessel.is_cleaning_candidate;
     vessel.is_operating_immediate_candidate = vessel.is_immediate_candidate;
-    vessel.candidate_band = isImmediateTarget(vessel) && score >= CRITICAL_TARGET_THRESHOLD ? "critical" : isImmediateTarget(vessel) ? "immediate_target" : isSalesCandidate(vessel) ? "sales_target" : isWatchlistVessel(vessel) ? "watchlist" : "general";
+    vessel.candidate_band = isImmediateTarget(vessel) && score >= CRITICAL_TARGET_THRESHOLD ? "critical" : isImmediateTarget(vessel) ? "immediate_target" : salesCandidateFlag ? "sales_target" : isWatchlistVessel(vessel) ? "watchlist" : "general";
     vessel.priority_label = salesPriorityBand(priorityScore);
     vessel.sales_priority_band = vessel.priority_label;
     vessel.vessel_display = vesselDisplay(vessel);
@@ -6102,7 +6103,7 @@ try {
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
-  const salesCandidates = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isSalesCandidate)));
+  const salesCandidates = sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v) || hasSalesRelevantSignal(v))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
   const scoringDiagnostics = buildScoringDiagnostics(allCollectedVessels);
   const operatorDiagnostics = buildOperatorDiagnostics(vessels, salesCandidates, immediateTargets);

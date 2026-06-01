@@ -5503,20 +5503,23 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
     sourceTable: "dashboard_summary_snapshots"
   };
   if (pathname.endsWith("/targets/current.json") || pathname.endsWith("/targets/static.json")) {
-    return publicItemsEnvelope({
+    const totalCount = Number(summary.sales_target_count || summary.target_count || items.length);
+    const payload = publicItemsEnvelope({
       ...common,
       sourceTable: pathname.endsWith("/targets/static.json") ? "vessel_snapshots,dashboard_summary_snapshots" : "sales_candidates_current,dashboard_summary_snapshots",
       items,
       extra: {
-        total_count: Number(summary.sales_target_count || summary.target_count || 0),
+        total_count: totalCount,
         all_vessels_count: Number(summary.all_vessels_count || summary.record_count || 0),
-        sales_target_count: Number(summary.sales_target_count || summary.target_count || items.length),
+        sales_target_count: totalCount,
         immediate_target_count: Number(summary.immediate_target_count || 0),
         target_ratio: Number(summary.all_vessels_count || summary.record_count || 0)
-          ? Math.round((Number(summary.sales_target_count || summary.target_count || 0) / Number(summary.all_vessels_count || summary.record_count || 1)) * 1000) / 10
+          ? Math.round((totalCount / Number(summary.all_vessels_count || summary.record_count || 1)) * 1000) / 10
           : 0
       }
     });
+    payload.record_count = totalCount;
+    return payload;
   }
   if (pathname.endsWith("/continuity.json")) {
     return publicItemsEnvelope({
