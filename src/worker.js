@@ -3156,6 +3156,8 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
 }
 
 function compactVesselRow(row = {}) {
+  const payload = row.payload && typeof row.payload === "object" && !Array.isArray(row.payload) ? row.payload : {};
+  const merged = { ...payload, ...row };
   const keys = [
     "vessel_id",
     "master_vessel_id",
@@ -3239,9 +3241,10 @@ function compactVesselRow(row = {}) {
   ];
   const compact = {};
   for (const key of keys) {
-    const value = row[key];
+    const value = merged[key];
     if (value !== undefined && value !== null && value !== "") compact[key] = value;
   }
+  compact.vessel_display = vesselDisplay(merged);
   return compact;
 }
 
@@ -3249,8 +3252,36 @@ function firstNonEmpty(...values) {
   return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
 }
 
+function displayText(value) {
+  return value !== undefined && value !== null && String(value).trim() !== "" ? value : "-";
+}
+
+function displayNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : "-";
+}
+
+function displaySources(record = {}) {
+  const raw = [
+    record.data_sources,
+    record.enrichment_sources,
+    record.source_label,
+    record.data_source_used,
+    record.source,
+    record.source_name,
+    record.source_mode,
+    record.agent_source,
+    record.operator_source,
+    record.enrichment_source,
+    record.gt_source,
+    record.eta_source
+  ].flatMap(value => Array.isArray(value) ? value : value ? [value] : []);
+  return [...new Set(raw.map(value => String(value).trim()).filter(Boolean))];
+}
+
 function firstFiniteNumber(...values) {
   for (const value of values) {
+    if (value === undefined || value === null || String(value).trim() === "") continue;
     const number = Number(value);
     if (Number.isFinite(number)) return number;
   }
@@ -3323,32 +3354,34 @@ function vesselDisplay(record = {}) {
   const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, record.berth_hours);
   const opportunityScore = firstFiniteNumber(record.opportunity_score, record.sales_priority_score, record.commercial_value_score, record.total_sales_priority_score, record.cleaning_candidate_score, record.sales_score);
   const riskScore = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.biofouling_score, record.operational_risk_score);
+  const confidenceScore = firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.identity_confidence, record.match_score);
   return {
-    vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
-    imo: firstNonEmpty(record.imo, record.imo_no) || null,
-    mmsi: firstNonEmpty(record.mmsi) || null,
-    call_sign: firstNonEmpty(record.call_sign, record.callsign, record.clsgn) || null,
-    vessel_type: firstNonEmpty(record.vessel_type, record.vsslKndNm, record.vessel_type_group, record.commercial_segment) || null,
-    gt: firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, record.grossTonnage),
-    dwt: firstFiniteNumber(record.dwt, record.deadweight, record.deadweight_tonnage),
-    flag: firstNonEmpty(record.flag, record.vsslNltyNm, record.vsslNltyCd, record.nationality) || null,
-    operator: firstNonEmpty(record.operator_name, record.operator, record.operator_normalized) || null,
-    owner: firstNonEmpty(record.owner_name, record.owner, record.ship_owner, record.registered_owner) || null,
-    manager: firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager) || null,
-    current_port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination) || null,
-    eta: firstNonEmpty(record.eta, record.predicted_arrival_time) || null,
-    etb: firstNonEmpty(record.etb) || null,
-    ata: firstNonEmpty(record.ata) || null,
-    atb: firstNonEmpty(record.atb) || null,
-    stay_days: Number.isFinite(Number(stayHours)) ? Math.round((Number(stayHours) / 24) * 10) / 10 : null,
-    last_seen_at: firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.first_seen_at, record.generated_at) || null,
-    data_source: firstNonEmpty(record.source_label, record.data_source_used, record.source, record.source_mode, record.agent_source) || null,
-    confidence_score: firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.identity_confidence, record.match_score),
-    opportunity_score: opportunityScore,
-    risk_score: riskScore,
-    priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0)),
+    vessel_name: displayText(firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요")),
+    imo: displayText(firstNonEmpty(record.imo, record.imo_no)),
+    mmsi: displayText(firstNonEmpty(record.mmsi)),
+    call_sign: displayText(firstNonEmpty(record.call_sign, record.callsign, record.clsgn)),
+    flag: displayText(firstNonEmpty(record.flag, record.vsslNltyNm, record.vsslNltyCd, record.nationality)),
+    vessel_type: displayText(firstNonEmpty(record.vessel_type, record.vsslKndNm, record.vessel_type_group, record.commercial_segment)),
+    gt: displayNumber(firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, record.grossTonnage)),
+    dwt: displayNumber(firstFiniteNumber(record.dwt, record.deadweight, record.deadweight_tonnage)),
+    operator: displayText(firstNonEmpty(record.operator_name, record.operator, record.operator_normalized)),
+    owner: displayText(firstNonEmpty(record.owner_name, record.owner, record.ship_owner, record.registered_owner)),
+    manager: displayText(firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager)),
+    current_port: displayText(firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination)),
+    eta: displayText(firstNonEmpty(record.eta, record.predicted_arrival_time)),
+    etb: displayText(firstNonEmpty(record.etb)),
+    ata: displayText(firstNonEmpty(record.ata)),
+    atb: displayText(firstNonEmpty(record.atb)),
+    stay_days: Number.isFinite(Number(stayHours)) ? Math.round((Number(stayHours) / 24) * 10) / 10 : "-",
+    last_seen_at: displayText(firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.first_seen_at, record.generated_at)),
+    data_source: displayText(firstNonEmpty(record.source_label, record.data_source_used, record.source, record.source_mode, record.agent_source)),
+    confidence_score: displayNumber(confidenceScore),
+    opportunity_score: displayNumber(opportunityScore),
+    risk_score: displayNumber(riskScore),
+    priority_label: displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0))),
     reason_summary: compactReasonSummary(record),
-    recommended_action: compactRecommendedAction(record)
+    recommended_action: compactRecommendedAction(record),
+    data_sources: displaySources(record)
   };
 }
 
@@ -3363,16 +3396,26 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "imo",
   "mmsi",
   "call_sign",
+  "callsign",
+  "clsgn",
   "vessel_type",
   "vessel_type_group",
   "gt",
   "dwt",
+  "flag",
+  "vsslNltyNm",
+  "vsslNltyCd",
+  "nationality",
   "operator_name",
   "operator",
   "owner_name",
   "owner",
+  "ship_owner",
+  "registered_owner",
   "manager_name",
   "manager",
+  "ship_manager",
+  "technical_manager",
   "agent_name",
   "agent",
   "port",
@@ -3416,7 +3459,18 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "why_now",
   "recommended_action",
   "recommended_next_action",
+  "reason",
+  "recommended_message_angle",
+  "urgency",
+  "next_action",
   "data_sources",
+  "source_label",
+  "data_source_used",
+  "source_mode",
+  "agent_source",
+  "operator_source",
+  "enrichment_source",
+  "enrichment_sources",
   "last_seen_at",
   "updated_at",
   "collected_at",
@@ -3491,7 +3545,8 @@ const DIRECT_VESSEL_SELECT = [
   "opportunity_summary",
   "recommended_action",
   "destination_port",
-  "next_port"
+  "next_port",
+  "payload"
 ];
 
 async function directAllVesselPage(env, searchParams = new URLSearchParams()) {

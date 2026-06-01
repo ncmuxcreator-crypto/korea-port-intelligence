@@ -12,6 +12,8 @@ const REQUIRED_FILES = [
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
   "dashboard/api/candidates/top.json",
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/vessels/page-1.json",
   "dashboard/api/intelligence/risk-summary.json",
   "dashboard/api/intelligence/explainability.json",
   "dashboard/api/intelligence/prediction-summary.json",
@@ -62,6 +64,7 @@ function readJson(path) {
 
 function outputPath(path) {
   const debugPath = path.replace("dashboard/api/", "dashboard/api/debug/");
+  if (fs.existsSync(path)) return path;
   if (fs.existsSync(debugPath)) return debugPath;
   return path;
 }
@@ -114,6 +117,7 @@ const dashboardSource = readText("dashboard/index.html");
 const publicSource = readText("public/index.html");
 const rootSource = readText("index.html");
 const workerSource = readText("src/worker.js");
+const updateSource = readText("scripts/update.js");
 const intelligencePayloads = {
   risk: readJson("dashboard/api/intelligence/risk-summary.json"),
   explainability: readJson("dashboard/api/intelligence/explainability.json"),
@@ -307,6 +311,48 @@ for (const candidate of opportunities) {
   assert(!seenIds.has(id), `Duplicate candidate identifier in top candidates: ${id}`);
   seenIds.add(id);
 }
+
+const requiredVesselDisplayFields = [
+  "vessel_name",
+  "imo",
+  "mmsi",
+  "call_sign",
+  "flag",
+  "vessel_type",
+  "gt",
+  "dwt",
+  "operator",
+  "owner",
+  "manager",
+  "current_port",
+  "eta",
+  "ata",
+  "stay_days",
+  "opportunity_score",
+  "risk_score",
+  "confidence_score",
+  "priority_label",
+  "reason_summary",
+  "recommended_action",
+  "data_sources"
+];
+const pageOne = readJson("dashboard/api/vessels/page-1.json");
+const displayRows = [
+  ...rows(topPayload).slice(0, 10),
+  ...rows(pageOne).slice(0, 10)
+];
+for (const item of displayRows) {
+  const display = item.vessel_display || {};
+  for (const field of requiredVesselDisplayFields) {
+    assert(field in display, `vessel_display missing field: ${field}`);
+    assert(display[field] !== null && display[field] !== undefined && String(display[field]).trim() !== "", `vessel_display field must use '-' instead of empty/null: ${field}`);
+  }
+  assert(Array.isArray(display.data_sources), "vessel_display.data_sources must be an array.");
+}
+const enrichmentIndex = updateSource.indexOf("enrichWithVesselMasterCache(referenceEnrichedRows)");
+const scoringIndex = updateSource.indexOf("enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))");
+assert(enrichmentIndex >= 0 && scoringIndex > enrichmentIndex, "Enrichment must run before scoring.");
+assert(workerSource.includes("payload") && workerSource.includes("compact.vessel_display = vesselDisplay(merged)"), "Worker vessel pages must preserve enriched payload fields in vessel_display.");
 
 for (const item of followups) {
   for (const field of ["vessel_name", "port", "reason", "recommended_message_angle", "urgency", "next_action"]) {

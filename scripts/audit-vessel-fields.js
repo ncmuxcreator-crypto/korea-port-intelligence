@@ -7,6 +7,7 @@ const FILES = [
   "dashboard/api/targets/current.json",
   "dashboard/api/targets/static.json",
   "dashboard/api/candidates/top.json",
+  "dashboard/api/vessels/page-1.json",
   "dashboard/api/intelligence/sales-priority.json"
 ];
 
@@ -32,15 +33,17 @@ const REQUIRED_DISPLAY_FIELDS = [
   "data_source",
   "confidence_score",
   "opportunity_score",
+  "risk_score",
+  "priority_label",
   "reason_summary",
-  "recommended_action"
+  "recommended_action",
+  "data_sources"
 ];
 
 function readJson(file, fallback = null) {
-  const candidates = [
-    path.join(ROOT, file.replace("dashboard/api/", "dashboard/api/debug/")),
-    path.join(ROOT, file)
-  ];
+  const rootPath = path.join(ROOT, file);
+  const debugPath = path.join(ROOT, file.replace("dashboard/api/", "dashboard/api/debug/"));
+  const candidates = [rootPath, debugPath];
   for (const candidate of candidates) {
     try {
       if (fs.existsSync(candidate)) return JSON.parse(fs.readFileSync(candidate, "utf8"));

@@ -568,6 +568,7 @@ function withDedupedUpserts(supabase, audit = {}) {
 }
 
 function pickStaticFields(record = {}) {
+  const payload = record.payload && typeof record.payload === "object" && !Array.isArray(record.payload) ? record.payload : {};
   return {
     imo: record.imo || null,
     mmsi: record.mmsi || null,
@@ -582,6 +583,8 @@ function pickStaticFields(record = {}) {
     beam: record.beam || null,
     operator: record.operator || null,
     operator_normalized: record.operator_normalized || null,
+    owner_name: record.owner_name || payload.owner_name || payload.owner || payload.ship_owner || payload.registered_owner || null,
+    manager_name: record.manager_name || payload.manager_name || payload.manager || payload.ship_manager || payload.technical_manager || null,
     flag: record.flag || null,
     master_vessel_id: record.master_vessel_id || null,
     identity_confidence: Number(record.identity_confidence || 0),
@@ -610,6 +613,8 @@ function mergeCachedStaticInfo(record = {}, cached = {}, strategy = "unknown") {
     operator_source: record.operator_source || (cached.operator ? "vessel_master" : ""),
     operator_confidence: Math.max(Number(record.operator_confidence || 0), cached.operator ? 95 : 0),
     operator_inferred: record.operator_inferred ?? false,
+    owner_name: record.owner_name || record.owner || cached.owner_name || "",
+    manager_name: record.manager_name || record.manager || cached.manager_name || "",
     flag: record.flag || cached.flag || "",
     master_vessel_id: cached.master_vessel_id || record.master_vessel_id,
     vessel_master_cache_match: true,
@@ -664,7 +669,7 @@ export async function enrichWithVesselMasterCache(records = []) {
     const mmsis = unique(normalizedRecords.map(record => record.mmsi));
     const callSigns = unique(normalizedRecords.map(record => record.call_sign));
     const names = unique(normalizedRecords.map(record => record.normalized_vessel_name));
-    const columns = "master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,loa,beam,operator,operator_normalized,flag,identity_confidence,imo_status";
+    const columns = "master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,loa,beam,operator,operator_normalized,flag,identity_confidence,imo_status,payload";
 
     const masterRows = [
       ...(await selectIn(supabase, "vessel_master", columns, "imo", imos)),

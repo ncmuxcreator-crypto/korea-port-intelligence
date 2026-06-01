@@ -1,0 +1,239 @@
+import fs from "fs";
+
+const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/+$/, "");
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const REST_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1` : "";
+const PAGE_SIZE = Math.min(1000, positiveInt(process.env.AUDIT_ENRICHMENT_PAGE_SIZE, 1000));
+const MAX_ROWS = positiveInt(process.env.AUDIT_ENRICHMENT_MAX_ROWS, 25000);
+
+function positiveInt(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : fallback;
+}
+
+function clean(value) {
+  return String(value ?? "").normalize("NFKC").trim();
+}
+
+function hasValue(value) {
+  return value !== undefined && value !== null && clean(value) !== "" && clean(value) !== "-";
+}
+
+function rows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.vessels)) return payload.vessels;
+  if (Array.isArray(payload?.candidates)) return payload.candidates;
+  if (Array.isArray(payload?.opportunities)) return payload.opportunities;
+  return [];
+}
+
+function readJson(file, fallback = {}) {
+  try {
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function pct(count, total) {
+  if (!total) return "0.0%";
+  return `${Math.round((count / total) * 1000) / 10}%`;
+}
+
+function urlFor(table, params = {}) {
+  const url = new URL(`${REST_URL}/${table}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    url.searchParams.append(key, value);
+  }
+  return url.toString();
+}
+
+function parseContentRange(value) {
+  const match = clean(value).match(/\/(\d+|\*)$/);
+  if (!match || match[1] === "*") return null;
+  const count = Number(match[1]);
+  return Number.isFinite(count) ? count : null;
+}
+
+async function rest(table, params = {}, options = {}) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, rows: [], count: null, error: "missing_supabase_env", status: 0 };
+  }
+  const response = await fetch(urlFor(table, params), {
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      accept: "application/json",
+      ...options.headers
+    }
+  });
+  const text = await response.text();
+  let body = null;
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    body = text;
+  }
+  return {
+    ok: response.ok,
+    status: response.status,
+    rows: Array.isArray(body) ? body : [],
+    count: parseContentRange(response.headers.get("content-range")),
+    error: response.ok ? null : body?.message || body?.details || body?.hint || text || `http_${response.status}`
+  };
+}
+
+async function fetchRows(table, { filters = {}, order = "", maxRows = MAX_ROWS, select = "*" } = {}) {
+  const out = [];
+  let total = null;
+  for (let offset = 0; offset < maxRows; offset += PAGE_SIZE) {
+    const params = { select, ...filters };
+    if (order) params.order = order;
+    const result = await rest(table, params, {
+      headers: {
+        prefer: offset === 0 ? "count=exact" : undefined,
+        range: `${offset}-${Math.min(offset + PAGE_SIZE - 1, maxRows - 1)}`
+      }
+    });
+    if (!result.ok) return { ok: false, rows: out, count: total, error: result.error, status: result.status };
+    if (offset === 0) total = result.count;
+    out.push(...result.rows);
+    if (result.rows.length < PAGE_SIZE) break;
+  }
+  return { ok: true, rows: out, count: total ?? out.length };
+}
+
+async function countRows(table, filters = {}) {
+  const result = await rest(table, { select: "*", ...filters, limit: "1" }, { headers: { prefer: "count=exact" } });
+  return result.ok ? { count: result.count ?? 0 } : { count: null, error: result.error };
+}
+
+async function latestRunId() {
+  const pointer = await rest("active_dataset_pointer", { select: "active_run_id", id: "eq.current", limit: "1" });
+  if (pointer.ok && pointer.rows[0]?.active_run_id) return pointer.rows[0].active_run_id;
+  const latest = await rest("data_collection_runs", { select: "run_id,status,finished_at", order: "finished_at.desc.nullslast", limit: "1" });
+  return latest.ok ? latest.rows[0]?.run_id || null : null;
+}
+
+function payload(row = {}) {
+  return row.payload && typeof row.payload === "object" && !Array.isArray(row.payload) ? row.payload : {};
+}
+
+function field(row = {}, keys = []) {
+  const merged = { ...payload(row), ...row, ...(row.vessel_display || {}) };
+  return keys.map(key => merged[key]).find(hasValue);
+}
+
+function coverage(records, label, keys) {
+  const count = records.filter(record => hasValue(field(record, keys))).length;
+  console.log(`- ${label}: ${count}/${records.length} (${pct(count, records.length)})`);
+  return count;
+}
+
+function staticRecords() {
+  const page = readJson("dashboard/api/vessels/page-1.json", {});
+  const all = readJson("dashboard/api/all-collected-vessels.json", {});
+  const target = readJson("dashboard/api/target-vessels.json", {});
+  return [...rows(page), ...rows(all), ...rows(target)];
+}
+
+function printSamples(records = []) {
+  const samples = records
+    .filter(record =>
+      hasValue(field(record, ["imo"])) ||
+      hasValue(field(record, ["call_sign", "callsign", "clsgn"])) ||
+      hasValue(field(record, ["operator_name", "operator"])) ||
+      hasValue(field(record, ["owner_name", "owner", "ship_owner", "registered_owner"])) ||
+      hasValue(field(record, ["manager_name", "manager", "ship_manager", "technical_manager"]))
+    )
+    .slice(0, 20);
+  console.log("\nTop 20 sample enriched vessels:");
+  if (!samples.length) {
+    console.log("- none");
+    return;
+  }
+  samples.forEach((record, index) => {
+    console.log(`${index + 1}. ${field(record, ["vessel_name", "name"]) || "-"} | IMO ${field(record, ["imo"]) || "-"} | Call ${field(record, ["call_sign", "callsign", "clsgn"]) || "-"} | Operator ${field(record, ["operator_name", "operator"]) || "-"} | Owner ${field(record, ["owner_name", "owner", "ship_owner", "registered_owner"]) || "-"} | Manager ${field(record, ["manager_name", "manager", "ship_manager", "technical_manager"]) || "-"}`);
+  });
+}
+
+async function main() {
+  console.log("Enrichment coverage audit:");
+  let records = [];
+  let runId = null;
+  let source = "static_json";
+
+  if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    runId = await latestRunId();
+    if (runId) {
+      const fetched = await fetchRows("vessel_snapshots", {
+        filters: { run_id: `eq.${runId}` },
+        order: "commercial_value_score.desc.nullslast,collected_at.desc.nullslast"
+      });
+      if (fetched.ok) {
+        records = fetched.rows;
+        source = "supabase";
+      } else {
+        console.log(`- supabase_read_error: ${fetched.error}`);
+      }
+    }
+  }
+
+  if (!records.length) records = staticRecords();
+
+  console.log(`- source: ${source}`);
+  console.log(`- latest_successful_run_id: ${runId || "unknown"}`);
+  console.log(`- total vessels: ${records.length}`);
+
+  coverage(records, "IMO coverage", ["imo"]);
+  coverage(records, "Call Sign coverage", ["call_sign", "callsign", "clsgn"]);
+  coverage(records, "Operator coverage", ["operator_name", "operator", "operator_normalized"]);
+  coverage(records, "Owner coverage", ["owner_name", "owner", "ship_owner", "registered_owner"]);
+  coverage(records, "Manager coverage", ["manager_name", "manager", "ship_manager", "technical_manager"]);
+  coverage(records, "Vessel Type coverage", ["vessel_type", "vessel_type_group", "vsslKndNm"]);
+  coverage(records, "GT coverage", ["gt", "grtg", "intrlGrtg", "gross_tonnage"]);
+  coverage(records, "DWT coverage", ["dwt", "deadweight", "deadweight_tonnage"]);
+  coverage(records, "Flag coverage", ["flag", "vsslNltyNm", "vsslNltyCd", "nationality"]);
+
+  const enrichmentCandidates = records.filter(record =>
+    !hasValue(field(record, ["imo"])) ||
+    !hasValue(field(record, ["call_sign", "callsign", "clsgn"])) ||
+    !hasValue(field(record, ["operator_name", "operator"]))
+  ).length;
+
+  let matchCandidates = { count: null };
+  let recoveryQueue = { count: null };
+  let dailyRuntime = readJson("dashboard/api/daily-enrichment-runtime.json", {});
+  if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    matchCandidates = await countRows("enrichment_match_candidates", runId ? { run_id: `eq.${runId}` } : {});
+    recoveryQueue = await countRows("imo_recovery_queue", runId ? { run_id: `eq.${runId}` } : {});
+  }
+
+  const attempts = Number(dailyRuntime.input_rows || 0) || Number(matchCandidates.count || 0) + Number(recoveryQueue.count || 0);
+  const successes = records.filter(record =>
+    hasValue(field(record, ["imo"])) &&
+    (hasValue(field(record, ["operator_name", "operator"])) || hasValue(field(record, ["call_sign", "callsign", "clsgn"])))
+  ).length;
+  const failures = attempts ? Math.max(0, attempts - successes) : 0;
+
+  console.log("\nEnrichment activity:");
+  console.log(`- enrichment candidates found: ${enrichmentCandidates}`);
+  console.log(`- enrichment attempts: ${attempts}`);
+  console.log(`- enrichment successes: ${successes}`);
+  console.log(`- enrichment failures: ${failures}`);
+  console.log(`- enrichment skipped: ${Math.max(0, records.length - enrichmentCandidates)}`);
+  console.log(`- enrichment_match_candidates: ${matchCandidates.count ?? "unknown"}${matchCandidates.error ? ` (${matchCandidates.error})` : ""}`);
+  console.log(`- imo_recovery_queue: ${recoveryQueue.count ?? "unknown"}${recoveryQueue.error ? ` (${recoveryQueue.error})` : ""}`);
+  console.log(`- vessel_master_cache_status: ${dailyRuntime.vessel_master_cache?.status || "unknown"}`);
+  console.log(`- MAX_IMO_RECOVERY_CALLS: ${process.env.MAX_IMO_RECOVERY_CALLS || "100"}`);
+
+  printSamples(records);
+}
+
+main().catch(error => {
+  console.error(error);
+  process.exit(1);
+});

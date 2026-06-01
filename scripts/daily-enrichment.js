@@ -364,8 +364,11 @@ function snapshotPatch(before = {}, after = {}) {
   for (const field of [
     "imo",
     "mmsi",
+    "call_sign",
     "master_vessel_id",
     "operator_name",
+    "owner_name",
+    "manager_name",
     "operator_normalized",
     "operator_source",
     "operator_confidence",

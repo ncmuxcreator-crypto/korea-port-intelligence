@@ -7,10 +7,29 @@ if (!["production", "local"].includes(validationMode)) {
 const validationWarnings = [];
 const DEBUG_API_DIR = "dashboard/api/debug";
 
+function countRowsInFile(file) {
+  try {
+    if (!fs.existsSync(file)) return 0;
+    const value = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (Array.isArray(value)) return value.length;
+    if (Array.isArray(value?.data)) return value.data.length;
+    if (Array.isArray(value?.items)) return value.items.length;
+    if (Array.isArray(value?.vessels)) return value.vessels.length;
+    if (Array.isArray(value?.candidates)) return value.candidates.length;
+    return Number(value?.record_count || value?.all_vessels_count || value?.target_vessels_count || value?.candidate_count || 0);
+  } catch {
+    return 0;
+  }
+}
+
 function outputPath(file) {
   if (validationMode !== "local" || !String(file).startsWith("dashboard/api/")) return file;
   const debugPath = `${DEBUG_API_DIR}/${String(file).slice("dashboard/api/".length)}`;
-  return fs.existsSync(debugPath) ? debugPath : file;
+  if (!fs.existsSync(debugPath)) return file;
+  const rootRows = countRowsInFile(file);
+  const debugRows = countRowsInFile(debugPath);
+  if (fs.existsSync(file) && rootRows > 0 && rootRows >= debugRows) return file;
+  return debugPath;
 }
 
 function outputExists(file) {
