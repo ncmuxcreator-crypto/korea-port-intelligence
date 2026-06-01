@@ -3213,6 +3213,137 @@ function compactVesselRow(row = {}) {
   return compact;
 }
 
+const DIRECT_VESSEL_SELECT = [
+  "vessel_id",
+  "master_vessel_id",
+  "port_call_id",
+  "hybrid_entity_key",
+  "vessel_name",
+  "normalized_vessel_name",
+  "imo",
+  "mmsi",
+  "call_sign",
+  "vessel_type",
+  "vessel_type_group",
+  "gt",
+  "dwt",
+  "flag",
+  "operator_name",
+  "operator",
+  "owner_name",
+  "manager_name",
+  "agent_name",
+  "agent",
+  "port",
+  "port_code",
+  "port_name",
+  "port_name_ko",
+  "sub_port",
+  "berth",
+  "berth_name",
+  "anchorage_name",
+  "status_bucket",
+  "status",
+  "eta",
+  "etb",
+  "ata",
+  "atb",
+  "etd",
+  "atd",
+  "stay_hours",
+  "current_call_stay_hours",
+  "cumulative_stay_hours",
+  "cumulative_stay_days",
+  "anchorage_hours",
+  "berth_hours",
+  "collected_at",
+  "generated_at",
+  "data_confidence_score",
+  "identity_confidence",
+  "commercial_value_score",
+  "total_sales_priority_score",
+  "cleaning_candidate_score",
+  "biofouling_exposure_score",
+  "biofouling_score",
+  "predicted_cleaning_opportunity_score",
+  "priority_label",
+  "sales_priority_band",
+  "candidate_band",
+  "reason_codes",
+  "commercial_signal_flags",
+  "why_now",
+  "opportunity_summary",
+  "recommended_action",
+  "destination",
+  "destination_port",
+  "next_port",
+  "high_regulation_route",
+  "is_anchorage_waiting"
+];
+
+async function directAllVesselPage(env, searchParams = new URLSearchParams()) {
+  if (!supabaseBase(env)) return null;
+  const pointer = await fetchActivePointer(env);
+  const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
+  const runId = pointer.active_run_id || latestSummarySnapshot?.run_id || null;
+  if (!runId) return null;
+  const page = Math.max(1, Number(searchParams.get("page") || 1));
+  const pageSize = Math.min(80, Math.max(1, Number(searchParams.get("pageSize") || searchParams.get("limit") || 50)));
+  const offset = (page - 1) * pageSize;
+  const query = `/rest/v1/vessel_snapshots?select=${DIRECT_VESSEL_SELECT.join(",")}&run_id=eq.${encodeURIComponent(runId)}&order=collected_at.desc.nullslast&limit=${pageSize}&offset=${offset}`;
+  const response = await supabaseGet(env, query);
+  const total = Number(latestSummarySnapshot?.all_vessels_count || latestSummarySnapshot?.record_count || 0);
+  const generatedAt = latestSummarySnapshot?.generated_at || new Date().toISOString();
+  if (!response.ok) {
+    return {
+      active_run_id: runId,
+      summary_run_id: latestSummarySnapshot?.run_id || null,
+      data_source_used: "supabase_direct_page_failed",
+      fallback_used: false,
+      fallback_reason: null,
+      generated_at: generatedAt,
+      record_count: total,
+      all_vessels_count: total,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(Math.max(total, 0) / pageSize)),
+      group: "all",
+      data: [],
+      vessels: [],
+      error: response.error || "direct_vessel_page_failed"
+    };
+  }
+  const rows = (response.rows || []).map(normalizeSnapshot).map(enrichCumulativeStay).map(compactVesselRow);
+  return {
+    active_run_id: runId,
+    summary_run_id: latestSummarySnapshot?.run_id || null,
+    data_source_used: pointer.active_run_id === latestSummarySnapshot?.run_id ? "supabase_live_page" : "supabase_latest_successful_page",
+    fallback_used: false,
+    fallback_reason: null,
+    generated_at: generatedAt,
+    data_freshness: latestSummarySnapshot?.data_freshness || null,
+    record_count: total || rows.length,
+    all_vessels_count: total || rows.length,
+    target_count: Number(latestSummarySnapshot?.sales_target_count || latestSummarySnapshot?.target_count || 0),
+    immediate_target_count: Number(latestSummarySnapshot?.immediate_target_count || 0),
+    opportunity_count: Number(latestSummarySnapshot?.opportunity_count || 0),
+    page,
+    pageSize,
+    total: total || rows.length,
+    totalPages: Math.max(1, Math.ceil(Math.max(total || rows.length, rows.length) / pageSize)),
+    group: "all",
+    data: rows,
+    vessels: rows,
+    groupCounts: {
+      target: Number(latestSummarySnapshot?.sales_target_count || latestSummarySnapshot?.target_count || 0),
+      all: total || rows.length
+    },
+    all_vessels_api_count: total || rows.length,
+    all_vessels_rendered_count: rows.length
+  };
+}
+
 function vesselGroupRows(allRecords = [], group = "target") {
   const usefulRows = annotateCommercialRanks(activeRecordsOnly(allRecords).filter(hasUsefulVesselIdentity));
   const rows = group === "all"
@@ -5064,6 +5195,10 @@ async function apiResponse(url, env) {
         }, { headers: corsHeaders() });
       }
     }
+  }
+  if ((pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) && String(searchParams.get("group") || "target").toLowerCase() === "all") {
+    const directPage = await directAllVesselPage(env, searchParams);
+    if (directPage) return json(directPage, { headers: corsHeaders() });
   }
   const source = await fetchSupabaseRows(env);
   const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
