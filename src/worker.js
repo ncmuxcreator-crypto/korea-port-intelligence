@@ -5528,7 +5528,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
     payload.record_count = totalCount;
     return payload;
   }
-  if (pathname.endsWith("/continuity.json")) {
+  if (pathname.endsWith("/continuity.json") || pathname.endsWith("/data-continuity.json")) {
     return publicItemsEnvelope({
       ...common,
       sourceTable: "active_dataset_pointer,dashboard_summary_snapshots",
@@ -5787,6 +5787,7 @@ async function apiResponse(url, env) {
     pathname.endsWith("/agent-followup-queue.json") ||
     pathname.endsWith("/health.json") ||
     pathname.endsWith("/continuity.json") ||
+    pathname.endsWith("/data-continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
