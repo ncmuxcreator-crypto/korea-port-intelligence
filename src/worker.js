@@ -3352,9 +3352,95 @@ function vesselDisplay(record = {}) {
   };
 }
 
+const PUBLIC_VESSEL_ITEM_FIELDS = [
+  "rank",
+  "vessel_id",
+  "master_vessel_id",
+  "port_call_id",
+  "hybrid_entity_key",
+  "vessel_name",
+  "name",
+  "imo",
+  "mmsi",
+  "call_sign",
+  "vessel_type",
+  "vessel_type_group",
+  "gt",
+  "dwt",
+  "operator_name",
+  "operator",
+  "owner_name",
+  "owner",
+  "manager_name",
+  "manager",
+  "agent_name",
+  "agent",
+  "port",
+  "port_code",
+  "port_name",
+  "sub_port",
+  "berth",
+  "berth_name",
+  "anchorage_name",
+  "status",
+  "status_bucket",
+  "eta",
+  "etb",
+  "ata",
+  "atb",
+  "etd",
+  "atd",
+  "stay_hours",
+  "stay_days",
+  "current_call_stay_hours",
+  "cumulative_stay_hours",
+  "anchorage_hours",
+  "berth_hours",
+  "opportunity_score",
+  "sales_priority_score",
+  "commercial_value_score",
+  "total_sales_priority_score",
+  "cleaning_candidate_score",
+  "biofouling_exposure_score",
+  "biofouling_score",
+  "risk_score",
+  "data_confidence_score",
+  "confidence_score",
+  "candidate_band",
+  "sales_priority_band",
+  "priority_label",
+  "reason_codes",
+  "commercial_signal_flags",
+  "top_factors",
+  "reason_summary",
+  "why_now",
+  "recommended_action",
+  "recommended_next_action",
+  "data_sources",
+  "last_seen_at",
+  "updated_at",
+  "collected_at",
+  "source",
+  "source_table",
+  "destination",
+  "destination_port",
+  "next_port"
+];
+
+function isVesselLikeRecord(record = {}) {
+  return hasValue(record.vessel_name || record.name || record.imo || record.mmsi || record.call_sign || record.port_name || record.port || record.opportunity_score || record.commercial_value_score || record.risk_score);
+}
+
 function withVesselDisplay(record = {}) {
   if (!record || typeof record !== "object" || Array.isArray(record)) return record;
-  return { ...record, vessel_display: record.vessel_display || vesselDisplay(record) };
+  if (!isVesselLikeRecord(record)) return record;
+  const compact = {};
+  for (const field of PUBLIC_VESSEL_ITEM_FIELDS) {
+    const value = record[field];
+    if (value !== undefined && value !== null && value !== "") compact[field] = value;
+  }
+  compact.vessel_display = record.vessel_display || vesselDisplay(record);
+  return compact;
 }
 
 const DIRECT_VESSEL_SELECT = [
