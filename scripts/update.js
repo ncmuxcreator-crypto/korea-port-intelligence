@@ -15,25 +15,18 @@ import {
   printRuntimeConfigAudit
 } from "./lib/runtime-config-audit.js";
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
-import { withStableDashboardSummaryFields } from "./lib/db/summary-snapshot.js";
-import {
-  buildSalesPipeline,
-  buildVesselVisits,
-  normalizeAlertsPayload,
-  normalizeOpportunityCandidate,
-  withApiContract
-} from "./lib/intelligence-foundation.js";
+import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 
 const VERSION = "17.7.0";
 const BUILD_NAME = "Backend Stability Batch";
 const PRIORITY_PORTS = [
-  "Busan",
-  "Yeosu/Gwangyang",
-  "Ulsan",
-  "Pyeongtaek-Dangjin",
-  "Hadong/Samcheonpo",
-  "Pohang"
+  "부산",
+  "여수",
+  "광양",
+  "울산",
+  "평택·당진",
+  "포항"
 ];
 const COMMERCIAL_GT_THRESHOLD = Number(process.env.COMMERCIAL_GT_THRESHOLD || 5000);
 const REVIEW_TARGET_THRESHOLD = Number(process.env.REVIEW_TARGET_THRESHOLD || 35);
@@ -2552,23 +2545,18 @@ function buildCandidateSummary(records) {
 }
 
 function portCodeFromName(port = "") {
-  const text = String(port || "").toLowerCase();
-  if (/busan|부산/.test(text)) return "020";
-  if (/incheon|인천/.test(text)) return "030";
-  if (/yeosu|gwangyang|여수|광양/.test(text)) return "620";
-  if (/ulsan|울산/.test(text)) return "820";
-  if (/pyeongtaek|dangjin|평택|당진/.test(text)) return "031";
-  if (/pohang|포항/.test(text)) return "810";
-  if (/masan|jinhae|마산|진해/.test(text)) return "622";
-  if (/samcheonpo|hadong|삼천포|하동/.test(text)) return "622";
-  if (/mokpo|목포/.test(text)) return "070";
-  if (/gunsan|군산/.test(text)) return "080";
-  if (/daesan|대산/.test(text)) return "621";
-  if (/donghae|mukho|동해|묵호/.test(text)) return "120";
-  if (/jeju|제주/.test(text)) return "940";
-  if (/tongyeong|통영/.test(text)) return "622";
-  if (/geoje|okpo|거제|옥포/.test(text)) return "622";
-  return "unknown";
+  return normalizePort(port).port_code || "UNKNOWN";
+}
+
+function normalizedPortInfo(record = {}) {
+  const normalized = normalizeRecordPort(record);
+  if (normalized.missing) return { port_code: "UNKNOWN", port_name: "미확인 항만", display_name: "미확인 항만", raw: null };
+  return {
+    port_code: normalized.port.port_code || "UNKNOWN",
+    port_name: normalized.port.port_name || "미확인 항만",
+    display_name: normalized.port.display_name || normalized.port.port_name || "미확인 항만",
+    raw: normalized.raw
+  };
 }
 function buildPortIntelligence(records) {
   const byPort = new Map();
@@ -2590,15 +2578,17 @@ function buildPortIntelligence(records) {
     return String(v.sub_port || "").trim();
   };
   for (const v of records) {
-    const portName = v.port || v.port_name || "Unknown";
-    const portCode = v.port_code || portCodeFromName(portName);
+    const portInfo = normalizedPortInfo(v);
+    const portName = portInfo.display_name;
+    const portCode = portInfo.port_code;
     const subPort = inferSubPort(v);
-    const key = `${portCode !== "unknown" ? portCode : portName}|${subPort}`;
+    const key = `${portCode || portName}|${subPort}`;
     const current = byPort.get(key) || {
       port_code: portCode,
       port_name: subPort || portName,
       port_group: portName,
       sub_port: subPort,
+      display_name: subPort || portName,
       display_scope: subPort ? "sub_port" : "representative_port",
       vessel_count: 0,
       scored_count: 0,
@@ -2617,9 +2607,11 @@ function buildPortIntelligence(records) {
       scored_vessels: [],
       sales_candidates: [],
       immediate_targets: [],
-      berths: []
+      berths: [],
+      raw_aliases: new Set()
     };
     current.vessel_count += 1;
+    if (portInfo.raw) current.raw_aliases.add(String(portInfo.raw).trim());
     current.all_vessels.push(v);
     if (typeof v.total_sales_priority_score === "number") {
       current.scored_count += 1;
@@ -2661,7 +2653,9 @@ function buildPortIntelligence(records) {
     scored_vessels: sortCommercialPriority(port.scored_vessels),
     sales_candidates: sortCommercialPriority(dedupeCandidateRows(port.sales_candidates)),
     immediate_targets: sortCommercialPriority(dedupeCandidateRows(port.immediate_targets)),
-    berths: port.berths.slice(0, 100)
+    berths: port.berths.slice(0, 100),
+    raw_aliases: [...port.raw_aliases].sort((left, right) => left.localeCompare(right, "ko")),
+    raw_alias_count: port.raw_aliases.size
   })).sort((a, b) => b.immediate_target_count - a.immediate_target_count || b.candidate_count - a.candidate_count || b.vessel_count - a.vessel_count);
 }
 
@@ -2694,17 +2688,23 @@ function buildCandidateList(records = []) {
 function buildPortSummary(records) {
   const summary = new Map();
   for (const v of records) {
-    const port = v.port || "Unknown";
+    const portInfo = normalizedPortInfo(v);
+    const port = portInfo.display_name;
     const current = summary.get(port) || {
       port,
+      port_code: portInfo.port_code,
+      port_name: portInfo.display_name,
+      display_name: portInfo.display_name,
       total: 0,
       critical: 0,
       high_risk: 0,
       avg_risk: 0,
       waiting: 0,
       at_berth: 0,
-      opportunity_usd: 0
+      opportunity_usd: 0,
+      raw_aliases: new Set()
     };
+    if (portInfo.raw) current.raw_aliases.add(String(portInfo.raw).trim());
     current.total += 1;
     current.critical += (v.risk_score || 0) >= 85 ? 1 : 0;
     current.high_risk += (v.risk_score || 0) >= 70 ? 1 : 0;
@@ -2715,7 +2715,7 @@ function buildPortSummary(records) {
     summary.set(port, current);
   }
   return [...summary.values()]
-    .map(p => ({ ...p, avg_risk: p.total ? Math.round(p.avg_risk / p.total) : 0 }))
+    .map(p => ({ ...p, raw_aliases: [...p.raw_aliases].sort((left, right) => left.localeCompare(right, "ko")), avg_risk: p.total ? Math.round(p.avg_risk / p.total) : 0 }))
     .sort((a, b) => b.critical - a.critical || b.high_risk - a.high_risk || b.opportunity_usd - a.opportunity_usd);
 }
 
@@ -3008,6 +3008,45 @@ function isBetterCandidate(next = {}, current = {}) {
     (nextScore === currentScore && nextCongestion === currentCongestion && Number(next.data_confidence_score || 0) === Number(current.data_confidence_score || 0) && candidateTimestamp(next) > candidateTimestamp(current));
 }
 
+function vesselDatasetDedupeKey(v = {}) {
+  const normalizedName = normalizeVesselName(v.normalized_vessel_name || v.vessel_name || v.name || v.ship_name);
+  const vesselType = normalizeIdentityToken(v.vessel_type_group || v.vessel_type || "");
+  if (hasValue(v.imo)) return `IMO|${normalizeIdentityToken(v.imo)}`;
+  if (hasValue(v.mmsi)) return `MMSI|${normalizeIdentityToken(v.mmsi)}`;
+  if (normalizedName) return `NAME_TYPE|${normalizedName}|${vesselType}`;
+  if (hasValue(v.call_sign)) return `CALL|${normalizeIdentityToken(v.call_sign)}`;
+  return `FALLBACK|${normalizeIdentityToken(v.master_vessel_id || v.hybrid_entity_key || v.vessel_id || "")}`;
+}
+
+function isBetterDatasetVessel(next = {}, current = {}) {
+  const nextHasIdentity = Number(Boolean(next.imo)) + Number(Boolean(next.mmsi)) + Number(Boolean(next.call_sign));
+  const currentHasIdentity = Number(Boolean(current.imo)) + Number(Boolean(current.mmsi)) + Number(Boolean(current.call_sign));
+  const nextScore = Number(next.commercial_value_score || next.total_sales_priority_score || next.cleaning_candidate_score || 0);
+  const currentScore = Number(current.commercial_value_score || current.total_sales_priority_score || current.cleaning_candidate_score || 0);
+  const nextStay = Number(next.stay_hours || next.current_call_stay_hours || next.cumulative_stay_hours || 0);
+  const currentStay = Number(current.stay_hours || current.current_call_stay_hours || current.cumulative_stay_hours || 0);
+  return nextHasIdentity > currentHasIdentity ||
+    (nextHasIdentity === currentHasIdentity && nextScore > currentScore) ||
+    (nextHasIdentity === currentHasIdentity && nextScore === currentScore && Number(next.data_confidence_score || 0) > Number(current.data_confidence_score || 0)) ||
+    (nextHasIdentity === currentHasIdentity && nextScore === currentScore && Number(next.data_confidence_score || 0) === Number(current.data_confidence_score || 0) && nextStay > currentStay) ||
+    (nextHasIdentity === currentHasIdentity && nextScore === currentScore && Number(next.data_confidence_score || 0) === Number(current.data_confidence_score || 0) && nextStay === currentStay && candidateTimestamp(next) > candidateTimestamp(current));
+}
+
+function dedupeVesselDataset(records = []) {
+  const byKey = new Map();
+  const passthrough = [];
+  for (const record of records) {
+    const key = vesselDatasetDedupeKey(record);
+    if (!key || key === "FALLBACK|") {
+      passthrough.push(record);
+      continue;
+    }
+    const current = byKey.get(key);
+    if (!current || isBetterDatasetVessel(record, current)) byKey.set(key, record);
+  }
+  return [...byKey.values(), ...passthrough];
+}
+
 function dedupeCandidateRows(records = []) {
   const byKey = new Map();
   for (const record of records) {
@@ -3241,21 +3280,25 @@ function buildHighValueLowConfidence(records = []) {
 function buildCongestionWatchlist(records = []) {
   return sortCommercialPriority(records)
     .filter(v => v.is_anchorage_waiting || hasAnchorageSignal(v) || v.congestion_exposed_target || (v.congestion_exposure_score || 0) >= 8 || (v.anchorage_hours || 0) >= 6)
-    .map(v => ({
-      vessel_name: v.vessel_name,
-      port: v.port,
-      port_code: v.port_code,
-      gt: v.gt,
-      vessel_type: v.vessel_type,
-      berth_class: v.berth_class || "",
-      anchorage_name: v.anchorage_name || "",
-      anchorage_hours: v.anchorage_hours || 0,
-      estimated_waiting_time: v.estimated_waiting_time || 0,
-      congestion_exposure_score: v.congestion_exposure_score || 0,
-      port_congestion_score: v.port_congestion_score || 0,
-      commercial_value_score: v.commercial_value_score || 0,
-      reason_codes: v.reason_codes || []
-    }));
+    .map(v => {
+      const portInfo = normalizedPortInfo(v);
+      return {
+        vessel_name: v.vessel_name,
+        port: portInfo.display_name,
+        port_code: portInfo.port_code,
+        raw_port: portInfo.raw || v.port || v.port_name || v.port_code || null,
+        gt: v.gt,
+        vessel_type: v.vessel_type,
+        berth_class: v.berth_class || "",
+        anchorage_name: v.anchorage_name || "",
+        anchorage_hours: v.anchorage_hours || 0,
+        estimated_waiting_time: v.estimated_waiting_time || 0,
+        congestion_exposure_score: v.congestion_exposure_score || 0,
+        port_congestion_score: v.port_congestion_score || 0,
+        commercial_value_score: v.commercial_value_score || 0,
+        reason_codes: v.reason_codes || []
+      };
+    });
 }
 
 function buildAgentFollowupQueue(records = []) {
@@ -3284,7 +3327,7 @@ function buildAgentFollowupQueue(records = []) {
         ? "Biofouling compliance and pre-departure cleaning readiness."
         : Number(v.stay_hours || v.anchorage_hours || 0) >= 72
           ? "Long-stay hull performance and fuel-efficiency opportunity."
-          : "Work-window confirmation and service fit.",
+          : "Work-window confirmation and HullWiper Korea service fit.",
       next_action: v.agent || v.agent_name
         ? "Confirm IMO/operator and cleaning decision path via local agent."
         : "Identify local agent or operator contact before outreach.",
@@ -3352,10 +3395,9 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
         stayHours >= 72 ? "장기 체류 또는 묘박 신호가 있습니다." : null,
         Number(v.biofouling_exposure_score || v.biofouling_score || v.risk_score || 0) >= 65 ? "Biofouling 위험 신호가 높습니다." : null
       ].filter(Boolean).join(" ") || "상업 점수와 항만 체류 신호를 확인하세요.";
-      return normalizeOpportunityCandidate({
+      return {
         ...v,
         port: v.port_name || v.port,
-        regulated_route_signal: regulatedRouteSignal(v),
         stay_hours: stayHours,
         stay_days: Math.round((stayHours / 24) * 10) / 10,
         opportunity_score: priorityScore,
@@ -3366,7 +3408,7 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
         reason_summary: reasonSummary,
         recommended_action: v.recommended_action || v.recommended_next_action || v.candidate_next_action || "Confirm contact path and work window.",
         why_now: v.why_now || reasonSummary
-      }, { generated_at: generatedAt });
+      };
     })
     .sort((a, b) =>
       Number(b.sales_priority_score || 0) - Number(a.sales_priority_score || 0) ||
@@ -3375,14 +3417,331 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
     )
     .slice(0, 50)
     .map((v, index) => ({ ...v, rank: index + 1 }));
-  return withApiContract({
+  return {
     generated_at: generatedAt,
-    focus_question: "Which vessel should we contact next, and why?",
-    ranking_model: "commercial_opportunity_v1",
+    focus_question: "Which vessel should HullWiper Korea contact next and why?",
+    ranking_model: "sales_priority_v3",
     immediate_targets: opportunities.filter(v => v.sales_priority_band === "HOT" || v.is_immediate_candidate || Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 10),
     opportunities,
-    operating_rule: "Commercial opportunity blends commercial score, biofouling risk, long stay, Brazil/Australia/New Zealand compliance route, work window, confidence, and contact readiness."
-  }, { generated_at: generatedAt, data_mode: "derived", source_status: "derived_from_candidates", record_count: opportunities.length });
+    operating_rule: "Sales priority blends commercial score, biofouling risk, long stay, Brazil/Australia/New Zealand compliance route, work window, confidence, and contact readiness."
+  };
+}
+
+const INTELLIGENCE_SCHEMA_VERSION = "intelligence_summary_v1";
+
+function firstNonEmpty(...values) {
+  return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
+}
+
+function firstFiniteNumber(...values) {
+  for (const value of values) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return number;
+  }
+  return null;
+}
+
+function compactInsightFactors(record = {}) {
+  const values = [
+    record.reason_codes,
+    record.score_reasons,
+    record.commercial_signal_flags,
+    record.biofouling_exposure_reasons,
+    record.operational_risk_flags,
+    record.fleet_alerts,
+    record.rule_hits,
+    record.rule_versions
+  ].flatMap(value => Array.isArray(value) ? value : value ? [value] : []);
+  return [...new Set(values.map(value => String(value).trim()).filter(Boolean))].slice(0, 5);
+}
+
+function compactReasonSummary(record = {}) {
+  return firstNonEmpty(
+    record.reason_summary,
+    record.why_scored_high,
+    record.why_now,
+    record.candidate_summary_ko,
+    record.opportunity_summary,
+    record.sales_reason,
+    compactInsightFactors(record).join(", ")
+  ) || "점수 구성 요소를 확인하세요.";
+}
+
+function compactRecommendedAction(record = {}) {
+  return firstNonEmpty(
+    record.recommended_action,
+    record.recommended_next_action,
+    record.candidate_next_action,
+    record.next_action
+  ) || "상위 신호와 연락 가능 시간을 확인하세요.";
+}
+
+function compactVesselInsight(record = {}, index = 0, extra = {}) {
+  const opportunityScore = firstFiniteNumber(
+    record.opportunity_score,
+    record.sales_priority_score,
+    record.commercial_value_score,
+    record.total_sales_priority_score,
+    record.cleaning_candidate_score
+  );
+  const riskScore = firstFiniteNumber(
+    record.risk_score,
+    record.biofouling_exposure_score,
+    record.biofouling_risk_score,
+    record.biofouling_score,
+    record.operational_risk_score
+  );
+  return {
+    rank: index + 1,
+    vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+    imo: firstNonEmpty(record.imo, record.imo_no) || null,
+    mmsi: firstNonEmpty(record.mmsi) || null,
+    port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination) || null,
+    opportunity_score: opportunityScore,
+    risk_score: riskScore,
+    reason_summary: compactReasonSummary(record),
+    top_factors: compactInsightFactors(record),
+    recommended_action: compactRecommendedAction(record),
+    source_id: firstNonEmpty(record.port_call_id, record.opportunity_id, record.snapshot_id, record.master_vessel_id, record.hybrid_entity_key) || null,
+    ...extra
+  };
+}
+
+function intelligenceEnvelope({ generatedAt, dataMode, sourceTable, items = [], summary = {}, extra = {} } = {}) {
+  const capped = items.filter(item => item && typeof item === "object").slice(0, 10);
+  return {
+    generated_at: generatedAt || new Date().toISOString(),
+    schema_version: INTELLIGENCE_SCHEMA_VERSION,
+    data_mode: dataMode || "unknown",
+    record_count: capped.length,
+    source_table: sourceTable,
+    items: capped,
+    ...extra,
+    summary
+  };
+}
+
+function buildRiskIntelligenceSummary({ records = [], scoringDiagnostics = {}, generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const riskScore = firstFiniteNumber(
+        record.risk_score,
+        record.biofouling_exposure_score,
+        record.biofouling_risk_score,
+        record.biofouling_score,
+        record.operational_risk_score,
+        record.congestion_score
+      ) || 0;
+      return { record, riskScore, index };
+    })
+    .filter(row => row.riskScore > 0 || compactInsightFactors(row.record).some(factor => /risk|bio|congestion|long|anchor/i.test(factor)))
+    .sort((a, b) => b.riskScore - a.riskScore || salesPriorityScore(b.record) - salesPriorityScore(a.record))
+    .slice(0, 10)
+    .map((row, index) => compactVesselInsight(row.record, index, {
+      risk_score: row.riskScore,
+      risk_band: firstNonEmpty(row.record.biofouling_exposure_band, row.record.risk_band, row.record.operational_risk_band) || null
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "risk_history",
+    items,
+    summary: {
+      high_risk_count: Number(scoringDiagnostics?.biofouling_high_risk_count || scoringDiagnostics?.high_risk_count || items.filter(item => Number(item.risk_score || 0) >= 65).length || 0),
+      source_hint: "biofouling_exposure_score / operational_risk_score"
+    }
+  });
+}
+
+function buildExplainabilityIntelligenceSummary({ topCandidates = {}, candidateList = [], salesCandidates = [], immediateTargets = [], generatedAt, dataMode } = {}) {
+  const source = dedupeCandidateRows([
+    ...(topCandidates.opportunities || []),
+    ...candidateList,
+    ...immediateTargets,
+    ...salesCandidates
+  ]);
+  const items = sortCommercialPriority(source)
+    .filter(record => salesPriorityScore(record) > 0 || compactInsightFactors(record).length || compactReasonSummary(record))
+    .slice(0, 10)
+    .map((record, index) => compactVesselInsight(record, index, {
+      opportunity_score: salesPriorityScore(record),
+      priority_label: record.priority_label || record.sales_priority_band || salesPriorityBand(salesPriorityScore(record))
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "explainability_snapshots,rule_evaluations",
+    items,
+    summary: {
+      explainability_rule_version: "explainability_ko_v2026_05_31",
+      source_hint: "why_now / reason_codes / score_reasons"
+    }
+  });
+}
+
+function buildPredictionIntelligenceSummary({ arrivalPipeline = [], predictedCleaningOpportunities = [], predictionDiagnostics = {}, generatedAt, dataMode } = {}) {
+  const arrivalItems = arrivalPipeline.slice(0, 10).map((record, index) => compactVesselInsight(record, index, {
+    item_type: "arrival",
+    predicted_at: firstNonEmpty(record.predicted_arrival_time, record.eta, record.eta_candidate) || null,
+    prediction_confidence: firstFiniteNumber(record.arrival_prediction_confidence, record.prediction_confidence, record.route_pattern_confidence),
+    opportunity_score: firstFiniteNumber(record.arrival_opportunity_score, record.commercial_value_score, record.total_sales_priority_score)
+  }));
+  const cleaningItems = predictedCleaningOpportunities.slice(0, 10).map((record, index) => compactVesselInsight(record, index, {
+    item_type: "cleaning",
+    prediction_confidence: firstFiniteNumber(record.work_window_confidence, record.arrival_prediction_confidence, record.prediction_confidence),
+    opportunity_score: firstFiniteNumber(record.predicted_cleaning_opportunity_score, record.commercial_value_score, record.total_sales_priority_score),
+    reason_summary: firstNonEmpty(record.opportunity_summary, compactReasonSummary(record))
+  }));
+  const items = [...arrivalItems, ...cleaningItems]
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "predicted_arrivals,model_training_rows",
+    items,
+    extra: { disclaimer: "예측 신호 / 실험 기능" },
+    summary: {
+      prediction_accuracy_band: predictionDiagnostics?.prediction_accuracy_band || "insufficient_data",
+      predictions_matched_to_actual_count: Number(predictionDiagnostics?.predictions_matched_to_actual_count || 0)
+    }
+  });
+}
+
+function buildOperatorIntelligenceSummary({ fleetOpportunities = [], operatorDiagnostics = {}, generatedAt, dataMode } = {}) {
+  const items = fleetOpportunities
+    .slice()
+    .sort((a, b) => Number(b.fleet_opportunity_score || 0) - Number(a.fleet_opportunity_score || 0))
+    .slice(0, 10)
+    .map((record, index) => ({
+      rank: index + 1,
+      operator_name: firstNonEmpty(record.operator_name, record.operator_normalized, "운영사 확인 필요"),
+      opportunity_score: firstFiniteNumber(record.fleet_opportunity_score, record.average_commercial_value),
+      vessel_count: firstFiniteNumber(record.current_vessel_count, record.operator_vessel_count, record.target_vessel_count) || 0,
+      target_vessel_count: firstFiniteNumber(record.target_vessel_count) || 0,
+      immediate_target_count: firstFiniteNumber(record.immediate_target_count) || 0,
+      reason_summary: compactReasonSummary(record),
+      top_factors: compactInsightFactors(record),
+      recommended_action: compactRecommendedAction(record),
+      top_vessels: Array.isArray(record.top_vessels) ? record.top_vessels.slice(0, 3) : []
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "operator_snapshot_daily",
+    items,
+    summary: {
+      operator_count: Number(operatorDiagnostics?.operator_count || fleetOpportunities.length || 0),
+      source_hint: "fleet_opportunities / operator_snapshot_daily"
+    }
+  });
+}
+
+function buildRouteIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const routes = new Map();
+  for (const record of records) {
+    const from = firstNonEmpty(record.previous_port, record.departure_port, record.last_port, record.origin_port);
+    const to = firstNonEmpty(record.destination_port, record.destination, record.next_port, record.port_name, record.port);
+    if (!from && !to) continue;
+    const key = `${from || "미확인 출발지"} -> ${to || "미확인 목적지"}`;
+    const route = routes.get(key) || {
+      route_name: key,
+      previous_port: from || null,
+      destination_port: to || null,
+      vessel_count: 0,
+      opportunity_total: 0,
+      risk_total: 0,
+      top_vessel: null
+    };
+    route.vessel_count += 1;
+    route.opportunity_total += salesPriorityScore(record);
+    route.risk_total += firstFiniteNumber(record.biofouling_exposure_score, record.biofouling_score, record.risk_score) || 0;
+    if (!route.top_vessel || salesPriorityScore(record) > salesPriorityScore(route.top_vessel)) route.top_vessel = record;
+    routes.set(key, route);
+  }
+  const items = [...routes.values()]
+    .map(route => ({
+      ...route,
+      avg_opportunity_score: route.vessel_count ? Math.round(route.opportunity_total / route.vessel_count) : 0,
+      avg_risk_score: route.vessel_count ? Math.round(route.risk_total / route.vessel_count) : 0
+    }))
+    .sort((a, b) => Number(b.avg_opportunity_score || 0) - Number(a.avg_opportunity_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
+    .slice(0, 10)
+    .map((route, index) => ({
+      rank: index + 1,
+      route_name: route.route_name,
+      previous_port: route.previous_port,
+      destination_port: route.destination_port,
+      vessel_count: route.vessel_count,
+      opportunity_score: route.avg_opportunity_score,
+      risk_score: route.avg_risk_score,
+      reason_summary: route.top_vessel ? compactReasonSummary(route.top_vessel) : "항로별 후보 분포를 확인하세요.",
+      top_factors: route.top_vessel ? compactInsightFactors(route.top_vessel) : [],
+      recommended_action: route.top_vessel ? compactRecommendedAction(route.top_vessel) : "항로별 반복 입항 여부를 확인하세요."
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "route_snapshot_daily",
+    items,
+    summary: {
+      route_count: routes.size,
+      source_hint: "previous_port / destination_port fields"
+    }
+  });
+}
+
+function buildCommercialIntelligenceSummary({ topCandidates = {}, commercialCommandCenter = {}, candidateList = [], generatedAt, dataMode } = {}) {
+  const source = dedupeCandidateRows([
+    ...(topCandidates.opportunities || []),
+    ...(commercialCommandCenter.immediate_targets || []),
+    ...(commercialCommandCenter.high_value_targets || []),
+    ...candidateList
+  ]);
+  const items = sortCommercialPriority(source)
+    .slice(0, 10)
+    .map((record, index) => compactVesselInsight(record, index, {
+      opportunity_score: salesPriorityScore(record),
+      priority_label: record.priority_label || record.sales_priority_band || salesPriorityBand(salesPriorityScore(record)),
+      opportunity_status: firstNonEmpty(record.opportunity_status, record.opportunity_state, record.candidate_band) || null
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "opportunity_master,commercial_opportunity_daily",
+    items,
+    summary: {
+      hot_count: Number(commercialCommandCenter.hot_count || items.filter(item => item.priority_label === "HOT").length || 0),
+      source_hint: "opportunity_master / candidates/top"
+    }
+  });
+}
+
+function buildIntelligenceSummaries({
+  records = [],
+  candidateList = [],
+  salesCandidates = [],
+  immediateTargets = [],
+  topCandidates = {},
+  arrivalPipeline = [],
+  predictedCleaningOpportunities = [],
+  fleetOpportunities = [],
+  commercialCommandCenter = {},
+  scoringDiagnostics = {},
+  operatorDiagnostics = {},
+  predictionDiagnostics = {},
+  generatedAt = new Date().toISOString(),
+  dataMode = "unknown"
+} = {}) {
+  return {
+    "risk-summary": buildRiskIntelligenceSummary({ records, scoringDiagnostics, generatedAt, dataMode }),
+    "explainability": buildExplainabilityIntelligenceSummary({ topCandidates, candidateList, salesCandidates, immediateTargets, generatedAt, dataMode }),
+    "prediction-summary": buildPredictionIntelligenceSummary({ arrivalPipeline, predictedCleaningOpportunities, predictionDiagnostics, generatedAt, dataMode }),
+    "operator-summary": buildOperatorIntelligenceSummary({ fleetOpportunities, operatorDiagnostics, generatedAt, dataMode }),
+    "route-summary": buildRouteIntelligenceSummary({ records, generatedAt, dataMode }),
+    "commercial-summary": buildCommercialIntelligenceSummary({ topCandidates, commercialCommandCenter, candidateList, generatedAt, dataMode })
+  };
 }
 
 function buildCandidateChangesPayload(candidateChanges = {}, generatedAt = new Date().toISOString()) {
@@ -3472,10 +3831,10 @@ function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {},
   const hot = opportunities.filter(v => v.sales_priority_band === "HOT");
   const warm = opportunities.filter(v => v.sales_priority_band === "WARM");
   const compliance = opportunities.filter(regulatedRouteSignal);
-  return withApiContract({
+  return {
     generated_at: generatedAt,
     report_type: "daily_sales_intelligence",
-    title: "Daily Maritime Sales Intelligence Report",
+    title: "HWK Daily Sales Intelligence Report",
     executive_summary_ko: dataContinuity.status === "fallback_active"
       ? "현재 실행은 운영 데이터로 승격되지 않았습니다. 영업 판단 전 데이터 상태를 먼저 확인하세요."
       : `${hot.length}척 HOT 후보와 ${warm.length}척 WARM 후보가 선별되었습니다.`,
@@ -3502,7 +3861,7 @@ function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {},
       storage_verification: dataContinuity.storage_verification
     },
     automation_next_step: "Configure email/webhook secrets to deliver this JSON as a scheduled alert."
-  }, { generated_at: generatedAt, data_mode: report.data_mode, fallback_used: report.fallback_used, source_status: "derived_daily_report", record_count: opportunities.length });
+  };
 }
 
 function buildScoringDiagnostics(records = []) {
@@ -3959,21 +4318,6 @@ function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
     if (rootOutputCreated) {
       fs.mkdirSync(path.split("/").slice(0, -1).join("/"), { recursive: true });
       fs.writeFileSync(path, JSON.stringify(outputPayload, null, 2));
-    } else if (String(path).replace(/\\/g, "/") === "dashboard/api/dashboard-summary.json") {
-      const existingSummary = readJsonFile(path, null);
-      if (existingSummary && typeof existingSummary === "object" && !Array.isArray(existingSummary)) {
-        const normalizedSummary = withApiContract(withStableDashboardSummaryFields({
-          ...existingSummary,
-          generated_at: existingSummary.generated_at || existingSummary.status?.generated_at || existingSummary.data_freshness?.active_collected_at || report.completed_at || report.generated_at
-        }), {
-          generated_at: existingSummary.generated_at || report.completed_at || report.generated_at,
-          data_mode: existingSummary.data_mode || report.data_mode,
-          fallback_used: existingSummary.fallback_used ?? report.fallback_used,
-          source_status: existingSummary.source_status || existingSummary.data_status || report.data_status || report.status,
-          record_count: existingSummary.record_count
-        });
-        fs.writeFileSync(path, JSON.stringify(normalizedSummary, null, 2));
-      }
     }
     manifest[path] = {
       status: "written_to_debug_only",
@@ -4453,10 +4797,13 @@ function buildBasicInfoMissingReview(records = []) {
 function buildPortCongestionHeatmap(records) {
   const ports = new Map();
   for (const v of records) {
-    const port = v.port || "Unknown";
+    const portInfo = normalizedPortInfo(v);
+    const port = portInfo.display_name;
     const current = ports.get(port) || {
       port,
-      port_code: v.port_code || portCodeFromName(port),
+      port_code: portInfo.port_code,
+      port_name: portInfo.display_name,
+      display_name: portInfo.display_name,
       total: 0,
       waiting: 0,
       anchorage_vessels: 0,
@@ -4466,8 +4813,10 @@ function buildPortCongestionHeatmap(records) {
       immediate: 0,
       score: 0,
       waiting_hours_total: 0,
-      berth_hours_total: 0
+      berth_hours_total: 0,
+      raw_aliases: new Set()
     };
+    if (portInfo.raw) current.raw_aliases.add(String(portInfo.raw).trim());
     current.total += 1;
     if (v.is_anchorage_waiting || (v.anchorage_hours || 0) >= 12 || /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "")) {
       current.waiting += 1;
@@ -4487,6 +4836,7 @@ function buildPortCongestionHeatmap(records) {
   return [...ports.values()]
     .map(p => ({
       ...p,
+      raw_aliases: [...p.raw_aliases].sort((left, right) => left.localeCompare(right, "ko")),
       average_waiting_time: p.waiting ? Math.round((p.waiting_hours_total / p.waiting) * 10) / 10 : 0,
       berth_occupancy: p.total ? Math.min(100, Math.round((p.berth_hours_total / Math.max(1, p.total * 24)) * 100)) : 0,
       anchorage_density: p.total ? Math.min(100, Math.round((p.anchorage_vessels / p.total) * 100)) : 0,
@@ -4496,13 +4846,13 @@ function buildPortCongestionHeatmap(records) {
 }
 
 function buildPortAnchorage(records, portCode) {
-  const rows = records.filter(v => String(v.port_code || portCodeFromName(v.port)) === String(portCode));
+  const rows = records.filter(v => String(normalizedPortInfo(v).port_code) === String(portCode));
   return sortCommercialPriority(rows.filter(v => v.is_anchorage_waiting || (v.anchorage_hours || 0) > 0 || /waiting|anchorage|anchor|idle|drifting/i.test(v.status || "")))
     .map(v => ({
       vessel_id: v.vessel_id,
       vessel_name: v.vessel_name,
-      port_code: v.port_code || portCode,
-      port_name: v.port_name || v.port,
+      port_code: normalizedPortInfo(v).port_code || portCode,
+      port_name: normalizedPortInfo(v).display_name,
       anchorage_name: v.anchorage_name || v.anchorage_zone || "",
       anchorage_hours: v.anchorage_hours || 0,
       anchorage_days: v.anchorage_days || 0,
@@ -5150,7 +5500,9 @@ try {
   const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
-  vessels = enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))));
+  vessels = dedupeVesselDataset(
+    enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))))
+  );
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -5287,7 +5639,7 @@ try {
     candidate_summary: buildCandidateSummary(vessels),
     immediate_candidate_count: vessels.filter(v => v.is_immediate_candidate).length,
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
-    ports: [...new Set(vessels.map(v => v.port))],
+    ports: [...new Set(vessels.map(v => normalizedPortInfo(v).display_name))],
     port_summary: portSummary,
     supabase_status: supabaseStatus,
     supabase_write: supabaseWrite,
@@ -5369,13 +5721,15 @@ try {
     debugDir: DEBUG_API_DIR,
     runOrigin
   });
-  const allCollectedVessels = ensureOutputContractFields(
-    activeRecordsOnly(snapshotOutputs.merged),
-    {
-      runId: baseReport.run_id,
-      generatedAt: baseReport.generated_at || baseReport.completed_at || new Date().toISOString(),
-      dataSourceUsed: baseReport.data_source_used || "static_json_snapshot"
-    }
+  const allCollectedVessels = dedupeVesselDataset(
+    ensureOutputContractFields(
+      activeRecordsOnly(snapshotOutputs.merged),
+      {
+        runId: baseReport.run_id,
+        generatedAt: baseReport.generated_at || baseReport.completed_at || new Date().toISOString(),
+        dataSourceUsed: baseReport.data_source_used || "static_json_snapshot"
+      }
+    )
   );
   const targetVesselsRaw = allCollectedVessels.filter(isMainCommercialVessel);
   annotateCommercialRanks(targetVesselsRaw);
@@ -5398,6 +5752,7 @@ try {
   const portCongestionHeatmap = buildPortCongestionHeatmap(vessels);
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
   const portIntelligence = buildPortIntelligence(allCollectedVessels);
+  const portStatistics = buildPortStatistics(allCollectedVessels, completedAt);
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -5584,7 +5939,7 @@ try {
       null);
   const summaryRunMismatch = Boolean(summaryStatusRunId && summaryRunId && String(summaryStatusRunId) !== String(summaryRunId));
   const summaryRunWarnings = summaryRunMismatch ? ["status_run_id !== summary_run_id"] : [];
-  const dashboardSummary = withStableDashboardSummaryFields({
+  const dashboardSummary = {
     run_id: report?.run_id || runId,
     status_run_id: summaryStatusRunId,
     summary_run_id: summaryRunId,
@@ -5622,7 +5977,6 @@ try {
     collector_not_attempted_reason: collectorNotAttemptedReason,
     runtime_mode_diagnostics: runtimeModeDiagnostics,
     production_ready: currentRunStoredSuccessfully,
-    data_mode: report?.data_mode || "static_json_snapshot",
     record_count: report?.record_count || 0,
     storage: report.storage_status,
     storage_status: report.storage_status,
@@ -5634,7 +5988,14 @@ try {
     immediate_target_count: report?.immediate_target_count || immediateTargets.length,
     opportunity_count: report?.candidate_summary?.candidate_count || candidateList.length,
     watchlist_count: report?.scoring_diagnostics?.watchlist_count || 0,
-    port_count: portIntelligence.length,
+    port_count: portStatistics.port_count,
+    ports: portStatistics.ports,
+    port_statistics_generated_at: portStatistics.port_statistics_generated_at,
+    port_statistics_status: portStatistics.port_statistics_status,
+    port_statistics_error: portStatistics.port_statistics_error,
+    unknown_port_count: portStatistics.unknown_port_count,
+    vessels_missing_port_field: portStatistics.vessels_missing_port_field,
+    port_field_names_found: portStatistics.port_field_names_found,
     status: {
       run_id: summaryStatusRunId,
       status_run_id: summaryStatusRunId,
@@ -5669,7 +6030,7 @@ try {
     congestion_summary: portCongestionHeatmap,
     data_quality_summary: dataQualityLayer,
     source_health_summary: collectorDiagnosticsAfterCollection
-  });
+  };
   const staticOutputManifest = {};
   report.static_output_write_status = staticOutputManifest;
   const lastSuccessfulDatasetLocked = shouldWriteDebugApiOutputs(report);
@@ -5749,6 +6110,22 @@ try {
     hotVessels,
     generatedAt: completedAt
   });
+  const intelligenceSummaries = buildIntelligenceSummaries({
+    records: vessels,
+    candidateList,
+    salesCandidates,
+    immediateTargets,
+    topCandidates: topCandidatesPayload,
+    arrivalPipeline,
+    predictedCleaningOpportunities,
+    fleetOpportunities,
+    commercialCommandCenter,
+    scoringDiagnostics,
+    operatorDiagnostics,
+    predictionDiagnostics,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
+  });
   const candidateChangesPayload = buildCandidateChangesPayload(snapshotOutputs.candidateChanges, completedAt);
   const candidateSummaryPayload = buildCandidateSummary(vessels);
   const agentFollowupQueue = buildAgentFollowupQueue(vessels);
@@ -5767,12 +6144,6 @@ try {
     next_action: v.candidate_next_action || v.recommended_action,
     reason_codes: salesPriorityReasonCodes(v)
   }));
-  const apiContractContext = {
-    generated_at: completedAt,
-    data_mode: report.data_mode,
-    fallback_used: Boolean(report.fallback_used || lastSuccessfulDatasetLocked),
-    source_status: report.data_status || report.status || "unknown"
-  };
   const successfulBundleOutputs = {
     "dashboard/api/all-collected-vessels.json": allCollectedVessels,
     "dashboard/api/target-vessels.json": targetVessels,
@@ -5781,9 +6152,15 @@ try {
     "dashboard/api/candidates/top.json": topCandidatesPayload,
     "dashboard/api/contact-queue.json": contactQueuePayload,
     "dashboard/api/agent-followup-queue.json": agentFollowupQueue,
-    "dashboard/api/ports.json": portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
+    "dashboard/api/ports.json": portStatistics.ports,
     "dashboard/api/arrival-pipeline.json": arrivalPipeline,
-    "dashboard/api/staying-vessels.json": stayingVessels
+    "dashboard/api/staying-vessels.json": stayingVessels,
+    "dashboard/api/intelligence/risk-summary.json": intelligenceSummaries["risk-summary"],
+    "dashboard/api/intelligence/explainability.json": intelligenceSummaries.explainability,
+    "dashboard/api/intelligence/prediction-summary.json": intelligenceSummaries["prediction-summary"],
+    "dashboard/api/intelligence/operator-summary.json": intelligenceSummaries["operator-summary"],
+    "dashboard/api/intelligence/route-summary.json": intelligenceSummaries["route-summary"],
+    "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"]
   };
   const successfulDatasetBundle = saveSuccessfulDatasetBundle({
     report,
@@ -5809,9 +6186,6 @@ try {
     report,
     generatedAt: completedAt
   });
-  const latestAlertsPayload = normalizeAlertsPayload(salesAlertsPayload, apiContractContext);
-  const salesPipelinePayload = buildSalesPipeline(topCandidatesPayload, apiContractContext);
-  const vesselVisitsPayload = buildVesselVisits(allCollectedVessels.length ? allCollectedVessels : vessels, apiContractContext);
   const dailySalesReportPayload = buildDailySalesReportPayload({
     topCandidates: topCandidatesPayload,
     dataContinuity: dataContinuityReport,
@@ -5828,12 +6202,12 @@ try {
     storage_verification: dataContinuityReport.storage_verification
   };
   report.backend_ops = withRunOrigin(report.backend_ops || snapshotOutputs.backendOps, finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/status.json", withApiContract(report, apiContractContext), finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/health.json", withApiContract(healthPayload, apiContractContext), finalRunOrigin);
-  writeApiJson("dashboard/api/health/pipeline.json", withApiContract(healthPayload, apiContractContext), report);
+  writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/health.json", healthPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/health/pipeline.json", healthPayload, report);
   writeRuntimeDiagnosticJson("dashboard/api/data-continuity.json", dataContinuityReport, finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/alerts/sales-alerts.json", latestAlertsPayload, finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/alerts/latest.json", latestAlertsPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/alerts/sales-alerts.json", salesAlertsPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/alerts/latest.json", salesAlertsPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-sales-report.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-summary.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
@@ -5845,16 +6219,15 @@ try {
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
-  writeApiJson("dashboard/api/staying-vessels.json", withApiContract(stayingVessels, { ...apiContractContext, record_count: stayingVessels.length, source_status: "derived_from_vessels" }), report);
-  writeApiJson("dashboard/api/arrival-pipeline.json", withApiContract(arrivalPipeline, { ...apiContractContext, record_count: arrivalPipeline.length, source_status: "derived_from_vessels" }), report);
+  writeApiJson("dashboard/api/staying-vessels.json", stayingVessels, report);
+  writeApiJson("dashboard/api/arrival-pipeline.json", arrivalPipeline, report);
   writeApiJson("dashboard/api/imo-recovery-queue.json", buildImoRecoveryQueue(vessels), report);
   writeApiJson("dashboard/api/imo-recovery-priority.json", buildImoRecoveryQueue(vessels), report);
   writeApiJson("dashboard/api/high-value-targets.json", buildHighValueTargets(vessels), report);
   writeApiJson("dashboard/api/unknown-gt-review.json", buildUnknownGtReview(vessels), report);
   writeApiJson("dashboard/api/high-value-low-confidence.json", buildHighValueLowConfidence(vessels), report);
-  const congestionWatchlistPayload = buildCongestionWatchlist(vessels);
-  writeApiJson("dashboard/api/congestion-watchlist.json", withApiContract(congestionWatchlistPayload, { ...apiContractContext, record_count: congestionWatchlistPayload.length, source_status: "derived_from_vessels" }), report);
-  writeApiJson("dashboard/api/agent-followup-queue.json", withApiContract(agentFollowupQueue, { ...apiContractContext, record_count: agentFollowupQueue.length, source_status: "derived_from_candidates" }), report);
+  writeApiJson("dashboard/api/congestion-watchlist.json", buildCongestionWatchlist(vessels), report);
+  writeApiJson("dashboard/api/agent-followup-queue.json", agentFollowupQueue, report);
   fs.mkdirSync(routeApiOutputPath("dashboard/api/quality/basic-info-coverage.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
   fs.mkdirSync(routeApiOutputPath("dashboard/api/review/basic-info-missing.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
   writeApiJson("dashboard/api/quality/basic-info-coverage.json", buildBasicInfoCoverage(vessels), report);
@@ -5870,8 +6243,6 @@ try {
   writeStaticDatasetJson("data/latest-lite.json", vessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/candidates.json", candidateList, report, staticOutputManifest);
   writeApiJson("dashboard/api/candidates/top.json", topCandidatesPayload, report);
-  writeApiJson("dashboard/api/sales-pipeline.json", salesPipelinePayload, report);
-  writeApiJson("dashboard/api/history/vessel-visits.json", vesselVisitsPayload, report);
   writeApiJson("dashboard/api/changes.json", candidateChangesPayload, report);
   writeApiJson("dashboard/api/contact-ready-vessels.json", contactReadyVessels, report);
   writeApiJson("dashboard/api/fleet-opportunities.json", fleetOpportunities, report);
@@ -5880,8 +6251,11 @@ try {
   writeApiJson("dashboard/api/contact-queue.json", contactQueuePayload, report);
   writeApiJson("dashboard/api/hot-candidates.json", candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), report);
   writeApiJson("dashboard/api/hot-vessels.json", hotVessels, report);
-  writeStaticDatasetJson("dashboard/api/ports.json", portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port), report, staticOutputManifest);
-  writeStaticDatasetJson("dashboard/api/dashboard-summary.json", withApiContract(dashboardSummary, apiContractContext), report, staticOutputManifest);
+  for (const [name, payload] of Object.entries(intelligenceSummaries)) {
+    writeApiJson(`dashboard/api/intelligence/${name}.json`, payload, report);
+  }
+  writeStaticDatasetJson("dashboard/api/ports.json", portStatistics.ports, report, staticOutputManifest);
+  writeStaticDatasetJson("dashboard/api/dashboard-summary.json", dashboardSummary, report, staticOutputManifest);
   writeApiJson("dashboard/api/port-opportunities.json", portOpportunities, report);
   writeApiJson("dashboard/api/coverage-registry.json", {
     generated_at: completedAt,
@@ -5917,10 +6291,10 @@ try {
   writeApiJson("dashboard/api/commercial-command-center.json", commercialCommandCenter, report);
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
   writeApiJson("dashboard/api/biofouling-timeline.json", biofoulingTimeline, report);
-  writeApiJson("dashboard/api/status.json", withApiContract(report, apiContractContext), report);
+  writeApiJson("dashboard/api/status.json", report, report);
   writeApiJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, report);
   writeApiJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, report);
-  writeRuntimeDiagnosticJson("dashboard/api/status.json", withApiContract(report, apiContractContext), finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);

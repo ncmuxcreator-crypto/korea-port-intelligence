@@ -25,6 +25,28 @@ function usingDebugOutput(file) {
   return outputPath(file).replace(/\\/g, "/").startsWith(`${DEBUG_API_DIR}/`);
 }
 
+function canonicalPriorityPort(value) {
+  const key = String(value || "")
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[\s._/·-]+/g, "");
+  if (/BUSAN|PUSAN|부산/.test(key)) return "Busan";
+  if (/ULSAN|울산/.test(key)) return "Ulsan";
+  if (/YEOSUGWANGYANG|여수광양/.test(key)) return "Yeosu/Gwangyang";
+  if (/YEOSU|여수/.test(key)) return "Yeosu";
+  if (/GWANGYANG|광양/.test(key)) return "Gwangyang";
+  if (/PYEONGTAEKDANGJIN|PYONGTAEKDANGJIN|평택당진/.test(key)) return "Pyeongtaek-Dangjin";
+  if (/POHANG|포항/.test(key)) return "Pohang";
+  return String(value || "").trim();
+}
+
+function hasPriorityPort(canonicalPorts, required) {
+  if (required === "Yeosu/Gwangyang") {
+    return canonicalPorts.has("Yeosu/Gwangyang") || (canonicalPorts.has("Yeosu") && canonicalPorts.has("Gwangyang"));
+  }
+  return canonicalPorts.has(required);
+}
+
 function validateRunOrigin(label, payload) {
   for (const marker of ["generated_by", "is_github_actions", "validation_mode", "serving_mode", "run_id"]) {
     if (!(marker in (payload || {}))) throw new Error(`${label} missing run origin field: ${marker}`);
@@ -56,11 +78,6 @@ function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } 
     throw new Error(`${label} is a placeholder and must not be used as runtime truth`);
   }
   if (status?.run_id && payload?.run_id && String(status.run_id) !== String(payload.run_id) && payload.stale_diagnostic !== true) {
-    const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
-    if (allowPlaceholder || localNoLiveDataDiagnostics || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
-      validationWarnings.push(`${label} is a stale local/protected diagnostic: run_id differs from status.json`);
-      return;
-    }
     throw new Error(`${label} must mark stale_diagnostic=true when run_id differs from status.json`);
   }
 }
@@ -271,9 +288,10 @@ for (const item of data) {
 }
 
 const priorityPorts = report?.data_strategy?.priority_ports || [];
-const requiredPriorityPorts = ["Busan", "Yeosu/Gwangyang", "Ulsan", "Pyeongtaek-Dangjin", "Hadong/Samcheonpo", "Pohang"];
+const canonicalPriorityPorts = new Set(priorityPorts.map(canonicalPriorityPort));
+const requiredPriorityPorts = ["Busan", "Yeosu/Gwangyang", "Ulsan", "Pyeongtaek-Dangjin", "Pohang"];
 for (const port of requiredPriorityPorts) {
-  if (!priorityPorts.includes(port)) {
+  if (!hasPriorityPort(canonicalPriorityPorts, port)) {
     throw new Error(`Missing priority port in data strategy: ${port}`);
   }
 }
@@ -586,11 +604,8 @@ if (!/on:\s*[\s\S]*workflow_dispatch:/.test(workflow) || !/schedule:/.test(workf
 if (!workflow.includes("runs-on: ubuntu-latest") || workflow.includes("runs-on: self-hosted")) {
   throw new Error("Longterm workflow must use ubuntu-latest and must not use self-hosted runners");
 }
-if (
-  !workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}") ||
-  !workflow.includes("cancel-in-progress: ${{ github.event_name == 'schedule' }}")
-) {
-  throw new Error("Longterm workflow concurrency must isolate push and schedule runs");
+if (!workflow.includes("group: ${{ github.workflow }}-${{ github.ref }}") || !workflow.includes("cancel-in-progress: true")) {
+  throw new Error("Longterm workflow concurrency must be isolated by workflow and ref");
 }
 const longtermJobTimeouts = workflow.match(/^\s{4}timeout-minutes:\s*30\s*$/gm) || [];
 if (!longtermJobTimeouts.length) {
@@ -814,7 +829,8 @@ if (packageJson.scripts?.reprocess !== "node scripts/reprocess.js" || !fs.exists
 if (packageJson.scripts?.["test:regression"] !== "node tests/regression-tests.js") {
   throw new Error("Regression tests must be available as npm run test:regression");
 }
-if (packageJson.scripts?.["audit:data"] !== "node scripts/audit-data-health.js" || !fs.existsSync("scripts/audit-data-health.js")) {
+const auditDataScript = packageJson.scripts?.["audit:data"] || "";
+if (!auditDataScript.includes("scripts/audit-data-health.js") || !fs.existsSync("scripts/audit-data-health.js")) {
   throw new Error("Data health audit must be available as npm run audit:data");
 }
 if (packageJson.scripts?.["gdrive:check"] && !fs.existsSync("scripts/gdrive-check.js")) {
@@ -844,3 +860,4 @@ for (const warning of validationWarnings) {
   console.warn(`[HWK] ${warning}`);
 }
 console.log(`[HWK] validation success (${validationMode})`);
+

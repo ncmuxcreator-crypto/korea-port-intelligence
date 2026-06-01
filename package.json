@@ -3,15 +3,20 @@
   "version": "17.7.0",
   "type": "module",
   "scripts": {
-    "update": "node scripts/update.js",
+    "update": "node scripts/with-env.js scripts/update.js",
     "reprocess": "node scripts/reprocess.js",
     "daily:enrich": "node scripts/daily-enrichment.js",
     "validate": "node scripts/validate.js",
-    "test": "npm run test:regression && npm run test:intelligence && npm run test:reliability",
+    "test": "npm run test:regression && npm run test:reliability",
     "test:regression": "node tests/regression-tests.js",
-    "test:intelligence": "node tests/intelligence-foundation-tests.js",
     "test:reliability": "node tests/reliability-tests.js",
-    "audit:data": "node scripts/audit-data-health.js",
+    "audit:data": "node scripts/with-env.js scripts/audit-data-health.js",
+    "audit:db": "node scripts/with-env.js scripts/audit-db.js",
+    "audit:normalize": "node scripts/with-env.js scripts/audit-normalize.js",
+    "audit:features": "node scripts/audit-features.js",
+    "db:migrate": "node scripts/apply-migrations.js",
+    "db:migrate:dry-run": "node scripts/apply-migrations.js --dry-run",
+    "db:dedupe": "node scripts/with-env.js scripts/dedupe-production.js",
     "build": "npm run update && npm run validate",
     "deploy:cloudflare": "npx wrangler deploy",
     "secret:cloudflare:supabase-url": "npx wrangler secret put SUPABASE_URL",
@@ -21,7 +26,7 @@
     "candidate:audit": "node scripts/candidate-audit.js",
     "vessel:audit": "node scripts/vessel-universe-audit.js",
     "coverage:audit": "node scripts/coverage-audit.js",
-    "health": "node scripts/health.js",
+    "health": "npm run doctor && npm run candidate:audit && npm run coverage:audit && npm run risk:calibrate && npm run candidate:explain && npm run snapshot:guard && npm run source:health && npm run candidate:dedupe && npm run candidate:window && npm run collector:plan && npm run pipeline:sla && npm run candidate:daily && npm run readiness:gate && npm run candidate:confidence && npm run snapshot:diff",
     "risk:calibrate": "node scripts/risk-calibrate.js",
     "candidate:explain": "node scripts/candidate-explain.js",
     "snapshot:guard": "node scripts/snapshot-guard.js",
@@ -37,6 +42,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
+    "pg": "^8.21.0",
     "ws": "^8.18.0"
   }
 }

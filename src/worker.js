@@ -1,5 +1,4 @@
 ﻿const API_CACHE_SECONDS = 300;
-const UI_ASSET_CACHE_CONTROL = "no-store, max-age=0, must-revalidate";
 const AUTO_UPDATE_INTERVAL_HOURS = 4;
 const SALES_CANDIDATE_THRESHOLD = 65;
 const IMMEDIATE_TARGET_THRESHOLD = 75;
@@ -56,6 +55,168 @@ function normalizePortCode(value) {
 function representativePortName(portCode, fallback = "") {
   const code = normalizePortCode(portCode);
   return REPRESENTATIVE_PORT_NAMES[code] || fallback || code;
+}
+
+const PORT_STAT_FIELD_NAMES = ["port_code", "port_name", "port", "port_name_ko", "prtAgCd", "prtAgNm", "portName", "port_nm", "current_port", "arrival_port"];
+
+function normalizePort(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) return normalizeRecordPort(value).port;
+  const raw = String(value || "").normalize("NFKC").trim();
+  if (!raw) return { port_code: null, port_name: "" };
+  const compact = raw.replace(/\s+/g, "").toUpperCase();
+  const lower = raw.toLowerCase();
+  const numericCode = /^\d{1,3}$/.test(compact) ? compact.padStart(3, "0") : null;
+  if (numericCode && REPRESENTATIVE_PORT_NAMES[numericCode]) return { port_code: numericCode, port_name: representativePortName(numericCode) };
+  if (["UNKNOWN", "UNK", "미상", "미확인"].includes(compact)) return { port_code: "UNKNOWN", port_name: "미확인 항만" };
+  if (/busan|pusan|부산/.test(lower) || compact === "KRPUS") return { port_code: "020", port_name: "부산" };
+  if (/incheon|인천/.test(lower) || compact === "KRICN") return { port_code: "030", port_name: "인천" };
+  if (/yeosu|gwangyang|여수|광양/.test(lower) || ["KRYOS", "KRKAN"].includes(compact)) return { port_code: "620", port_name: "여수/광양" };
+  if (/ulsan|울산/.test(lower) || compact === "KRUSN") return { port_code: "820", port_name: "울산" };
+  if (/pyeongtaek|pyongtaek|dangjin|평택|당진/.test(lower) || ["KRPTK", "KRDJN"].includes(compact)) return { port_code: "031", port_name: "평택/당진" };
+  if (/pohang|포항/.test(lower) || compact === "KRKPO") return { port_code: "810", port_name: "포항" };
+  if (/masan|changwon|jinhae|마산|창원|진해/.test(lower) || ["KRMAS", "KRCHF"].includes(compact)) return { port_code: "622", port_name: "마산/창원" };
+  if (/hadong|samcheonpo|tongyeong|geoje|okpo|하동|삼천포|통영|거제|옥포/.test(lower)) return { port_code: "622", port_name: "마산/창원" };
+  if (/mokpo|목포/.test(lower) || compact === "KRMOK") return { port_code: "070", port_name: "목포" };
+  if (/gunsan|군산/.test(lower) || compact === "KRKUV") return { port_code: "080", port_name: "군산" };
+  if (/daesan|대산/.test(lower) || compact === "KRTSN") return { port_code: "621", port_name: "대산" };
+  if (/donghae|mukho|동해|묵호/.test(lower) || compact === "KRTGH") return { port_code: "120", port_name: "동해/묵호" };
+  if (/jeju|제주/.test(lower) || compact === "KRCJU") return { port_code: "940", port_name: "제주" };
+  return { port_code: "UNKNOWN", port_name: "미확인 항만" };
+}
+
+function normalizeRecordPort(record = {}) {
+  let firstUnknown = null;
+  for (const field of PORT_STAT_FIELD_NAMES) {
+    const value = record?.[field];
+    if (value === undefined || value === null || String(value).trim() === "") continue;
+    const port = normalizePort(value);
+    if (port.port_code && port.port_code !== "UNKNOWN") return { port, field, missing: false, unknown: false };
+    if (!firstUnknown && port.port_code === "UNKNOWN") firstUnknown = { port, field, missing: false, unknown: true };
+  }
+  return firstUnknown || { port: { port_code: null, port_name: "" }, field: null, missing: true, unknown: false };
+}
+
+function detectPortFieldNames(records = []) {
+  const found = new Set();
+  for (const record of records.slice(0, 50)) {
+    for (const field of PORT_STAT_FIELD_NAMES) {
+      const value = record?.[field];
+      if (value !== undefined && value !== null && String(value).trim() !== "") found.add(field);
+    }
+  }
+  return [...found].sort();
+}
+
+function portStatsScore(record = {}) {
+  const values = [
+    record.salesScore,
+    record.sales_score,
+    record.commercial_value_score,
+    record.total_sales_priority_score,
+    record.opportunity_score,
+    record.cleaning_candidate_score,
+    record.biofoulingScore,
+    record.biofouling_score,
+    record.biofouling_exposure_score
+  ];
+  for (const value of values) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return number;
+  }
+  return null;
+}
+
+function portStatsTimestamp(record = {}) {
+  for (const field of ["last_seen_at", "collected_at", "updated_at", "generated_at", "ata", "atb", "eta", "etb"]) {
+    const time = record?.[field] ? Date.parse(record[field]) : NaN;
+    if (Number.isFinite(time)) return time;
+  }
+  return null;
+}
+
+function buildPortStatistics(records = [], generatedAt = new Date().toISOString()) {
+  try {
+    const inputRows = Array.isArray(records) ? records : [];
+    const byPort = new Map();
+    let vesselsMissingPortField = 0;
+    let unknownPortCount = 0;
+    for (const record of inputRows) {
+      const normalized = normalizeRecordPort(record);
+      if (normalized.missing) {
+        vesselsMissingPortField += 1;
+        continue;
+      }
+      if (normalized.unknown) unknownPortCount += 1;
+      const key = normalized.port.port_code || normalized.port.port_name;
+      const current = byPort.get(key) || {
+        port_code: normalized.port.port_code,
+        port_name: normalized.port.port_name,
+        vessel_count: 0,
+        hot_candidate_count: 0,
+        candidate_count: 0,
+        score_total: 0,
+        score_count: 0,
+        last_seen_ms: null
+      };
+      current.vessel_count += 1;
+      const score = portStatsScore(record);
+      if (isImmediateTarget(record) || String(record.priority_label || "").toUpperCase() === "HOT" || score >= 75) current.hot_candidate_count += 1;
+      if (isSalesCandidate(record) || score >= 50) current.candidate_count += 1;
+      if (score !== null) {
+        current.score_total += score;
+        current.score_count += 1;
+      }
+      const seenAt = portStatsTimestamp(record);
+      if (seenAt !== null && (current.last_seen_ms === null || seenAt > current.last_seen_ms)) current.last_seen_ms = seenAt;
+      byPort.set(key, current);
+    }
+    const ports = [...byPort.values()].map(port => {
+      const avgScore = port.score_count ? Math.round((port.score_total / port.score_count) * 10) / 10 : null;
+      return {
+        port_code: port.port_code,
+        port_name: port.port_name,
+        vessel_count: port.vessel_count,
+        hot_candidate_count: port.hot_candidate_count,
+        avg_opportunity_score: avgScore,
+        last_seen_at: port.last_seen_ms === null ? null : new Date(port.last_seen_ms).toISOString(),
+        total_vessels: port.vessel_count,
+        candidate_count: port.candidate_count,
+        sales_candidates: port.candidate_count,
+        sales_targets: port.candidate_count,
+        immediate_target_count: port.hot_candidate_count,
+        immediate_targets: port.hot_candidate_count,
+        port_opportunity_score: avgScore
+      };
+    }).sort((a, b) =>
+      Number(b.vessel_count || 0) - Number(a.vessel_count || 0) ||
+      Number(b.hot_candidate_count || 0) - Number(a.hot_candidate_count || 0) ||
+      Number(b.avg_opportunity_score || 0) - Number(a.avg_opportunity_score || 0) ||
+      String(a.port_name || "").localeCompare(String(b.port_name || ""), "ko")
+    );
+    return {
+      record_count: inputRows.length,
+      port_count: ports.length,
+      ports,
+      port_statistics_generated_at: generatedAt,
+      port_statistics_status: !inputRows.length ? "empty" : ports.length ? "completed" : "empty",
+      port_statistics_error: !inputRows.length ? "record_count_zero" : ports.length ? null : "no_valid_port_field_found",
+      unknown_port_count: unknownPortCount,
+      vessels_missing_port_field: vesselsMissingPortField,
+      port_field_names_found: detectPortFieldNames(inputRows)
+    };
+  } catch (error) {
+    return {
+      record_count: Array.isArray(records) ? records.length : 0,
+      port_count: 0,
+      ports: [],
+      port_statistics_generated_at: generatedAt,
+      port_statistics_status: "failed",
+      port_statistics_error: error?.message || String(error),
+      unknown_port_count: 0,
+      vessels_missing_port_field: 0,
+      port_field_names_found: []
+    };
+  }
 }
 function representativeRegistryForCode(portCode) {
   const code = normalizePortCode(portCode);
@@ -2021,25 +2182,9 @@ async function fetchLocalStaticSnapshot(env, reason = "supabase_unavailable") {
 }
 
 async function fetchLatestSummarySnapshot(env) {
-  const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&status=eq.success&order=generated_at.desc&limit=100");
+  const response = await supabaseGet(env, "/rest/v1/dashboard_summary_snapshots?select=*&status=eq.success&order=generated_at.desc&limit=10");
   if (!response.ok || !response.rows.length) return null;
   const latest = response.rows[0];
-  const commercialCount = row => Number(row?.sales_target_count || row?.opportunity_count || row?.immediate_target_count || 0);
-  const bestCommercial = response.rows
-    .filter(row => commercialCount(row) > 0)
-    .sort((a, b) =>
-      commercialCount(b) - commercialCount(a) ||
-      Number(b.all_vessels_count || b.record_count || 0) - Number(a.all_vessels_count || a.record_count || 0)
-    )[0];
-  if (bestCommercial && commercialCount(latest) === 0) {
-    return {
-      ...bestCommercial,
-      fallback_reason: "latest_summary_sales_target_drop_guard",
-      guarded_latest_run_id: latest.run_id,
-      guarded_latest_sales_target_count: Number(latest.sales_target_count || 0),
-      guarded_reference_sales_target_count: Number(bestCommercial.sales_target_count || bestCommercial.opportunity_count || 0)
-    };
-  }
   const bestRecent = response.rows
     .slice()
     .sort((a, b) => Number(b.all_vessels_count || b.record_count || 0) - Number(a.all_vessels_count || a.record_count || 0))[0];
@@ -3072,6 +3217,7 @@ function buildDashboardSummary(allRecords = [], source = {}) {
   const predictedArrivals = buildPredictedArrivals(activeRecords).slice(0, 10);
   const predictedCleaningOpportunities = buildPredictedCleaningOpportunities(activeRecords).slice(0, 10);
   const status = buildStatus(activeRecords, source);
+  const portStatistics = buildPortStatistics(activeRecords, status.generated_at || new Date().toISOString());
   const context = runContextFields({
     statusRunId: status.status_run_id || status.run_id || status.active_run_id,
     summaryRunId: status.summary_run_id || status.run_id || status.active_run_id,
@@ -3093,8 +3239,15 @@ function buildDashboardSummary(allRecords = [], source = {}) {
     sales_target_count: buckets.sales_candidates.length,
     immediate_target_count: buckets.immediate_targets.length,
     opportunity_count: status.opportunity_count,
+    port_count: portStatistics.port_count,
+    ports: portStatistics.ports,
+    port_statistics_generated_at: portStatistics.port_statistics_generated_at,
+    port_statistics_status: portStatistics.port_statistics_status,
+    port_statistics_error: portStatistics.port_statistics_error,
+    unknown_port_count: portStatistics.unknown_port_count,
+    vessels_missing_port_field: portStatistics.vessels_missing_port_field,
+    port_field_names_found: portStatistics.port_field_names_found,
     status,
-    ports: buildPorts(activeRecords),
     immediate_targets: immediateTargets,
     opportunities,
     predicted_arrivals: predictedArrivals,
@@ -3123,6 +3276,37 @@ function snapshotDataFreshness(snapshot = {}) {
     active_collected_at: generatedAt,
     data_age_minutes: dataAgeMinutes,
     is_stale: dataAgeMinutes === null ? true : dataAgeMinutes > AUTO_UPDATE_INTERVAL_HOURS * 60
+  };
+}
+
+function buildPortStatisticsFromSummaryRows(portSummary = [], recordCount = 0, generatedAt = new Date().toISOString()) {
+  const summaryRows = Array.isArray(portSummary) ? portSummary : [];
+  const ports = summaryRows
+    .map(row => {
+      const normalized = normalizePort(row);
+      const vesselCount = Number(row.vessel_count ?? row.total_vessels ?? row.target_vessels ?? 0);
+      return {
+        ...row,
+        port_code: normalized.port_code || row.port_code || null,
+        port_name: normalized.port_name || row.port_name || row.port_name_ko || "미확인 항만",
+        vessel_count: vesselCount,
+        hot_candidate_count: Number(row.hot_candidate_count ?? row.immediate_target_count ?? row.immediate_targets ?? 0),
+        avg_opportunity_score: Number.isFinite(Number(row.avg_opportunity_score ?? row.port_opportunity_score)) ? Number(row.avg_opportunity_score ?? row.port_opportunity_score) : null,
+        last_seen_at: row.last_seen_at || null,
+        total_vessels: vesselCount
+      };
+    })
+    .filter(row => Number(row.vessel_count || 0) > 0 || row.port_code === "UNKNOWN");
+  const hasRecords = Number(recordCount || 0) > 0;
+  return {
+    port_count: ports.length,
+    ports,
+    port_statistics_generated_at: generatedAt,
+    port_statistics_status: !hasRecords ? "empty" : ports.length ? "completed" : "empty",
+    port_statistics_error: !hasRecords ? "record_count_zero" : ports.length ? null : "no_valid_port_field_found_in_summary_snapshot",
+    unknown_port_count: ports.find(port => port.port_code === "UNKNOWN")?.vessel_count || 0,
+    vessels_missing_port_field: 0,
+    port_field_names_found: ports.length ? ["port_summary"] : []
   };
 }
 
@@ -3210,7 +3394,8 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
   const candidateSummary = parseJsonField(snapshot.candidate_summary, {}) || {};
   const congestionSummary = parseJsonField(snapshot.congestion_summary, {}) || {};
   const portSummary = parseJsonField(snapshot.port_summary, []);
-  const ports = Array.isArray(portSummary) ? portSummary : [];
+  const portStatistics = buildPortStatisticsFromSummaryRows(portSummary, status.record_count, snapshot.generated_at || status.generated_at);
+  const ports = portStatistics.ports;
   const context = runContextFields({
     statusRunId: status.status_run_id || status.run_id,
     summaryRunId: status.summary_run_id || snapshot.run_id,
@@ -3235,6 +3420,13 @@ function buildDashboardSummaryFromSnapshot(snapshot = {}, source = {}, reason = 
     immediate_target_count: status.immediate_target_count,
     opportunity_count: status.opportunity_count,
     watchlist_count: status.watchlist_count,
+    port_count: portStatistics.port_count,
+    port_statistics_generated_at: portStatistics.port_statistics_generated_at,
+    port_statistics_status: portStatistics.port_statistics_status,
+    port_statistics_error: portStatistics.port_statistics_error,
+    unknown_port_count: portStatistics.unknown_port_count,
+    vessels_missing_port_field: portStatistics.vessels_missing_port_field,
+    port_field_names_found: portStatistics.port_field_names_found,
     status,
     ports,
     port_units: flattenSummaryPortUnits(ports),
@@ -4380,23 +4572,23 @@ function historyLimit(searchParams) {
   return Math.min(1000, Math.max(1, Number(searchParams.get("limit") || 180)));
 }
 
-function appendHistoryFilters(path, searchParams, fieldMap = {}, dateColumn = "snapshot_date") {
+function appendHistoryFilters(path, searchParams, fieldMap = {}) {
   const params = [];
   const from = searchParams.get("from");
   const to = searchParams.get("to");
-  if (from) params.push(`${dateColumn}=gte.${encodeURIComponent(from)}`);
-  if (to) params.push(`${dateColumn}=lte.${encodeURIComponent(to)}`);
+  if (from) params.push(`snapshot_date=gte.${encodeURIComponent(from)}`);
+  if (to) params.push(`snapshot_date=lte.${encodeURIComponent(to)}`);
   for (const [queryKey, column] of Object.entries(fieldMap)) {
     const value = searchParams.get(queryKey);
     if (value) params.push(`${column}=eq.${encodeURIComponent(value)}`);
   }
-  params.push(`order=${dateColumn}.desc`);
+  params.push("order=snapshot_date.desc");
   params.push(`limit=${historyLimit(searchParams)}`);
   return `${path}${path.includes("?") ? "&" : "?"}${params.join("&")}`;
 }
 
-async function historyTable(env, table, searchParams, fieldMap = {}, dateColumn = "snapshot_date") {
-  const response = await supabaseGet(env, appendHistoryFilters(`/rest/v1/${table}?select=*`, searchParams, fieldMap, dateColumn));
+async function historyTable(env, table, searchParams, fieldMap = {}) {
+  const response = await supabaseGet(env, appendHistoryFilters(`/rest/v1/${table}?select=*`, searchParams, fieldMap));
   return {
     table,
     rows: response.rows,
@@ -4413,31 +4605,13 @@ async function historyTable(env, table, searchParams, fieldMap = {}, dateColumn 
   };
 }
 
-async function portHistoryTable(env, searchParams) {
-  const summary = await historyTable(env, "port_daily_summary", searchParams, { port: "port_code" }, "summary_date");
-  if (summary.ok) {
-    return {
-      ...summary,
-      rows: summary.rows.map(row => ({ ...row, snapshot_date: row.snapshot_date || row.summary_date })),
-      source_table: "port_daily_summary",
-      detailed_snapshot_retention: "port_snapshot_daily_kept_24_48h_or_latest_20_runs"
-    };
-  }
-  const detailed = await historyTable(env, "port_snapshot_daily", searchParams, { port: "port_code" });
-  return {
-    ...detailed,
-    source_table: "port_snapshot_daily",
-    fallback_reason: summary.error || "port_daily_summary_unavailable"
-  };
-}
-
 async function historyApiResponse(pathname, searchParams, env) {
-  if (pathname === "/api/history/ports.json") return json(await portHistoryTable(env, searchParams), { headers: corsHeaders() });
+  if (pathname === "/api/history/ports.json") return json(await historyTable(env, "port_snapshot_daily", searchParams, { port: "port_code" }), { headers: corsHeaders() });
   const portMatch = pathname.match(new RegExp("^/api/history/ports/([^/]+)\\.json$"));
   if (portMatch) {
     const localParams = new URLSearchParams(searchParams);
     localParams.set("port", decodeURIComponent(portMatch[1]));
-    return json(await portHistoryTable(env, localParams), { headers: corsHeaders() });
+    return json(await historyTable(env, "port_snapshot_daily", localParams, { port: "port_code" }), { headers: corsHeaders() });
   }
   if (pathname === "/api/history/operators.json") return json(await historyTable(env, "operator_snapshot_daily", searchParams, { operator: "operator_normalized" }), { headers: corsHeaders() });
   const operatorMatch = pathname.match(new RegExp("^/api/history/operators/([^/]+)\\.json$"));
@@ -4703,26 +4877,6 @@ async function apiResponse(url, env) {
   if (lightweightSummaryRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
-    if (latestSummarySnapshot && pathname.endsWith("/candidates/top.json")) {
-      const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
-      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || "summary_snapshot_top_route");
-      return json({
-        active_run_id: summary.active_run_id,
-        summary_run_id: summary.summary_run_id,
-        data_source_used: summary.data_source_used,
-        is_fallback: summary.is_fallback,
-        fallback_used: summary.fallback_used,
-        fallback_reason: summary.fallback_reason,
-        generated_at: summary.generated_at,
-        data_freshness: summary.data_freshness,
-        record_count: summary.record_count,
-        target_count: summary.target_count,
-        immediate_target_count: summary.immediate_target_count,
-        opportunity_count: summary.opportunity_count,
-        immediate_targets: summary.immediate_targets,
-        opportunities: summary.opportunities
-      }, { headers: corsHeaders() });
-    }
     if (latestSummarySnapshot && (!pointer.active_run_id || pointer.active_dataset_empty || pointer.error)) {
       const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
       const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || (pointer.active_run_id && pointer.active_run_id !== latestSummarySnapshot.run_id ? "latest_successful_summary_snapshot" : "active_summary_snapshot"));
@@ -4738,6 +4892,12 @@ async function apiResponse(url, env) {
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
         record_count: summary.record_count,
+        port_count: summary.port_count,
+        port_statistics_generated_at: summary.port_statistics_generated_at,
+        port_statistics_status: summary.port_statistics_status,
+        port_statistics_error: summary.port_statistics_error,
+        unknown_port_count: summary.unknown_port_count,
+        vessels_missing_port_field: summary.vessels_missing_port_field,
         target_count: summary.target_count,
         immediate_target_count: summary.immediate_target_count,
         opportunity_count: summary.opportunity_count,
@@ -4758,6 +4918,12 @@ async function apiResponse(url, env) {
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
         record_count: summary.record_count,
+        port_count: summary.port_count,
+        port_statistics_generated_at: summary.port_statistics_generated_at,
+        port_statistics_status: summary.port_statistics_status,
+        port_statistics_error: summary.port_statistics_error,
+        unknown_port_count: summary.unknown_port_count,
+        vessels_missing_port_field: summary.vessels_missing_port_field,
         target_count: summary.target_count,
         immediate_target_count: summary.immediate_target_count,
         opportunity_count: summary.opportunity_count,
@@ -5032,6 +5198,12 @@ async function apiResponse(url, env) {
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
         record_count: summary.record_count,
+        port_count: summary.port_count,
+        port_statistics_generated_at: summary.port_statistics_generated_at,
+        port_statistics_status: summary.port_statistics_status,
+        port_statistics_error: summary.port_statistics_error,
+        unknown_port_count: summary.unknown_port_count,
+        vessels_missing_port_field: summary.vessels_missing_port_field,
         target_count: summary.target_count,
         immediate_target_count: summary.immediate_target_count,
         opportunity_count: summary.opportunity_count,
@@ -5070,15 +5242,22 @@ async function apiResponse(url, env) {
         generated_at: summary.generated_at,
         data_freshness: summary.data_freshness,
         record_count: summary.record_count,
+        port_count: summary.port_count,
+        port_statistics_generated_at: summary.port_statistics_generated_at,
+        port_statistics_status: summary.port_statistics_status,
+        port_statistics_error: summary.port_statistics_error,
+        unknown_port_count: summary.unknown_port_count,
+        vessels_missing_port_field: summary.vessels_missing_port_field,
         target_count: summary.target_count,
         immediate_target_count: summary.immediate_target_count,
         opportunity_count: summary.opportunity_count,
-      data: searchParams.get("scope") === "units" ? (summary.port_units || flattenSummaryPortUnits(summary.ports || [])) : summary.ports,
-      port_units: summary.port_units || flattenSummaryPortUnits(summary.ports || [])
+        data: searchParams.get("scope") === "units" ? (summary.port_units || flattenSummaryPortUnits(summary.ports || [])) : summary.ports,
+        port_units: summary.port_units || flattenSummaryPortUnits(summary.ports || [])
       }, { headers: corsHeaders() });
     }
     const status = buildStatus(allRecords, source);
-    const ports = buildPorts(allRecords);
+    const portStatistics = buildPortStatistics(allRecords, status.generated_at || new Date().toISOString());
+    const ports = portStatistics.ports;
     const portUnits = buildPortUnits(allRecords);
     return json({
       active_run_id: status.active_run_id,
@@ -5088,6 +5267,12 @@ async function apiResponse(url, env) {
       generated_at: status.generated_at,
       data_freshness: status.data_freshness,
       record_count: status.record_count,
+      port_count: portStatistics.port_count,
+      port_statistics_generated_at: portStatistics.port_statistics_generated_at,
+      port_statistics_status: portStatistics.port_statistics_status,
+      port_statistics_error: portStatistics.port_statistics_error,
+      unknown_port_count: portStatistics.unknown_port_count,
+      vessels_missing_port_field: portStatistics.vessels_missing_port_field,
       target_count: status.target_count,
       immediate_target_count: status.immediate_target_count,
       opportunity_count: status.opportunity_count,
@@ -5112,25 +5297,6 @@ function isWorkerCacheableApi(pathname = "") {
     pathname.endsWith("/ports.json");
 }
 
-function shouldBypassAssetCache(pathname = "") {
-  return pathname === "/" ||
-    pathname.endsWith(".html") ||
-    pathname.endsWith(".js") ||
-    pathname.endsWith(".css");
-}
-
-function withUiAssetCacheHeaders(request, response) {
-  const pathname = new URL(request.url).pathname;
-  if (!shouldBypassAssetCache(pathname)) return response;
-  const headers = new Headers(response.headers);
-  headers.set("cache-control", UI_ASSET_CACHE_CONTROL);
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders() });
@@ -5151,6 +5317,6 @@ export default {
       const response = await apiResponse(url, env);
       if (response) return response;
     }
-    return withUiAssetCacheHeaders(request, await env.ASSETS.fetch(request));
+    return env.ASSETS.fetch(request);
   }
 };

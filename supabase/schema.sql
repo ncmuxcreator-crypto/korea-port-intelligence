@@ -134,6 +134,8 @@ create table if not exists dashboard_summary_snapshots (
   is_latest_successful boolean default false,
   record_count int default 0,
   all_vessels_count int default 0,
+  total_vessels int default 0,
+  data_mode text,
   target_vessels_count int default 0,
   sales_target_count int default 0,
   immediate_target_count int default 0,
@@ -286,7 +288,6 @@ create index if not exists idx_port_call_master_score on port_call_master(commer
 create index if not exists idx_port_calls_collected_at on port_calls(collected_at desc);
 create index if not exists idx_port_calls_port on port_calls(port);
 create index if not exists idx_port_calls_risk_score on port_calls(risk_score desc);
-create index if not exists idx_port_calls_vessel_id on port_calls(vessel_id);
 
 alter table port_call_master add column if not exists pilot_inbound timestamptz;
 alter table port_call_master add column if not exists pilot_outbound timestamptz;
@@ -1002,107 +1003,6 @@ create table if not exists port_snapshot_daily (
   unique(snapshot_date, port_code, sub_port)
 );
 
-create table if not exists port_daily_summary (
-  summary_date date not null,
-  run_id text,
-  latest_run_id text,
-  port_code text not null,
-  port_name text,
-  sub_port text default '',
-  top_port_call_id text,
-  top_opportunity_id text,
-  total_vessels int default 0,
-  target_vessels int default 0,
-  immediate_targets int default 0,
-  sales_targets int default 0,
-  watchlist_count int default 0,
-  opportunity_count int default 0,
-  open_opportunities int default 0,
-  closed_opportunities int default 0,
-  anchorage_vessels int default 0,
-  long_stay_vessels int default 0,
-  avg_stay_hours numeric default 0,
-  avg_anchorage_hours numeric default 0,
-  avg_congestion_score numeric default 0,
-  avg_commercial_value_score numeric default 0,
-  avg_predicted_cleaning_opportunity_score numeric default 0,
-  port_opportunity_score int default 0,
-  port_congestion_score int default 0,
-  source_run_count int default 1,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  payload jsonb default '{}'::jsonb,
-  unique(summary_date, port_code, sub_port)
-);
-
-create table if not exists port_weekly_summary (
-  week_start_date date not null,
-  week_end_date date not null,
-  run_id text,
-  latest_run_id text,
-  port_code text not null,
-  port_name text,
-  sub_port text default '',
-  top_port_call_id text,
-  top_opportunity_id text,
-  total_vessels int default 0,
-  target_vessels int default 0,
-  immediate_targets int default 0,
-  sales_targets int default 0,
-  watchlist_count int default 0,
-  opportunity_count int default 0,
-  open_opportunities int default 0,
-  closed_opportunities int default 0,
-  anchorage_vessels int default 0,
-  long_stay_vessels int default 0,
-  avg_stay_hours numeric default 0,
-  avg_anchorage_hours numeric default 0,
-  avg_congestion_score numeric default 0,
-  avg_commercial_value_score numeric default 0,
-  avg_predicted_cleaning_opportunity_score numeric default 0,
-  port_opportunity_score int default 0,
-  port_congestion_score int default 0,
-  source_run_count int default 1,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  payload jsonb default '{}'::jsonb,
-  unique(week_start_date, port_code, sub_port)
-);
-
-create table if not exists port_monthly_summary (
-  month_start_date date not null,
-  month_end_date date not null,
-  run_id text,
-  latest_run_id text,
-  port_code text not null,
-  port_name text,
-  sub_port text default '',
-  top_port_call_id text,
-  top_opportunity_id text,
-  total_vessels int default 0,
-  target_vessels int default 0,
-  immediate_targets int default 0,
-  sales_targets int default 0,
-  watchlist_count int default 0,
-  opportunity_count int default 0,
-  open_opportunities int default 0,
-  closed_opportunities int default 0,
-  anchorage_vessels int default 0,
-  long_stay_vessels int default 0,
-  avg_stay_hours numeric default 0,
-  avg_anchorage_hours numeric default 0,
-  avg_congestion_score numeric default 0,
-  avg_commercial_value_score numeric default 0,
-  avg_predicted_cleaning_opportunity_score numeric default 0,
-  port_opportunity_score int default 0,
-  port_congestion_score int default 0,
-  source_run_count int default 1,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  payload jsonb default '{}'::jsonb,
-  unique(month_start_date, port_code, sub_port)
-);
-
 create table if not exists operator_snapshot_daily (
   snapshot_date date not null,
   run_id text not null,
@@ -1205,12 +1105,65 @@ create index if not exists idx_vessel_snapshot_daily_score on vessel_snapshot_da
 create index if not exists idx_port_snapshot_daily_port on port_snapshot_daily(port_code, snapshot_date desc);
 create index if not exists idx_port_snapshot_daily_date on port_snapshot_daily(snapshot_date desc);
 create index if not exists idx_port_snapshot_daily_top_opportunity on port_snapshot_daily(top_opportunity_id);
-create index if not exists idx_port_daily_summary_port on port_daily_summary(port_code, summary_date desc);
+
+create table if not exists port_daily_summary (
+  id bigserial primary key,
+  summary_date date not null,
+  port_key text not null,
+  port_code text,
+  port_name text not null default '미확인 항만',
+  vessel_count int default 0,
+  hot_candidate_count int default 0,
+  avg_opportunity_score numeric,
+  source_run_count int default 0,
+  first_seen_at timestamptz,
+  last_seen_at timestamptz,
+  generated_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb,
+  unique(summary_date, port_key)
+);
+
+create table if not exists port_weekly_summary (
+  id bigserial primary key,
+  week_start date not null,
+  port_key text not null,
+  port_code text,
+  port_name text not null default '미확인 항만',
+  vessel_count int default 0,
+  hot_candidate_count int default 0,
+  avg_opportunity_score numeric,
+  source_run_count int default 0,
+  first_seen_at timestamptz,
+  last_seen_at timestamptz,
+  generated_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb,
+  unique(week_start, port_key)
+);
+
+create table if not exists port_monthly_summary (
+  id bigserial primary key,
+  month_start date not null,
+  port_key text not null,
+  port_code text,
+  port_name text not null default '미확인 항만',
+  vessel_count int default 0,
+  hot_candidate_count int default 0,
+  avg_opportunity_score numeric,
+  source_run_count int default 0,
+  first_seen_at timestamptz,
+  last_seen_at timestamptz,
+  generated_at timestamptz default now(),
+  payload jsonb default '{}'::jsonb,
+  unique(month_start, port_key)
+);
+
 create index if not exists idx_port_daily_summary_date on port_daily_summary(summary_date desc);
-create index if not exists idx_port_weekly_summary_port on port_weekly_summary(port_code, week_start_date desc);
-create index if not exists idx_port_weekly_summary_week on port_weekly_summary(week_start_date desc);
-create index if not exists idx_port_monthly_summary_port on port_monthly_summary(port_code, month_start_date desc);
-create index if not exists idx_port_monthly_summary_month on port_monthly_summary(month_start_date desc);
+create index if not exists idx_port_daily_summary_port on port_daily_summary(port_key, summary_date desc);
+create index if not exists idx_port_weekly_summary_week on port_weekly_summary(week_start desc);
+create index if not exists idx_port_weekly_summary_port on port_weekly_summary(port_key, week_start desc);
+create index if not exists idx_port_monthly_summary_month on port_monthly_summary(month_start desc);
+create index if not exists idx_port_monthly_summary_port on port_monthly_summary(port_key, month_start desc);
+
 create index if not exists idx_operator_snapshot_daily_operator on operator_snapshot_daily(operator_normalized, snapshot_date desc);
 create index if not exists idx_operator_snapshot_daily_date on operator_snapshot_daily(snapshot_date desc);
 create index if not exists idx_operator_snapshot_daily_top_opportunity on operator_snapshot_daily(top_opportunity_id);
@@ -1224,61 +1177,10 @@ create index if not exists idx_commercial_opportunity_daily_status on commercial
 create index if not exists idx_commercial_opportunity_daily_port_call on commercial_opportunity_daily(port_call_id);
 create unique index if not exists ux_vessel_snapshot_daily_date_port_call on vessel_snapshot_daily(snapshot_date, port_call_id);
 create unique index if not exists ux_port_snapshot_daily_date_port on port_snapshot_daily(snapshot_date, port_code, sub_port);
-create unique index if not exists ux_port_daily_summary_date_port on port_daily_summary(summary_date, port_code, sub_port);
-create unique index if not exists ux_port_weekly_summary_week_port on port_weekly_summary(week_start_date, port_code, sub_port);
-create unique index if not exists ux_port_monthly_summary_month_port on port_monthly_summary(month_start_date, port_code, sub_port);
 create unique index if not exists ux_operator_snapshot_daily_date_operator on operator_snapshot_daily(snapshot_date, operator_normalized);
 create unique index if not exists ux_route_snapshot_daily_date_route on route_snapshot_daily(snapshot_date, previous_port, destination_port, vessel_type_group);
 create unique index if not exists ux_commercial_opportunity_daily_date_opportunity on commercial_opportunity_daily(snapshot_date, opportunity_id);
-do $$
-begin
-  if not exists (select 1 from pg_constraint where conrelid = 'vessel_snapshot_daily'::regclass and contype = 'p') then
-    alter table vessel_snapshot_daily add constraint vessel_snapshot_daily_pkey primary key using index ux_vessel_snapshot_daily_date_port_call;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'port_snapshot_daily'::regclass and contype = 'p') then
-    update port_snapshot_daily set sub_port = '' where sub_port is null;
-    alter table port_snapshot_daily alter column sub_port set not null;
-    alter table port_snapshot_daily add constraint port_snapshot_daily_pkey primary key using index ux_port_snapshot_daily_date_port;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'port_daily_summary'::regclass and contype = 'p') then
-    update port_daily_summary set sub_port = '' where sub_port is null;
-    alter table port_daily_summary alter column sub_port set not null;
-    alter table port_daily_summary add constraint port_daily_summary_pkey primary key using index ux_port_daily_summary_date_port;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'port_weekly_summary'::regclass and contype = 'p') then
-    update port_weekly_summary set sub_port = '' where sub_port is null;
-    alter table port_weekly_summary alter column sub_port set not null;
-    alter table port_weekly_summary add constraint port_weekly_summary_pkey primary key using index ux_port_weekly_summary_week_port;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'port_monthly_summary'::regclass and contype = 'p') then
-    update port_monthly_summary set sub_port = '' where sub_port is null;
-    alter table port_monthly_summary alter column sub_port set not null;
-    alter table port_monthly_summary add constraint port_monthly_summary_pkey primary key using index ux_port_monthly_summary_month_port;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'operator_snapshot_daily'::regclass and contype = 'p') then
-    alter table operator_snapshot_daily add constraint operator_snapshot_daily_pkey primary key using index ux_operator_snapshot_daily_date_operator;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'route_snapshot_daily'::regclass and contype = 'p') then
-    update route_snapshot_daily
-    set previous_port = coalesce(previous_port, ''),
-        destination_port = coalesce(destination_port, ''),
-        vessel_type_group = coalesce(vessel_type_group, '')
-    where previous_port is null or destination_port is null or vessel_type_group is null;
-    alter table route_snapshot_daily
-      alter column previous_port set not null,
-      alter column destination_port set not null,
-      alter column vessel_type_group set not null;
-    alter table route_snapshot_daily add constraint route_snapshot_daily_pkey primary key using index ux_route_snapshot_daily_date_route;
-  end if;
-  if not exists (select 1 from pg_constraint where conrelid = 'commercial_opportunity_daily'::regclass and contype = 'p') then
-    alter table commercial_opportunity_daily add constraint commercial_opportunity_daily_pkey primary key using index ux_commercial_opportunity_daily_date_opportunity;
-  end if;
-end $$;
 comment on table commercial_opportunity_daily is 'Historical warehouse diagnostics: historical_snapshot_generation_status, daily_snapshot_rows_written, vessel_snapshot_daily_rows_written, port_snapshot_daily_rows_written, operator_snapshot_daily_rows_written, route_snapshot_daily_rows_written, commercial_opportunity_daily_rows_written, duplicate_snapshot_rows_skipped, raw_payloads_archived_to_gdrive, raw_payloads_db_insert_blocked, ais_raw_rows_skipped, event_rows_written, event_duplicates_skipped, estimated_db_growth_per_day, estimated_db_growth_per_year.';
-comment on table port_snapshot_daily is 'Short-retention detailed port numeric snapshots. Keep 24-48 hours or latest 20 successful runs, then compact into port_daily_summary, port_weekly_summary, and port_monthly_summary.';
-comment on table port_daily_summary is 'Compact daily port summary retained after detailed port snapshot cleanup.';
-comment on table port_weekly_summary is 'Compact weekly port summary retained after detailed port snapshot cleanup.';
-comment on table port_monthly_summary is 'Compact monthly port summary retained after detailed port snapshot cleanup.';
 
 create table if not exists raw_archive_index (
   archive_id bigserial primary key,
@@ -1464,7 +1366,9 @@ create table if not exists pilot_schedule_events (
   vessel_name text,
   normalized_vessel_name text,
   call_sign text,
-  pilot_time timestamptz,
+  pilot_time text,
+  pilot_time_raw text,
+  pilot_time_at timestamptz,
   pilot_direction text,
   pilot_station text,
   berth_name text,
@@ -1492,7 +1396,50 @@ create index if not exists idx_immediate_targets_current_score on immediate_targ
 create index if not exists idx_port_summary_current_run on port_summary_current(run_id, is_current);
 create index if not exists idx_port_summary_current_tier on port_summary_current(tier, port_opportunity_score desc);
 create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_events(run_id);
-create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time desc);
+create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time_at desc);
+create index if not exists idx_pilot_schedule_events_pilot_time_raw on pilot_schedule_events(pilot_time);
+
+create or replace function hwk_try_timestamptz(value text)
+returns timestamptz
+language plpgsql
+stable
+as $$
+begin
+  if value is null or btrim(value) = '' then
+    return null;
+  end if;
+
+  if value !~ '^\d{4}-\d{2}-\d{2}' then
+    return null;
+  end if;
+
+  return value::timestamptz;
+exception when others then
+  return null;
+end;
+$$;
+
+create or replace function hwk_normalize_pilot_schedule_time()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.pilot_time_raw := coalesce(new.pilot_time_raw, new.pilot_time);
+
+  if new.pilot_time_at is null and new.pilot_time is not null then
+    new.pilot_time_at := hwk_try_timestamptz(new.pilot_time);
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_hwk_normalize_pilot_schedule_time on pilot_schedule_events;
+create trigger trg_hwk_normalize_pilot_schedule_time
+before insert or update on pilot_schedule_events
+for each row
+execute function hwk_normalize_pilot_schedule_time();
+
 alter table vessel_events add column if not exists event_uid text;
 alter table vessel_events add column if not exists port_call_id text;
 alter table vessel_events add column if not exists source text;
@@ -1501,6 +1448,7 @@ alter table vessel_events add column if not exists event_time_bucket timestamptz
 alter table vessel_events add column if not exists created_at timestamptz default now();
 alter table vessel_events add column if not exists previous_snapshot jsonb default '{}'::jsonb;
 create unique index if not exists idx_vessel_events_event_uid on vessel_events(event_uid) where event_uid is not null;
+create unique index if not exists ux_vessel_events_event_uid on vessel_events(event_uid);
 create unique index if not exists ux_vessel_events_port_call_type_bucket on vessel_events(port_call_id, event_type, event_time_bucket) where port_call_id is not null and event_time_bucket is not null;
 create index if not exists idx_vessel_events_run_id on vessel_events(run_id);
 create index if not exists idx_vessel_events_type_time on vessel_events(event_type, event_time desc);
@@ -1851,6 +1799,7 @@ alter table dashboard_summary_snapshots add column if not exists is_latest_succe
 alter table dashboard_summary_snapshots add column if not exists record_count int default 0;
 alter table dashboard_summary_snapshots add column if not exists all_vessels_count int default 0;
 alter table dashboard_summary_snapshots add column if not exists total_vessels int default 0;
+alter table dashboard_summary_snapshots add column if not exists data_mode text;
 alter table dashboard_summary_snapshots add column if not exists target_vessels_count int default 0;
 alter table dashboard_summary_snapshots add column if not exists sales_target_count int default 0;
 alter table dashboard_summary_snapshots add column if not exists immediate_target_count int default 0;
@@ -1862,7 +1811,6 @@ alter table dashboard_summary_snapshots add column if not exists candidate_summa
 alter table dashboard_summary_snapshots add column if not exists congestion_summary jsonb default '{}'::jsonb;
 alter table dashboard_summary_snapshots add column if not exists data_quality_summary jsonb default '{}'::jsonb;
 alter table dashboard_summary_snapshots add column if not exists source_health_summary jsonb default '{}'::jsonb;
-alter table dashboard_summary_snapshots add column if not exists data_mode text;
 alter table dashboard_summary_snapshots add column if not exists created_at timestamptz default now();
 alter table sales_candidates_current add column if not exists current_id text;
 alter table sales_candidates_current add column if not exists run_id text;
@@ -1946,6 +1894,7 @@ comment on view hwk_storage_table_sizes is 'HWK Supabase storage triage view. Sh
 create index if not exists idx_pipeline_runs_started_at on pipeline_runs(run_started_at desc);
 create index if not exists idx_data_collection_runs_started_at on data_collection_runs(started_at desc);
 create index if not exists idx_dashboard_summary_snapshots_generated_at on dashboard_summary_snapshots(generated_at desc);
+create index if not exists idx_dashboard_summary_snapshots_data_mode on dashboard_summary_snapshots(data_mode);
 create index if not exists idx_sales_candidates_current_stale on sales_candidates_current(is_current, updated_at desc);
 create index if not exists idx_immediate_targets_current_stale on immediate_targets_current(is_current, updated_at desc);
 create index if not exists idx_port_summary_current_stale on port_summary_current(is_current, updated_at desc);
@@ -1961,6 +1910,9 @@ create index if not exists idx_risk_history_collected_at on risk_history(collect
 create index if not exists idx_anchorage_clusters_collected_at on anchorage_clusters(collected_at desc);
 create index if not exists idx_berth_occupancy_history_collected_at on berth_occupancy_history(collected_at desc);
 create index if not exists idx_pilot_schedule_events_created_at on pilot_schedule_events(created_at desc);
+alter table pilot_schedule_events add column if not exists pilot_time_raw text;
+alter table pilot_schedule_events add column if not exists pilot_time_at timestamptz;
+create index if not exists idx_pilot_schedule_events_pilot_time_at on pilot_schedule_events(pilot_time_at desc);
 create index if not exists idx_rule_evaluations_collected_at on rule_evaluations(collected_at desc);
 create index if not exists idx_model_training_rows_collected_at on model_training_rows(collected_at desc);
 create index if not exists idx_explainability_snapshots_collected_at on explainability_snapshots(collected_at desc);

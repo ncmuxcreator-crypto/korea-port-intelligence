@@ -68,12 +68,9 @@ const backendDoctor = readJson("dashboard/api/backend-doctor.json", {});
 const workerSource = fs.readFileSync("src/worker.js", "utf8");
 const dbSource = fs.readFileSync("scripts/lib/db.js", "utf8");
 const updateSource = fs.readFileSync("scripts/update.js", "utf8");
+const auditNormalizeSource = fs.readFileSync("scripts/audit-normalize.js", "utf8");
 const dashboardSource = fs.readFileSync("dashboard/index.html", "utf8");
 const publicDashboardSource = fs.readFileSync("public/index.html", "utf8");
-const dashboardMainSource = fs.readFileSync("dashboard/app/dashboard-main.js", "utf8");
-const publicDashboardMainSource = fs.readFileSync("public/app/dashboard-main.js", "utf8");
-const dashboardApiClientSource = fs.readFileSync("dashboard/app/api-client.js", "utf8");
-const publicDashboardApiClientSource = fs.readFileSync("public/app/api-client.js", "utf8");
 
 const allVessels = rows(allVesselsPayload);
 const targetVessels = rows(targetVesselsPayload);
@@ -99,19 +96,51 @@ for (const file of [
 }
 
 assert(
-  dashboardSource.includes("./app/dashboard-main.js") &&
-    dashboardMainSource.includes("state.summary = summary || {}") &&
-    dashboardMainSource.includes("renderKpi();") &&
-    dashboardMainSource.includes("renderStatus();") &&
-    dashboardApiClientSource.includes("AbortController") &&
-    dashboardMainSource.includes('api("summary", "/api/dashboard-summary.json", 4500)') &&
-    dashboardMainSource.includes('api("health", "/api/health/pipeline.json", 3000)'),
+  dashboardSource.includes("function getLastUpdatedAt(payload)") &&
+    dashboardSource.includes("LAST_UPDATED_FALLBACK_TEXT") &&
+    dashboardSource.includes("최근 갱신 시간 확인 불가") &&
+    dashboardSource.includes("setTimeout(()=>{if(!currentLastUpdatedAt())setLastUpdatedBadge()},5000)") &&
+    dashboardSource.includes("AbortController") &&
+    dashboardSource.includes('api("summary","/api/dashboard-summary.json",4500)') &&
+    dashboardSource.includes('api("health","/api/health/pipeline.json",3000)'),
   "Dashboard must normalize last-updated fields, timeout slow APIs, and render summary before optional panels."
 );
 assert(
-  publicDashboardSource.includes("./app/dashboard-main.js") &&
-    publicDashboardMainSource.includes("state.summary = summary || {}") &&
-    publicDashboardApiClientSource.includes("AbortController"),
+  dashboardSource.includes("function resolveKpiValue") &&
+    dashboardSource.includes("[KPI DEBUG]") &&
+    dashboardSource.includes("확인 불가") &&
+    dashboardSource.includes("isValidKpiValue"),
+  "Dashboard KPI cards must resolve missing numeric fields without infinite skeleton loading."
+);
+assert(
+  dashboardSource.includes("function getHotCandidates") &&
+    dashboardSource.includes("hotIdentityKey") &&
+    dashboardSource.includes("compareHotRows"),
+  "HOT candidate cards must dedupe repeated vessel identities and use fixed score sorting."
+);
+assert(
+  dashboardSource.includes("subSum>total") &&
+    dashboardSource.includes("서브항 일부 표시") &&
+    publicDashboardSource.includes("서브항 일부 표시"),
+  "Port cards must not report partial sub-port breakdowns as total-count mismatches."
+);
+assert(
+  dashboardSource.includes("기준 충족 없음") &&
+    publicDashboardSource.includes("기준 충족 없음"),
+  "Immediate-target KPI must clearly indicate when no vessel meets the current threshold."
+);
+assert(
+  dashboardSource.includes("PORT_NAME_KO") &&
+    dashboardSource.includes("localizePortName") &&
+    publicDashboardSource.includes("PORT_NAME_KO"),
+  "Dashboard must localize common English port names before rendering cards and lists."
+);
+assert(
+  publicDashboardSource.includes("function getLastUpdatedAt(payload)") &&
+    publicDashboardSource.includes("최근 갱신 시간 확인 불가") &&
+    publicDashboardSource.includes("AbortController") &&
+    publicDashboardSource.includes("function resolveKpiValue") &&
+    publicDashboardSource.includes("function getHotCandidates"),
   "Deployed public dashboard must include the same last-updated fallback logic as dashboard/index.html."
 );
 assert(
@@ -143,6 +172,25 @@ assert(
     dbSource.includes('.neq("snapshot_id", summarySnapshot.snapshot_id)') &&
     dbSource.includes('.update({ is_latest_successful: true })'),
   "dashboard_summary_snapshots latest pointer update must verify current snapshot before replacing previous latest."
+);
+assert(
+  dbSource.includes("function ensureCandidateFunnelRanks") &&
+    dbSource.includes("buildCandidateFunnelDiagnostics(records") &&
+    dbSource.includes("candidate_funnel_diagnostics") &&
+    dbSource.includes("records_missing_rank_before") &&
+    dbSource.includes("withinCommercialPercentile(record, 20)") &&
+    dbSource.indexOf("ensureCandidateFunnelRanks(records)") < dbSource.indexOf("shouldPromoteRun(records, diagnostics)"),
+  "Candidate DB materialization must diagnose the funnel and repair missing rank/percentile fields before filtering current candidates."
+);
+assert(
+  auditNormalizeSource.includes("vessels_with_port") &&
+    auditNormalizeSource.includes("vessels_with_imo_mmsi") &&
+    auditNormalizeSource.includes("vessels_with_stay_duration") &&
+    auditNormalizeSource.includes("vessels_with_opportunity_score") &&
+    auditNormalizeSource.includes("vessels_passing_hot_threshold") &&
+    auditNormalizeSource.includes("vessels_passing_warm_threshold") &&
+    auditNormalizeSource.includes("global_percentile exists OR port_percentile exists"),
+  "Normalization audit must show candidate funnel counts and the exact rank/percentile filter that can remove all candidates."
 );
 
 if (dataMode !== "no_live_data" && recordCount > 0) {

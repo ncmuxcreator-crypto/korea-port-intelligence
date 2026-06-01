@@ -1,5 +1,5 @@
 import fs from "fs";
-import { retentionCutoff, retentionPolicyFromEnv } from "./lib/db/retention.js";
+import { buildPortStatistics, detectPortFieldNames } from "./lib/port-statistics.js";
 
 const REQUIRED_OUTPUTS = [
   "dashboard/api/status.json",
@@ -18,14 +18,6 @@ const COUNT_TABLES = [
   "port_call_master",
   "dashboard_summary_snapshots",
   "data_collection_runs",
-  "port_snapshot_daily",
-  "port_daily_summary",
-  "port_weekly_summary",
-  "port_monthly_summary",
-  "vessel_snapshot_daily",
-  "commercial_opportunity_daily",
-  "sales_candidates_current",
-  "commercial_leads",
   "active_dataset_pointer"
 ];
 
@@ -91,10 +83,20 @@ async function supabaseGet(path) {
 }
 
 async function main() {
-  const retention = retentionPolicyFromEnv();
   const status = readJson(staticOutput("dashboard/api/status.json"), {});
   const summary = readJson(staticOutput("dashboard/api/dashboard-summary.json"), {});
   const staticVessels = rows(readJson(staticOutput("dashboard/api/all-collected-vessels.json"), []));
+  const staticPortStats = buildPortStatistics(staticVessels, summary.port_statistics_generated_at || summary.generated_at || new Date().toISOString());
+  const summaryPorts = rows(summary.ports).length ? rows(summary.ports) : rows(readJson(staticOutput("dashboard/api/ports.json"), []));
+  const portStatsForAudit = rows(summary.ports).length ? {
+    port_count: Number(summary.port_count ?? summaryPorts.length),
+    ports: summaryPorts,
+    port_statistics_status: summary.port_statistics_status || "completed",
+    port_statistics_error: summary.port_statistics_error || null,
+    unknown_port_count: Number(summary.unknown_port_count ?? (summaryPorts.find(port => port.port_code === "UNKNOWN")?.vessel_count || 0)),
+    vessels_missing_port_field: Number((summary.vessels_missing_port_field ?? staticPortStats.vessels_missing_port_field) || 0),
+    port_field_names_found: summary.port_field_names_found || detectPortFieldNames(staticVessels)
+  } : staticPortStats;
   const missingOutputFiles = REQUIRED_OUTPUTS.filter(file => !fs.existsSync(file) && !fs.existsSync(file.replace("dashboard/api/", "dashboard/api/debug/")));
 
   const activePointer = await supabaseGet("/rest/v1/active_dataset_pointer?select=*&id=eq.current&limit=1");
@@ -123,44 +125,6 @@ async function main() {
     };
   }
 
-  const portSnapshotOldest = await supabaseGet("/rest/v1/port_snapshot_daily?select=snapshot_date,run_id,port_code,sub_port&order=snapshot_date.asc&limit=1");
-  const portSnapshotNewest = await supabaseGet("/rest/v1/port_snapshot_daily?select=snapshot_date,run_id,port_code,sub_port&order=snapshot_date.desc&limit=1");
-  const portSnapshotCleanupCandidates = await supabaseGet(`/rest/v1/port_snapshot_daily?select=run_id,snapshot_date&snapshot_date=lt.${retentionCutoff(retention.portRunSnapshotDays, true)}&limit=1`);
-  const vesselHistoryRows = await supabaseGet("/rest/v1/vessel_snapshot_daily?select=snapshot_date,port_call_id&limit=1");
-  const vesselVisitRows = await supabaseGet("/rest/v1/port_call_master?select=port_call_id,last_seen&limit=1");
-  const candidateHistoryRows = await supabaseGet("/rest/v1/commercial_opportunity_daily?select=snapshot_date,opportunity_id&limit=1");
-  const salesPipelineRows = await supabaseGet("/rest/v1/commercial_leads?select=lead_id,updated_at&limit=1");
-
-  const retentionAudit = {
-    policy: {
-      profile: retention.profile,
-      port_run_snapshot_days: retention.portRunSnapshotDays,
-      port_run_snapshot_keep_runs: retention.portRunSnapshotKeepRuns,
-      vessel_visits_days: retention.portCallMasterDays,
-      opportunity_score_days: retention.opportunityScoreDays,
-      candidate_history_days: retention.candidateHistoryDays,
-      sales_pipeline_days: retention.salesPipelineDays
-    },
-    port_snapshot_count: tableCounts.port_snapshot_daily?.count || 0,
-    oldest_port_snapshot: portSnapshotOldest.rows[0] || null,
-    newest_port_snapshot: portSnapshotNewest.rows[0] || null,
-    vessel_history_count: (vesselHistoryRows.count || 0) + (vesselVisitRows.count || 0),
-    vessel_snapshot_history_count: vesselHistoryRows.count || 0,
-    vessel_visit_count: vesselVisitRows.count || 0,
-    candidate_history_count: (candidateHistoryRows.count || 0) + (tableCounts.sales_candidates_current?.count || 0),
-    opportunity_score_history_count: candidateHistoryRows.count || 0,
-    sales_pipeline_history_count: salesPipelineRows.count || 0,
-    cleanup_candidates: {
-      port_snapshot_daily: {
-        cutoff_date: retentionCutoff(retention.portRunSnapshotDays, true),
-        count: portSnapshotCleanupCandidates.count || 0,
-        sample: portSnapshotCleanupCandidates.rows[0] || null,
-        action: "compact_into_port_daily_weekly_monthly_summary_then_delete_detail_rows",
-        protected: ["active_dataset_pointer target", "latest successful promoted runs", "vessel history tables"]
-      }
-    }
-  };
-
   const frontendDataSource = activeRunId && activeRows.count > 0
     ? "active"
     : latestCompletedRunId && latestCompletedRows.count > 0
@@ -177,12 +141,25 @@ async function main() {
     latest_completed_run: latestCompletedRun.rows[0] || null,
     latest_run: latestRun.rows[0] || null,
     row_counts_by_table: tableCounts,
-    retention_audit: retentionAudit,
     active_run_vessel_count: activeRows.count || 0,
     latest_completed_run_vessel_count: latestCompletedRows.count || 0,
     static_all_collected_vessel_count: staticVessels.length,
     missing_output_files: missingOutputFiles,
     frontend_will_use: frontendDataSource,
+    port_statistics: {
+      record_count: Number(summary.record_count || status.record_count || staticVessels.length || 0),
+      port_count: portStatsForAudit.port_count,
+      port_statistics_status: portStatsForAudit.port_statistics_status,
+      port_statistics_error: portStatsForAudit.port_statistics_error,
+      unknown_port_count: portStatsForAudit.unknown_port_count,
+      vessels_missing_port_field: portStatsForAudit.vessels_missing_port_field,
+      port_field_names_found: portStatsForAudit.port_field_names_found,
+      top_ports: portStatsForAudit.ports.slice(0, 5).map(port => ({
+        port_name: port.port_name,
+        port_code: port.port_code,
+        vessel_count: Number(port.vessel_count || port.total_vessels || 0)
+      }))
+    },
     dashboard_status: {
       status: status.status || null,
       data_mode: status.data_mode || null,
@@ -202,12 +179,17 @@ async function main() {
   console.log(`static_all_collected_vessel_count=${output.static_all_collected_vessel_count}`);
   console.log(`missing_output_files=${missingOutputFiles.join(",")}`);
   console.log(`row_counts_by_table=${JSON.stringify(tableCounts)}`);
-  console.log(`port_snapshot_count=${retentionAudit.port_snapshot_count}`);
-  console.log(`oldest_port_snapshot=${JSON.stringify(retentionAudit.oldest_port_snapshot)}`);
-  console.log(`newest_port_snapshot=${JSON.stringify(retentionAudit.newest_port_snapshot)}`);
-  console.log(`vessel_history_count=${retentionAudit.vessel_history_count}`);
-  console.log(`candidate_history_count=${retentionAudit.candidate_history_count}`);
-  console.log(`cleanup_candidates=${JSON.stringify(retentionAudit.cleanup_candidates)}`);
+  console.log("Port statistics:");
+  console.log(`- status: ${output.port_statistics.port_statistics_status}`);
+  console.log(`- record_count: ${output.port_statistics.record_count}`);
+  console.log(`- port_count: ${output.port_statistics.port_count}`);
+  console.log(`- unknown_port_count: ${output.port_statistics.unknown_port_count}`);
+  console.log(`- missing_port_field: ${output.port_statistics.vessels_missing_port_field}`);
+  console.log(`- port field names found in sample vessels: ${output.port_statistics.port_field_names_found.join(",") || "none"}`);
+  console.log("- top ports:");
+  output.port_statistics.top_ports.forEach((port, index) => {
+    console.log(`  ${index + 1}. ${port.port_name}: ${port.vessel_count}`);
+  });
   console.log(JSON.stringify(output, null, 2));
 }
 
