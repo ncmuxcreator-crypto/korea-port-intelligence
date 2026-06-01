@@ -5474,6 +5474,96 @@ function buildWorkerAlertsPayload(records = [], source = {}, generatedAt = new D
   });
 }
 
+function summaryCandidateItems(summary = {}) {
+  const rows = [...(summary.immediate_targets || []), ...(summary.opportunities || [])];
+  const byKey = new Map();
+  rows.forEach((row, index) => {
+    const key = firstNonEmpty(row.imo, row.mmsi, row.master_vessel_id, row.hybrid_entity_key, row.vessel_name, `summary-${index}`);
+    if (!byKey.has(key)) byKey.set(key, withVesselDisplay({
+      ...row,
+      rank: row.rank || byKey.size + 1,
+      opportunity_score: firstFiniteNumber(row.opportunity_score, row.sales_priority_score, row.commercial_value_score, row.total_sales_priority_score) ?? null,
+      risk_score: firstFiniteNumber(row.risk_score, row.biofouling_exposure_score, row.biofouling_score) ?? null,
+      reason_summary: compactReasonSummary(row),
+      recommended_action: compactRecommendedAction(row)
+    }));
+  });
+  return [...byKey.values()]
+    .sort((a, b) => Number(b.opportunity_score ?? b.risk_score ?? 0) - Number(a.opportunity_score ?? a.risk_score ?? 0))
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
+function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
+  const generatedAt = summary.generated_at || new Date().toISOString();
+  const items = summaryCandidateItems(summary);
+  const common = {
+    generatedAt,
+    dataMode: summary.data_source_used || source.data_source_used,
+    source: { ...source, data_source_used: summary.data_source_used, fallback_used: summary.fallback_used },
+    sourceTable: "dashboard_summary_snapshots"
+  };
+  if (pathname.endsWith("/targets/current.json")) {
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "sales_candidates_current,dashboard_summary_snapshots",
+      items,
+      extra: {
+        total_count: Number(summary.sales_target_count || summary.target_count || 0),
+        all_vessels_count: Number(summary.all_vessels_count || summary.record_count || 0),
+        sales_target_count: Number(summary.sales_target_count || summary.target_count || items.length),
+        immediate_target_count: Number(summary.immediate_target_count || 0),
+        target_ratio: Number(summary.all_vessels_count || summary.record_count || 0)
+          ? Math.round((Number(summary.sales_target_count || summary.target_count || 0) / Number(summary.all_vessels_count || summary.record_count || 1)) * 1000) / 10
+          : 0
+      }
+    });
+  }
+  if (pathname.endsWith("/continuity.json")) {
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "active_dataset_pointer,dashboard_summary_snapshots",
+      items: [{
+        status: summary.fallback_used ? "fallback_active" : "healthy",
+        active_run_id: summary.active_run_id || null,
+        latest_successful_run_id: summary.latest_successful_run_id || summary.summary_run_id || summary.run_id || null,
+        fallback_reason: summary.fallback_reason || null
+      }]
+    });
+  }
+  if (pathname.endsWith("/alerts/latest.json") || pathname.endsWith("/alerts/sales-alerts.json")) {
+    const hot = items.filter(item => item.sales_priority_band === "HOT" || item.priority_label === "HOT").slice(0, 10);
+    const alerts = [];
+    if (summary.fallback_used) alerts.push({ alert_key: `DATA_FALLBACK_ACTIVE|${generatedAt.slice(0, 10)}`, severity: "warning", type: "DATA_FALLBACK_ACTIVE", title: "데이터 fallback 사용 중", message: summary.fallback_reason || "최신 성공 데이터를 표시 중입니다.", next_action: "데이터 승격 상태를 확인하세요." });
+    if (hot.length) alerts.push({ alert_key: `HOT_SALES_QUEUE|${generatedAt.slice(0, 10)}`, severity: "high", type: "HOT_SALES_QUEUE", title: `${hot.length}척 HOT 영업 후보`, message: "오늘 연락 우선순위가 높은 후보가 있습니다.", next_action: "상위 후보 연락 경로를 확인하세요." });
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "dashboard_summary_snapshots,data_continuity",
+      items: alerts,
+      extra: { alert_count: alerts.length, alerts, hot_queue: hot }
+    });
+  }
+  const intelligence = pathname.match(/^\/api\/intelligence\/([^/]+)\.json$/);
+  if (intelligence) {
+    const name = intelligence[1];
+    const sourceTable = {
+      "sales-priority": "opportunity_master,dashboard_summary_snapshots",
+      "risk-summary": "risk_history,dashboard_summary_snapshots",
+      "route-summary": "route_snapshot_daily,dashboard_summary_snapshots",
+      "commercial-summary": "commercial_opportunity_daily,dashboard_summary_snapshots",
+      "operator-summary": "operator_snapshot_daily,dashboard_summary_snapshots",
+      "prediction-summary": "model_training_rows,dashboard_summary_snapshots",
+      "explainability": "explainability_snapshots,rule_evaluations,dashboard_summary_snapshots"
+    }[name] || "dashboard_summary_snapshots";
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable,
+      items: items.slice(0, 10),
+      extra: name === "prediction-summary" ? { disclaimer: "예측 신호 / 실험 기능" } : {}
+    });
+  }
+  return null;
+}
+
 async function apiResponse(url, env) {
   const pathname = typeof url === "string" ? url : url.pathname;
   const searchParams = typeof url === "string" ? new URLSearchParams() : url.searchParams;
@@ -5607,6 +5697,26 @@ async function apiResponse(url, env) {
           changed: previousVersion ? String(previousVersion) !== String(latestSummarySnapshot.run_id || "") : false
         }, { headers: corsHeaders() });
       }
+    }
+  }
+  const summaryFirstRoute = pathname.endsWith("/targets/current.json") ||
+    pathname.endsWith("/continuity.json") ||
+    pathname.endsWith("/alerts/latest.json") ||
+    pathname.endsWith("/alerts/sales-alerts.json") ||
+    /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
+  if (summaryFirstRoute) {
+    const pointer = await fetchActivePointer(env);
+    const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);
+    if (latestSummarySnapshot) {
+      const summarySource = { configured: pointer.configured, error: pointer.error, pointer };
+      const summary = buildDashboardSummaryFromSnapshot(latestSummarySnapshot, summarySource, latestSummarySnapshot.fallback_reason || pointer.error || null);
+      if (pointer.active_run_id && pointer.active_run_id === latestSummarySnapshot.run_id) {
+        summary.fallback_used = false;
+        summary.fallback_reason = null;
+        summary.data_source_used = "supabase_live_snapshot";
+      }
+      const payload = lightweightSummaryEndpoint(pathname, summary, summarySource);
+      if (payload) return json(payload, { headers: corsHeaders() });
     }
   }
   if ((pathname === "/api/vessels" || pathname.endsWith("/vessels.json")) && String(searchParams.get("group") || "target").toLowerCase() === "all") {
