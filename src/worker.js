@@ -5502,10 +5502,10 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
     source: { ...source, data_source_used: summary.data_source_used, fallback_used: summary.fallback_used },
     sourceTable: "dashboard_summary_snapshots"
   };
-  if (pathname.endsWith("/targets/current.json")) {
+  if (pathname.endsWith("/targets/current.json") || pathname.endsWith("/targets/static.json")) {
     return publicItemsEnvelope({
       ...common,
-      sourceTable: "sales_candidates_current,dashboard_summary_snapshots",
+      sourceTable: pathname.endsWith("/targets/static.json") ? "vessel_snapshots,dashboard_summary_snapshots" : "sales_candidates_current,dashboard_summary_snapshots",
       items,
       extra: {
         total_count: Number(summary.sales_target_count || summary.target_count || 0),
@@ -5700,6 +5700,7 @@ async function apiResponse(url, env) {
     }
   }
   const summaryFirstRoute = pathname.endsWith("/targets/current.json") ||
+    pathname.endsWith("/targets/static.json") ||
     pathname.endsWith("/continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
