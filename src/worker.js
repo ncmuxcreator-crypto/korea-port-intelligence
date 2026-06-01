@@ -3229,7 +3229,6 @@ const DIRECT_VESSEL_SELECT = [
   "owner_name",
   "manager_name",
   "agent_name",
-  "agent",
   "port",
   "port_code",
   "port_name",
