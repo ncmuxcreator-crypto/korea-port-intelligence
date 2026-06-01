@@ -5540,6 +5540,35 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       }]
     });
   }
+  if (pathname.endsWith("/health.json")) {
+    const payload = publicItemsEnvelope({
+      ...common,
+      sourceTable: "dashboard_summary_snapshots,active_dataset_pointer",
+      items: [{
+        status: summary.fallback_used ? "fallback_active" : "healthy",
+        active_run_id: summary.active_run_id || null,
+        latest_successful_run_id: summary.latest_successful_run_id || summary.summary_run_id || summary.run_id || null,
+        last_success_at: summary.last_success_at || summary.generated_at || null,
+        record_count: Number(summary.record_count || 0),
+        all_vessels_count: Number(summary.all_vessels_count || summary.record_count || 0),
+        port_count: Number(summary.port_count || 0),
+        sales_target_count: Number(summary.sales_target_count || summary.target_count || 0),
+        immediate_target_count: Number(summary.immediate_target_count || 0),
+        fallback_used: Boolean(summary.fallback_used),
+        fallback_reason: summary.fallback_reason || null
+      }],
+      extra: {
+        status: summary.fallback_used ? "warning" : "ok",
+        record_count: Number(summary.record_count || 0),
+        all_vessels_count: Number(summary.all_vessels_count || summary.record_count || 0),
+        port_count: Number(summary.port_count || 0),
+        sales_target_count: Number(summary.sales_target_count || summary.target_count || 0),
+        immediate_target_count: Number(summary.immediate_target_count || 0),
+        last_success_at: summary.last_success_at || summary.generated_at || null
+      }
+    });
+    return payload;
+  }
   if (pathname.endsWith("/alerts/latest.json") || pathname.endsWith("/alerts/sales-alerts.json")) {
     const hot = items.filter(item => item.sales_priority_band === "HOT" || item.priority_label === "HOT").slice(0, 10);
     const alerts = [];
@@ -5756,6 +5785,7 @@ async function apiResponse(url, env) {
     pathname.endsWith("/arrival-pipeline.json") ||
     pathname.endsWith("/congestion-watchlist.json") ||
     pathname.endsWith("/agent-followup-queue.json") ||
+    pathname.endsWith("/health.json") ||
     pathname.endsWith("/continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
