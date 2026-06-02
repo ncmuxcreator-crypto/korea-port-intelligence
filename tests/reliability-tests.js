@@ -11,6 +11,7 @@ const REQUIRED_FILES = [
   "dashboard/api/arrival-pipeline.json",
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
+  "dashboard/api/sales/verification-queue.json",
   "dashboard/api/candidates/top.json",
   "dashboard/api/vessels/index.json",
   "dashboard/api/vessels/page-1.json",
@@ -114,6 +115,7 @@ const pipelineHealth = fs.existsSync("dashboard/api/health/pipeline.json") ? rea
 const continuity = fs.existsSync("dashboard/api/data-continuity.json") ? readJson("dashboard/api/data-continuity.json") : {};
 const topPayload = readJson("dashboard/api/candidates/top.json");
 const followups = rows(readJson("dashboard/api/agent-followup-queue.json"));
+const verificationQueue = rows(readJson("dashboard/api/sales/verification-queue.json"));
 const alerts = readJson("dashboard/api/alerts/latest.json");
 const report = readJson("dashboard/api/reports/daily-summary.json");
 const dashboardSource = readText("dashboard/index.html");
@@ -364,6 +366,18 @@ for (const item of followups) {
   for (const field of ["vessel_name", "port", "reason", "recommended_message_angle", "urgency", "next_action"]) {
     assert(field in item, `Agent follow-up queue item missing field: ${field}`);
   }
+}
+assert(dashboardSource.includes("연락처 확인 필요"), "Dashboard must show contact verification section label.");
+assert(publicSource.includes("연락처 확인 필요"), "Public dashboard must show contact verification section label.");
+assert(dashboardSource.includes("/api/sales/verification-queue.json"), "Dashboard must prefer verification queue endpoint.");
+assert(publicSource.includes("/api/sales/verification-queue.json"), "Public dashboard must prefer verification queue endpoint.");
+for (const item of verificationQueue) {
+  for (const field of ["rank", "vessel_display", "verification_type", "known_company", "missing_fields", "confidence_score", "priority_label", "reason_summary", "recommended_action", "source_names"]) {
+    assert(field in item, `Verification queue item missing field: ${field}`);
+  }
+  assert(Array.isArray(item.missing_fields), "Verification queue missing_fields must be an array.");
+  assert(item.missing_fields.length > 0, "Verification queue items must explain which contact fields are missing.");
+  assert(["OPERATOR", "OWNER", "MANAGER", "LOCAL_AGENT", "CONTACT_PERSON"].includes(item.verification_type), `Invalid verification_type: ${item.verification_type}`);
 }
 
 const alertRows = rows(alerts.alerts || alerts);

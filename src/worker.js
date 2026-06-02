@@ -1,6 +1,7 @@
 ﻿const API_CACHE_SECONDS = 300;
 const AUTO_UPDATE_INTERVAL_HOURS = 4;
 const PUBLIC_API_SCHEMA_VERSION = "1.0";
+const VERIFICATION_QUEUE_OUTPUT_LIMIT = 200;
 const REVIEW_TARGET_THRESHOLD = 35;
 const SALES_CANDIDATE_THRESHOLD = 65;
 const IMMEDIATE_TARGET_THRESHOLD = 75;
@@ -2957,6 +2958,90 @@ function buildContactReadyVessels(records = []) {
     }));
 }
 
+function hasContactValue(value) {
+  const text = String(value ?? "").trim();
+  return Boolean(text) && text !== "-" && !/^(unknown|n\/a|null|undefined|확인 필요|미확인)$/i.test(text);
+}
+
+function missingContactFields(record = {}) {
+  const fields = [];
+  if (!hasContactValue(firstNonEmpty(record.operator, record.operator_name, record.operator_normalized))) fields.push("operator");
+  if (!hasContactValue(firstNonEmpty(record.owner, record.owner_name, record.ship_owner, record.registered_owner))) fields.push("owner");
+  if (!hasContactValue(firstNonEmpty(record.manager, record.manager_name, record.ship_manager, record.technical_manager))) fields.push("manager");
+  if (!hasContactValue(firstNonEmpty(record.agent, record.agent_name, record.local_agent, record.satmntEntrpsNm, record.entrpsCdNm))) fields.push("local_agent");
+  if (!hasContactValue(firstNonEmpty(record.superintendent, record.technical_superintendent, record.contact_person, record.contact_name, record.email, record.phone))) fields.push("contact_person");
+  return fields;
+}
+
+function verificationTypeForMissingFields(fields = []) {
+  if (fields.includes("operator")) return "OPERATOR";
+  if (fields.includes("owner")) return "OWNER";
+  if (fields.includes("manager")) return "MANAGER";
+  if (fields.includes("local_agent")) return "LOCAL_AGENT";
+  return "CONTACT_PERSON";
+}
+
+function knownCompanyForVerification(record = {}) {
+  return firstNonEmpty(
+    record.company,
+    record.company_name,
+    record.shipping_company,
+    record.operator,
+    record.operator_name,
+    record.owner,
+    record.owner_name,
+    record.manager,
+    record.manager_name,
+    record.agent,
+    record.agent_name,
+    record.satmntEntrpsNm,
+    record.entrpsCdNm
+  ) || "";
+}
+
+function buildVerificationQueue(records = []) {
+  return sortCommercialPriority(records)
+    .map(record => {
+      const missing = missingContactFields(record);
+      const score = salesPriorityScore(record);
+      const label = salesPriorityBand(score);
+      return { record, missing, score, label };
+    })
+    .filter(({ record, missing, score, label }) => {
+      const commerciallyRelevant = score >= 55 || record.is_cleaning_candidate || record.is_immediate_candidate || Number(record.commercial_value_score || record.total_sales_priority_score || 0) >= 50;
+      const priorityContactGap = ["HOT", "WARM"].includes(label) && (missing.includes("operator") || missing.includes("local_agent"));
+      return commerciallyRelevant && missing.length && (priorityContactGap || missing.length >= 2);
+    })
+    .map(({ record, missing, score, label }, index) => withVesselDisplay({
+      rank: index + 1,
+      vessel_name: record.vessel_name,
+      port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination),
+      port_code: record.port_code,
+      imo: record.imo || "",
+      call_sign: firstNonEmpty(record.call_sign, record.callsign, record.clsgn),
+      operator: firstNonEmpty(record.operator, record.operator_name, record.operator_normalized),
+      company: knownCompanyForVerification(record),
+      owner: firstNonEmpty(record.owner, record.owner_name, record.ship_owner, record.registered_owner),
+      manager: firstNonEmpty(record.manager, record.manager_name, record.ship_manager, record.technical_manager),
+      agent: firstNonEmpty(record.agent, record.agent_name, record.local_agent, record.satmntEntrpsNm, record.entrpsCdNm),
+      verification_type: verificationTypeForMissingFields(missing),
+      known_company: knownCompanyForVerification(record),
+      missing_fields: missing,
+      confidence_score: Number(record.contact_readiness_score || record.data_confidence_score || record.confidence_score || 0),
+      priority_label: label,
+      commercial_value_score: Number(record.commercial_value_score || record.total_sales_priority_score || score || 0),
+      opportunity_score: Number(record.opportunity_score || record.commercial_value_score || record.total_sales_priority_score || score || 0),
+      reason_summary: missing.includes("operator") || missing.includes("local_agent")
+        ? "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다."
+        : "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+      recommended_action: "선사/에이전트 확인 후 영업 연락 준비",
+      source_names: displaySources(record),
+      data_sources: displaySources(record),
+      next_action: "선사/에이전트 확인 후 영업 연락 준비",
+      reason_codes: [...new Set([...(record.reason_codes || []), "VERIFY_AGENT"])].slice(0, 12)
+    }));
+}
+
 function buildFleetOpportunityRows(records = []) {
   const map = new Map();
   for (const record of records.filter(v => !isDepartedRecord(v))) {
@@ -3470,6 +3555,10 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "recommended_message_angle",
   "urgency",
   "next_action",
+  "verification_type",
+  "known_company",
+  "missing_fields",
+  "source_names",
   "data_sources",
   "source_label",
   "data_source_used",
@@ -5858,6 +5947,19 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       }))
     });
   }
+  if (pathname.endsWith("/sales/verification-queue.json")) {
+    const verificationItems = buildVerificationQueue(items);
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "operator_contact_history,commercial_leads,agent-followup-queue,dashboard_summary_snapshots",
+      items: verificationItems.slice(0, VERIFICATION_QUEUE_OUTPUT_LIMIT),
+      extra: {
+        record_count: verificationItems.length,
+        total_count: verificationItems.length,
+        returned_count: Math.min(verificationItems.length, VERIFICATION_QUEUE_OUTPUT_LIMIT)
+      }
+    });
+  }
   const intelligence = pathname.match(/^\/api\/intelligence\/([^/]+)\.json$/);
   if (intelligence) {
     const name = intelligence[1];
@@ -6133,6 +6235,21 @@ async function apiResponse(url, env) {
       source: endpointSource,
       sourceTable: "sales_candidates_current,opportunity_master",
       items: followupItems
+    }), { headers: corsHeaders() });
+  }
+  if (pathname.endsWith("/sales/verification-queue.json")) {
+    const verificationItems = buildVerificationQueue(allRecords);
+    return json(publicItemsEnvelope({
+      generatedAt,
+      dataMode: endpointSource.data_source_used,
+      source: endpointSource,
+      sourceTable: "operator_contact_history,commercial_leads,agent-followup-queue,sales_candidates_current,opportunity_master",
+      items: verificationItems.slice(0, VERIFICATION_QUEUE_OUTPUT_LIMIT),
+      extra: {
+        record_count: verificationItems.length,
+        total_count: verificationItems.length,
+        returned_count: Math.min(verificationItems.length, VERIFICATION_QUEUE_OUTPUT_LIMIT)
+      }
     }), { headers: corsHeaders() });
   }
   if (pathname.endsWith("/targets/current.json")) return json(targetEnvelope, { headers: corsHeaders() });
