@@ -29,6 +29,7 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/port-opportunities.json",
   "dashboard/api/intelligence/superintendent-targets.json",
   "dashboard/api/intelligence/compliance-opportunities.json",
+  "dashboard/api/intelligence/drydock-prediction.json",
   "dashboard/api/intelligence/revenue-forecast.json",
   "dashboard/api/intelligence/route-summary.json",
   "dashboard/api/intelligence/commercial-summary.json",
@@ -146,6 +147,7 @@ const intelligencePayloads = {
   portOpportunities: readJson("dashboard/api/intelligence/port-opportunities.json"),
   superintendentTargets: readJson("dashboard/api/intelligence/superintendent-targets.json"),
   complianceOpportunities: readJson("dashboard/api/intelligence/compliance-opportunities.json"),
+  drydockPrediction: readJson("dashboard/api/intelligence/drydock-prediction.json"),
   revenueForecast: readJson("dashboard/api/intelligence/revenue-forecast.json"),
   route: readJson("dashboard/api/intelligence/route-summary.json"),
   commercial: readJson("dashboard/api/intelligence/commercial-summary.json"),
@@ -266,6 +268,7 @@ for (const marker of [
   "/api/intelligence/port-opportunities.json",
   "/api/intelligence/superintendent-targets.json",
   "/api/intelligence/compliance-opportunities.json",
+  "/api/intelligence/drydock-prediction.json",
   "/api/intelligence/revenue-forecast.json"
 ]) {
   assert(dashboardSource.includes(marker), `Dashboard advanced intelligence endpoint missing marker: ${marker}`);
@@ -297,6 +300,14 @@ for (const item of rows(intelligencePayloads.repeatCallers)) {
   assert(Number(item.visit_count_90d || 0) >= 2 || Number(item.visit_count_365d || 0) > 1 || Number(item.repeat_caller_score || 0) > 0, "Repeat caller item must have a repeat visit signal.");
   assert(String(item.reason_summary || "").length > 0, "Repeat caller item must explain why it is recommended.");
   assert(String(item.recommended_action || "").length > 0, "Repeat caller item must include a recommended action.");
+}
+for (const item of rows(intelligencePayloads.drydockPrediction)) {
+  for (const field of ["vessel_display", "drydock_probability", "confidence_score", "reason_summary", "recommended_action"]) {
+    assert(field in item, `Drydock prediction item missing required field: ${field}`);
+  }
+  assert(Number(item.drydock_probability || 0) >= 0 && Number(item.drydock_probability || 0) <= 100, "Drydock probability must be a 0-100 score.");
+  assert(String(item.reason_summary || "").length > 0, "Drydock prediction item must explain why it is recommended.");
+  assert(String(item.recommended_action || "").length > 0, "Drydock prediction item must include a recommended action.");
 }
 
 const fallbackChoiceCases = [

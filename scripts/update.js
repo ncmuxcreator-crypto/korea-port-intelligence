@@ -3759,6 +3759,11 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "repeat_caller_count",
   "last_visit",
   "next_eta",
+  "drydock_probability",
+  "vessel_age",
+  "build_year",
+  "year_built",
+  "built_year",
   "window_score",
   "risk_level",
   "factors",
@@ -5013,6 +5018,92 @@ function buildComplianceOpportunitiesIntelligenceSummary({ records = [], generat
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "risk_history,biofouling,opportunity_master,route_snapshot_daily,vessel_visits,explainability_snapshots", items });
 }
 
+function vesselAgeSignal(record = {}, generatedAt = new Date().toISOString()) {
+  const explicitAge = firstFiniteNumber(record.vessel_age, record.age, record.ship_age);
+  if (explicitAge !== undefined && explicitAge !== null) return Math.max(0, Number(explicitAge));
+  const builtYear = firstFiniteNumber(record.build_year, record.year_built, record.built_year, record.delivery_year);
+  if (builtYear === undefined || builtYear === null) return null;
+  const currentYear = Number(String(generatedAt || "").slice(0, 4)) || new Date().getFullYear();
+  if (builtYear < 1900 || builtYear > currentYear) return null;
+  return Math.max(0, currentYear - Number(builtYear));
+}
+
+function drydockSignalScore(record = {}, generatedAt = new Date().toISOString()) {
+  const visits365 = repeatCallerVisitCount(record, 365);
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const stayDays = dwellDays(record);
+  const anchorageHours = Number(firstFiniteNumber(record.anchorage_hours, record.waiting_hours, 0) || 0);
+  const opportunity = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const idle = Number(firstFiniteNumber(record.idle_risk_score, record.idle_exposure, record.operational_risk_score, 0) || 0);
+  const age = vesselAgeSignal(record, generatedAt);
+  const routePattern = firstNonEmpty(record.route_pattern_id, record.route_pattern_confidence, record.previous_port, record.destination_port, record.next_port) ? 1 : 0;
+  const ageScore = age === null ? 0 : age >= 20 ? 18 : age >= 15 ? 14 : age >= 10 ? 9 : age >= 5 ? 4 : 0;
+  return Math.min(100, Math.round(
+    Math.min(22, visits365 * 4 + visits90 * 3) +
+    Math.min(18, stayDays * 2.5) +
+    Math.min(14, anchorageHours / 8) +
+    Math.min(20, opportunity * 0.2) +
+    Math.min(16, Math.max(risk, idle) * 0.16) +
+    (routePattern ? 10 : 0) +
+    ageScore
+  ));
+}
+
+function drydockReason(record = {}, probability = 0, generatedAt = new Date().toISOString()) {
+  const reasons = [];
+  const visits365 = repeatCallerVisitCount(record, 365);
+  const stayDays = dwellDays(record);
+  const age = vesselAgeSignal(record, generatedAt);
+  if (visits365 >= 2) reasons.push(`최근 12개월 반복 입항 ${visits365}회`);
+  if (stayDays >= 3) reasons.push(`장기 체류 ${stayDays}일`);
+  if (recordRiskScore(record) >= 55) reasons.push(`운영/선저 리스크 ${recordRiskScore(record)}점`);
+  if (salesPriorityScore(record) >= 60) reasons.push(`영업 기회 점수 ${salesPriorityScore(record)}점`);
+  if (age !== null && age >= 10) reasons.push(`선령 약 ${Math.round(age)}년`);
+  if (firstNonEmpty(record.previous_port, record.destination_port, record.next_port, record.route_pattern_id)) reasons.push("항로/방문 패턴 신호");
+  return reasons.length
+    ? `${reasons.slice(0, 4).join(", ")} 기반 드라이독 planning window 실험 신호`
+    : `운영 신호 기반 드라이독 planning window 가능성 ${probability}점`;
+}
+
+function buildDrydockPredictionIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const probability = drydockSignalScore(record, generatedAt);
+      const confidence = Math.min(100, Math.round(
+        (firstFiniteNumber(record.data_confidence_score, record.confidence_score, 0) || 0) * 0.45 +
+        (repeatCallerVisitCount(record, 365) >= 2 ? 22 : 0) +
+        (firstNonEmpty(record.imo, record.mmsi) ? 12 : 0) +
+        (firstNonEmpty(record.previous_port, record.destination_port, record.next_port) ? 12 : 0) +
+        (vesselAgeSignal(record, generatedAt) !== null ? 9 : 0)
+      ));
+      return { record, index, probability, confidence };
+    })
+    .filter(row => row.probability >= 35 || salesPriorityScore(row.record) >= 65 || repeatCallerVisitCount(row.record, 365) >= 2)
+    .sort((a, b) =>
+      b.probability - a.probability ||
+      b.confidence - a.confidence ||
+      salesPriorityScore(b.record) - salesPriorityScore(a.record)
+    )
+    .slice(0, 10)
+    .map((row, index) => compactVesselInsight(row.record, index, {
+      drydock_probability: row.probability,
+      confidence_score: row.confidence,
+      opportunity_score: salesPriorityScore(row.record),
+      vessel_age: vesselAgeSignal(row.record, generatedAt),
+      reason_summary: drydockReason(row.record, row.probability, generatedAt),
+      recommended_action: "실험 신호입니다. 선령, 최근 정비 이력, 다음 항차와 체류 가능 시간을 확인하세요.",
+      data_sources: displaySources(row.record).length ? displaySources(row.record) : ["vessel_visits", "route_snapshot_daily", "opportunity_master", "risk_history"]
+    }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "vessel_visits,route_snapshot_daily,vessel_history,opportunity_master,risk_history",
+    items,
+    extra: { disclaimer: "Experimental / 실험 기능: 운영 신호 기반 드라이독 planning window 추정입니다." }
+  });
+}
+
 function estimateRevenueRange(count = 0, level = "WARM") {
   const lowUnit = level === "HOT" ? 9000 : 5000;
   const highUnit = level === "HOT" ? 28000 : 16000;
@@ -5100,6 +5191,7 @@ function buildIntelligenceSummaries({
     "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
     "superintendent-targets": buildSuperintendentTargetsIntelligenceSummary({ records, generatedAt, dataMode }),
     "compliance-opportunities": buildComplianceOpportunitiesIntelligenceSummary({ records, generatedAt, dataMode }),
+    "drydock-prediction": buildDrydockPredictionIntelligenceSummary({ records, generatedAt, dataMode }),
     "revenue-forecast": buildRevenueForecastIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "commercial-summary": buildCommercialIntelligenceSummary({ topCandidates, commercialCommandCenter, candidateList, generatedAt, dataMode }),
     "sales-priority": buildSalesPriorityIntelligenceSummary({ records, candidateList, salesCandidates, immediateTargets, topCandidates, commercialCommandCenter, generatedAt, dataMode })
@@ -7655,6 +7747,7 @@ try {
     "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
     "dashboard/api/intelligence/superintendent-targets.json": intelligenceSummaries["superintendent-targets"],
     "dashboard/api/intelligence/compliance-opportunities.json": intelligenceSummaries["compliance-opportunities"],
+    "dashboard/api/intelligence/drydock-prediction.json": intelligenceSummaries["drydock-prediction"],
     "dashboard/api/intelligence/revenue-forecast.json": intelligenceSummaries["revenue-forecast"],
     "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"],
     "dashboard/api/intelligence/sales-priority.json": intelligenceSummaries["sales-priority"],
