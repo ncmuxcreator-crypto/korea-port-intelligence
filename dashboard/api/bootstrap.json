@@ -1,0 +1,504 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-02T00:36:13.758Z",
+  "data_mode": "live",
+  "fallback_used": false,
+  "record_count": 1269,
+  "kpis": {
+    "total_vessels": 1346,
+    "sales_target_count": 1269,
+    "immediate_target_count": 269,
+    "hot_count": 10,
+    "warm_count": 0,
+    "port_count": 8,
+    "arrival_pipeline_count": 200,
+    "staying_vessels_count": 500,
+    "anchorage_waiting_count": 500,
+    "high_risk_count": 0
+  },
+  "ports": [
+    {
+      "port_code": "020",
+      "display_name": "부산",
+      "vessel_count": 509,
+      "target_count": 462,
+      "hot_count": 89
+    },
+    {
+      "port_code": "820",
+      "display_name": "울산",
+      "vessel_count": 212,
+      "target_count": 205,
+      "hot_count": 46
+    },
+    {
+      "port_code": "030",
+      "display_name": "인천",
+      "vessel_count": 141,
+      "target_count": 134,
+      "hot_count": 27
+    },
+    {
+      "port_code": "621",
+      "display_name": "대산",
+      "vessel_count": 128,
+      "target_count": 127,
+      "hot_count": 39
+    },
+    {
+      "port_code": "622",
+      "display_name": "마산/창원",
+      "vessel_count": 123,
+      "target_count": 117,
+      "hot_count": 35
+    },
+    {
+      "port_code": "031",
+      "display_name": "평택·당진",
+      "vessel_count": 111,
+      "target_count": 107,
+      "hot_count": 12
+    },
+    {
+      "port_code": "620-YEOSU",
+      "display_name": "여수",
+      "vessel_count": 77,
+      "target_count": 76,
+      "hot_count": 15
+    },
+    {
+      "port_code": "810",
+      "display_name": "포항",
+      "vessel_count": 45,
+      "target_count": 41,
+      "hot_count": 6
+    }
+  ],
+  "top_candidates": [
+    {
+      "rank": 1,
+      "vessel_name": "HG NAPLES",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Ulsan",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "HOT",
+      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 7.9일째인 GT 35,908 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_ulsan_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 2,
+      "vessel_name": "에스엠 타이거",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "HOT",
+      "reason_summary": "South Gyeongsang 원료부두 6선석에서 체류 5.5일째인 GT 93,816 벌크선으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 3,
+      "vessel_name": "NEW DEDICATION",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Busan",
+      "opportunity_score": 67,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "HOT",
+      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 20.6일째인 GT 35,832 벌크선으로, 출항 전 약 8시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_busan_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 4,
+      "vessel_name": "PAN QUEEN",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Incheon",
+      "opportunity_score": 66,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "HOT",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 3척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 53점이며 평균 바이오파울링 노출 34점, 평균 체선노출 11점입니다. Incheon 내항 6부두 60선석에서 체류 9.4일째인 GT 33,001 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_incheon_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 5,
+      "vessel_name": "ASTERAS",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 66,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "HOT",
+      "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 7.3일째인 GT 33,456 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 6,
+      "vessel_name": "LUDOLF OLDENDORFF",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "HOT",
+      "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 6일째인 GT 107,553 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 7,
+      "vessel_name": "THEODOROS P",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 64,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "HOT",
+      "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 11일째인 GT 92,865 벌크선으로, 출항 전 약 314시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 8,
+      "vessel_name": "12청경호",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Ulsan",
+      "opportunity_score": 64,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "HOT",
+      "reason_summary": "Ulsan 정박지-M1에서 묘박/대기 23일째인 탱커으로, 출항 전 약 62시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_ulsan_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 9,
+      "vessel_name": "HL SAMCHEONPO",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Incheon",
+      "opportunity_score": 63,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "HOT",
+      "reason_summary": "Incheon 영흥도 영흥화력2돌핀에서 체류 13.9일째인 GT 79,560 벌크선으로, 출항 전 약 152시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_incheon_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 10,
+      "vessel_name": "SANMAR SAROD",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Daesan",
+      "opportunity_score": 63,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "HOT",
+      "reason_summary": "Daesan W구역에서 체류 12.8일째인 GT 40,953 탱커으로, 출항 전 약 325시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_daesan_o",
+        "real_public_api_snapshot",
+        "port_operation"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    }
+  ],
+  "sales_priority": [
+    {
+      "rank": 1,
+      "vessel_name": "에스엠 타이거",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "South Gyeongsang 원료부두 6선석에서 체류 5.5일째인 GT 93,816 벌크선으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 2,
+      "vessel_name": "HG NAPLES",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Ulsan",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "WARM",
+      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 7.9일째인 GT 35,908 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 3,
+      "vessel_name": "PAN DELIGHT",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Pyeongtaek-Dangjin",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 3척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 53점이며 평균 바이오파울링 노출 34점, 평균 체선노출 11점입니다. Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 5.1일째인 GT 106,077 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 4,
+      "vessel_name": "PAN QUEEN",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Incheon",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 3척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 53점이며 평균 바이오파울링 노출 34점, 평균 체선노출 11점입니다. Incheon 내항 6부두 60선석에서 체류 9.4일째인 GT 33,001 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 5,
+      "vessel_name": "PANSTAR",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Incheon",
+      "opportunity_score": 69,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 3척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 53점이며 평균 바이오파울링 노출 34점, 평균 체선노출 11점입니다. Incheon 내항 4부두 42선석에서 체류 6.5일째인 GT 39,736 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 6,
+      "vessel_name": "NEW DEDICATION",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Busan",
+      "opportunity_score": 67,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "WARM",
+      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 20.6일째인 GT 35,832 벌크선으로, 출항 전 약 8시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 7,
+      "vessel_name": "ASTERAS",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "South Gyeongsang",
+      "opportunity_score": 66,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "WARM",
+      "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 7.3일째인 GT 33,456 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 8,
+      "vessel_name": "타이씨즈",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Incheon",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "Incheon 내항 4부두 44선석에서 체류 11.3일째인 GT 40,341 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 9,
+      "vessel_name": "AMIS VICTORY",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Pyeongtaek-Dangjin",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "priority_label": "WARM",
+      "reason_summary": "Pyeongtaek-Dangjin 고대부두 6번선석에서 체류 7.9일째인 GT 35,728 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    },
+    {
+      "rank": 10,
+      "vessel_name": "ANTONIS I. ANGELICOUSSIS",
+      "imo": "-",
+      "mmsi": "-",
+      "port": "Daesan",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 78,
+      "priority_label": "WARM",
+      "reason_summary": "Daesan D-1정박지에서 묘박/대기 4.4일째인 GT 165,054 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "data_sources": [
+        "opportunity_master",
+        "risk_history",
+        "explainability_snapshots",
+        "rule_evaluations"
+      ],
+      "last_seen_at": "2026-06-02T00:30:48.097Z"
+    }
+  ],
+  "alerts": [],
+  "data_health": {
+    "status": "healthy",
+    "latest_successful_run_id": "run_20260602003048084_0f6e3182",
+    "last_success_at": "2026-06-02T00:36:13.758Z",
+    "source_status": {
+      "source_rows_collected": 1939,
+      "normalized_rows": 1346,
+      "ports_attempted_count": 0
+    },
+    "db_status": {
+      "supabase_write_status": "completed",
+      "promotion_status": "promoted",
+      "rows_written_by_table": {
+        "vessel_snapshots": 1346,
+        "opportunity_master": 1346,
+        "dashboard_summary_snapshots": 1
+      }
+    },
+    "json_status": {
+      "output_mode": "static_json"
+    }
+  }
+}

@@ -1,12 +1,66 @@
 {
+  "generated_by": "local",
+  "is_github_actions": false,
+  "validation_mode": "local",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": null,
+  "GITHUB_WORKFLOW": null,
+  "run_id": "run_20260602003048084_0f6e3182",
   "version": "17.7.0",
-  "generatedAt": "2026-05-27T04:43:34.646Z",
+  "status_run_id": "run_20260602003048084_0f6e3182",
+  "active_run_id": "run_20260602003048084_0f6e3182",
+  "generated_at": "2026-06-02T00:36:13.758Z",
+  "stale_diagnostic": false,
+  "base_dataset_empty": false,
+  "derived_from_empty_dataset": false,
+  "source_vessel_dataset_count": 1346,
+  "base_dataset_empty_reasons": [],
+  "data_mode": "static_snapshot",
+  "record_count": 1269,
+  "dashboard_summary_record_count": 1269,
+  "vessels_json_count": 1269,
+  "all_collected_vessels_count": 1346,
+  "target_vessels_count": 1269,
   "required": [
     "dashboard/api/vessels.json",
-    "dashboard/api/candidate-summary.json",
-    "dashboard/api/contact-queue.json"
+    "dashboard/api/all-collected-vessels.json",
+    "dashboard/api/target-vessels.json",
+    "dashboard/api/candidates.json",
+    "dashboard/api/dashboard-summary.json"
   ],
   "missing": [],
   "empty": [],
-  "ok": true
+  "file_rows": {
+    "dashboard/api/vessels.json": 1269,
+    "dashboard/api/all-collected-vessels.json": 1346,
+    "dashboard/api/target-vessels.json": 1269,
+    "dashboard/api/candidates.json": 1000,
+    "dashboard/api/dashboard-summary.json": 1269
+  },
+  "row_count_validation": {
+    "dashboard/api/vessels.json": {
+      "rows": 1269,
+      "ok": true
+    },
+    "dashboard/api/all-collected-vessels.json": {
+      "rows": 1346,
+      "ok": true
+    },
+    "dashboard/api/target-vessels.json": {
+      "rows": 1269,
+      "ok": true,
+      "severity": "ready"
+    },
+    "dashboard/api/dashboard-summary.json": {
+      "record_count": 1269,
+      "ok": true
+    }
+  },
+  "status": "ready",
+  "guard_severity": "ready",
+  "ok": true,
+  "production_ready": false,
+  "diagnostics_only": false,
+  "warning": null,
+  "placeholder": false
 }

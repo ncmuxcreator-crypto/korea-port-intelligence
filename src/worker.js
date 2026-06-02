@@ -5920,6 +5920,10 @@ async function apiResponse(url, env) {
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
+  if (pathname.endsWith("/bootstrap.json") || /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname)) {
+    const assetPayload = await fetchAssetJson(env, pathname);
+    if (assetPayload) return json(assetPayload, { headers: corsHeaders() });
+  }
   if (summaryFirstRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);

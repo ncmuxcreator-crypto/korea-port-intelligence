@@ -1,25 +1,698 @@
 {
+  "generated_by": "local",
+  "is_github_actions": false,
+  "validation_mode": "local",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": null,
+  "GITHUB_WORKFLOW": null,
+  "run_id": "run_20260602003048084_0f6e3182",
   "version": "17.7.0",
-  "generatedAt": "2026-05-27T04:43:34.698Z",
-  "tracked": 15,
-  "configured": 0,
-  "missing": [
-    "SUPABASE_URL",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "SUPABASE_ANON_KEY",
-    "MOF_AIS_DYNAMIC_API_URL",
-    "MOF_AIS_DYNAMIC_SERVICE_KEY",
-    "MOF_VTS_API_BASE",
-    "MOF_VTS_SERVICE_KEY",
-    "VESSEL_SPEC_SERVICE_KEY",
+  "status_run_id": "run_20260602003048084_0f6e3182",
+  "generated_at": "2026-06-02T00:36:13.758Z",
+  "base_dataset_empty": false,
+  "derived_from_empty_dataset": false,
+  "source_vessel_dataset_count": 1346,
+  "base_dataset_empty_reasons": [],
+  "ok": true,
+  "update_mode": null,
+  "process_env_CI": null,
+  "is_local_build": true,
+  "collection_mode": "collection_result",
+  "status_generated_at": "2026-06-02T00:36:13.758Z",
+  "stale_source_health": false,
+  "secrets_present": {
+    "PORT_OPERATION_SERVICE_KEY": true,
+    "PORT_OPERATION_API_URL": false,
+    "SUPABASE_URL": true,
+    "SUPABASE_SERVICE_ROLE_KEY": true
+  },
+  "runtime_config_audit": {
+    "generated_at": "2026-06-02T00:30:48.089Z",
+    "expected_env_names": [
+      "PORT_OPERATION_SERVICE_KEY",
+      "PORT_OPERATION_API_URL",
+      "SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ],
+    "accepted_fallback_env_names": {
+      "PORT_OPERATION_SERVICE_KEY": [
+        "PORT_OPERATION_API_KEY",
+        "DATA_GO_KR_API_KEY",
+        "SERVICE_KEY",
+        "SERVICEKEY",
+        "YGPA_SERVICE_KEY"
+      ],
+      "PORT_OPERATION_API_URL": [
+        "default:PORT_OPERATION_API_URL=VsslEtrynd5/Info5"
+      ]
+    },
+    "canonical_env_present": {
+      "PORT_OPERATION_SERVICE_KEY": true,
+      "PORT_OPERATION_API_URL": false,
+      "SUPABASE_URL": true,
+      "SUPABASE_SERVICE_ROLE_KEY": true
+    },
+    "fallback_env_present": {
+      "PORT_OPERATION_SERVICE_KEY": {
+        "PORT_OPERATION_API_KEY": false,
+        "DATA_GO_KR_API_KEY": false,
+        "SERVICE_KEY": false,
+        "SERVICEKEY": false,
+        "YGPA_SERVICE_KEY": false
+      },
+      "PORT_OPERATION_API_URL": {}
+    },
+    "effective_config_present": {
+      "PORT_OPERATION_SERVICE_KEY": true,
+      "PORT_OPERATION_API_URL": true,
+      "SUPABASE_URL": true,
+      "SUPABASE_SERVICE_ROLE_KEY": true
+    },
+    "effective_sources": {
+      "PORT_OPERATION_SERVICE_KEY": "PORT_OPERATION_SERVICE_KEY",
+      "PORT_OPERATION_API_URL": "default_endpoint"
+    },
+    "port_operation_api_url_default_used": true,
+    "missing_required_env_names": [],
+    "runtime_flags": {
+      "VALIDATION_MODE": null,
+      "UPDATE_MODE": null,
+      "CI": null,
+      "GITHUB_ACTIONS": null,
+      "GITHUB_RUN_ID": null,
+      "GITHUB_WORKFLOW": null
+    },
+    "is_github_actions": false,
+    "is_local_build": true
+  },
+  "expected_env_names": [
     "PORT_OPERATION_SERVICE_KEY",
-    "PORT_FACILITY_SERVICE_KEY",
-    "PILOT_SOURCE_URLS",
-    "BERTH_SOURCE_URLS",
-    "ULSAN_API_KEY",
-    "GDRIVE_SERVICE_ACCOUNT_JSON",
-    "GDRIVE_FOLDER_ID"
+    "PORT_OPERATION_API_URL",
+    "SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY"
   ],
-  "realDataReady": false,
-  "note": "Secret presence check only; no external API call."
+  "accepted_fallback_env_names": {
+    "PORT_OPERATION_SERVICE_KEY": [
+      "PORT_OPERATION_API_KEY",
+      "DATA_GO_KR_API_KEY",
+      "SERVICE_KEY",
+      "SERVICEKEY",
+      "YGPA_SERVICE_KEY"
+    ],
+    "PORT_OPERATION_API_URL": [
+      "default:PORT_OPERATION_API_URL=VsslEtrynd5/Info5"
+    ]
+  },
+  "missing_required_env_names": [],
+  "enabled_collectors": [
+    "source_csv",
+    "port_operation_busan_i",
+    "port_operation_busan_o",
+    "port_operation_ulsan_i",
+    "port_operation_ulsan_o",
+    "port_operation_yeosu_gwangyang_i",
+    "port_operation_yeosu_gwangyang_o",
+    "port_operation_pyeongtaek_dangjin_i",
+    "port_operation_pyeongtaek_dangjin_o",
+    "port_operation_incheon_i",
+    "port_operation_incheon_o",
+    "port_operation_pohang_i",
+    "port_operation_pohang_o",
+    "port_operation_south_gyeongsang_i",
+    "port_operation_south_gyeongsang_o",
+    "port_operation_daesan_i",
+    "port_operation_daesan_o",
+    "port_operation_mokpo_i",
+    "port_operation_mokpo_o",
+    "port_operation_gunsan_i",
+    "port_operation_gunsan_o",
+    "port_operation_donghae_mukho_i",
+    "port_operation_donghae_mukho_o",
+    "port_operation_jeju_i",
+    "port_operation_jeju_o",
+    "ulsan_core",
+    "ulsan_berth_detail",
+    "ulsan_cargo_plan",
+    "ulsan_berth_operation",
+    "ulsan_terminal_process",
+    "mof_ais_dynamic",
+    "mof_ais_info",
+    "mof_ais_stat",
+    "korea_public_data"
+  ],
+  "attempted_collectors": [
+    "port_operation_busan_i",
+    "port_operation_busan_o",
+    "port_operation_ulsan_i",
+    "port_operation_ulsan_o",
+    "port_operation_yeosu_gwangyang_i",
+    "port_operation_yeosu_gwangyang_o",
+    "port_operation_pyeongtaek_dangjin_i",
+    "port_operation_pyeongtaek_dangjin_o",
+    "port_operation_incheon_i",
+    "port_operation_incheon_o",
+    "port_operation_pohang_i",
+    "port_operation_pohang_o",
+    "port_operation_south_gyeongsang_i",
+    "port_operation_south_gyeongsang_o",
+    "port_operation_daesan_i",
+    "port_operation_daesan_o",
+    "port_operation_mokpo_i",
+    "port_operation_mokpo_o",
+    "port_operation_gunsan_i",
+    "port_operation_gunsan_o",
+    "port_operation_donghae_mukho_i",
+    "port_operation_donghae_mukho_o",
+    "port_operation_jeju_i",
+    "port_operation_jeju_o"
+  ],
+  "skipped_collectors": [
+    {
+      "source_name": "source_csv",
+      "reason": "unknown_error",
+      "raw_reason": "disabled_by_default_enable_source_csv_true"
+    },
+    {
+      "source_name": "ulsan_core",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "ulsan_berth_detail",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "ulsan_cargo_plan",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "ulsan_berth_operation",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "ulsan_terminal_process",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "mof_ais_dynamic",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "mof_ais_info",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "mof_ais_stat",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    },
+    {
+      "source_name": "korea_public_data",
+      "reason": "missing_api_url",
+      "raw_reason": "missing_url"
+    }
+  ],
+  "port_operation": {
+    "collector_enabled": true,
+    "secret_present": true,
+    "canonical_service_key_present": true,
+    "api_url_present": false,
+    "api_url_effective": true,
+    "api_url_default_used": true,
+    "enabled_ports_loaded_count": 22,
+    "enabled_ports_passed_to_collector_count": 12,
+    "ports_attempted_count": 12,
+    "collector_not_attempted": false,
+    "collector_not_attempted_reason": null,
+    "ports_skipped_reason": null,
+    "first_5_ports_to_attempt": [
+      {
+        "prtAgCd": "020",
+        "port_code": "020",
+        "port_name": "Busan",
+        "port_name_ko": "부산항",
+        "tier": "1",
+        "sub_port": "부산항"
+      },
+      {
+        "prtAgCd": "820",
+        "port_code": "820",
+        "port_name": "Ulsan",
+        "port_name_ko": "울산항",
+        "tier": "1",
+        "sub_port": "울산항/LNG·산업 터미널"
+      },
+      {
+        "prtAgCd": "620",
+        "port_code": "620",
+        "port_name": "Yeosu/Gwangyang",
+        "port_name_ko": "여수·광양항",
+        "tier": "1",
+        "sub_port": "여수·광양항"
+      },
+      {
+        "prtAgCd": "031",
+        "port_code": "031",
+        "port_name": "Pyeongtaek-Dangjin",
+        "port_name_ko": "평택·당진항",
+        "tier": "1",
+        "sub_port": "평택·당진항/보령항/당진 산업터미널"
+      },
+      {
+        "prtAgCd": "030",
+        "port_code": "030",
+        "port_name": "Incheon",
+        "port_name_ko": "인천항",
+        "tier": "1",
+        "sub_port": "인천항/영흥 터미널"
+      }
+    ],
+    "smoke_test_status": "passed",
+    "smoke_test_failure_reason": null
+  },
+  "preflight": {
+    "ok": true,
+    "failures": [],
+    "raw_preflight_failure_reason": null,
+    "preflight_failure_reason": null,
+    "port_operation_collector_enabled": true,
+    "port_operation_secret_present": true,
+    "port_operation_api_url_present": false,
+    "port_operation_api_url_effective": true,
+    "port_operation_api_url_default_used": true,
+    "ports_registry_path": "data\\reference\\ports_registry.csv",
+    "ports_registry_loaded": true,
+    "ports_registry_rows_count": 22,
+    "enabled_ports_count": 22,
+    "enabled_ports_loaded_count": 22,
+    "enabled_ports_passed_to_collector_count": 12,
+    "ports_attempted_count": 0,
+    "ports_skipped_reason": null,
+    "validation_mode": "local",
+    "date_window": {
+      "sde": "20260530",
+      "ede": "20260609",
+      "valid": true
+    },
+    "numOfRows": 50,
+    "maxPages": 20,
+    "deGb_values": [
+      "I",
+      "O"
+    ],
+    "first_5_ports_to_attempt": [
+      {
+        "prtAgCd": "020",
+        "port_code": "020",
+        "port_name": "Busan",
+        "port_name_ko": "부산항",
+        "tier": "1",
+        "sub_port": "부산항"
+      },
+      {
+        "prtAgCd": "820",
+        "port_code": "820",
+        "port_name": "Ulsan",
+        "port_name_ko": "울산항",
+        "tier": "1",
+        "sub_port": "울산항/LNG·산업 터미널"
+      },
+      {
+        "prtAgCd": "620",
+        "port_code": "620",
+        "port_name": "Yeosu/Gwangyang",
+        "port_name_ko": "여수·광양항",
+        "tier": "1",
+        "sub_port": "여수·광양항"
+      },
+      {
+        "prtAgCd": "031",
+        "port_code": "031",
+        "port_name": "Pyeongtaek-Dangjin",
+        "port_name_ko": "평택·당진항",
+        "tier": "1",
+        "sub_port": "평택·당진항/보령항/당진 산업터미널"
+      },
+      {
+        "prtAgCd": "030",
+        "port_code": "030",
+        "port_name": "Incheon",
+        "port_name_ko": "인천항",
+        "tier": "1",
+        "sub_port": "인천항/영흥 터미널"
+      }
+    ],
+    "planned_port_operation_sources": [
+      {
+        "key": "port_operation_busan_i",
+        "source_name": "port_operation_busan_i",
+        "label": "PORT-MIS VsslEtrynd5 Busan I",
+        "prtAgCd": "020",
+        "port_code": "020",
+        "port_name": "Busan",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_busan_o",
+        "source_name": "port_operation_busan_o",
+        "label": "PORT-MIS VsslEtrynd5 Busan O",
+        "prtAgCd": "020",
+        "port_code": "020",
+        "port_name": "Busan",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_ulsan_i",
+        "source_name": "port_operation_ulsan_i",
+        "label": "PORT-MIS VsslEtrynd5 Ulsan I",
+        "prtAgCd": "820",
+        "port_code": "820",
+        "port_name": "Ulsan",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_ulsan_o",
+        "source_name": "port_operation_ulsan_o",
+        "label": "PORT-MIS VsslEtrynd5 Ulsan O",
+        "prtAgCd": "820",
+        "port_code": "820",
+        "port_name": "Ulsan",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_yeosu_gwangyang_i",
+        "source_name": "port_operation_yeosu_gwangyang_i",
+        "label": "PORT-MIS VsslEtrynd5 Yeosu/Gwangyang I",
+        "prtAgCd": "620",
+        "port_code": "620",
+        "port_name": "Yeosu/Gwangyang",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_yeosu_gwangyang_o",
+        "source_name": "port_operation_yeosu_gwangyang_o",
+        "label": "PORT-MIS VsslEtrynd5 Yeosu/Gwangyang O",
+        "prtAgCd": "620",
+        "port_code": "620",
+        "port_name": "Yeosu/Gwangyang",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_pyeongtaek_dangjin_i",
+        "source_name": "port_operation_pyeongtaek_dangjin_i",
+        "label": "PORT-MIS VsslEtrynd5 Pyeongtaek-Dangjin I",
+        "prtAgCd": "031",
+        "port_code": "031",
+        "port_name": "Pyeongtaek-Dangjin",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_pyeongtaek_dangjin_o",
+        "source_name": "port_operation_pyeongtaek_dangjin_o",
+        "label": "PORT-MIS VsslEtrynd5 Pyeongtaek-Dangjin O",
+        "prtAgCd": "031",
+        "port_code": "031",
+        "port_name": "Pyeongtaek-Dangjin",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_incheon_i",
+        "source_name": "port_operation_incheon_i",
+        "label": "PORT-MIS VsslEtrynd5 Incheon I",
+        "prtAgCd": "030",
+        "port_code": "030",
+        "port_name": "Incheon",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_incheon_o",
+        "source_name": "port_operation_incheon_o",
+        "label": "PORT-MIS VsslEtrynd5 Incheon O",
+        "prtAgCd": "030",
+        "port_code": "030",
+        "port_name": "Incheon",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_pohang_i",
+        "source_name": "port_operation_pohang_i",
+        "label": "PORT-MIS VsslEtrynd5 Pohang I",
+        "prtAgCd": "810",
+        "port_code": "810",
+        "port_name": "Pohang",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_pohang_o",
+        "source_name": "port_operation_pohang_o",
+        "label": "PORT-MIS VsslEtrynd5 Pohang O",
+        "prtAgCd": "810",
+        "port_code": "810",
+        "port_name": "Pohang",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_south_gyeongsang_i",
+        "source_name": "port_operation_south_gyeongsang_i",
+        "label": "PORT-MIS VsslEtrynd5 South Gyeongsang I",
+        "prtAgCd": "622",
+        "port_code": "622",
+        "port_name": "South Gyeongsang",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_south_gyeongsang_o",
+        "source_name": "port_operation_south_gyeongsang_o",
+        "label": "PORT-MIS VsslEtrynd5 South Gyeongsang O",
+        "prtAgCd": "622",
+        "port_code": "622",
+        "port_name": "South Gyeongsang",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_daesan_i",
+        "source_name": "port_operation_daesan_i",
+        "label": "PORT-MIS VsslEtrynd5 Daesan I",
+        "prtAgCd": "621",
+        "port_code": "621",
+        "port_name": "Daesan",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_daesan_o",
+        "source_name": "port_operation_daesan_o",
+        "label": "PORT-MIS VsslEtrynd5 Daesan O",
+        "prtAgCd": "621",
+        "port_code": "621",
+        "port_name": "Daesan",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_mokpo_i",
+        "source_name": "port_operation_mokpo_i",
+        "label": "PORT-MIS VsslEtrynd5 Mokpo I",
+        "prtAgCd": "070",
+        "port_code": "070",
+        "port_name": "Mokpo",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_mokpo_o",
+        "source_name": "port_operation_mokpo_o",
+        "label": "PORT-MIS VsslEtrynd5 Mokpo O",
+        "prtAgCd": "070",
+        "port_code": "070",
+        "port_name": "Mokpo",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_gunsan_i",
+        "source_name": "port_operation_gunsan_i",
+        "label": "PORT-MIS VsslEtrynd5 Gunsan I",
+        "prtAgCd": "080",
+        "port_code": "080",
+        "port_name": "Gunsan",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_gunsan_o",
+        "source_name": "port_operation_gunsan_o",
+        "label": "PORT-MIS VsslEtrynd5 Gunsan O",
+        "prtAgCd": "080",
+        "port_code": "080",
+        "port_name": "Gunsan",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_donghae_mukho_i",
+        "source_name": "port_operation_donghae_mukho_i",
+        "label": "PORT-MIS VsslEtrynd5 Donghae/Mukho I",
+        "prtAgCd": "120",
+        "port_code": "120",
+        "port_name": "Donghae/Mukho",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_donghae_mukho_o",
+        "source_name": "port_operation_donghae_mukho_o",
+        "label": "PORT-MIS VsslEtrynd5 Donghae/Mukho O",
+        "prtAgCd": "120",
+        "port_code": "120",
+        "port_name": "Donghae/Mukho",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_jeju_i",
+        "source_name": "port_operation_jeju_i",
+        "label": "PORT-MIS VsslEtrynd5 Jeju I",
+        "prtAgCd": "940",
+        "port_code": "940",
+        "port_name": "Jeju",
+        "deGb": "I",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      },
+      {
+        "key": "port_operation_jeju_o",
+        "source_name": "port_operation_jeju_o",
+        "label": "PORT-MIS VsslEtrynd5 Jeju O",
+        "prtAgCd": "940",
+        "port_code": "940",
+        "port_name": "Jeju",
+        "deGb": "O",
+        "skipped": true,
+        "attempted": false,
+        "skip_reason": null,
+        "reason": null,
+        "raw_skip_reason": null
+      }
+    ]
+  },
+  "preflight_status": "passed",
+  "preflight_failure_reason": null,
+  "collector_not_attempted": false,
+  "collector_not_attempted_reason": null,
+  "realDataReady": true,
+  "active_run_id": "run_20260602003048084_0f6e3182",
+  "stale_diagnostic": false,
+  "placeholder": false
 }

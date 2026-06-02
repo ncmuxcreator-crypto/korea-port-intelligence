@@ -1,0 +1,43 @@
+{
+  "total_vessels": 1346,
+  "overall_data_quality_score": 85,
+  "data_quality_score_avg": 85,
+  "high_quality_count": 1154,
+  "medium_quality_count": 192,
+  "low_quality_count": 0,
+  "needs_cleanup_count": 0,
+  "gt_coverage": 100,
+  "imo_coverage": 0,
+  "call_sign_coverage": 100,
+  "vessel_type_coverage": 86,
+  "ata_coverage": 100,
+  "atd_coverage": 70,
+  "etd_coverage": 98,
+  "berth_facility_coverage": 100,
+  "operator_coverage": 7,
+  "agent_coverage": 100,
+  "pilot_match_rate": 0,
+  "pnc_match_rate": 0,
+  "ulsan_match_rate": 0,
+  "port_call_identity_coverage": 100,
+  "gt_invalid_count": 0,
+  "ata_atd_etd_order_warning_count": 5,
+  "source_confidence_score_avg": 69,
+  "source_confidence_scored_count": 1346,
+  "data_quality_bands": {
+    "high": 1154,
+    "medium": 192,
+    "low": 0,
+    "needs_cleanup": 0
+  },
+  "normalization_focus": [
+    "port_call_identity",
+    "gt_validation",
+    "ata_atd_etd_validation",
+    "vessel_type_normalization",
+    "port_sub_port_extraction",
+    "agent_normalization",
+    "operator_inference_quality",
+    "source_confidence_scoring"
+  ]
+}

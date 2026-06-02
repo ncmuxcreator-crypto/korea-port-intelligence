@@ -1,14 +1,84 @@
 {
+  "generated_by": "local",
+  "is_github_actions": false,
+  "validation_mode": "local",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": null,
+  "GITHUB_WORKFLOW": null,
+  "run_id": "run_20260602003048084_0f6e3182",
   "version": "17.7.0",
-  "generatedAt": "2026-05-27T04:43:34.865Z",
+  "active_run_id": "run_20260602003048084_0f6e3182",
+  "generated_at": "2026-06-02T00:36:13.758Z",
   "status": "ready",
+  "base_dataset_empty": false,
+  "derived_from_empty_dataset": false,
+  "source_vessel_dataset_count": 1346,
+  "base_dataset_empty_reasons": [],
+  "ok": true,
   "sequence": [
+    "config_preflight",
     "source_health",
-    "vessel_spec",
     "port_operation",
-    "mof_ais_dynamic",
+    "normalization",
     "candidate_engine",
     "snapshot_guard"
   ],
-  "target": "fast cleaning candidate detection"
+  "target": "safe port-operation collection and current-run diagnostics",
+  "port_operation_collector_enabled": true,
+  "port_operation_service_key_present": true,
+  "port_operation_api_url_present": false,
+  "port_operation_api_url_effective": true,
+  "port_operation_api_url_default_used": true,
+  "enabled_ports_loaded_count": 22,
+  "enabled_ports_passed_to_collector_count": 12,
+  "ports_attempted_count": 12,
+  "preflight_status": "passed",
+  "preflight_failure_reason": null,
+  "collector_not_attempted": false,
+  "collector_not_attempted_reason": null,
+  "first_5_ports_to_attempt": [
+    {
+      "prtAgCd": "020",
+      "port_code": "020",
+      "port_name": "Busan",
+      "port_name_ko": "부산항",
+      "tier": "1",
+      "sub_port": "부산항"
+    },
+    {
+      "prtAgCd": "820",
+      "port_code": "820",
+      "port_name": "Ulsan",
+      "port_name_ko": "울산항",
+      "tier": "1",
+      "sub_port": "울산항/LNG·산업 터미널"
+    },
+    {
+      "prtAgCd": "620",
+      "port_code": "620",
+      "port_name": "Yeosu/Gwangyang",
+      "port_name_ko": "여수·광양항",
+      "tier": "1",
+      "sub_port": "여수·광양항"
+    },
+    {
+      "prtAgCd": "031",
+      "port_code": "031",
+      "port_name": "Pyeongtaek-Dangjin",
+      "port_name_ko": "평택·당진항",
+      "tier": "1",
+      "sub_port": "평택·당진항/보령항/당진 산업터미널"
+    },
+    {
+      "prtAgCd": "030",
+      "port_code": "030",
+      "port_name": "Incheon",
+      "port_name_ko": "인천항",
+      "tier": "1",
+      "sub_port": "인천항/영흥 터미널"
+    }
+  ],
+  "status_run_id": "run_20260602003048084_0f6e3182",
+  "stale_diagnostic": false,
+  "placeholder": false
 }

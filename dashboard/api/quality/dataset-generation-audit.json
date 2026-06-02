@@ -1,48 +1,243 @@
 {
-  "generated_at": "2026-05-30T00:00:00.000Z",
+  "generated_at": "2026-06-02T00:36:15.169Z",
   "audit_type": "dataset_generation",
-  "root_cause": "local_static_no_live_data_export_without_required_secrets",
-  "failed_stage": "source_collection",
+  "base_dataset_empty": false,
+  "derived_from_empty_dataset": false,
+  "source_vessel_dataset_count": 1346,
+  "base_dataset_empty_reasons": [],
+  "ok": true,
+  "root_cause": "dataset_generation_completed",
+  "failed_stage": null,
   "counts_by_stage": {
-    "source_rows_collected": 0,
-    "normalized_rows": 0,
-    "all_vessels_generated": 0,
+    "enabled_ports_count": 22,
+    "ports_attempted_count": 12,
+    "source_rows_collected": 1939,
+    "port_operation_source_rows_collected": 5512,
+    "normalized_rows": 1346,
+    "all_vessels_generated": 1346,
+    "port_call_master_count": 1346,
     "watchlist_generated": 0,
-    "sales_targets_generated": 0,
-    "immediate_targets_generated": 0,
-    "vessels_json_rows": 0,
-    "candidates_json_rows": 0
+    "sales_targets_generated": 1269,
+    "immediate_targets_generated": 269,
+    "static_all_collected_rows": 1346,
+    "static_target_rows": 1269,
+    "vessels_json_rows": 1269,
+    "candidates_json_rows": 1000
   },
-  "source_rows_collected": 0,
-  "normalized_rows": 0,
-  "all_vessels_generated": 0,
+  "enabled_ports_count": 22,
+  "preflight_status": "passed",
+  "preflight_failure_reason": null,
+  "skip_reason": null,
+  "smoke_test_status": "passed",
+  "smoke_test_failure_reason": null,
+  "port_operation_smoke_test": {
+    "smoke_test_status": "passed",
+    "smoke_test_failure_reason": null,
+    "started_at": "2026-06-02T00:30:48.103Z",
+    "finished_at": "2026-06-02T00:30:49.884Z",
+    "duration_ms": 1781,
+    "source_name": "port_operation_busan_i",
+    "label": "PORT-MIS VsslEtrynd5 Busan I",
+    "prtAgCd": "020",
+    "port_code": "020",
+    "port_name": "Busan",
+    "deGb": "I",
+    "http_status": 200,
+    "response_content_type": "application/xhtml+xml; charset=UTF-8",
+    "latency_ms": 1780,
+    "item_count": 1,
+    "total_count": 524,
+    "valid_empty_response": false,
+    "result_meta": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE",
+      "totalCount": "524"
+    },
+    "requested_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260530&ede=20260609&deGb=I",
+    "redacted_response_sample": {
+      "request_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260530&ede=20260609&deGb=I",
+      "response_status": 200,
+      "response_content_type": "application/xhtml+xml; charset=UTF-8",
+      "first_500_chars": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<response>\n    <header>\n        <resultCode>00</resultCode>\n        <resultMsg>NORMAL_SERVICE</resultMsg>\n    </header>\n    <body>\n        <items>\n            <item>\n                <prtAgCd>020</prtAgCd>\n                <prtAgNm>부산</prtAgNm>\n                <etryptYear>2026</etryptYear>\n                <etryptCo>002</etryptCo>\n                <clsgn>3E8450</clsgn>\n                <vsslNm>YUN HAI MIN SHENG</vsslNm>\n                <vsslNlty",
+      "parsed_item_count": 1,
+      "parse_error": null
+    },
+    "service_key_variant": "as_provided",
+    "retry_count": 0
+  },
+  "preflight_failures": [],
+  "enabled_ports_loaded_count": 22,
+  "enabled_ports_passed_to_collector_count": 12,
+  "ports_attempted_count": 12,
+  "collector_not_attempted": false,
+  "collector_not_attempted_reason": null,
+  "port_operation_collector_enabled": true,
+  "port_operation_secret_present": true,
+  "port_operation_api_url_present": false,
+  "ports_skipped_reason": null,
+  "first_5_ports_to_attempt": [
+    {
+      "prtAgCd": "020",
+      "port_code": "020",
+      "port_name": "Busan",
+      "port_name_ko": "부산항",
+      "tier": "1",
+      "sub_port": "부산항"
+    },
+    {
+      "prtAgCd": "820",
+      "port_code": "820",
+      "port_name": "Ulsan",
+      "port_name_ko": "울산항",
+      "tier": "1",
+      "sub_port": "울산항/LNG·산업 터미널"
+    },
+    {
+      "prtAgCd": "620",
+      "port_code": "620",
+      "port_name": "Yeosu/Gwangyang",
+      "port_name_ko": "여수·광양항",
+      "tier": "1",
+      "sub_port": "여수·광양항"
+    },
+    {
+      "prtAgCd": "031",
+      "port_code": "031",
+      "port_name": "Pyeongtaek-Dangjin",
+      "port_name_ko": "평택·당진항",
+      "tier": "1",
+      "sub_port": "평택·당진항/보령항/당진 산업터미널"
+    },
+    {
+      "prtAgCd": "030",
+      "port_code": "030",
+      "port_name": "Incheon",
+      "port_name_ko": "인천항",
+      "tier": "1",
+      "sub_port": "인천항/영흥 터미널"
+    }
+  ],
+  "source_rows_collected": 1939,
+  "normalized_rows": 1346,
+  "all_vessels_generated": 1346,
+  "port_call_master_count": 1346,
   "watchlist_generated": 0,
-  "sales_targets_generated": 0,
-  "immediate_targets_generated": 0,
-  "vessels_json_rows": 0,
-  "candidates_json_rows": 0,
+  "sales_targets_generated": 1269,
+  "immediate_targets_generated": 269,
+  "target_vessels_generated": 1269,
+  "static_all_collected_rows": 1346,
+  "static_target_rows": 1269,
+  "vessels_json_rows": 1269,
+  "candidates_json_rows": 1000,
   "active_dataset_audit": {
-    "status_json_run_id": "run_20260527074236927_8982db0f",
+    "status_json_run_id": "run_20260602003048084_0f6e3182",
     "latest_successful_run": null,
-    "current_run": "run_20260527074236927_8982db0f",
-    "status_json_generated_at": "2026-05-27T07:42:36.935Z",
-    "vessels_json_basis": "dashboard/api/vessels.json is a stale local no-live-data static export.",
-    "candidates_json_basis": "dashboard/api/candidates.json is a stale local no-live-data static export.",
+    "current_run": "run_20260602003048084_0f6e3182",
+    "status_json_generated_at": "2026-06-02T00:36:13.758Z",
+    "vessels_json_basis": "dashboard/api/vessels.json is a static export of targetVessels from this run",
+    "candidates_json_basis": "dashboard/api/candidates.json is a static export of candidateList from this run",
     "production_serving_rule": "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
   },
+  "required_secrets_missing": [
+    "SOURCE_CSV_URL",
+    "VESSEL_SPEC_SERVICE_KEY",
+    "PILOT_SOURCE_URLS",
+    "BERTH_SOURCE_URLS",
+    "PORT_FACILITY_SERVICE_KEY",
+    "ULSAN_API_KEY",
+    "ULSAN_BERTH_DETAIL_API_KEY",
+    "ULSAN_CARGO_PLAN_API_KEY",
+    "ULSAN_BERTH_OPERATION_API_KEY",
+    "ULSAN_TERMINAL_PROCESS_API_KEY",
+    "MOF_VTS_SERVICE_KEY",
+    "MOF_AIS_DYNAMIC_SERVICE_KEY",
+    "MOF_AIS_INFO_SERVICE_KEY",
+    "MOF_AIS_STAT_SERVICE_KEY",
+    "MARINETRAFFIC_API_KEY",
+    "MARINE_TRAFFIC_API_KEY",
+    "MT_API_KEY",
+    "VESSELFINDER_API_KEY",
+    "VESSEL_FINDER_API_KEY",
+    "AISSTREAM_API_KEY",
+    "AIS_STREAM_API_KEY",
+    "OPENWEATHER_API_KEY",
+    "OPEN_WEATHER_API_KEY",
+    "GOOGLE_MAPS_API_KEY",
+    "GOOGLE_API_KEY",
+    "PORTMIS_API_KEY",
+    "PORT_MIS_API_KEY",
+    "DATA_GO_KR_API_KEY",
+    "SERVICE_KEY",
+    "RESEND_API_KEY",
+    "SENDGRID_API_KEY",
+    "VERCEL_TOKEN",
+    "VERCEL_ORG_ID",
+    "VERCEL_PROJECT_ID",
+    "GDRIVE_SERVICE_ACCOUNT_JSON",
+    "GOOGLE_SERVICE_ACCOUNT_JSON"
+  ],
+  "collectors_skipped": [
+    {
+      "source_name": "source_csv",
+      "reason": "unknown_error"
+    },
+    {
+      "source_name": "ulsan_core",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "ulsan_berth_detail",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "ulsan_cargo_plan",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "ulsan_berth_operation",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "ulsan_terminal_process",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "mof_ais_dynamic",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "mof_ais_info",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "mof_ais_stat",
+      "reason": "missing_api_url"
+    },
+    {
+      "source_name": "korea_public_data",
+      "reason": "missing_api_url"
+    }
+  ],
+  "static_outputs_generated": {
+    "dashboard/api/vessels.json": 1269,
+    "dashboard/api/all-collected-vessels.json": 1346,
+    "dashboard/api/target-vessels.json": 1269,
+    "dashboard/api/candidates.json": 1000,
+    "dashboard/api/dashboard-summary.json": 1269
+  },
+  "production_promotion_blocked": false,
+  "previous_successful_dataset_available": true,
   "gate_audit": {
-    "collection_gate": "blocked",
-    "normalization_gate": "not_reached",
-    "all_vessels_gate": "blocked",
-    "candidate_generation_gate": "not_reached",
-    "supabase_promotion_gate": "not_promoted",
+    "ports_registry_gate": "pass",
+    "port_operation_attempt_gate": "pass",
+    "collection_gate": "pass",
+    "normalization_gate": "pass",
+    "all_vessels_gate": "pass",
+    "candidate_generation_gate": "pass",
+    "supabase_promotion_gate": "pass",
     "static_export_gate": "completed"
   },
-  "gate_block_reasons": [
-    "No source rows were collected in this local/static run.",
-    "data_mode is no_live_data, so generated JSON intentionally contains zero vessels/candidates.",
-    "Supabase is not configured for this local run; production must use Worker/Supabase active_dataset_pointer instead of static fallback JSON."
-  ],
+  "gate_block_reasons": [],
   "recommended_fix": [
     "Do not use stale dashboard/api/*.json files as the production dataset when Supabase/Worker active dataset is available.",
     "Keep Cloudflare upload skip rules for generated dashboard/api JSON assets.",
