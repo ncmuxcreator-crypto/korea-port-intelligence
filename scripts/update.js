@@ -4719,6 +4719,10 @@ function recordRiskScore(record = {}) {
   return firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.biofouling_risk_score, record.operational_risk_score, record.idle_risk_score, 0) || 0;
 }
 
+function operationalBiofoulingRiskScore(record = {}) {
+  return Math.max(recordRiskScore(record), Number(record.biofouling_exposure_score || 0), Number(record.biofouling_score || 0), Number(record.biofouling_risk_score || 0), Number(record.operational_risk_score || 0), Number(record.idle_risk_score || 0));
+}
+
 function operationalRiskLevel(score = 0) {
   const value = Number(score || 0);
   if (value >= 70) return "HIGH";
@@ -4753,7 +4757,7 @@ function biofoulingFactors(record = {}) {
 function buildBiofoulingRiskIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = records
     .map((record, index) => {
-      const riskScore = Math.max(recordRiskScore(record), Number(record.biofouling_exposure_score || 0), Number(record.biofouling_score || 0));
+      const riskScore = operationalBiofoulingRiskScore(record);
       return compactVesselInsight(record, index, {
         risk_score: riskScore,
         risk_level: operationalRiskLevel(riskScore),
@@ -7361,8 +7365,8 @@ try {
     },
     record_count: vessels.length,
     actionable_rows: actionableRows,
-    critical_count: vessels.filter(v => recordRiskScore(v) >= 85).length,
-    high_risk_count: vessels.filter(v => recordRiskScore(v) >= 70).length,
+    critical_count: vessels.filter(v => operationalBiofoulingRiskScore(v) >= 85).length,
+    high_risk_count: vessels.filter(v => operationalBiofoulingRiskScore(v) >= 70).length,
     compliance_watch_count: vessels.filter(v => v.compliance_watch).length,
     opportunity_usd: vessels.reduce((sum, v) => sum + (v.opportunity_usd || 0), 0),
     candidate_summary: buildCandidateSummary(vessels),
@@ -7730,7 +7734,7 @@ try {
     anchorage_waiting_count: anchorageWaiting.length,
     arrival_pipeline_count: arrivalPipeline.length,
     staying_vessels_count: stayingVessels.length,
-    high_risk_count: vessels.filter(v => recordRiskScore(v) >= 70).length,
+    high_risk_count: vessels.filter(v => operationalBiofoulingRiskScore(v) >= 70).length,
     opportunity_count: candidateList.length,
     watchlist_count: report?.scoring_diagnostics?.watchlist_count || 0,
     port_count: portStatistics.port_count,
