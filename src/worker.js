@@ -2183,6 +2183,25 @@ async function fetchAssetJson(env, path) {
   }
 }
 
+function isLatestSnapshotAssetRoute(pathname = "") {
+  return pathname.endsWith("/bootstrap.json") ||
+    pathname.endsWith("/dashboard-summary.json") ||
+    pathname.endsWith("/status.json") ||
+    pathname.endsWith("/data-continuity.json") ||
+    pathname.endsWith("/candidates/top.json") ||
+    pathname.endsWith("/targets/current.json") ||
+    pathname.endsWith("/targets/static.json") ||
+    pathname.endsWith("/arrival-pipeline.json") ||
+    pathname.endsWith("/anchorage-waiting.json") ||
+    pathname.endsWith("/staying-vessels.json") ||
+    pathname.endsWith("/agent-followup-queue.json") ||
+    pathname.endsWith("/alerts/sales-alerts.json") ||
+    pathname.endsWith("/sales/verification-queue.json") ||
+    pathname.endsWith("/reports/executive-weekly.json") ||
+    /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname) ||
+    /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
+}
+
 async function fetchLocalStaticSnapshot(env, reason = "supabase_unavailable") {
   const vesselsPayload = await fetchAssetJson(env, "/api/vessels.json");
   const statusPayload = await fetchAssetJson(env, "/api/status.json");
@@ -6468,6 +6487,10 @@ async function apiResponse(url, env) {
     const historical = await historyApiResponse(pathname, searchParams, env);
     if (historical) return historical;
   }
+  if (isLatestSnapshotAssetRoute(pathname)) {
+    const assetPayload = await fetchAssetJson(env, pathname);
+    if (assetPayload) return json(assetPayload, { headers: corsHeaders() });
+  }
   const lightweightSummaryRoute = pathname.endsWith("/dashboard-summary.json") ||
     pathname.endsWith("/status.json") ||
     pathname.endsWith("/changes.json") ||
@@ -6596,10 +6619,6 @@ async function apiResponse(url, env) {
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
-  if (pathname.endsWith("/bootstrap.json") || /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname)) {
-    const assetPayload = await fetchAssetJson(env, pathname);
-    if (assetPayload) return json(assetPayload, { headers: corsHeaders() });
-  }
   if (summaryFirstRoute) {
     const pointer = await fetchActivePointer(env);
     const latestSummarySnapshot = await fetchLatestSummarySnapshot(env);

@@ -289,6 +289,16 @@ for (const marker of [
   assert(dashboardSource.includes(marker), `Dashboard advanced intelligence endpoint missing marker: ${marker}`);
   assert(publicSource.includes(marker), `Public dashboard advanced intelligence endpoint missing marker: ${marker}`);
 }
+for (const marker of [
+  "isLatestSnapshotAssetRoute",
+  'pathname.endsWith("/targets/current.json")',
+  'pathname.endsWith("/arrival-pipeline.json")',
+  'pathname.endsWith("/reports/executive-weekly.json")',
+  '/^\\/api\\/vessels\\/(?:index|page-\\d+)\\.json$/.test(pathname)',
+  '/^\\/api\\/intelligence\\/[^/]+\\.json$/.test(pathname)'
+]) {
+  assert(workerSource.includes(marker), `Worker must serve latest static snapshot before DB summary fallback: ${marker}`);
+}
 for (const [name, payload] of Object.entries(intelligencePayloads)) {
   assert(payload && typeof payload === "object", `Intelligence endpoint must be valid JSON: ${name}`);
   for (const field of ["generated_at", "schema_version", "data_mode", "record_count", "source_table", "items"]) {
