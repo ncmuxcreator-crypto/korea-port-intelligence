@@ -2,9 +2,11 @@
 
 Generated: 2026-06-03 KST
 
+Applied to production Supabase: 2026-06-03 KST
+
 Scope: public schema tables used by the port intelligence pipeline and dashboard serving path.
 
-This audit is read-only. No database changes were applied.
+The initial audit was read-only. After operator approval, the RLS migration in this document was applied to the production Supabase database.
 
 ## Summary
 
@@ -13,9 +15,9 @@ The audited Supabase database has a critical RLS exposure.
 - 12 of 12 audited public tables have Row Level Security disabled.
 - 12 of 12 audited tables grant broad privileges to `anon` and `authenticated`.
 - Broad grants include `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `REFERENCES`, and `TRIGGER`.
-- No RLS policies currently exist on the audited tables.
+- Deny-all policies now exist for `anon` and `authenticated` on the audited tables.
 
-Because these tables contain vessel identity, operational snapshots, commercial opportunity scores, risk signals, lead data, and active dataset pointers, the current state should be treated as `CRITICAL` until RLS is enabled and public grants are revoked or contained.
+Because these tables contain vessel identity, operational snapshots, commercial opportunity scores, risk signals, lead data, and active dataset pointers, the pre-migration state was treated as `CRITICAL`. The production database has now been moved to a restricted service-role access model for the audited tables.
 
 ## Method
 
@@ -57,7 +59,7 @@ Use this model unless the product later introduces authenticated customer-facing
 
 ## Migration Plan
 
-This SQL is a plan only. It has not been applied.
+This SQL was applied to production Supabase after approval.
 
 The plan does three things:
 
@@ -230,6 +232,21 @@ with check (true);
 ```
 
 ## Post-Migration Verification
+
+Production verification after applying the migration:
+
+- 12 of 12 audited tables have `rls_enabled = true`.
+- Remaining direct `anon` / `authenticated` / `public` grants: 0.
+- Each audited table has a deny-all policy for `anon` and `authenticated`.
+- `service_role` retains table privileges.
+- Service-role REST checks succeeded for `vessel_snapshots`, `active_dataset_pointer`, and `commercial_leads`.
+- `npm run audit:data` succeeded through service-role access.
+- `npm run audit:db` succeeded through service-role access.
+- Live Worker endpoints returned HTTP 200 for:
+  - `/api/bootstrap.json`
+  - `/api/targets/current.json`
+  - `/api/targets/categories.json`
+  - `/api/vessels/index.json`
 
 Run these checks after applying the migration:
 
