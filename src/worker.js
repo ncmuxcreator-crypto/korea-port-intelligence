@@ -6607,13 +6607,7 @@ async function apiResponse(url, env) {
       }
     }
   }
-  const summaryFirstRoute = pathname.endsWith("/targets/current.json") ||
-    pathname.endsWith("/targets/static.json") ||
-    pathname.endsWith("/staying-vessels.json") ||
-    pathname.endsWith("/arrival-pipeline.json") ||
-    pathname.endsWith("/congestion-watchlist.json") ||
-    pathname.endsWith("/agent-followup-queue.json") ||
-    pathname.endsWith("/health.json") ||
+  const summaryFirstRoute = pathname.endsWith("/health.json") ||
     pathname.endsWith("/continuity.json") ||
     pathname.endsWith("/data-continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
