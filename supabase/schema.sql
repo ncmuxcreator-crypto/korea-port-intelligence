@@ -1895,6 +1895,13 @@ create index if not exists idx_pipeline_runs_started_at on pipeline_runs(run_sta
 create index if not exists idx_data_collection_runs_started_at on data_collection_runs(started_at desc);
 create index if not exists idx_dashboard_summary_snapshots_generated_at on dashboard_summary_snapshots(generated_at desc);
 create index if not exists idx_dashboard_summary_snapshots_data_mode on dashboard_summary_snapshots(data_mode);
+create index if not exists idx_port_call_master_run_id on port_call_master(run_id);
+create index if not exists idx_opportunity_master_run_id on opportunity_master(run_id);
+create unique index if not exists ux_dashboard_summary_snapshots_run_id on dashboard_summary_snapshots(run_id);
+create unique index if not exists ux_port_summary_current_run_port on port_summary_current(run_id, port_code);
+create unique index if not exists ux_sales_candidates_current_run_vessel
+  on sales_candidates_current(run_id, master_vessel_id)
+  where master_vessel_id is not null;
 create index if not exists idx_sales_candidates_current_stale on sales_candidates_current(is_current, updated_at desc);
 create index if not exists idx_immediate_targets_current_stale on immediate_targets_current(is_current, updated_at desc);
 create index if not exists idx_port_summary_current_stale on port_summary_current(is_current, updated_at desc);

@@ -42,6 +42,22 @@ function migrationFiles() {
     .sort((left, right) => left.localeCompare(right));
 }
 
+function onlyMigrationNames() {
+  const names = [];
+  for (let index = 0; index < process.argv.length; index += 1) {
+    const arg = process.argv[index];
+    if (arg === "--only" && process.argv[index + 1]) {
+      names.push(process.argv[index + 1]);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--only=")) {
+      names.push(arg.slice("--only=".length));
+    }
+  }
+  return names.map(name => path.basename(name));
+}
+
 async function ensureLedger(client) {
   await client.query(`
     create table if not exists schema_migrations (
@@ -92,7 +108,14 @@ async function main() {
   try {
     await ensureLedger(client);
     const applied = await appliedMap(client);
-    const files = migrationFiles();
+    const only = onlyMigrationNames();
+    const allFiles = migrationFiles();
+    const files = only.length ? allFiles.filter(file => only.includes(file)) : allFiles;
+    if (only.length && files.length !== only.length) {
+      const found = new Set(files);
+      const missing = only.filter(file => !found.has(file));
+      throw new Error(`Requested migration not found: ${missing.join(", ")}`);
+    }
     let pending = 0;
     for (const filename of files) {
       const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, filename), "utf8");
