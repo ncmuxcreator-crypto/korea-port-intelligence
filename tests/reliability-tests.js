@@ -257,6 +257,10 @@ for (const marker of ["dashboardStaticPath", "vesselDetailsHtml", "dedupeRows", 
   assert(publicSource.includes(marker), `Public dashboard vessel list regression guard missing marker: ${marker}`);
   assert(rootSource.includes(marker), `Root dashboard vessel list regression guard missing marker: ${marker}`);
 }
+for (const marker of ["loadDynamicAllVesselPage", "/api/vessels?group=all&page="]) {
+  assert(dashboardSource.includes(marker), `Dashboard all-vessel tab must reuse existing paginated all-vessels API: ${marker}`);
+  assert(publicSource.includes(marker), `Public dashboard all-vessel tab must reuse existing paginated all-vessels API: ${marker}`);
+}
 for (const marker of [
   "숨겨진 인사이트 / 고급 분석",
   "데이터 준비 중",
