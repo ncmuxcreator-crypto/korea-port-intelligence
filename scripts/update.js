@@ -3567,6 +3567,237 @@ function buildVerificationQueue(records = []) {
     }));
 }
 
+const TARGET_CATEGORY_DEFINITIONS = [
+  { code: "CONTACT_NOW", label: "즉시 연락 대상", short_label: "즉시 연락", kpi_key: "contact_now_count" },
+  { code: "PRE_ARRIVAL", label: "입항 전 선제 연락 대상", short_label: "입항 전", kpi_key: "pre_arrival_target_count" },
+  { code: "ANCHORAGE_OPPORTUNITY", label: "묘박/정박 중 작업 가능 대상", short_label: "묘박/정박", kpi_key: "anchorage_opportunity_count" },
+  { code: "LONG_STAY_RISK", label: "장기 체류 고위험 대상", short_label: "장기 체류", kpi_key: "long_stay_risk_count" },
+  { code: "BIOFOULING_COMPLIANCE", label: "Biofouling Compliance 대상", short_label: "Compliance", kpi_key: "compliance_target_count" },
+  { code: "REPEAT_CALLER", label: "반복 입항 선박", short_label: "반복 입항", kpi_key: "repeat_caller_count" },
+  { code: "FLEET_EXPANSION", label: "선사/선대 확장 대상", short_label: "선대 확장", kpi_key: "fleet_expansion_count" },
+  { code: "VERIFY_CONTACT", label: "연락처 확인 필요", short_label: "연락처 확인", kpi_key: "verify_contact_count" },
+  { code: "MONITOR", label: "모니터링 대상", short_label: "모니터링", kpi_key: "monitor_count" },
+  { code: "HOLD", label: "보류/제외", short_label: "보류", kpi_key: "hold_count" }
+];
+const TARGET_CATEGORY_BY_CODE = Object.fromEntries(TARGET_CATEGORY_DEFINITIONS.map(category => [category.code, category]));
+
+function categoryConfidence(...scores) {
+  const value = firstFiniteNumber(...scores, 50) || 0;
+  return Math.max(0, Math.min(1, Math.round((Number(value) / 100) * 100) / 100));
+}
+
+function targetCategoryScore(record = {}) {
+  const values = [
+    record.opportunity_score,
+    record.sales_priority_score,
+    record.commercial_value_score,
+    record.total_sales_priority_score,
+    record.cleaning_candidate_score,
+    salesPriorityScore(record)
+  ].map(value => Number(value)).filter(Number.isFinite);
+  return values.length ? Math.max(...values) : 0;
+}
+
+function targetCategoryRisk(record = {}) {
+  return recordRiskScore(record);
+}
+
+function targetCategoryConfidence(record = {}) {
+  return firstFiniteNumber(record.confidence_score, record.contact_readiness_score, record.data_confidence_score, record.candidate_confidence, record.arrival_prediction_confidence, 50) || 0;
+}
+
+function hasCurrentKoreaWorkSignal(record = {}) {
+  return hasPortSignal(record) || hasAnchorageWaitingSignal(record) || hasValue(firstNonEmpty(record.current_port, record.port_name, record.port, record.anchorage_name, record.berth_name));
+}
+
+function isBerthedOrArrived(record = {}) {
+  const status = String(firstNonEmpty(record.status_bucket, record.status, record.port_call_status, record.operational_status)).toLowerCase();
+  return Boolean(record.atb || record.berth_name || record.berth || /berthed|moored|alongside|접안/.test(status));
+}
+
+function lastSeenAgeHours(record = {}, generatedAt = new Date().toISOString()) {
+  const value = firstNonEmpty(record.last_seen_at, record.collected_at, record.updated_at, record.generated_at, record.ata, record.eta);
+  const seen = parseScheduleTime(value);
+  const base = parseScheduleTime(generatedAt) || new Date();
+  if (!seen || !base || Number.isNaN(seen.getTime()) || Number.isNaN(base.getTime())) return null;
+  return Math.round(((base.getTime() - seen.getTime()) / 3600000) * 10) / 10;
+}
+
+function targetCategoryItem(code, confidence, reason, recommendedAction) {
+  const definition = TARGET_CATEGORY_BY_CODE[code] || { code, label: code };
+  return {
+    code,
+    label: definition.label,
+    confidence: categoryConfidence(confidence),
+    reason,
+    recommended_action: recommendedAction
+  };
+}
+
+function categoryHoldReason(record = {}, generatedAt = new Date().toISOString()) {
+  if (!hasUsefulVesselIdentity(record)) return "유효한 선박 식별자 또는 선명이 부족합니다.";
+  const ageHours = lastSeenAgeHours(record, generatedAt);
+  if (ageHours !== null && ageHours > 168 && targetCategoryScore(record) < 55) return `마지막 확인 후 ${Math.round(ageHours / 24)}일 이상 경과했습니다.`;
+  if (targetCategoryConfidence(record) < 20 && targetCategoryScore(record) < 35) return "신뢰도와 상업 신호가 모두 낮습니다.";
+  if (record.excluded_from_commercial_targets === true || isHardCandidateExcluded(record)) return commercialExclusionReason(record) || "상업 후보 제외 조건에 해당합니다.";
+  return "";
+}
+
+function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().toISOString() } = {}) {
+  const categories = [];
+  const opportunity = targetCategoryScore(record);
+  const risk = targetCategoryRisk(record);
+  const confidence = targetCategoryConfidence(record);
+  const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunity || risk))).toUpperCase();
+  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, 0) || 0;
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const repeatScore = firstFiniteNumber(record.repeat_caller_score, 0) || 0;
+  const operatorVesselCount = firstFiniteNumber(record.operator_vessel_count, record.repeat_operator_count, record.operator_call_count, 0) || 0;
+  const missingContact = missingContactFields(record);
+  const complianceSignal = regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch || record.compliance_tag || String(record.compliance_band || "").toLowerCase().includes("biosecurity");
+  const holdReason = categoryHoldReason(record, generatedAt);
+  if (holdReason && priority !== "HOT" && opportunity < 75) {
+    return [targetCategoryItem("HOLD", confidence, holdReason, "데이터 보강 후 다시 검토")];
+  }
+  if ((priority === "HOT" || isImmediateTarget(record) || opportunity >= IMMEDIATE_TARGET_THRESHOLD) && hasCurrentKoreaWorkSignal(record) && confidence >= 25) {
+    categories.push(targetCategoryItem("CONTACT_NOW", Math.max(confidence, opportunity), "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.", "기술감독 또는 에이전트에 즉시 연락"));
+  }
+  if (hasArrivalPipelineSignal(record) && !isBerthedOrArrived(record)) {
+    categories.push(targetCategoryItem("PRE_ARRIVAL", firstFiniteNumber(record.arrival_prediction_confidence, confidence, opportunity, 50), arrivalPipelineReason(record), "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"));
+  }
+  if (hasAnchorageWaitingSignal(record)) {
+    categories.push(targetCategoryItem("ANCHORAGE_OPPORTUNITY", Math.max(confidence, firstFiniteNumber(record.anchorage_probability, 50) || 50), anchorageWaitingReason(record), "묘박/정박 상태와 작업 가능 시간을 확인"));
+  }
+  if (stayHours >= 72 && risk >= 50) {
+    categories.push(targetCategoryItem("LONG_STAY_RISK", Math.max(risk, confidence), `체류 ${Math.round((stayHours / 24) * 10) / 10}일 및 리스크 ${Math.round(risk)}점 신호가 있습니다.`, "장기 체류 원인과 선저 리스크를 함께 확인"));
+  }
+  if (complianceSignal && risk >= 45) {
+    categories.push(targetCategoryItem("BIOFOULING_COMPLIANCE", Math.max(risk, opportunity), "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.", "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"));
+  }
+  if (visits90 >= 2 || repeatScore >= 45) {
+    categories.push(targetCategoryItem("REPEAT_CALLER", Math.max(repeatScore, confidence), `최근 90일 반복 입항 ${visits90}회 또는 반복 기항 점수 ${Math.round(repeatScore)}점 신호가 있습니다.`, "반복 입항 이력을 근거로 선사/대리점 접점을 확인"));
+  }
+  if (operatorVesselCount >= 2 || firstFiniteNumber(record.operator_opportunity_score, record.fleet_opportunity_score, 0) >= 55) {
+    categories.push(targetCategoryItem("FLEET_EXPANSION", firstFiniteNumber(record.operator_opportunity_score, record.fleet_opportunity_score, opportunity, 50), "동일 운영사/선대의 한국 기항 선박이 복수 확인됩니다.", "선사 단위로 추가 선박 기회를 함께 검토"));
+  }
+  if (["HOT", "WARM"].includes(priority) && missingContact.length) {
+    categories.push(targetCategoryItem("VERIFY_CONTACT", confidence, `영업 후보이나 ${missingContact.join(", ")} 정보 확인이 필요합니다.`, "선사/에이전트 확인 후 영업 연락 준비"));
+  }
+  if (!categories.length) {
+    categories.push(targetCategoryItem("MONITOR", confidence, priority === "LOW" ? "상업 신호는 있으나 즉시 연락 긴급도는 낮습니다." : "후보 신호는 있으나 우선순위 카테고리 조건은 제한적입니다.", "다음 업데이트까지 모니터링"));
+  } else if (["LOW", "WARM"].includes(priority) && !categories.some(category => ["CONTACT_NOW", "PRE_ARRIVAL", "ANCHORAGE_OPPORTUNITY"].includes(category.code))) {
+    categories.push(targetCategoryItem("MONITOR", confidence, "즉시 실행 조건은 아니지만 추적 가치가 있습니다.", "다음 업데이트까지 모니터링"));
+  }
+  return categories.filter(category => !(category.code === "HOLD" && categories.some(other => other.code === "CONTACT_NOW")));
+}
+
+function annotateTargetCategories(record = {}, options = {}) {
+  const opportunityScore = targetCategoryScore(record);
+  const riskScore = targetCategoryRisk(record);
+  const confidenceScore = targetCategoryConfidence(record);
+  const priorityLabel = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore))).toUpperCase();
+  const targetCategories = buildTargetCategoriesForRecord(record, options);
+  const primary = targetCategories[0] || targetCategoryItem("MONITOR", confidenceScore, "모니터링 대상입니다.", "다음 업데이트까지 모니터링");
+  return withVesselDisplay({
+    ...record,
+    priority_label: priorityLabel,
+    sales_priority_band: priorityLabel,
+    opportunity_score: opportunityScore,
+    risk_score: riskScore,
+    confidence_score: confidenceScore,
+    primary_category: primary,
+    primary_category_code: primary.code,
+    primary_category_label: primary.label,
+    target_categories: targetCategories
+  });
+}
+
+function buildTargetCategorySummary(records = [], { generatedAt = new Date().toISOString() } = {}) {
+  const items = sortCommercialPriority(dedupeCandidateRows(records)).map(record => annotateTargetCategories(record, { generatedAt }));
+  const categories = TARGET_CATEGORY_DEFINITIONS.map(definition => {
+    const categoryItems = items.filter(item => (item.target_categories || []).some(category => category.code === definition.code));
+    return {
+      code: definition.code,
+      label: definition.label,
+      short_label: definition.short_label,
+      count: categoryItems.length,
+      items: categoryItems
+    };
+  });
+  const counts = Object.fromEntries(categories.map(category => [category.code, category.count]));
+  const kpis = Object.fromEntries(TARGET_CATEGORY_DEFINITIONS.map(definition => [definition.kpi_key, counts[definition.code] || 0]));
+  const overlap_matrix = {};
+  for (const left of TARGET_CATEGORY_DEFINITIONS) {
+    overlap_matrix[left.code] = {};
+    for (const right of TARGET_CATEGORY_DEFINITIONS) {
+      overlap_matrix[left.code][right.code] = items.filter(item => {
+        const codes = new Set((item.target_categories || []).map(category => category.code));
+        return codes.has(left.code) && codes.has(right.code);
+      }).length;
+    }
+  }
+  const hold_reasons = {};
+  for (const item of items.filter(row => (row.target_categories || []).some(category => category.code === "HOLD"))) {
+    const reason = (item.target_categories || []).find(category => category.code === "HOLD")?.reason || "unknown";
+    hold_reasons[reason] = (hold_reasons[reason] || 0) + 1;
+  }
+  return { items, categories, counts, kpis, overlap_matrix, hold_reasons };
+}
+
+function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const itemLimit = 50;
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: Array.isArray(summary.items) ? summary.items.length : 0,
+    source_table: "sales_candidates_current,opportunity_master,risk_history,rule_evaluations,explainability_snapshots,agent-followup-queue,arrival-pipeline,anchorage-waiting,staying-vessels",
+    item_limit: itemLimit,
+    categories: (summary.categories || []).map(category => ({
+      code: category.code,
+      label: category.label,
+      short_label: category.short_label,
+      count: category.count,
+      returned_count: Math.min((category.items || []).length, itemLimit),
+      items_limited: (category.items || []).length > itemLimit,
+      items: (category.items || []).slice(0, itemLimit).map(withVesselDisplay)
+    }))
+  };
+}
+
+function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const items = (summary.items || [])
+    .filter(item => item.primary_category_code !== "HOLD")
+    .map((item, index) => ({
+      rank: index + 1,
+      vessel_display: item.vessel_display || vesselDisplay(item),
+      vessel_name: item.vessel_name,
+      imo: item.imo || "",
+      port: firstNonEmpty(item.port_name, item.port, item.current_port, item.destination_port),
+      action_type: item.primary_category_code,
+      action_label: item.primary_category_label,
+      priority_label: item.priority_label,
+      opportunity_score: item.opportunity_score,
+      risk_score: item.risk_score,
+      confidence_score: item.confidence_score,
+      reason_summary: item.primary_category?.reason || item.reason_summary || item.why_now || "",
+      recommended_action: item.primary_category?.recommended_action || item.recommended_action || "영업 연락 가능 여부 확인",
+      target_categories: item.target_categories || []
+    }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode,
+    report,
+    sourceTable: "targets/categories,sales_candidates_current,sales/actions",
+    items: items.slice(0, 300),
+    extra: {
+      total_count: items.length,
+      returned_count: Math.min(items.length, 300),
+      ...(items.length ? {} : { status: "empty", reason: "영업 액션으로 변환할 카테고리 대상이 없습니다." })
+    }
+  });
+}
+
 function regulatedRouteSignal(v = {}) {
   const route = [v.destination, v.destination_port, v.next_port, v.previous_port, v.route_region].filter(Boolean).join(" ").toLowerCase();
   return /australia|port hedland|new zealand|brazil|ponta da madeira|santos|호주|뉴질랜드|브라질/.test(route);
@@ -3818,6 +4049,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "candidate_band",
   "sales_priority_band",
   "priority_label",
+  "primary_category",
+  "primary_category_code",
+  "primary_category_label",
+  "target_categories",
+  "action_type",
+  "action_label",
   "reason_codes",
   "commercial_signal_flags",
   "top_factors",
@@ -3987,7 +4224,17 @@ function buildBootstrapSnapshot({
       arrival_pipeline_count: Number(dashboardSummary.arrival_pipeline_count || 0),
       staying_vessels_count: Number(dashboardSummary.staying_vessels_count || dashboardSummary.staying_vessel_count || 0),
       anchorage_waiting_count: Number(dashboardSummary.anchorage_waiting_count || 0),
-      high_risk_count: Number(dashboardSummary.high_risk_count || 0)
+      high_risk_count: Number(dashboardSummary.high_risk_count || 0),
+      contact_now_count: Number(dashboardSummary.contact_now_count || 0),
+      pre_arrival_target_count: Number(dashboardSummary.pre_arrival_target_count || 0),
+      anchorage_opportunity_count: Number(dashboardSummary.anchorage_opportunity_count || 0),
+      long_stay_risk_count: Number(dashboardSummary.long_stay_risk_count || 0),
+      compliance_target_count: Number(dashboardSummary.compliance_target_count || 0),
+      repeat_caller_count: Number(dashboardSummary.repeat_caller_count || 0),
+      fleet_expansion_count: Number(dashboardSummary.fleet_expansion_count || 0),
+      verify_contact_count: Number(dashboardSummary.verify_contact_count || 0),
+      monitor_count: Number(dashboardSummary.monitor_count || 0),
+      hold_count: Number(dashboardSummary.hold_count || 0)
     },
     ports,
     top_candidates: topItems,
@@ -7503,8 +7750,10 @@ try {
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
-  const salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v) || hasSalesRelevantSignal(v)))));
+  let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v) || hasSalesRelevantSignal(v)))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
+  const targetCategorySummary = buildTargetCategorySummary(salesCandidates, { generatedAt: completedAt });
+  salesCandidates = targetCategorySummary.items;
   const scoringDiagnostics = buildScoringDiagnostics(allCollectedVessels);
   const operatorDiagnostics = buildOperatorDiagnostics(vessels, salesCandidates, immediateTargets);
   const matchingDiagnostics = buildMatchingDiagnostics(allCollectedVessels);
@@ -7568,6 +7817,8 @@ try {
     candidate_summary: buildCandidateSummary(vessels),
     immediate_candidate_count: vessels.filter(v => v.is_immediate_candidate).length,
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
+    target_category_counts: targetCategorySummary.counts,
+    target_category_kpis: targetCategorySummary.kpis,
     backend_ops: snapshotOutputs.backendOps,
     collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
     vessel_master_cache: vesselMasterCacheDiagnostics,
@@ -7731,6 +7982,16 @@ try {
     target_count: salesCandidates.length,
     sales_target_count: salesCandidates.length,
     immediate_target_count: immediateTargets.length,
+    contact_now_count: targetCategorySummary.kpis.contact_now_count || 0,
+    pre_arrival_target_count: targetCategorySummary.kpis.pre_arrival_target_count || 0,
+    anchorage_opportunity_count: targetCategorySummary.kpis.anchorage_opportunity_count || 0,
+    long_stay_risk_count: targetCategorySummary.kpis.long_stay_risk_count || 0,
+    compliance_target_count: targetCategorySummary.kpis.compliance_target_count || 0,
+    repeat_caller_count: targetCategorySummary.kpis.repeat_caller_count || 0,
+    fleet_expansion_count: targetCategorySummary.kpis.fleet_expansion_count || 0,
+    verify_contact_count: targetCategorySummary.kpis.verify_contact_count || 0,
+    monitor_count: targetCategorySummary.kpis.monitor_count || 0,
+    hold_count: targetCategorySummary.kpis.hold_count || 0,
     anchorage_waiting_count: anchorageWaiting.length,
     arrival_pipeline_count: arrivalPipeline.length,
     staying_vessels_count: stayingVessels.length,
@@ -7952,6 +8213,18 @@ try {
       ...(verificationQueue.length ? {} : { status: "empty", reason: "연락처 확인이 필요한 영업 후보가 없습니다." })
     }
   });
+  const targetCategoriesPayload = buildTargetCategoriesPayload({
+    summary: targetCategorySummary,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
+  const salesActionsPayload = buildSalesActionsPayload({
+    summary: targetCategorySummary,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -7964,6 +8237,8 @@ try {
       immediate_target_count: immediateTargets.length,
       target_ratio: allCollectedVessels.length ? Math.round((salesCandidates.length / allCollectedVessels.length) * 1000) / 10 : 0,
       target_ratio_warning: allCollectedVessels.length && salesCandidates.length / allCollectedVessels.length < 0.2 ? "영업대상 비율이 비정상적으로 낮음" : null,
+      target_category_counts: targetCategorySummary.counts,
+      ...targetCategorySummary.kpis,
       ...(salesCandidates.length ? {} : { status: "empty", reason: "영업 후보 조건을 통과한 선박이 없습니다." })
     }
   });
@@ -7999,7 +8274,9 @@ try {
     "dashboard/api/contact-queue.json": contactQueuePayload,
     "dashboard/api/agent-followup-queue.json": agentFollowupQueuePayload,
     "dashboard/api/sales/verification-queue.json": verificationQueuePayload,
+    "dashboard/api/sales/actions.json": salesActionsPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
+    "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
     "dashboard/api/ports.json": portStatistics.ports,
     "dashboard/api/arrival-pipeline.json": arrivalPipelinePayload,
@@ -8116,7 +8393,9 @@ try {
   writeApiJson("dashboard/api/congestion-watchlist.json", congestionWatchlistPayload, report);
   writeApiJson("dashboard/api/agent-followup-queue.json", agentFollowupQueuePayload, report);
   writeApiJson("dashboard/api/sales/verification-queue.json", verificationQueuePayload, report);
+  writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
+  writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
   writeApiJson("dashboard/api/targets/static.json", staticTargetsPayload, report);
   fs.mkdirSync(routeApiOutputPath("dashboard/api/quality/basic-info-coverage.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
   fs.mkdirSync(routeApiOutputPath("dashboard/api/review/basic-info-missing.json", report).split("/").slice(0, -1).join("/"), { recursive: true });

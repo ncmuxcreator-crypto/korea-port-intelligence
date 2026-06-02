@@ -2190,6 +2190,7 @@ function isLatestSnapshotAssetRoute(pathname = "") {
     pathname.endsWith("/data-continuity.json") ||
     pathname.endsWith("/candidates/top.json") ||
     pathname.endsWith("/targets/current.json") ||
+    pathname.endsWith("/targets/categories.json") ||
     pathname.endsWith("/targets/static.json") ||
     pathname.endsWith("/arrival-pipeline.json") ||
     pathname.endsWith("/anchorage-waiting.json") ||
@@ -2197,6 +2198,7 @@ function isLatestSnapshotAssetRoute(pathname = "") {
     pathname.endsWith("/agent-followup-queue.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
     pathname.endsWith("/sales/verification-queue.json") ||
+    pathname.endsWith("/sales/actions.json") ||
     pathname.endsWith("/reports/executive-weekly.json") ||
     /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname) ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
@@ -3642,6 +3644,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "candidate_band",
   "sales_priority_band",
   "priority_label",
+  "primary_category",
+  "primary_category_code",
+  "primary_category_label",
+  "target_categories",
+  "action_type",
+  "action_label",
   "reason_codes",
   "commercial_signal_flags",
   "top_factors",

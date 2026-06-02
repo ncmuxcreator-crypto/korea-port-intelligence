@@ -12,6 +12,8 @@ const REQUIRED_FILES = [
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
   "dashboard/api/sales/verification-queue.json",
+  "dashboard/api/sales/actions.json",
+  "dashboard/api/targets/categories.json",
   "dashboard/api/candidates/top.json",
   "dashboard/api/vessels/index.json",
   "dashboard/api/vessels/page-1.json",
@@ -124,12 +126,15 @@ for (const file of [...REQUIRED_FILES, ...AUTOMATION_FILES]) {
 
 const summary = readJson("dashboard/api/dashboard-summary.json");
 const status = readJson("dashboard/api/status.json");
+const bootstrap = fs.existsSync("dashboard/api/bootstrap.json") ? readJson("dashboard/api/bootstrap.json") : {};
 const health = readJson("dashboard/api/health.json");
 const pipelineHealth = fs.existsSync("dashboard/api/health/pipeline.json") ? readJson("dashboard/api/health/pipeline.json") : {};
 const continuity = fs.existsSync("dashboard/api/data-continuity.json") ? readJson("dashboard/api/data-continuity.json") : {};
 const topPayload = readJson("dashboard/api/candidates/top.json");
 const followups = rows(readJson("dashboard/api/agent-followup-queue.json"));
 const verificationQueue = rows(readJson("dashboard/api/sales/verification-queue.json"));
+const targetCategoriesPayload = readJson("dashboard/api/targets/categories.json");
+const salesActionsPayload = readJson("dashboard/api/sales/actions.json");
 const alerts = readJson("dashboard/api/alerts/latest.json");
 const report = readJson("dashboard/api/reports/daily-summary.json");
 const executiveWeekly = readJson("dashboard/api/reports/executive-weekly.json");
@@ -479,6 +484,37 @@ for (const item of verificationQueue) {
   assert(item.missing_fields.length > 0, "Verification queue items must explain which contact fields are missing.");
   assert(["OPERATOR", "OWNER", "MANAGER", "LOCAL_AGENT", "CONTACT_PERSON"].includes(item.verification_type), `Invalid verification_type: ${item.verification_type}`);
 }
+assert(Array.isArray(targetCategoriesPayload.categories), "targets/categories.json must expose categories array.");
+const categoryMap = new Map(targetCategoriesPayload.categories.map(category => [category.code, category]));
+for (const code of ["CONTACT_NOW", "PRE_ARRIVAL", "ANCHORAGE_OPPORTUNITY", "LONG_STAY_RISK", "BIOFOULING_COMPLIANCE", "REPEAT_CALLER", "FLEET_EXPANSION", "VERIFY_CONTACT", "MONITOR", "HOLD"]) {
+  assert(categoryMap.has(code), `targets/categories.json missing category: ${code}`);
+}
+for (const item of rows(readJson("dashboard/api/targets/current.json")).slice(0, 50)) {
+  assert("primary_category" in item, "Target item must include primary_category.");
+  assert(Array.isArray(item.target_categories), "Target item must include target_categories array.");
+  assert(item.target_categories.length > 0, "Target item must have at least one target category.");
+  assert(!(item.target_categories.some(category => category.code === "CONTACT_NOW") && item.target_categories.some(category => category.code === "HOLD")), "CONTACT_NOW and HOLD must not both apply.");
+  for (const category of item.target_categories) {
+    for (const field of ["code", "label", "confidence", "reason", "recommended_action"]) {
+      assert(field in category, `Target category missing field: ${field}`);
+    }
+  }
+}
+const bootstrapKpis = bootstrap.kpis || {};
+for (const key of ["contact_now_count", "pre_arrival_target_count", "anchorage_opportunity_count", "long_stay_risk_count", "compliance_target_count", "repeat_caller_count", "verify_contact_count", "monitor_count"]) {
+  assert(key in bootstrapKpis, `bootstrap.kpis missing target category count: ${key}`);
+}
+const targetRowsForCategories = rows(readJson("dashboard/api/targets/current.json"));
+const hotWithPort = targetRowsForCategories.some(item => String(item.priority_label || "").toUpperCase() === "HOT" && (item.port_name || item.port || item.current_port || item.anchorage_name));
+if (hotWithPort) assert((categoryMap.get("CONTACT_NOW")?.count || 0) > 0, "HOT vessels with current port should produce CONTACT_NOW.");
+const etaRows = targetRowsForCategories.some(item => (item.eta || item.etb || item.predicted_arrival_time) && !(item.ata || item.atb || item.berth_name || item.berth));
+if (etaRows) assert((categoryMap.get("PRE_ARRIVAL")?.count || 0) > 0, "Vessels with ETA/ETB should produce PRE_ARRIVAL.");
+const anchorageRows = targetRowsForCategories.some(item => item.is_anchorage_waiting || item.anchorage_name || Number(item.anchorage_hours || 0) > 0);
+if (anchorageRows) assert((categoryMap.get("ANCHORAGE_OPPORTUNITY")?.count || 0) > 0, "Anchorage signals should produce ANCHORAGE_OPPORTUNITY.");
+if (verificationQueue.length) assert((categoryMap.get("VERIFY_CONTACT")?.count || 0) > 0, "Missing operator/agent info on priority targets should produce VERIFY_CONTACT, not exclusion.");
+assert(Array.isArray(rows(salesActionsPayload)), "sales/actions.json must expose action items.");
+assert(dashboardSource.includes("영업 대상 카테고리") && dashboardSource.includes("/api/targets/categories.json"), "Dashboard must expose lazy-loaded target category UI.");
+assert(publicSource.includes("영업 대상 카테고리") && publicSource.includes("/api/targets/categories.json"), "Public dashboard must expose lazy-loaded target category UI.");
 
 const alertRows = rows(alerts.alerts || alerts);
 assert("alert_count" in alerts, "Latest alerts payload must expose alert_count.");
