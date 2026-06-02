@@ -31,10 +31,30 @@ const vesselPages = fs.existsSync(vesselDir)
   ? fs.readdirSync(vesselDir).filter(name => /^page-\d+\.json$/.test(name))
   : [];
 const jsonFiles = listJsonFiles(API_DIR).map(file => ({ file, size: sizeOf(file) })).sort((a, b) => b.size - a.size);
+const requiredStartupSnapshots = [
+  "bootstrap.json",
+  "dashboard-summary.json",
+  "status.json"
+];
+const requiredLazyEndpoints = [
+  "vessels/index.json",
+  "candidates/top.json",
+  "arrival-pipeline.json",
+  "staying-vessels.json",
+  "targets/current.json",
+  "intelligence/sales-priority.json",
+  "agent-followup-queue.json"
+];
+const requiredFiles = [...requiredStartupSnapshots, ...requiredLazyEndpoints];
+const missingEndpoints = requiredFiles
+  .map(name => ({ name, file: path.join(API_DIR, ...name.split("/")) }))
+  .filter(entry => !fs.existsSync(entry.file));
 const largestVesselPage = vesselPages
   .map(name => ({ file: path.join(vesselDir, name), size: sizeOf(path.join(vesselDir, name)) }))
   .sort((a, b) => b.size - a.size)[0] || { size: 0 };
 const allVesselsStartup = /all-collected-vessels\.json/.test(html.split("$('refreshBtn'")[0] || html);
+const apiHealthBlocksStartup = /api\("health"|"\/api\/health/.test(html.split("$('refreshBtn'")[0] || html) ||
+  /api\("health"|"\/api\/health/.test(html.match(/async function loadSummary\(\)\{[\s\S]*?\}\n/)?.[0] || "");
 
 console.log("Performance audit:");
 console.log(`- startup API count: ${initialApiNames.length}`);
@@ -44,9 +64,17 @@ console.log(`- vessel page count: ${vesselPages.length}`);
 console.log(`- largest vessel page size: ${largestVesselPage.size} bytes`);
 console.log(`- estimated first-load payload: ${sizeOf(bootstrapFile) || sizeOf(path.join(API_DIR, "dashboard-summary.json"))} bytes`);
 console.log(`- full vessel list lazy-loaded: ${allVesselsStartup ? "no" : "yes"}`);
+console.log(`- API health panel fetches all endpoints on startup: ${apiHealthBlocksStartup ? "yes" : "no"}`);
+console.log("- slow or missing API list:");
+if (!missingEndpoints.length) console.log("  - none detected from required static endpoints");
+for (const entry of missingEndpoints) console.log(`  - missing: dashboard/api/${entry.name}`);
 console.log("- largest JSON files:");
 for (const entry of jsonFiles.slice(0, 8)) {
   console.log(`  - ${path.relative(ROOT, entry.file)}: ${entry.size} bytes`);
+}
+console.log("- each dashboard/api JSON file size:");
+for (const entry of jsonFiles.sort((a, b) => path.relative(API_DIR, a.file).localeCompare(path.relative(API_DIR, b.file)))) {
+  console.log(`  - ${path.relative(API_DIR, entry.file)}: ${entry.size} bytes`);
 }
 
 const warnings = [];
@@ -54,6 +82,8 @@ if (sizeOf(bootstrapFile) > 150 * 1024) warnings.push("bootstrap.json > 150 KB")
 if (largestVesselPage.size > 300 * 1024) warnings.push("vessel page > 300 KB");
 if (initialApiNames.length > 3) warnings.push("startup API count > 3");
 if (allVesselsStartup) warnings.push("full vessel list may be fetched during startup");
+if (apiHealthBlocksStartup) warnings.push("API health panel fetches endpoints during startup");
+if (missingEndpoints.length) warnings.push("required static API endpoint missing");
 
 if (warnings.length) {
   console.log("\nWarnings:");
