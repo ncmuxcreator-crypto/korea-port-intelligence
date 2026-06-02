@@ -251,11 +251,47 @@ jobs:
       - name: Deploy Cloudflare Worker
         timeout-minutes: 5
         run: |
-          echo "Preparing lean Cloudflare asset upload"
+          echo "Preparing Cloudflare snapshot asset upload"
           if [ -d dashboard/api ]; then
-            mv dashboard/api ./api.cloudflare-upload-skip
+            mv dashboard/api ./api.cloudflare-upload-full
             mkdir -p dashboard/api
-            trap 'rm -rf dashboard/api; mv ./api.cloudflare-upload-skip dashboard/api' EXIT
+            copy_api_asset() {
+              src="./api.cloudflare-upload-full/$1"
+              dest="dashboard/api/$1"
+              if [ -f "$src" ]; then
+                mkdir -p "$(dirname "$dest")"
+                cp "$src" "$dest"
+              fi
+            }
+            for file in \
+              bootstrap.json \
+              dashboard-summary.json \
+              status.json \
+              data-continuity.json \
+              health/pipeline.json \
+              candidates/top.json \
+              targets/current.json \
+              arrival-pipeline.json \
+              anchorage-waiting.json \
+              staying-vessels.json \
+              agent-followup-queue.json \
+              alerts/sales-alerts.json \
+              intelligence/sales-priority.json \
+              intelligence/risk-summary.json \
+              intelligence/explainability.json \
+              intelligence/commercial-summary.json \
+              intelligence/route-summary.json \
+              intelligence/operator-summary.json \
+              intelligence/prediction-summary.json; do
+              copy_api_asset "$file"
+            done
+            if [ -d ./api.cloudflare-upload-full/vessels ]; then
+              mkdir -p dashboard/api/vessels
+              cp ./api.cloudflare-upload-full/vessels/index.json dashboard/api/vessels/ 2>/dev/null || true
+              cp ./api.cloudflare-upload-full/vessels/page-*.json dashboard/api/vessels/ 2>/dev/null || true
+            fi
+            find dashboard/api -type f | sort
+            trap 'rm -rf dashboard/api; mv ./api.cloudflare-upload-full dashboard/api' EXIT
           fi
           npx wrangler deploy
         env:
