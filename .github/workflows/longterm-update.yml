@@ -290,12 +290,17 @@ jobs:
               intelligence/repeat-callers.json \
               intelligence/fleet-summary.json \
               intelligence/fleet-memory.json \
+              intelligence/fleet-expansion.json \
+              intelligence/fleet-clusters.json \
               intelligence/port-opportunities.json \
+              intelligence/vessel-timeline.json \
+              intelligence/korea-presence.json \
               intelligence/superintendent-targets.json \
               intelligence/compliance-opportunities.json \
               intelligence/drydock-prediction.json \
               intelligence/revenue-forecast.json \
-              intelligence/prediction-summary.json; do
+              intelligence/prediction-summary.json \
+              reports/executive-weekly.json; do
               copy_api_asset "$file"
             done
             if [ -d ./api.cloudflare-upload-full/vessels ]; then

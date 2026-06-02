@@ -25,6 +25,10 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/repeat-callers.json",
   "dashboard/api/intelligence/fleet-summary.json",
   "dashboard/api/intelligence/fleet-memory.json",
+  "dashboard/api/intelligence/fleet-expansion.json",
+  "dashboard/api/intelligence/vessel-timeline.json",
+  "dashboard/api/intelligence/korea-presence.json",
+  "dashboard/api/intelligence/fleet-clusters.json",
   "dashboard/api/intelligence/cleaning-window.json",
   "dashboard/api/intelligence/port-opportunities.json",
   "dashboard/api/intelligence/superintendent-targets.json",
@@ -39,6 +43,7 @@ const REQUIRED_FILES = [
 const AUTOMATION_FILES = [
   "dashboard/api/reports/daily-sales-report.json",
   "dashboard/api/reports/daily-summary.json",
+  "dashboard/api/reports/executive-weekly.json",
   "dashboard/api/alerts/sales-alerts.json",
   "dashboard/api/alerts/latest.json"
 ];
@@ -127,6 +132,7 @@ const followups = rows(readJson("dashboard/api/agent-followup-queue.json"));
 const verificationQueue = rows(readJson("dashboard/api/sales/verification-queue.json"));
 const alerts = readJson("dashboard/api/alerts/latest.json");
 const report = readJson("dashboard/api/reports/daily-summary.json");
+const executiveWeekly = readJson("dashboard/api/reports/executive-weekly.json");
 const dashboardSource = readText("dashboard/index.html");
 const publicSource = readText("public/index.html");
 const rootSource = readText("index.html");
@@ -143,6 +149,10 @@ const intelligencePayloads = {
   repeatCallers: readJson("dashboard/api/intelligence/repeat-callers.json"),
   fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
   fleetMemory: readJson("dashboard/api/intelligence/fleet-memory.json"),
+  fleetExpansion: readJson("dashboard/api/intelligence/fleet-expansion.json"),
+  vesselTimeline: readJson("dashboard/api/intelligence/vessel-timeline.json"),
+  koreaPresence: readJson("dashboard/api/intelligence/korea-presence.json"),
+  fleetClusters: readJson("dashboard/api/intelligence/fleet-clusters.json"),
   cleaningWindow: readJson("dashboard/api/intelligence/cleaning-window.json"),
   portOpportunities: readJson("dashboard/api/intelligence/port-opportunities.json"),
   superintendentTargets: readJson("dashboard/api/intelligence/superintendent-targets.json"),
@@ -265,11 +275,16 @@ for (const marker of [
   "/api/intelligence/cleaning-window.json",
   "/api/intelligence/operator-opportunities.json",
   "/api/intelligence/fleet-memory.json",
+  "/api/intelligence/fleet-expansion.json",
+  "/api/intelligence/vessel-timeline.json",
+  "/api/intelligence/korea-presence.json",
+  "/api/intelligence/fleet-clusters.json",
   "/api/intelligence/port-opportunities.json",
   "/api/intelligence/superintendent-targets.json",
   "/api/intelligence/compliance-opportunities.json",
   "/api/intelligence/drydock-prediction.json",
-  "/api/intelligence/revenue-forecast.json"
+  "/api/intelligence/revenue-forecast.json",
+  "/api/reports/executive-weekly.json"
 ]) {
   assert(dashboardSource.includes(marker), `Dashboard advanced intelligence endpoint missing marker: ${marker}`);
   assert(publicSource.includes(marker), `Public dashboard advanced intelligence endpoint missing marker: ${marker}`);
@@ -308,6 +323,28 @@ for (const item of rows(intelligencePayloads.drydockPrediction)) {
   assert(Number(item.drydock_probability || 0) >= 0 && Number(item.drydock_probability || 0) <= 100, "Drydock probability must be a 0-100 score.");
   assert(String(item.reason_summary || "").length > 0, "Drydock prediction item must explain why it is recommended.");
   assert(String(item.recommended_action || "").length > 0, "Drydock prediction item must include a recommended action.");
+}
+for (const item of rows(intelligencePayloads.fleetExpansion)) {
+  for (const field of ["operator_name", "known_korea_vessels", "total_operator_vessels", "high_opportunity_vessels", "unseen_vessels", "fleet_expansion_score", "recommended_action"]) {
+    assert(field in item, `Fleet expansion item missing required field: ${field}`);
+  }
+}
+for (const item of rows(intelligencePayloads.vesselTimeline)) {
+  for (const field of ["vessel_display", "first_seen", "last_seen", "ports_visited", "visit_history", "risk_history", "opportunity_history"]) {
+    assert(field in item, `Vessel timeline item missing required field: ${field}`);
+  }
+}
+for (const item of rows(intelligencePayloads.koreaPresence)) {
+  assert("korea_presence_score" in item, "Korea presence item missing korea_presence_score.");
+  assert(Number(item.korea_presence_score || 0) >= 0 && Number(item.korea_presence_score || 0) <= 100, "Korea presence score must be 0-100.");
+}
+for (const item of rows(intelligencePayloads.fleetClusters)) {
+  for (const field of ["operator_name", "vessel_count", "hot_count", "repeat_caller_count", "revenue_opportunity"]) {
+    assert(field in item, `Fleet cluster item missing required field: ${field}`);
+  }
+}
+for (const section of ["executive_summary", "revenue_opportunities", "compliance_opportunities", "repeat_caller_insights", "fleet_expansion_opportunities", "risks"]) {
+  assert(section in (executiveWeekly.sections || {}), `Executive weekly report missing section: ${section}`);
 }
 
 const fallbackChoiceCases = [

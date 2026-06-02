@@ -3782,10 +3782,21 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "vessel_count",
   "hot_count",
   "warm_count",
+  "sales_target_count",
   "high_risk_count",
+  "known_korea_vessels",
+  "total_operator_vessels",
+  "high_opportunity_vessels",
+  "unseen_vessels",
+  "fleet_expansion_score",
+  "revenue_opportunity",
   "average_opportunity_score",
   "average_risk_score",
   "opportunity_index",
+  "first_seen",
+  "visit_history",
+  "risk_history",
+  "opportunity_history",
   "top_ports",
   "recommended_sales_angle",
   "estimated_revenue_low",
@@ -5104,6 +5115,170 @@ function buildDrydockPredictionIntelligenceSummary({ records = [], generatedAt, 
   });
 }
 
+function koreaPresenceScore(record = {}) {
+  const visits30 = repeatCallerVisitCount(record, 30);
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const visits365 = repeatCallerVisitCount(record, 365);
+  const stayDays = dwellDays(record);
+  const ports = repeatCallerPorts(record);
+  const repeatScore = Number(firstFiniteNumber(record.repeat_caller_score, 0) || 0);
+  return Math.min(100, Math.round(
+    Math.min(34, visits365 * 5 + visits90 * 4 + visits30 * 3) +
+    Math.min(24, stayDays * 2) +
+    Math.min(18, ports.length * 6) +
+    Math.min(24, repeatScore * 0.24)
+  ));
+}
+
+function buildKoreaPresenceIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const score = koreaPresenceScore(record);
+      return { record, index, score };
+    })
+    .filter(row => row.score > 0 || repeatCallerVisitCount(row.record, 365) > 0)
+    .sort((a, b) => b.score - a.score || salesPriorityScore(b.record) - salesPriorityScore(a.record))
+    .slice(0, 10)
+    .map((row, index) => compactVesselInsight(row.record, index, {
+      korea_presence_score: row.score,
+      visit_count_30d: repeatCallerVisitCount(row.record, 30),
+      visit_count_90d: repeatCallerVisitCount(row.record, 90),
+      visit_count_365d: repeatCallerVisitCount(row.record, 365),
+      ports_visited: repeatCallerPorts(row.record),
+      stay_days: dwellDays(row.record),
+      opportunity_score: salesPriorityScore(row.record),
+      reason_summary: `한국 기항 영향도 ${row.score}점: 반복 기항, 체류, 항만 다양성 신호 기반`,
+      recommended_action: row.score >= 70 ? "반복 기항 이력을 근거로 선사/대리점 접점을 우선 확인" : "다음 입항 전 한국 기항 이력과 연락 가능성을 점검",
+      data_sources: displaySources(row.record).length ? displaySources(row.record) : ["vessel_visits", "repeat-callers", "route_snapshot_daily"]
+    }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "vessel_visits,repeat-callers,route_snapshot_daily", items });
+}
+
+function buildVesselTimelineIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const byVessel = new Map();
+  for (const record of records) {
+    const key = candidateDedupeKey(record);
+    if (!key) continue;
+    const current = byVessel.get(key) || {
+      record,
+      first_seen: null,
+      last_seen: null,
+      ports: new Set(),
+      visit_history: [],
+      risk_history: [],
+      opportunity_history: []
+    };
+    const seenAt = firstNonEmpty(record.first_seen, record.first_seen_at, record.last_seen_at, record.updated_at, record.collected_at, record.generated_at, generatedAt);
+    if (seenAt && (!current.first_seen || String(seenAt) < String(current.first_seen))) current.first_seen = seenAt;
+    if (seenAt && (!current.last_seen || String(seenAt) > String(current.last_seen))) current.last_seen = seenAt;
+    const port = recordPortName(record);
+    if (port) current.ports.add(port);
+    current.visit_history.push({
+      seen_at: seenAt || null,
+      port,
+      status: firstNonEmpty(record.status_bucket, record.status) || null,
+      eta: firstNonEmpty(record.eta, record.etb, record.arrival_time) || null
+    });
+    current.risk_history.push({
+      seen_at: seenAt || null,
+      risk_score: recordRiskScore(record)
+    });
+    current.opportunity_history.push({
+      seen_at: seenAt || null,
+      opportunity_score: salesPriorityScore(record),
+      priority_label: salesPriorityBand(salesPriorityScore(record))
+    });
+    if (salesPriorityScore(record) > salesPriorityScore(current.record)) current.record = record;
+    byVessel.set(key, current);
+  }
+  const items = [...byVessel.values()]
+    .map((row, index) => compactVesselInsight(row.record, index, {
+      first_seen: row.first_seen || "-",
+      last_seen: row.last_seen || "-",
+      ports_visited: [...row.ports].slice(0, 8),
+      visit_history: row.visit_history.slice(-6),
+      risk_history: row.risk_history.slice(-6),
+      opportunity_history: row.opportunity_history.slice(-6),
+      opportunity_score: salesPriorityScore(row.record),
+      risk_score: recordRiskScore(row.record),
+      reason_summary: `${firstNonEmpty(row.record.vessel_name, row.record.name, "선박")} 이력: 항만 ${row.ports.size}곳, 방문 신호 ${row.visit_history.length}건`,
+      recommended_action: "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인"
+    }))
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.risk_score || 0) - Number(a.risk_score || 0))
+    .slice(0, 10);
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "vessel_visits,vessel_snapshot_daily,route_snapshot_daily,risk_history,opportunity_master", items });
+}
+
+function buildFleetExpansionIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const operatorRows = aggregateOperators(records, fleetOpportunities);
+  const byOperator = new Map();
+  for (const record of records) {
+    const operator = operatorDisplayName(record);
+    if (!operator || operator === "운영사 확인 필요") continue;
+    const current = byOperator.get(operator) || { total_operator_vessels: 0, vessel_keys: new Set(), high_opportunity_vessels: 0 };
+    current.vessel_keys.add(candidateDedupeKey(record));
+    current.high_opportunity_vessels += salesPriorityScore(record) >= 50 ? 1 : 0;
+    current.total_operator_vessels = Math.max(
+      current.total_operator_vessels,
+      Number(firstFiniteNumber(record.total_operator_vessels, record.operator_vessel_count, record.current_vessel_count, record.fleet_vessel_count, 0) || 0)
+    );
+    byOperator.set(operator, current);
+  }
+  const items = operatorRows
+    .map((row, index) => {
+      const details = byOperator.get(row.operator_name) || { vessel_keys: new Set(), high_opportunity_vessels: row.hot_count + row.warm_count, total_operator_vessels: row.vessel_count };
+      const known = Math.max(row.vessel_count, details.vessel_keys.size);
+      const total = Math.max(known, Number(details.total_operator_vessels || 0));
+      const highOpportunity = Math.max(row.hot_count + row.warm_count, details.high_opportunity_vessels || 0);
+      const unseen = Math.max(0, total - known);
+      const score = Math.min(100, Math.round(row.opportunity_index * 0.45 + row.relationship_score * 0.25 + highOpportunity * 3 + unseen * 2 + row.repeat_caller_count * 4));
+      return {
+        rank: index + 1,
+        operator_name: row.operator_name,
+        known_korea_vessels: known,
+        total_operator_vessels: total,
+        high_opportunity_vessels: highOpportunity,
+        unseen_vessels: unseen,
+        fleet_expansion_score: score,
+        opportunity_score: score,
+        reason_summary: `${row.operator_name}: 한국 기항 ${known}척, 고기회 ${highOpportunity}척, 미확인 선대 ${unseen}척`,
+        recommended_action: unseen > 0 ? "기존 HOT/WARM 선박 담당자를 통해 같은 선대의 추가 입항/정비 계획을 확인" : "현재 확인된 한국 기항 선대를 중심으로 반복 기회와 연락 경로를 확장"
+      };
+    })
+    .filter(item => item.high_opportunity_vessels > 0 || item.unseen_vessels > 0)
+    .sort((a, b) => Number(b.fleet_expansion_score || 0) - Number(a.fleet_expansion_score || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities", items });
+}
+
+function buildFleetClusterIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const items = aggregateOperators(records, fleetOpportunities)
+    .map((row, index) => {
+      const targetCount = row.hot_count + row.warm_count;
+      const revenueLow = targetCount * 5000 + row.hot_count * 4000;
+      const revenueHigh = targetCount * 24000 + row.hot_count * 4000;
+      return {
+        rank: index + 1,
+        operator_name: row.operator_name,
+        vessel_count: row.vessel_count,
+        hot_count: row.hot_count,
+        repeat_caller_count: row.repeat_caller_count,
+        revenue_opportunity: {
+          estimated_revenue_low: revenueLow,
+          estimated_revenue_high: revenueHigh
+        },
+        opportunity_score: row.opportunity_index,
+        reason_summary: `${row.operator_name}: 선박 ${row.vessel_count}척, HOT ${row.hot_count}척, 반복입항 ${row.repeat_caller_count}척`,
+        recommended_action: "선대 단위로 HOT 후보, 반복 입항, 예상 매출 범위를 묶어 검토"
+      };
+    })
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.hot_count || 0) - Number(a.hot_count || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "operator-opportunities,fleet-memory,operator_snapshot_daily", items });
+}
+
 function estimateRevenueRange(count = 0, level = "WARM") {
   const lowUnit = level === "HOT" ? 9000 : 5000;
   const highUnit = level === "HOT" ? 28000 : 16000;
@@ -5117,13 +5292,28 @@ function estimateRevenueRange(count = 0, level = "WARM") {
 function buildRevenueForecastIntelligenceSummary({ records = [], fleetOpportunities = [], portStatistics = {}, generatedAt, dataMode } = {}) {
   const hot = records.filter(record => salesPriorityScore(record) >= 75).length;
   const warm = records.filter(record => salesPriorityScore(record) >= 50 && salesPriorityScore(record) < 75).length;
-  const portSummary = buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }).items.slice(0, 5).map(port => ({
-    port_name: port.port_name,
-    target_count: port.sales_target_count,
-    estimated_revenue_low: port.sales_target_count * 5000,
-    estimated_revenue_high: port.sales_target_count * 22000,
-    opportunity_index: port.opportunity_index
-  }));
+  const portOpportunityItems = buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }).items;
+  const portGroups = [
+    { label: "Busan", names: ["부산", "Busan", "BUSAN"] },
+    { label: "Ulsan", names: ["울산", "Ulsan", "ULSAN"] },
+    { label: "Yeosu/Gwangyang", names: ["여수", "광양", "여수/광양", "Yeosu", "Gwangyang"] },
+    { label: "Incheon", names: ["인천", "Incheon", "INCHEON"] },
+    { label: "Pyeongtaek", names: ["평택·당진", "평택", "당진", "Pyeongtaek"] }
+  ];
+  const portSummary = portGroups.map(group => {
+    const matches = portOpportunityItems.filter(port => group.names.some(name => String(port.port_name || "").toLowerCase() === String(name).toLowerCase()));
+    const targetCount = matches.reduce((sum, port) => sum + Number(port.sales_target_count || port.target_count || 0), 0);
+    const opportunityIndex = matches.length
+      ? Math.round(matches.reduce((sum, port) => sum + Number(port.opportunity_index || 0), 0) / matches.length)
+      : 0;
+    return {
+      port_name: group.label,
+      target_count: targetCount,
+      estimated_revenue_low: targetCount * 5000,
+      estimated_revenue_high: targetCount * 22000,
+      opportunity_index: opportunityIndex
+    };
+  });
   const operatorSummary = aggregateOperators(records, fleetOpportunities).sort((a, b) => b.opportunity_index - a.opportunity_index).slice(0, 8).map(row => ({
     operator_name: row.operator_name,
     target_count: row.hot_count + row.warm_count,
@@ -5186,7 +5376,11 @@ function buildIntelligenceSummaries({
     "repeat-callers": buildRepeatCallerIntelligenceSummary({ records, generatedAt, dataMode }),
     "fleet-summary": buildFleetIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-memory": buildFleetMemoryIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
+    "fleet-expansion": buildFleetExpansionIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
+    "fleet-clusters": buildFleetClusterIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "route-summary": buildRouteIntelligenceSummary({ records, generatedAt, dataMode }),
+    "vessel-timeline": buildVesselTimelineIntelligenceSummary({ records, generatedAt, dataMode }),
+    "korea-presence": buildKoreaPresenceIntelligenceSummary({ records, generatedAt, dataMode }),
     "cleaning-window": buildCleaningWindowIntelligenceSummary({ records, generatedAt, dataMode }),
     "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
     "superintendent-targets": buildSuperintendentTargetsIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -5320,6 +5514,82 @@ function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {},
       storage_verification: dataContinuity.storage_verification
     },
     automation_next_step: "Configure email/webhook secrets to deliver this JSON as a scheduled alert."
+  };
+}
+
+function buildExecutiveWeeklyReportPayload({
+  dashboardSummary = {},
+  revenueForecast = {},
+  operatorOpportunities = {},
+  portOpportunities = {},
+  complianceOpportunities = {},
+  repeatCallers = {},
+  fleetExpansion = {},
+  dataContinuity = {},
+  report = {},
+  generatedAt = new Date().toISOString()
+} = {}) {
+  const revenue = revenueForecast.summary || revenueForecast.sections || revenueForecast.items?.[0]?.sections || {};
+  const operators = (operatorOpportunities.items || []).slice(0, 5);
+  const ports = (portOpportunities.items || dashboardSummary.ports || []).slice(0, 5);
+  const complianceItems = complianceOpportunities.items || [];
+  const complianceCount = country => complianceItems.filter(item => String(item.destination_country || "").toLowerCase().includes(country)).length;
+  const risks = [];
+  const targetRatio = Number(dashboardSummary.all_vessels_count || dashboardSummary.record_count || 0)
+    ? Number(dashboardSummary.sales_target_count || 0) / Number(dashboardSummary.all_vessels_count || dashboardSummary.record_count || 1)
+    : 0;
+  if (dataContinuity.status === "fallback_active" || dashboardSummary.fallback_used) risks.push("fallback snapshot 사용 중");
+  if (targetRatio > 0 && targetRatio < 0.2) risks.push("영업대상 비율 낮음");
+  if (report.missing_required_config?.length) risks.push(`필수 설정 누락: ${report.missing_required_config.join(", ")}`);
+  if (report.source_failures?.length) risks.push("일부 데이터 소스 실패");
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dashboardSummary.data_mode || report.data_mode, report),
+    report_type: "executive_weekly_intelligence",
+    title: "주간 경영 브리핑",
+    source_table: "daily-sales,sales-priority,revenue-forecast,operator-opportunities,compliance-opportunities,fleet-memory",
+    sections: {
+      executive_summary: {
+        total_vessels: Number(dashboardSummary.all_vessels_count || dashboardSummary.total_vessels || dashboardSummary.record_count || 0),
+        hot_targets: Number(revenue.HOT?.target_count || dashboardSummary.hot_count || 0),
+        top_operators: operators.map(row => ({ operator_name: row.operator_name, opportunity_score: row.opportunity_score || row.opportunity_index || row.average_opportunity_score || 0 })),
+        top_ports: ports.map(row => ({ port_name: row.port_name || row.display_name, opportunity_index: row.opportunity_index || row.average_opportunity_score || row.vessel_count || 0 }))
+      },
+      revenue_opportunities: {
+        estimated_pipeline: revenueForecast.items?.[0]?.estimated_revenue_high || revenue.WARM?.estimated_revenue_high || 0,
+        hot_opportunity_value: revenue.HOT || { target_count: 0, estimated_revenue_low: 0, estimated_revenue_high: 0 },
+        funnel: {
+          HOT: revenue.HOT || {},
+          WARM: revenue.WARM || {}
+        },
+        by_port: revenue.by_port || [],
+        by_operator: revenue.by_operator || []
+      },
+      compliance_opportunities: {
+        Brazil: complianceCount("brazil"),
+        Australia: complianceCount("australia"),
+        NZ: complianceItems.filter(item => /new zealand|nz/i.test(String(item.destination_country || ""))).length,
+        items: complianceItems.slice(0, 5)
+      },
+      repeat_caller_insights: (repeatCallers.items || []).slice(0, 5),
+      fleet_expansion_opportunities: (fleetExpansion.items || []).slice(0, 5),
+      risks: {
+        missing_data: risks.filter(risk => /누락|missing/i.test(risk)),
+        degraded_sources: risks.filter(risk => /fallback|실패/i.test(risk)),
+        low_target_ratio: targetRatio > 0 && targetRatio < 0.2,
+        warnings: risks
+      }
+    },
+    record_count: 1,
+    items: [{
+      title: "주간 경영 브리핑",
+      total_vessels: Number(dashboardSummary.all_vessels_count || dashboardSummary.total_vessels || dashboardSummary.record_count || 0),
+      hot_targets: Number(revenue.HOT?.target_count || dashboardSummary.hot_count || 0),
+      estimated_pipeline_high: revenueForecast.items?.[0]?.estimated_revenue_high || 0,
+      risk_count: risks.length,
+      recommended_action: risks.length ? "데이터 품질 리스크를 먼저 확인한 뒤 HOT/반복입항 선사 중심으로 주간 영업 우선순위를 조정" : "HOT 후보와 상위 선사/항만 기회를 기준으로 주간 영업 활동을 배정"
+    }]
   };
 }
 
@@ -7742,7 +8012,11 @@ try {
     "dashboard/api/intelligence/repeat-callers.json": intelligenceSummaries["repeat-callers"],
     "dashboard/api/intelligence/fleet-summary.json": intelligenceSummaries["fleet-summary"],
     "dashboard/api/intelligence/fleet-memory.json": intelligenceSummaries["fleet-memory"],
+    "dashboard/api/intelligence/fleet-expansion.json": intelligenceSummaries["fleet-expansion"],
+    "dashboard/api/intelligence/fleet-clusters.json": intelligenceSummaries["fleet-clusters"],
     "dashboard/api/intelligence/route-summary.json": intelligenceSummaries["route-summary"],
+    "dashboard/api/intelligence/vessel-timeline.json": intelligenceSummaries["vessel-timeline"],
+    "dashboard/api/intelligence/korea-presence.json": intelligenceSummaries["korea-presence"],
     "dashboard/api/intelligence/cleaning-window.json": intelligenceSummaries["cleaning-window"],
     "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
     "dashboard/api/intelligence/superintendent-targets.json": intelligenceSummaries["superintendent-targets"],
@@ -7786,6 +8060,18 @@ try {
     dashboardSummary,
     generatedAt: completedAt
   });
+  const executiveWeeklyReportPayload = buildExecutiveWeeklyReportPayload({
+    dashboardSummary,
+    revenueForecast: intelligenceSummaries["revenue-forecast"],
+    operatorOpportunities: intelligenceSummaries["operator-opportunities"],
+    portOpportunities: intelligenceSummaries["port-opportunities"],
+    complianceOpportunities: intelligenceSummaries["compliance-opportunities"],
+    repeatCallers: intelligenceSummaries["repeat-callers"],
+    fleetExpansion: intelligenceSummaries["fleet-expansion"],
+    dataContinuity: dataContinuityReport,
+    report,
+    generatedAt: completedAt
+  });
   report.successful_dataset_bundle = successfulDatasetBundle;
   report.successful_dataset_restore = restoreResult;
   report.data_continuity = dataContinuityReport;
@@ -7804,6 +8090,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/alerts/latest.json", salesAlertsPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-sales-report.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-summary.json", dailySalesReportPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/reports/executive-weekly.json", executiveWeeklyReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);
