@@ -282,6 +282,9 @@ jobs:
               intelligence/commercial-summary.json \
               intelligence/route-summary.json \
               intelligence/operator-summary.json \
+              intelligence/agent-summary.json \
+              intelligence/repeat-callers.json \
+              intelligence/fleet-summary.json \
               intelligence/prediction-summary.json; do
               copy_api_asset "$file"
             done

@@ -63,6 +63,24 @@ const FEATURES = [
     tables: ["operator_snapshot_daily"],
     json: ["dashboard/api/fleet-opportunities.json", "dashboard/api/intelligence/operator-summary.json"],
     ui: ["선사/운영사 인사이트", "/api/intelligence/operator-summary.json"]
+  },
+  {
+    feature: "agent_intelligence",
+    tables: ["agent_master", "agent_operator_links", "agent_operator_mapping"],
+    json: ["dashboard/api/intelligence/agent-summary.json"],
+    ui: ["대리점 인사이트", "/api/intelligence/agent-summary.json"]
+  },
+  {
+    feature: "repeat_callers",
+    tables: ["vessel_snapshots", "operator_snapshot_daily"],
+    json: ["dashboard/api/intelligence/repeat-callers.json"],
+    ui: ["반복 입항 선박", "/api/intelligence/repeat-callers.json"]
+  },
+  {
+    feature: "fleet_summary",
+    tables: ["operator_snapshot_daily"],
+    json: ["dashboard/api/fleet-opportunities.json", "dashboard/api/intelligence/fleet-summary.json"],
+    ui: ["선대 인사이트", "/api/intelligence/fleet-summary.json"]
   }
 ];
 

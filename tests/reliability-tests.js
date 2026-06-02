@@ -18,6 +18,9 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/explainability.json",
   "dashboard/api/intelligence/prediction-summary.json",
   "dashboard/api/intelligence/operator-summary.json",
+  "dashboard/api/intelligence/agent-summary.json",
+  "dashboard/api/intelligence/repeat-callers.json",
+  "dashboard/api/intelligence/fleet-summary.json",
   "dashboard/api/intelligence/route-summary.json",
   "dashboard/api/intelligence/commercial-summary.json",
   "dashboard/api/intelligence/sales-priority.json"
@@ -123,6 +126,9 @@ const intelligencePayloads = {
   explainability: readJson("dashboard/api/intelligence/explainability.json"),
   prediction: readJson("dashboard/api/intelligence/prediction-summary.json"),
   operator: readJson("dashboard/api/intelligence/operator-summary.json"),
+  agent: readJson("dashboard/api/intelligence/agent-summary.json"),
+  repeatCallers: readJson("dashboard/api/intelligence/repeat-callers.json"),
+  fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
   route: readJson("dashboard/api/intelligence/route-summary.json"),
   commercial: readJson("dashboard/api/intelligence/commercial-summary.json"),
   salesPriority: readJson("dashboard/api/intelligence/sales-priority.json")

@@ -3365,8 +3365,10 @@ function vesselDisplay(record = {}) {
     gt: displayNumber(firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, record.grossTonnage)),
     dwt: displayNumber(firstFiniteNumber(record.dwt, record.deadweight, record.deadweight_tonnage)),
     operator: displayText(firstNonEmpty(record.operator_name, record.operator, record.operator_normalized)),
+    company: displayText(firstNonEmpty(record.company, record.company_name, record.shipping_company, record.operator_name, record.operator, record.agent_name, record.agent)),
     owner: displayText(firstNonEmpty(record.owner_name, record.owner, record.ship_owner, record.registered_owner)),
     manager: displayText(firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager)),
+    technical_manager: displayText(firstNonEmpty(record.technical_manager, record.ship_manager, record.manager_name, record.manager)),
     current_port: displayText(firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination)),
     eta: displayText(firstNonEmpty(record.eta, record.predicted_arrival_time)),
     etb: displayText(firstNonEmpty(record.etb)),
@@ -3378,6 +3380,7 @@ function vesselDisplay(record = {}) {
     confidence_score: displayNumber(confidenceScore),
     opportunity_score: displayNumber(opportunityScore),
     risk_score: displayNumber(riskScore),
+    contact_readiness_score: displayNumber(firstFiniteNumber(record.contact_readiness_score, record.sales_accessibility_score)),
     priority_label: displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0))),
     reason_summary: compactReasonSummary(record),
     recommended_action: compactRecommendedAction(record),
@@ -3408,6 +3411,9 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "nationality",
   "operator_name",
   "operator",
+  "company",
+  "company_name",
+  "shipping_company",
   "owner_name",
   "owner",
   "ship_owner",
@@ -3416,6 +3422,7 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "manager",
   "ship_manager",
   "technical_manager",
+  "contact_readiness_score",
   "agent_name",
   "agent",
   "port",
@@ -5509,6 +5516,103 @@ function buildSalesPrioritySummary(records = [], source = {}, generatedAt = new 
   });
 }
 
+function buildAgentSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const items = sortCommercialPriority(records)
+    .filter(record => firstNonEmpty(record.agent_name, record.agent, record.satmntEntrpsNm, record.entrpsCdNm))
+    .map((record, index) => compactVesselInsight(record, index, {
+      vessel: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+      port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination) || null,
+      agent: firstNonEmpty(record.agent_name, record.agent, record.satmntEntrpsNm, record.entrpsCdNm),
+      confidence: firstFiniteNumber(record.agent_confidence, record.operator_confidence, record.contact_readiness_score, record.data_confidence_score, record.confidence_score, 0),
+      contact_readiness_score: firstFiniteNumber(record.contact_readiness_score, record.sales_accessibility_score, 0),
+      data_sources: displaySources(record)
+    }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "agent_master,agent_operator_links,vessel_snapshots",
+    items,
+    extra: {
+      summary: {
+        agent_known_count: items.length,
+        source_hint: "agent_name / satmntEntrpsNm / contact_readiness_score"
+      }
+    }
+  });
+}
+
+function buildRepeatCallerSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const items = sortCommercialPriority(records)
+    .filter(record => {
+      const visits = firstFiniteNumber(record.visits_last_12_months, record.calls_last_12m, record.repeat_call_count, record.observation_count, 0);
+      return visits > 1 || Number(record.repeat_caller_score || 0) > 0;
+    })
+    .map((record, index) => compactVesselInsight(record, index, {
+      vessel: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+      visits_last_12_months: firstFiniteNumber(record.visits_last_12_months, record.calls_last_12m, record.repeat_call_count, record.observation_count, 0),
+      ports_visited: [firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination)].filter(Boolean),
+      last_visit: firstNonEmpty(record.last_visit, record.last_seen_at, record.updated_at, record.collected_at, record.generated_at) || null,
+      opportunity_score: firstFiniteNumber(record.opportunity_score, record.commercial_value_score, record.total_sales_priority_score, record.cleaning_candidate_score, record.repeat_caller_score, 0),
+      repeat_caller_score: firstFiniteNumber(record.repeat_caller_score, 0)
+    }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "vessel_visits,vessel_snapshots,operator_snapshot_daily",
+    items,
+    extra: {
+      summary: {
+        repeat_caller_count: items.length,
+        source_hint: "calls_last_12m / repeat_call_count / repeat_caller_score"
+      }
+    }
+  });
+}
+
+function buildFleetSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const byOperator = new Map();
+  for (const record of records) {
+    const operator = firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company);
+    if (!operator) continue;
+    const current = byOperator.get(operator) || { operator, vessel_count: 0, hot_count: 0, staying_count: 0, arrival_count: 0, score_total: 0 };
+    current.vessel_count += 1;
+    current.score_total += salesPriorityScore(record);
+    if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || salesPriorityScore(record) >= 75) current.hot_count += 1;
+    if (Number(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours || record.anchorage_hours || 0) >= 72 || record.is_staying_without_departure) current.staying_count += 1;
+    if (record.predicted_arrival_pipeline || record.eta || record.etb || record.arrival_time || String(record.status_bucket || "").includes("arriving")) current.arrival_count += 1;
+    byOperator.set(operator, current);
+  }
+  const items = [...byOperator.values()]
+    .map((row, index) => ({
+      rank: index + 1,
+      operator: row.operator,
+      operator_name: row.operator,
+      vessel_count: row.vessel_count,
+      hot_count: row.hot_count,
+      staying_count: row.staying_count,
+      arrival_count: row.arrival_count,
+      opportunity_score: row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0,
+      reason_summary: `${row.operator} 관련 선박 ${row.vessel_count}척 신호`,
+      recommended_action: "운영사 단위로 후보 선박과 연락 경로를 확인하세요."
+    }))
+    .sort((a, b) => Number(b.hot_count || 0) - Number(a.hot_count || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "operator_snapshot_daily,vessel_snapshots,fleet-opportunities",
+    items,
+    extra: {
+      summary: {
+        operator_count: items.length,
+        source_hint: "operator_snapshot_daily / vessel_snapshots"
+      }
+    }
+  });
+}
+
 function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, generatedAt = new Date().toISOString()) {
   const buckets = buildVisibilityBuckets(records);
   if (name === "risk-summary") {
@@ -5540,6 +5644,9 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
     }));
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "operator_snapshot_daily", items });
   }
+  if (name === "agent-summary") return buildAgentSummary(records, source, generatedAt);
+  if (name === "repeat-callers") return buildRepeatCallerSummary(records, source, generatedAt);
+  if (name === "fleet-summary") return buildFleetSummary(records, source, generatedAt);
   if (name === "route-summary") {
     const items = records
       .filter(record => record.high_regulation_route || record.regulated_route || hasValue(record.destination || record.destination_port || record.next_port))
@@ -5760,6 +5867,9 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "route-summary": "route_snapshot_daily,dashboard_summary_snapshots",
       "commercial-summary": "commercial_opportunity_daily,dashboard_summary_snapshots",
       "operator-summary": "operator_snapshot_daily,dashboard_summary_snapshots",
+      "agent-summary": "agent_master,agent_operator_links,dashboard_summary_snapshots",
+      "repeat-callers": "vessel_visits,vessel_snapshots,dashboard_summary_snapshots",
+      "fleet-summary": "operator_snapshot_daily,vessel_snapshots,dashboard_summary_snapshots",
       "prediction-summary": "model_training_rows,dashboard_summary_snapshots",
       "explainability": "explainability_snapshots,rule_evaluations,dashboard_summary_snapshots"
     }[name] || "dashboard_summary_snapshots";
