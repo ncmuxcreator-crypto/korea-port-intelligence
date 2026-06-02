@@ -16,12 +16,20 @@ const REQUIRED_FILES = [
   "dashboard/api/vessels/index.json",
   "dashboard/api/vessels/page-1.json",
   "dashboard/api/intelligence/risk-summary.json",
+  "dashboard/api/intelligence/biofouling-risk.json",
   "dashboard/api/intelligence/explainability.json",
   "dashboard/api/intelligence/prediction-summary.json",
   "dashboard/api/intelligence/operator-summary.json",
+  "dashboard/api/intelligence/operator-opportunities.json",
   "dashboard/api/intelligence/agent-summary.json",
   "dashboard/api/intelligence/repeat-callers.json",
   "dashboard/api/intelligence/fleet-summary.json",
+  "dashboard/api/intelligence/fleet-memory.json",
+  "dashboard/api/intelligence/cleaning-window.json",
+  "dashboard/api/intelligence/port-opportunities.json",
+  "dashboard/api/intelligence/superintendent-targets.json",
+  "dashboard/api/intelligence/compliance-opportunities.json",
+  "dashboard/api/intelligence/revenue-forecast.json",
   "dashboard/api/intelligence/route-summary.json",
   "dashboard/api/intelligence/commercial-summary.json",
   "dashboard/api/intelligence/sales-priority.json"
@@ -125,12 +133,20 @@ const workerSource = readText("src/worker.js");
 const updateSource = readText("scripts/update.js");
 const intelligencePayloads = {
   risk: readJson("dashboard/api/intelligence/risk-summary.json"),
+  biofoulingRisk: readJson("dashboard/api/intelligence/biofouling-risk.json"),
   explainability: readJson("dashboard/api/intelligence/explainability.json"),
   prediction: readJson("dashboard/api/intelligence/prediction-summary.json"),
   operator: readJson("dashboard/api/intelligence/operator-summary.json"),
+  operatorOpportunities: readJson("dashboard/api/intelligence/operator-opportunities.json"),
   agent: readJson("dashboard/api/intelligence/agent-summary.json"),
   repeatCallers: readJson("dashboard/api/intelligence/repeat-callers.json"),
   fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
+  fleetMemory: readJson("dashboard/api/intelligence/fleet-memory.json"),
+  cleaningWindow: readJson("dashboard/api/intelligence/cleaning-window.json"),
+  portOpportunities: readJson("dashboard/api/intelligence/port-opportunities.json"),
+  superintendentTargets: readJson("dashboard/api/intelligence/superintendent-targets.json"),
+  complianceOpportunities: readJson("dashboard/api/intelligence/compliance-opportunities.json"),
+  revenueForecast: readJson("dashboard/api/intelligence/revenue-forecast.json"),
   route: readJson("dashboard/api/intelligence/route-summary.json"),
   commercial: readJson("dashboard/api/intelligence/commercial-summary.json"),
   salesPriority: readJson("dashboard/api/intelligence/sales-priority.json")
@@ -242,6 +258,19 @@ for (const marker of [
   assert(dashboardSource.includes(marker), `Dashboard hidden intelligence UI missing marker: ${marker}`);
   assert(publicSource.includes(marker), `Public dashboard hidden intelligence UI missing marker: ${marker}`);
 }
+for (const marker of [
+  "/api/intelligence/biofouling-risk.json",
+  "/api/intelligence/cleaning-window.json",
+  "/api/intelligence/operator-opportunities.json",
+  "/api/intelligence/fleet-memory.json",
+  "/api/intelligence/port-opportunities.json",
+  "/api/intelligence/superintendent-targets.json",
+  "/api/intelligence/compliance-opportunities.json",
+  "/api/intelligence/revenue-forecast.json"
+]) {
+  assert(dashboardSource.includes(marker), `Dashboard advanced intelligence endpoint missing marker: ${marker}`);
+  assert(publicSource.includes(marker), `Public dashboard advanced intelligence endpoint missing marker: ${marker}`);
+}
 for (const [name, payload] of Object.entries(intelligencePayloads)) {
   assert(payload && typeof payload === "object", `Intelligence endpoint must be valid JSON: ${name}`);
   for (const field of ["generated_at", "schema_version", "data_mode", "record_count", "source_table", "items"]) {
@@ -259,6 +288,15 @@ for (const item of rows(intelligencePayloads.salesPriority)) {
   }
   assert(String(item.reason_summary || "").length > 0, "Sales priority item must explain why it is recommended.");
   assert(Array.isArray(item.data_sources) && item.data_sources.length > 0, "Sales priority item must include data_sources.");
+}
+for (const item of rows(intelligencePayloads.repeatCallers)) {
+  for (const field of ["vessel_display", "visit_count_30d", "visit_count_90d", "visit_count_365d", "ports_visited", "average_stay_days", "last_visit", "next_eta", "operator", "opportunity_score", "repeat_caller_score", "reason_summary", "recommended_action"]) {
+    assert(field in item, `Repeat caller item missing required field: ${field}`);
+  }
+  assert(Array.isArray(item.ports_visited), "Repeat caller item ports_visited must be an array.");
+  assert(Number(item.visit_count_90d || 0) >= 2 || Number(item.visit_count_365d || 0) > 1 || Number(item.repeat_caller_score || 0) > 0, "Repeat caller item must have a repeat visit signal.");
+  assert(String(item.reason_summary || "").length > 0, "Repeat caller item must explain why it is recommended.");
+  assert(String(item.recommended_action || "").length > 0, "Repeat caller item must include a recommended action.");
 }
 
 const fallbackChoiceCases = [

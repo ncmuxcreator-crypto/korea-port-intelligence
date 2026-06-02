@@ -279,13 +279,21 @@ jobs:
               alerts/sales-alerts.json \
               intelligence/sales-priority.json \
               intelligence/risk-summary.json \
+              intelligence/biofouling-risk.json \
+              intelligence/cleaning-window.json \
               intelligence/explainability.json \
               intelligence/commercial-summary.json \
               intelligence/route-summary.json \
               intelligence/operator-summary.json \
+              intelligence/operator-opportunities.json \
               intelligence/agent-summary.json \
               intelligence/repeat-callers.json \
               intelligence/fleet-summary.json \
+              intelligence/fleet-memory.json \
+              intelligence/port-opportunities.json \
+              intelligence/superintendent-targets.json \
+              intelligence/compliance-opportunities.json \
+              intelligence/revenue-forecast.json \
               intelligence/prediction-summary.json; do
               copy_api_asset "$file"
             done

@@ -2368,14 +2368,14 @@ function loadSuccessfulDatasetManifest() {
 
 function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healthPayload = {}, outputs = {}, generatedAt = new Date().toISOString() } = {}) {
   const rows = Number(report.all_collected_vessel_count || rowCountFromPayload(outputs["dashboard/api/all-collected-vessels.json"]) || 0);
-  const storedSuccessfully = isSupabaseWriteCompleted(report.supabase_write?.status) ||
-    report.output_mode === "static_json" ||
-    String(report.data_mode || "").toLowerCase() === "api_ready_snapshot" ||
-    String(report.data_mode || "").toLowerCase() === "static_snapshot";
+  const promotionBlockers = Array.isArray(report.promotion_blockers) ? report.promotion_blockers.filter(Boolean) : [];
+  const promotionStatus = String(report.promotion_status || "").toLowerCase();
+  const promotionSuccessful = !promotionStatus || ["promoted", "completed", "not_needed"].includes(promotionStatus);
+  const storedSuccessfully = isSupabaseWriteCompleted(report.supabase_write?.status) && promotionSuccessful && promotionBlockers.length === 0;
   if (rows <= 0 || !storedSuccessfully || report.fallback_used === true || shouldWriteDebugApiOutputs(report)) {
     return {
       status: "skipped",
-      reason: rows <= 0 ? "empty_dataset" : report.fallback_used ? "fallback_run" : "not_successful_dataset",
+      reason: rows <= 0 ? "empty_dataset" : report.fallback_used ? "fallback_run" : promotionBlockers.length ? `promotion_blocked:${promotionBlockers.join(",")}` : "not_successful_dataset",
       rows
     };
   }
@@ -2435,6 +2435,10 @@ function restoreSuccessfulDatasetBundle({ report = {}, outputs = {} } = {}) {
   const restored = [];
   const skipped = [];
   const dir = `${SUCCESSFUL_DATASET_DIR}/${manifest.snapshot_id}`;
+  const promotionBlockers = Array.isArray(report.promotion_blockers) ? report.promotion_blockers.filter(Boolean) : [];
+  const forceRestore = promotionBlockers.length > 0 ||
+    String(report.promotion_status || "").toLowerCase() === "not_promoted" ||
+    !isSupabaseWriteCompleted(report.supabase_write?.status);
   for (const [filePath] of Object.entries(outputs)) {
     const normalized = String(filePath).replace(/\\/g, "/");
     const source = `${dir}/${normalized}`;
@@ -2443,7 +2447,7 @@ function restoreSuccessfulDatasetBundle({ report = {}, outputs = {} } = {}) {
       continue;
     }
     const current = readJsonSafe(normalized, null);
-    if (rowCountFromPayload(current) > 0) {
+    if (!forceRestore && rowCountFromPayload(current) > 0) {
       skipped.push({ path: normalized, reason: "current_output_has_rows" });
       continue;
     }
@@ -3744,6 +3748,47 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "cumulative_stay_hours",
   "anchorage_hours",
   "berth_hours",
+  "arrival_port",
+  "average_stay_days",
+  "visit_count_30d",
+  "visit_count_90d",
+  "visit_count_365d",
+  "visits_last_12_months",
+  "ports_visited",
+  "repeat_caller_score",
+  "repeat_caller_count",
+  "last_visit",
+  "next_eta",
+  "window_score",
+  "risk_level",
+  "factors",
+  "compliance_score",
+  "destination_country",
+  "fleet_score",
+  "korea_presence_score",
+  "superintendent_probability",
+  "contact_confidence",
+  "relationship_score",
+  "vessels_seen",
+  "previous_targets",
+  "previous_hot_candidates",
+  "ports_used",
+  "last_seen",
+  "vessel_count",
+  "hot_count",
+  "warm_count",
+  "high_risk_count",
+  "average_opportunity_score",
+  "average_risk_score",
+  "opportunity_index",
+  "top_ports",
+  "recommended_sales_angle",
+  "estimated_revenue_low",
+  "estimated_revenue_high",
+  "target_count",
+  "sections",
+  "by_port",
+  "by_operator",
   "opportunity_score",
   "sales_priority_score",
   "commercial_value_score",
@@ -4136,6 +4181,65 @@ function compactVesselInsight(record = {}, index = 0, extra = {}) {
   };
 }
 
+function repeatCallerVisitCount(record = {}, windowDays = 365) {
+  if (windowDays <= 30) {
+    return firstFiniteNumber(record.visit_count_30d, record.visits_last_30d, record.calls_last_30d, record.calls_last_1m, record.repeat_call_count_30d, 0) || 0;
+  }
+  if (windowDays <= 90) {
+    return firstFiniteNumber(record.visit_count_90d, record.visits_last_90d, record.calls_last_90d, record.calls_last_3m, record.repeat_call_count_90d, 0) || 0;
+  }
+  return firstFiniteNumber(record.visit_count_365d, record.visits_last_365d, record.visits_last_12_months, record.calls_last_12m, record.repeat_call_count, record.observation_count, 0) || 0;
+}
+
+function repeatCallerAverageStayDays(record = {}) {
+  const hours = firstFiniteNumber(record.average_stay_hours, record.avg_stay_hours, record.historical_avg_stay_hours, record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, 0) || 0;
+  return Math.round((Number(hours || 0) / 24) * 10) / 10;
+}
+
+function repeatCallerPorts(record = {}) {
+  const raw = Array.isArray(record.ports_visited)
+    ? record.ports_visited
+    : [record.port_name, record.port, record.destination_port, record.destination, record.next_port];
+  return [...new Set(raw.map(value => String(value || "").trim()).filter(Boolean))].slice(0, 6);
+}
+
+function repeatCallerPriorityScore(record = {}) {
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const visits365 = repeatCallerVisitCount(record, 365);
+  const ports = repeatCallerPorts(record);
+  const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, "")).toUpperCase();
+  return (
+    (visits90 >= 2 ? 1000 : 0) +
+    (ports.length === 1 && visits365 >= 2 ? 250 : 0) +
+    (priority === "HOT" ? 200 : priority === "WARM" ? 80 : 0) +
+    (Number(record.repeat_caller_score || 0) * 3) +
+    salesPriorityScore(record)
+  );
+}
+
+function repeatCallerReasonSummary(record = {}) {
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const visits365 = repeatCallerVisitCount(record, 365);
+  const ports = repeatCallerPorts(record);
+  const operator = firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company);
+  const pieces = [];
+  if (visits90 >= 2) pieces.push(`최근 90일 ${visits90}회 한국 항만 방문 신호`);
+  else if (visits365 > 0) pieces.push(`최근 12개월 ${visits365}회 방문 신호`);
+  if (ports.length === 1 && visits365 >= 2) pieces.push(`${ports[0]} 반복 이용`);
+  else if (ports.length > 1) pieces.push(`${ports.slice(0, 3).join(", ")} 등 복수 항만 방문`);
+  if (operator) pieces.push(`${operator} 운항/관리 단서`);
+  if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, "")).toUpperCase() === "HOT") pieces.push("기존 HOT 후보");
+  return pieces.length ? pieces.join(" · ") : compactReasonSummary(record);
+}
+
+function repeatCallerRecommendedAction(record = {}) {
+  const visits90 = repeatCallerVisitCount(record, 90);
+  const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, "")).toUpperCase();
+  if (priority === "HOT") return "반복 입항 이력과 현재 HOT 사유를 묶어 선사 담당자에게 우선 연락";
+  if (visits90 >= 2) return "최근 반복 입항 패턴을 근거로 정기 세척/점검 수요를 확인";
+  return "이전 방문 항만과 운항사를 확인해 다음 입항 전 영업 타이밍을 점검";
+}
+
 function intelligenceEnvelope({ generatedAt, dataMode, sourceTable, items = [], summary = {}, extra = {} } = {}) {
   const capped = items.filter(item => item && typeof item === "object").slice(0, 10);
   return {
@@ -4294,31 +4398,40 @@ function buildAgentIntelligenceSummary({ records = [], generatedAt, dataMode } =
 
 function buildRepeatCallerIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = sortCommercialPriority(records)
-    .filter(record => {
-      const visits = firstFiniteNumber(record.visits_last_12_months, record.calls_last_12m, record.repeat_call_count, record.observation_count, 0);
-      return visits > 1 || Number(record.repeat_caller_score || 0) > 0;
-    })
+    .filter(record => repeatCallerVisitCount(record, 90) >= 2 || repeatCallerVisitCount(record, 365) > 1 || Number(record.repeat_caller_score || 0) > 0)
+    .sort((a, b) => repeatCallerPriorityScore(b) - repeatCallerPriorityScore(a) || String(firstNonEmpty(a.vessel_name, a.name, "")).localeCompare(String(firstNonEmpty(b.vessel_name, b.name, "")), "ko"))
     .map((record, index) => {
-      const ports = Array.isArray(record.ports_visited)
-        ? record.ports_visited
-        : [firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination)].filter(Boolean);
+      const visitCount30d = repeatCallerVisitCount(record, 30);
+      const visitCount90d = repeatCallerVisitCount(record, 90);
+      const visitCount365d = repeatCallerVisitCount(record, 365);
+      const ports = repeatCallerPorts(record);
       return compactVesselInsight(record, index, {
         vessel: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
-        visits_last_12_months: firstFiniteNumber(record.visits_last_12_months, record.calls_last_12m, record.repeat_call_count, record.observation_count, 0),
-        ports_visited: [...new Set(ports)].slice(0, 6),
-        last_visit: firstNonEmpty(record.last_visit, record.last_seen_at, record.updated_at, record.collected_at, record.generated_at) || null,
+        visit_count_30d: visitCount30d,
+        visit_count_90d: visitCount90d,
+        visit_count_365d: visitCount365d,
+        visits_last_12_months: visitCount365d,
+        ports_visited: ports,
+        average_stay_days: repeatCallerAverageStayDays(record),
+        last_visit: firstNonEmpty(record.last_visit, record.last_seen_at, record.updated_at, record.collected_at, record.generated_at) || "-",
+        next_eta: firstNonEmpty(record.next_eta, record.eta, record.etb, record.predicted_arrival_time, record.arrival_time) || "-",
+        operator: firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company) || "-",
         opportunity_score: firstFiniteNumber(record.opportunity_score, record.commercial_value_score, record.total_sales_priority_score, record.cleaning_candidate_score, record.repeat_caller_score, 0),
-        repeat_caller_score: firstFiniteNumber(record.repeat_caller_score, 0)
+        repeat_caller_score: firstFiniteNumber(record.repeat_caller_score, repeatCallerPriorityScore(record), 0),
+        reason_summary: repeatCallerReasonSummary(record),
+        recommended_action: repeatCallerRecommendedAction(record),
+        data_sources: displaySources(record).length ? displaySources(record) : ["vessel_snapshots", "port_call_master", "route_snapshot_daily"]
       });
     });
   return intelligenceEnvelope({
     generatedAt,
     dataMode,
-    sourceTable: "vessel_visits,vessel_snapshots,operator_snapshot_daily",
+    sourceTable: "vessel_visits,port_call_master,vessel_snapshot_daily,route_snapshot_daily",
     items,
     summary: {
       repeat_caller_count: items.length,
-      source_hint: "calls_last_12m / repeat_call_count / repeat_caller_score"
+      repeat_90d_2plus_count: items.filter(item => Number(item.visit_count_90d || 0) >= 2).length,
+      source_hint: "calls_last_3m / calls_last_12m / repeat_call_count / repeat_caller_score"
     }
   });
 }
@@ -4575,6 +4688,385 @@ function buildSalesPriorityIntelligenceSummary({
   });
 }
 
+function operatorDisplayName(record = {}) {
+  return firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company, record.manager_name, record.manager, "운영사 확인 필요");
+}
+
+function recordPortName(record = {}) {
+  const raw = firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination, record.current_port);
+  if (!raw) return "미확인 항만";
+  const normalized = normalizePort(raw);
+  return normalized.port_name || raw || "미확인 항만";
+}
+
+function recordRiskScore(record = {}) {
+  return firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.biofouling_risk_score, record.operational_risk_score, record.idle_risk_score, 0) || 0;
+}
+
+function operationalRiskLevel(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 70) return "HIGH";
+  if (value >= 40) return "MEDIUM";
+  return "LOW";
+}
+
+function dwellDays(record = {}) {
+  const hours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, 0) || 0;
+  return Math.round((Number(hours || 0) / 24) * 10) / 10;
+}
+
+function biofoulingFactors(record = {}) {
+  const stay = Number(firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, 0) || 0);
+  const anchorage = Number(firstFiniteNumber(record.anchorage_hours, record.waiting_hours, 0) || 0);
+  const repeat = repeatCallerVisitCount(record, 365);
+  const type = String(firstNonEmpty(record.vessel_type_group, record.vessel_type, record.ship_type, "")).toLowerCase();
+  const factors = [];
+  if (stay >= 168) factors.push("LONG_PORT_STAY");
+  else if (stay >= 72) factors.push("PORT_DWELL_TIME");
+  if (anchorage >= 72) factors.push("LONG_ANCHORAGE");
+  else if (anchorage >= 24) factors.push("ANCHORAGE_WAIT");
+  if (Number(record.idle_risk_score || record.idle_exposure || 0) >= 40) factors.push("REPEATED_INACTIVITY");
+  if (/tanker|bulk|cargo|container|lng|lpg|chemical/.test(type)) factors.push("VESSEL_TYPE_EXPOSURE");
+  if (repeat >= 2) factors.push("PREVIOUS_VISIT_PATTERN");
+  for (const code of compactInsightFactors(record)) {
+    if (/LONG|ANCHOR|IDLE|BIO|RISK|REPEAT/i.test(code) && !factors.includes(code)) factors.push(code);
+  }
+  return factors.slice(0, 8);
+}
+
+function buildBiofoulingRiskIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const riskScore = Math.max(recordRiskScore(record), Number(record.biofouling_exposure_score || 0), Number(record.biofouling_score || 0));
+      return compactVesselInsight(record, index, {
+        risk_score: riskScore,
+        risk_level: operationalRiskLevel(riskScore),
+        factors: biofoulingFactors(record),
+        reason_summary: biofoulingFactors(record).length ? `${biofoulingFactors(record).join(", ")} 기반 운영 리스크 신호` : compactReasonSummary(record),
+        recommended_action: riskScore >= 70 ? "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안" : "입항/체류 이력 변화 시점에 맞춰 리스크를 재확인",
+        data_sources: displaySources(record).length ? displaySources(record) : ["risk_history", "feature_store", "opportunity_master"]
+      });
+    })
+    .filter(item => Number(item.risk_score || 0) > 0 || item.factors.length)
+    .sort((a, b) => Number(b.risk_score || 0) - Number(a.risk_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "risk_history,feature_store,opportunity_master,explainability_snapshots,commercial_opportunity_daily",
+    items,
+    summary: {
+      high_risk_count: items.filter(item => item.risk_level === "HIGH").length,
+      disclaimer: "운항 신호 기반 상대 리스크입니다. 과학적 부착량 판정이 아닙니다."
+    }
+  });
+}
+
+function buildCleaningWindowIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const stay = dwellDays(record);
+      const riskScore = recordRiskScore(record);
+      const opportunityScore = salesPriorityScore(record);
+      const repeatScore = Math.min(20, repeatCallerVisitCount(record, 365) * 5);
+      const windowScore = Math.min(100, Math.round(
+        Math.min(35, stay * 4) +
+        Math.min(25, Number(record.anchorage_hours || 0) / 4) +
+        Math.min(25, riskScore * 0.25) +
+        Math.min(25, opportunityScore * 0.25) +
+        repeatScore
+      ));
+      return compactVesselInsight(record, index, {
+        opportunity_score: opportunityScore,
+        stay_days: stay,
+        arrival_port: recordPortName(record),
+        next_eta: firstNonEmpty(record.next_eta, record.eta, record.etb, record.predicted_arrival_time, record.arrival_time) || null,
+        risk_score: riskScore,
+        window_score: windowScore,
+        reason_summary: `체류 ${stay}일, 리스크 ${riskScore}점, 기회 ${opportunityScore}점 기반 클리닝 적기 신호`,
+        recommended_action: windowScore >= 70 ? "출항 전 작업 가능 시간과 대리점 연락 경로를 즉시 확인" : "체류가 길어지는지 모니터링 후 작업 가능성을 재확인",
+        data_sources: displaySources(record).length ? displaySources(record) : ["opportunity_master", "vessel_snapshot_daily", "commercial_opportunity_daily"]
+      });
+    })
+    .filter(item => Number(item.window_score || 0) >= 35 || Number(item.opportunity_score || 0) >= 65)
+    .sort((a, b) => Number(b.window_score || 0) - Number(a.window_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "vessel_visits,route_snapshot_daily,commercial_opportunity_daily,vessel_snapshot_daily,opportunity_master,risk_history", items });
+}
+
+function aggregateOperators(records = [], fleetOpportunities = []) {
+  const map = new Map();
+  for (const record of records) {
+    const operator = operatorDisplayName(record);
+    if (!operator || operator === "운영사 확인 필요") continue;
+    const current = map.get(operator) || {
+      operator_name: operator,
+      vessel_count: 0,
+      hot_count: 0,
+      warm_count: 0,
+      high_risk_count: 0,
+      repeat_caller_count: 0,
+      score_total: 0,
+      risk_total: 0,
+      ports: new Map(),
+      last_seen: null
+    };
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    const label = String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, salesPriorityBand(score))).toUpperCase();
+    current.vessel_count += 1;
+    current.hot_count += label === "HOT" || score >= 75 ? 1 : 0;
+    current.warm_count += label === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
+    current.high_risk_count += risk >= 70 ? 1 : 0;
+    current.repeat_caller_count += repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.score_total += score;
+    current.risk_total += risk;
+    const port = recordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    const seen = firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.generated_at);
+    if (seen && (!current.last_seen || String(seen) > String(current.last_seen))) current.last_seen = seen;
+    map.set(operator, current);
+  }
+  for (const row of fleetOpportunities) {
+    const operator = operatorDisplayName(row);
+    if (!operator || operator === "운영사 확인 필요") continue;
+    const current = map.get(operator) || { operator_name: operator, vessel_count: 0, hot_count: 0, warm_count: 0, high_risk_count: 0, repeat_caller_count: 0, score_total: 0, risk_total: 0, ports: new Map(), last_seen: null };
+    current.vessel_count = Math.max(current.vessel_count, Number(row.current_vessel_count || row.operator_vessel_count || row.vessel_count || 0));
+    current.hot_count = Math.max(current.hot_count, Number(row.hot_count || row.immediate_target_count || 0));
+    current.score_total = Math.max(current.score_total, Number(row.fleet_opportunity_score || row.average_commercial_value || 0) * Math.max(1, current.vessel_count));
+    map.set(operator, current);
+  }
+  return [...map.values()].map(row => {
+    const topPorts = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([port_name, count]) => ({ port_name, count }));
+    const averageOpportunity = row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0;
+    const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
+    const koreaPresenceScore = Math.min(100, Math.round(row.vessel_count * 8 + row.repeat_caller_count * 12 + topPorts.length * 5));
+    return {
+      ...row,
+      top_ports: topPorts,
+      average_opportunity_score: averageOpportunity,
+      average_risk_score: averageRisk,
+      korea_presence_score: koreaPresenceScore,
+      Korea_presence_score: koreaPresenceScore,
+      opportunity_index: Math.min(100, Math.round(averageOpportunity * 0.55 + averageRisk * 0.2 + koreaPresenceScore * 0.25)),
+      relationship_score: Math.min(100, Math.round(koreaPresenceScore * 0.6 + row.repeat_caller_count * 8 + row.hot_count * 5))
+    };
+  });
+}
+
+function buildOperatorOpportunitiesIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const items = aggregateOperators(records, fleetOpportunities)
+    .sort((a, b) => Number(b.opportunity_index || 0) - Number(a.opportunity_index || 0))
+    .slice(0, 10)
+    .map((row, index) => ({
+      rank: index + 1,
+      operator_name: row.operator_name,
+      vessel_count: row.vessel_count,
+      hot_count: row.hot_count,
+      warm_count: row.warm_count,
+      high_risk_count: row.high_risk_count,
+      repeat_caller_count: row.repeat_caller_count,
+      average_opportunity_score: row.average_opportunity_score,
+      Korea_presence_score: row.Korea_presence_score,
+      korea_presence_score: row.korea_presence_score,
+      top_ports: row.top_ports,
+      opportunity_score: row.opportunity_index,
+      recommended_sales_angle: row.hot_count ? "HOT 후보를 중심으로 선대 단위 제안" : "반복 입항/항만 체류 패턴 기반 관계 구축",
+      reason_summary: `${row.operator_name} 관련 ${row.vessel_count}척, HOT ${row.hot_count}척, 반복입항 ${row.repeat_caller_count}척`,
+      recommended_action: row.hot_count ? "선사 담당자에게 HOT 후보와 항만별 작업 가능성을 함께 제시" : "한국 입항 패턴을 근거로 담당 창구를 확인"
+    }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "operator_snapshot_daily,operator_contact_history,commercial_leads,vessel_master,vessel_visits", items });
+}
+
+function buildFleetMemoryIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const items = aggregateOperators(records, fleetOpportunities)
+    .sort((a, b) => Number(b.relationship_score || 0) - Number(a.relationship_score || 0))
+    .slice(0, 10)
+    .map((row, index) => ({
+      rank: index + 1,
+      operator_name: row.operator_name,
+      vessels_seen: row.vessel_count,
+      previous_targets: row.hot_count + row.warm_count,
+      previous_hot_candidates: row.hot_count,
+      repeat_callers: row.repeat_caller_count,
+      ports_used: row.top_ports.map(port => port.port_name),
+      last_seen: row.last_seen,
+      relationship_score: row.relationship_score,
+      opportunity_score: row.opportunity_index,
+      reason_summary: `${row.operator_name} 관계 신호: 선박 ${row.vessel_count}척, 반복입항 ${row.repeat_caller_count}척, 사용 항만 ${row.top_ports.length}곳`,
+      recommended_next_action: row.relationship_score >= 70 ? "기존 접점/대리점 단서를 확인해 선대 단위 후속 연락" : "운영사 담당자와 항만별 접점을 먼저 확인",
+      recommended_action: row.relationship_score >= 70 ? "기존 접점/대리점 단서를 확인해 선대 단위 후속 연락" : "운영사 담당자와 항만별 접점을 먼저 확인"
+    }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "operator_contact_history,commercial_leads,operator_snapshot_daily,commercial_opportunity_daily", items });
+}
+
+function buildPortOpportunitiesIntelligenceSummary({ records = [], portStatistics = {}, generatedAt, dataMode } = {}) {
+  const byPort = new Map();
+  for (const record of records) {
+    const port = recordPortName(record);
+    const current = byPort.get(port) || { port_name: port, vessel_count: 0, sales_target_count: 0, hot_count: 0, repeat_caller_count: 0, score_total: 0, risk_total: 0 };
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    current.vessel_count += 1;
+    current.sales_target_count += score >= 50 ? 1 : 0;
+    current.hot_count += score >= 75 ? 1 : 0;
+    current.repeat_caller_count += repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.score_total += score;
+    current.risk_total += risk;
+    byPort.set(port, current);
+  }
+  for (const port of (portStatistics.ports || [])) {
+    const name = port.display_name || port.port_name || port.port || "미확인 항만";
+    const current = byPort.get(name) || { port_name: name, vessel_count: 0, sales_target_count: 0, hot_count: 0, repeat_caller_count: 0, score_total: 0, risk_total: 0 };
+    current.vessel_count = Math.max(current.vessel_count, Number(port.vessel_count || port.total_vessels || 0));
+    current.sales_target_count = Math.max(current.sales_target_count, Number(port.target_count || port.candidate_count || port.sales_candidates || 0));
+    current.hot_count = Math.max(current.hot_count, Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0));
+    byPort.set(name, current);
+  }
+  const items = [...byPort.values()]
+    .map(row => {
+      const averageOpportunity = row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0;
+      const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
+      const opportunityIndex = Math.min(100, Math.round(averageOpportunity * 0.45 + averageRisk * 0.2 + row.hot_count * 8 + row.repeat_caller_count * 3 + row.sales_target_count * 1.5));
+      return {
+        port_name: row.port_name,
+        vessel_count: row.vessel_count,
+        sales_target_count: row.sales_target_count,
+        hot_count: row.hot_count,
+        repeat_caller_count: row.repeat_caller_count,
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        opportunity_index: opportunityIndex,
+        opportunity_score: opportunityIndex,
+        reason_summary: `${row.port_name} 영업대상 ${row.sales_target_count}척, HOT ${row.hot_count}척`,
+        recommended_action: "항만별 상위 후보와 대리점 연락 가능 시간을 확인"
+      };
+    })
+    .sort((a, b) => Number(b.opportunity_index || 0) - Number(a.opportunity_index || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,opportunity_master,commercial_opportunity_daily", items });
+}
+
+function buildSuperintendentTargetsIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = sortCommercialPriority(records)
+    .filter(record => salesPriorityScore(record) >= 50)
+    .map((record, index) => {
+      const operatorKnown = operatorDisplayName(record) !== "운영사 확인 필요";
+      const repeat = repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0;
+      const contactConfidence = firstFiniteNumber(record.contact_readiness_score, record.data_confidence_score, record.confidence_score, operatorKnown ? 55 : 25, 0);
+      const fleetScore = Math.min(100, Math.round((operatorKnown ? 35 : 0) + (repeat ? 25 : 0) + salesPriorityScore(record) * 0.4));
+      const koreaPresenceScore = Math.min(100, Math.round((repeat ? 55 : 20) + dwellDays(record) * 3));
+      const probability = Math.min(100, Math.round(fleetScore * 0.45 + koreaPresenceScore * 0.25 + Number(contactConfidence || 0) * 0.3));
+      return compactVesselInsight(record, index, {
+        operator_name: operatorKnown ? operatorDisplayName(record) : null,
+        manager_name: firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager) || null,
+        superintendent_probability: probability,
+        contact_confidence: contactConfidence,
+        fleet_score: fleetScore,
+        korea_presence_score: koreaPresenceScore,
+        opportunity_score: salesPriorityScore(record),
+        recommended_message_angle: repeat ? "반복 입항과 현재 체류/리스크 신호를 묶어 기술 담당자에게 확인" : "현재 항만 체류와 작업 가능 시간을 중심으로 기술 담당자 확인",
+        recommended_next_action: "운영사/관리사 기술감독 또는 대리점 담당자 확인",
+        recommended_action: "운영사/관리사 기술감독 또는 대리점 담당자 확인"
+      });
+    })
+    .sort((a, b) => Number(b.superintendent_probability || 0) - Number(a.superintendent_probability || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "operator_contact_history,commercial_leads,operator_snapshot_daily,verification-queue,vessel_display,commercial_opportunity_daily", items });
+}
+
+function complianceCountry(record = {}) {
+  const text = String(firstNonEmpty(record.destination_country, record.destination, record.destination_port, record.next_port, record.route_region, "")).toLowerCase();
+  if (/brazil|brasil|브라질/.test(text)) return "Brazil";
+  if (/australia|australian|호주/.test(text)) return "Australia";
+  if (/new zealand|nz|뉴질랜드/.test(text)) return "New Zealand";
+  if (/california|los angeles|long beach|oakland|캘리포니아/.test(text)) return "California";
+  if (/canada|vancouver|montreal|캐나다/.test(text)) return "Canada";
+  return null;
+}
+
+function buildComplianceOpportunitiesIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = records
+    .map((record, index) => {
+      const country = complianceCountry(record);
+      const risk = recordRiskScore(record);
+      const score = Math.min(100, Math.round((country ? 45 : 0) + risk * 0.35 + Math.min(20, dwellDays(record) * 2) + Math.min(15, repeatCallerVisitCount(record, 365) * 5)));
+      return { record, index, country, score, risk };
+    })
+    .filter(row => row.country || row.score >= 55)
+    .sort((a, b) => b.score - a.score || b.risk - a.risk)
+    .slice(0, 10)
+    .map((row, index) => compactVesselInsight(row.record, index, {
+      destination_country: row.country || "확인 필요",
+      compliance_score: row.score,
+      risk_score: row.risk,
+      risk_level: operationalRiskLevel(row.risk),
+      urgency: row.score >= 75 ? "HIGH" : row.score >= 50 ? "MEDIUM" : "LOW",
+      reason_summary: `${row.country || "규제 목적지 확인 필요"} 목적지/체류/리스크 신호 기반 compliance opportunity`,
+      recommended_action: "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
+      data_sources: displaySources(row.record).length ? displaySources(row.record) : ["risk_history", "route_snapshot_daily", "vessel_visits", "explainability_snapshots"]
+    }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "risk_history,biofouling,opportunity_master,route_snapshot_daily,vessel_visits,explainability_snapshots", items });
+}
+
+function estimateRevenueRange(count = 0, level = "WARM") {
+  const lowUnit = level === "HOT" ? 9000 : 5000;
+  const highUnit = level === "HOT" ? 28000 : 16000;
+  return {
+    target_count: count,
+    estimated_revenue_low: count * lowUnit,
+    estimated_revenue_high: count * highUnit
+  };
+}
+
+function buildRevenueForecastIntelligenceSummary({ records = [], fleetOpportunities = [], portStatistics = {}, generatedAt, dataMode } = {}) {
+  const hot = records.filter(record => salesPriorityScore(record) >= 75).length;
+  const warm = records.filter(record => salesPriorityScore(record) >= 50 && salesPriorityScore(record) < 75).length;
+  const portSummary = buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }).items.slice(0, 5).map(port => ({
+    port_name: port.port_name,
+    target_count: port.sales_target_count,
+    estimated_revenue_low: port.sales_target_count * 5000,
+    estimated_revenue_high: port.sales_target_count * 22000,
+    opportunity_index: port.opportunity_index
+  }));
+  const operatorSummary = aggregateOperators(records, fleetOpportunities).sort((a, b) => b.opportunity_index - a.opportunity_index).slice(0, 8).map(row => ({
+    operator_name: row.operator_name,
+    target_count: row.hot_count + row.warm_count,
+    estimated_revenue_low: (row.hot_count + row.warm_count) * 5000,
+    estimated_revenue_high: (row.hot_count + row.warm_count) * 24000,
+    opportunity_index: row.opportunity_index
+  }));
+  const sections = {
+    HOT: estimateRevenueRange(hot, "HOT"),
+    WARM: estimateRevenueRange(warm, "WARM"),
+    by_port: portSummary,
+    by_operator: operatorSummary
+  };
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "commercial_opportunity_daily,opportunity_master,sales/actions,sales-pipeline,operator_snapshot_daily",
+    items: [
+      {
+        rank: 1,
+        operator_name: "전체 영업 퍼널",
+        target_count: hot + warm,
+        estimated_revenue_low: sections.HOT.estimated_revenue_low + sections.WARM.estimated_revenue_low,
+        estimated_revenue_high: sections.HOT.estimated_revenue_high + sections.WARM.estimated_revenue_high,
+        sections,
+        reason_summary: `HOT ${hot}척, WARM ${warm}척 기준의 보수적 영업 기회 범위`,
+        recommended_action: "HOT 후보부터 연락 가능성과 작업 가능 시간을 확인"
+      }
+    ],
+    summary: sections,
+    extra: { sections }
+  });
+}
+
 function buildIntelligenceSummaries({
   records = [],
   candidateList = [],
@@ -4588,18 +5080,27 @@ function buildIntelligenceSummaries({
   scoringDiagnostics = {},
   operatorDiagnostics = {},
   predictionDiagnostics = {},
+  portStatistics = {},
   generatedAt = new Date().toISOString(),
   dataMode = "unknown"
 } = {}) {
   return {
     "risk-summary": buildRiskIntelligenceSummary({ records, scoringDiagnostics, generatedAt, dataMode }),
+    "biofouling-risk": buildBiofoulingRiskIntelligenceSummary({ records, generatedAt, dataMode }),
     "explainability": buildExplainabilityIntelligenceSummary({ topCandidates, candidateList, salesCandidates, immediateTargets, generatedAt, dataMode }),
     "prediction-summary": buildPredictionIntelligenceSummary({ arrivalPipeline, predictedCleaningOpportunities, predictionDiagnostics, generatedAt, dataMode }),
     "operator-summary": buildOperatorIntelligenceSummary({ fleetOpportunities, operatorDiagnostics, generatedAt, dataMode }),
+    "operator-opportunities": buildOperatorOpportunitiesIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "agent-summary": buildAgentIntelligenceSummary({ records, generatedAt, dataMode }),
     "repeat-callers": buildRepeatCallerIntelligenceSummary({ records, generatedAt, dataMode }),
     "fleet-summary": buildFleetIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
+    "fleet-memory": buildFleetMemoryIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "route-summary": buildRouteIntelligenceSummary({ records, generatedAt, dataMode }),
+    "cleaning-window": buildCleaningWindowIntelligenceSummary({ records, generatedAt, dataMode }),
+    "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
+    "superintendent-targets": buildSuperintendentTargetsIntelligenceSummary({ records, generatedAt, dataMode }),
+    "compliance-opportunities": buildComplianceOpportunitiesIntelligenceSummary({ records, generatedAt, dataMode }),
+    "revenue-forecast": buildRevenueForecastIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "commercial-summary": buildCommercialIntelligenceSummary({ topCandidates, commercialCommandCenter, candidateList, generatedAt, dataMode }),
     "sales-priority": buildSalesPriorityIntelligenceSummary({ records, candidateList, salesCandidates, immediateTargets, topCandidates, commercialCommandCenter, generatedAt, dataMode })
   };
@@ -7009,6 +7510,7 @@ try {
     scoringDiagnostics,
     operatorDiagnostics,
     predictionDiagnostics,
+    portStatistics,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
@@ -7139,13 +7641,21 @@ try {
     "dashboard/api/staying-vessels.json": stayingVesselsPayload,
     "dashboard/api/congestion-watchlist.json": congestionWatchlistPayload,
     "dashboard/api/intelligence/risk-summary.json": intelligenceSummaries["risk-summary"],
+    "dashboard/api/intelligence/biofouling-risk.json": intelligenceSummaries["biofouling-risk"],
     "dashboard/api/intelligence/explainability.json": intelligenceSummaries.explainability,
     "dashboard/api/intelligence/prediction-summary.json": intelligenceSummaries["prediction-summary"],
     "dashboard/api/intelligence/operator-summary.json": intelligenceSummaries["operator-summary"],
+    "dashboard/api/intelligence/operator-opportunities.json": intelligenceSummaries["operator-opportunities"],
     "dashboard/api/intelligence/agent-summary.json": intelligenceSummaries["agent-summary"],
     "dashboard/api/intelligence/repeat-callers.json": intelligenceSummaries["repeat-callers"],
     "dashboard/api/intelligence/fleet-summary.json": intelligenceSummaries["fleet-summary"],
+    "dashboard/api/intelligence/fleet-memory.json": intelligenceSummaries["fleet-memory"],
     "dashboard/api/intelligence/route-summary.json": intelligenceSummaries["route-summary"],
+    "dashboard/api/intelligence/cleaning-window.json": intelligenceSummaries["cleaning-window"],
+    "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
+    "dashboard/api/intelligence/superintendent-targets.json": intelligenceSummaries["superintendent-targets"],
+    "dashboard/api/intelligence/compliance-opportunities.json": intelligenceSummaries["compliance-opportunities"],
+    "dashboard/api/intelligence/revenue-forecast.json": intelligenceSummaries["revenue-forecast"],
     "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"],
     "dashboard/api/intelligence/sales-priority.json": intelligenceSummaries["sales-priority"],
     ...paginatedVesselOutputs
