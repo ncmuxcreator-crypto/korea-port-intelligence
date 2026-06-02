@@ -129,6 +129,8 @@ const hasNumber=v=>v!==undefined&&v!==null&&v!==""&&Number.isFinite(Number(v));
 const fmtMaybe=v=>hasNumber(v)?Number(v).toLocaleString("ko-KR"):"확인 불가";
 const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const pick=(o,...keys)=>keys.map(k=>o?.[k]).find(v=>v!==undefined&&v!==null&&String(v).trim()!=="")??"";
+const identityValue=v=>v!==undefined&&v!==null&&String(v).trim()!==""&&!["-","확인 불가","선명 확인 필요","항만 확인 필요"].includes(String(v).trim());
+const identityPick=(o,...keys)=>keys.map(k=>o?.[k]).find(identityValue)??"";
 const runId=p=>p?.active_run_id||p?.summary_run_id||p?.run_id||p?.status?.active_run_id||"";
 const servingMode=p=>p?.serving_mode||p?.status?.serving_mode||"";
 const sameServingMode=(a,b)=>!servingMode(a)||!servingMode(b)||servingMode(a)===servingMode(b);
@@ -172,11 +174,11 @@ function grade(v){const s=score(v);if(s>=75)return["HOT","hot"];if(s>=50)return[
 function tagLabel(tag){const raw=String(tag||"").trim();const key=raw.toUpperCase().replace(/[^A-Z0-9]+/g,"_");const map={MASTER_DB_MATCH_FOUND:"마스터 매칭",LONG_STAY:"장기체류",LONG_PORT_STAY:"장기체류",LONG_ANCHORAGE_WAIT:"묘박대기",EXTENDED_IDLE_PERIOD:"장기대기",HIGH_GT_VESSEL:"대형선",HIGH_CONGESTION_EXPOSURE:"혼잡노출",LOW_SPEED_EXPOSURE:"저속운항",REGULATED_ROUTE:"규제항로",HIGH_REGULATION_ROUTE:"규제항로",CONTACT_PATH_AVAILABLE:"연락경로",AGENT_KNOWN:"대리점확인"};return map[key]||raw.replace(/_/g," ")}
 function reasonTags(v){const rawTags=[...(Array.isArray(v.reason_codes)?v.reason_codes:[]),...(Array.isArray(v.commercial_signal_flags)?v.commercial_signal_flags:[])].map(tagLabel);const priority=[];if(isHighRisk(v))priority.push("고위험");if(isAnchorageWaiting(v))priority.push("묘박/대기");if(/australia|brazil|new zealand|호주|브라질|뉴질랜드/i.test([v.destination,v.next_port,v.destination_port].join(" ")))priority.push("규제항로");if(stayHours(v)>=72)priority.push("장기체류");return [...new Set([...priority,...rawTags])].filter(Boolean).slice(0,4)}
 function rankRows(rows){return rows.slice().sort((a,b)=>score(b)-score(a)||stayHours(b)-stayHours(a)||String(pick(a,"eta")).localeCompare(String(pick(b,"eta"))))}
-function hotIdentityKey(v){return pick(v,"imo","mmsi","master_vessel_id","hybrid_entity_key","vessel_id")||`${vesselName(v)}|${portName(v)}`}
+function hotIdentityKey(v){return identityPick(v,"imo","mmsi","master_vessel_id","hybrid_entity_key","vessel_id")||`${vesselName(v)}|${portName(v)}`}
 function compareHotRows(a,b){return score(b)-score(a)||stayHours(b)-stayHours(a)||String(pick(a,"eta","ata")).localeCompare(String(pick(b,"eta","ata")))||vesselName(a).localeCompare(vesselName(b),"ko")}
 function getHotCandidates(){const map=new Map();for(const row of [...arr(state.top?.immediate_targets),...arr(state.top?.opportunities),...salesRows(state.rows)]){const key=hotIdentityKey(row);const old=map.get(key);if(!old||compareHotRows(row,old)<0)map.set(key,row)}return [...map.values()].sort(compareHotRows)}
 function salesRows(rows){return rankRows(rows.filter(v=>score(v)>=50||["immediate_target","sales_target","critical"].includes(String(v.candidate_band||v.sales_priority_band))))}
-function rowIdentityKey(v){return pick(v,"imo","mmsi","master_vessel_id","hybrid_entity_key","vessel_id","port_call_id")||`${vesselName(v)}|${portName(v)}|${pick(v,"berth","berth_name","sub_port")}`}
+function rowIdentityKey(v){return identityPick(v,"imo","mmsi","master_vessel_id","hybrid_entity_key","vessel_id","port_call_id")||`${vesselName(v)}|${portName(v)}|${pick(v,"berth","berth_name","sub_port")}`}
 function dedupeRows(rows){const map=new Map();for(const row of rows||[]){const key=rowIdentityKey(row);const old=map.get(key);if(!old||score(row)>score(old)||stayHours(row)>stayHours(old))map.set(key,row)}return [...map.values()]}
 function searchBlob(v){return [vesselName(v),pick(v,"normalized_vessel_name","imo","mmsi","call_sign"),vesselTypeText(v),tonnageText(v),pick(v,"flag","vsslNltyNm","vsslNltyCd","nationality"),currentPortText(v),operatorText(v),pick(v,"operator_name","operator","owner_name","owner","manager_name","manager","agent_name","agent"),pick(v,"destination","destination_port","next_port","previous_port","eta","etb","ata","atb"),sourceText(v),confidenceText(v),opportunityText(v),action(v),why(v)].join(" ").toLowerCase()}
 function timeText(v){return ["ETA","ETB","ATA"].map(k=>[k,pick(v,k.toLowerCase(),k)]).filter(([,value])=>value).map(([k,value])=>`${k} ${value}`).join(" · ")||"일정 확인 불가"}

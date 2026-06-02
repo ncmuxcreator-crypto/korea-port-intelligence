@@ -252,7 +252,7 @@ assert(dashboardSource.includes("setTimeout"), "Dashboard must have a bounded lo
 for (const marker of ["port_statistics_status", "항만 정보 없음", "항만 통계 생성 실패", "fmtMaybe"]) {
   assert(dashboardSource.includes(marker), `Dashboard port statistics rendering missing marker: ${marker}`);
 }
-for (const marker of ["dashboardStaticPath", "vesselDetailsHtml", "dedupeRows", "searchBlob", "state.rows.slice()"]) {
+for (const marker of ["dashboardStaticPath", "vesselDetailsHtml", "dedupeRows", "identityPick", "searchBlob", "state.rows.slice()"]) {
   assert(dashboardSource.includes(marker), `Dashboard vessel list regression guard missing marker: ${marker}`);
   assert(publicSource.includes(marker), `Public dashboard vessel list regression guard missing marker: ${marker}`);
   assert(rootSource.includes(marker), `Root dashboard vessel list regression guard missing marker: ${marker}`);
