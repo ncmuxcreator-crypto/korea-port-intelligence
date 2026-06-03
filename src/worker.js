@@ -3763,11 +3763,13 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "ports_used",
   "last_seen",
   "demand_score",
+  "fleet_size_korea",
   "vessel_count",
   "hot_count",
   "warm_count",
   "sales_target_count",
   "high_risk_count",
+  "compliance_exposure_count",
   "service_opportunity_counts",
   "services",
   "growth_trend",
@@ -3776,6 +3778,8 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "high_opportunity_vessels",
   "unseen_vessels",
   "fleet_expansion_score",
+  "fleet_dna",
+  "estimated_revenue",
   "revenue_opportunity",
   "average_opportunity_score",
   "average_risk_score",
@@ -6109,42 +6113,124 @@ function buildRepeatCallerSummary(records = [], source = {}, generatedAt = new D
 }
 
 function buildFleetSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const complianceExposure = record => {
+    const text = String(firstNonEmpty(record.destination_country, record.destination, record.destination_port, record.next_port, record.route_region, "")).toLowerCase();
+    return Boolean(record.high_regulation_route || record.regulated_route || record.biosecurity_route || record.compliance_watch || /brazil|brasil|australia|new zealand|nz|california|canada|브라질|호주|뉴질랜드|캘리포니아|캐나다/.test(text));
+  };
+  const fleetDna = row => {
+    const tags = [];
+    if (Number(row.hot_count || 0) >= 2) tags.push("HOT 후보 집중");
+    if (Number(row.warm_count || 0) >= 3) tags.push("WARM 후보 풀");
+    if (Number(row.repeat_caller_count || 0) >= 2) tags.push("반복 기항");
+    if (Number(row.compliance_exposure_count || 0) > 0) tags.push("Compliance 노출");
+    if (Number(row.high_risk_count || 0) > 0) tags.push("고위험 선박 포함");
+    if ((row.top_ports || []).length >= 3) tags.push("다항만 활동");
+    if (Number(row.average_opportunity_score || 0) >= 60) tags.push("고기회 선대");
+    return tags.length ? tags.slice(0, 6) : ["관계 형성 후보"];
+  };
+  const revenueEstimate = row => {
+    const hot = Number(row.hot_count || 0);
+    const warm = Number(row.warm_count || 0);
+    const compliance = Number(row.compliance_exposure_count || 0);
+    const repeat = Number(row.repeat_caller_count || 0);
+    return {
+      currency: "USD",
+      estimated_revenue_low: hot * 9000 + warm * 5000 + compliance * 3000 + repeat * 1500,
+      estimated_revenue_high: hot * 28000 + warm * 16000 + compliance * 9000 + repeat * 4500,
+      basis: "HOT/WARM targets, compliance exposure, repeat caller signals"
+    };
+  };
   const byOperator = new Map();
   for (const record of records) {
     const operator = firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company);
     if (!operator) continue;
-    const current = byOperator.get(operator) || { operator, vessel_count: 0, hot_count: 0, staying_count: 0, arrival_count: 0, score_total: 0 };
+    const current = byOperator.get(operator) || { operator, vessel_count: 0, hot_count: 0, warm_count: 0, repeat_caller_count: 0, compliance_exposure_count: 0, high_risk_count: 0, staying_count: 0, arrival_count: 0, score_total: 0, ports: new Map() };
+    const score = salesPriorityScore(record);
+    const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
     current.vessel_count += 1;
-    current.score_total += salesPriorityScore(record);
-    if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || salesPriorityScore(record) >= 75) current.hot_count += 1;
+    current.score_total += score;
+    if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || score >= 75) current.hot_count += 1;
+    if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "WARM" || (score >= 50 && score < 75)) current.warm_count += 1;
+    if (repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0) current.repeat_caller_count += 1;
+    if (complianceExposure(record)) current.compliance_exposure_count += 1;
+    if (risk >= 70) current.high_risk_count += 1;
     if (Number(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours || record.anchorage_hours || 0) >= 72 || record.is_staying_without_departure) current.staying_count += 1;
     if (record.predicted_arrival_pipeline || record.eta || record.etb || record.arrival_time || String(record.status_bucket || "").includes("arriving")) current.arrival_count += 1;
+    const port = firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port, "미확인 항만");
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    byOperator.set(operator, current);
+  }
+  for (const row of buildFleetOpportunityRows(records)) {
+    const operator = firstNonEmpty(row.operator_name, row.operator_normalized);
+    if (!operator) continue;
+    const current = byOperator.get(operator) || { operator, vessel_count: 0, hot_count: 0, warm_count: 0, repeat_caller_count: 0, compliance_exposure_count: 0, high_risk_count: 0, staying_count: 0, arrival_count: 0, score_total: 0, ports: new Map() };
+    current.vessel_count = Math.max(current.vessel_count, Number(row.current_vessel_count || row.operator_vessel_count || 0));
+    current.hot_count = Math.max(current.hot_count, Number(row.immediate_target_count || row.immediate_targets || 0));
+    current.warm_count = Math.max(current.warm_count, Math.max(0, Number(row.target_vessel_count || row.target_vessels || 0) - current.hot_count));
+    current.opportunity_score = firstFiniteNumber(row.fleet_opportunity_score, row.average_commercial_value, current.opportunity_score, 0);
+    if (Array.isArray(row.top_vessels)) {
+      for (const vessel of row.top_vessels) {
+        const port = firstNonEmpty(vessel.port_name, vessel.port);
+        if (port) current.ports.set(port, (current.ports.get(port) || 0) + 1);
+      }
+    }
     byOperator.set(operator, current);
   }
   const items = [...byOperator.values()]
-    .map((row, index) => ({
-      rank: index + 1,
-      operator: row.operator,
-      operator_name: row.operator,
-      vessel_count: row.vessel_count,
-      hot_count: row.hot_count,
-      staying_count: row.staying_count,
-      arrival_count: row.arrival_count,
-      opportunity_score: row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0,
-      reason_summary: `${row.operator} 관련 선박 ${row.vessel_count}척 신호`,
-      recommended_action: "운영사 단위로 후보 선박과 연락 경로를 확인하세요."
-    }))
-    .sort((a, b) => Number(b.hot_count || 0) - Number(a.hot_count || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0));
+    .map(row => {
+      const topPorts = [...(row.ports || new Map()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([port_name, count]) => ({ port_name, count }));
+      const averageOpportunity = firstFiniteNumber(row.opportunity_score, row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0, 0);
+      const koreaPresenceScore = Math.min(100, Math.round(row.vessel_count * 8 + row.repeat_caller_count * 12 + topPorts.length * 5));
+      const enriched = {
+        operator: row.operator,
+        operator_name: row.operator,
+        fleet_size_korea: row.vessel_count,
+        vessel_count: row.vessel_count,
+        hot_count: row.hot_count,
+        warm_count: row.warm_count,
+        repeat_caller_count: row.repeat_caller_count,
+        compliance_exposure_count: row.compliance_exposure_count,
+        high_risk_count: row.high_risk_count,
+        staying_count: row.staying_count,
+        arrival_count: row.arrival_count,
+        average_opportunity_score: averageOpportunity,
+        korea_presence_score: koreaPresenceScore,
+        top_ports: topPorts,
+        opportunity_score: Math.min(100, Math.round(Number(averageOpportunity || 0) * 0.5 + koreaPresenceScore * 0.3 + row.hot_count * 4 + row.compliance_exposure_count * 2))
+      };
+      const estimatedRevenue = revenueEstimate(enriched);
+      const dna = fleetDna(enriched);
+      return {
+        ...enriched,
+        estimated_revenue: estimatedRevenue,
+        estimated_revenue_low: estimatedRevenue.estimated_revenue_low,
+        estimated_revenue_high: estimatedRevenue.estimated_revenue_high,
+        fleet_dna: dna,
+        top_factors: dna,
+        recommended_sales_angle: row.hot_count
+          ? "HOT 후보를 중심으로 선대 단위 제안"
+          : row.compliance_exposure_count
+            ? "Compliance 노출 선박을 묶어 사전 점검 제안"
+            : row.repeat_caller_count
+              ? "반복 입항 이력을 근거로 관계 구축"
+              : "한국 항만 활동 선박을 기준으로 담당 창구 확인",
+        reason_summary: `${row.operator} 관련 ${row.vessel_count}척, HOT ${row.hot_count}척, 반복입항 ${row.repeat_caller_count}척, Compliance ${row.compliance_exposure_count}척`,
+        recommended_action: "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요."
+      };
+    })
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.hot_count || 0) - Number(a.hot_count || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
   return publicItemsEnvelope({
     generatedAt,
     dataMode: source.data_source_used,
     source,
-    sourceTable: "operator_snapshot_daily,vessel_snapshots,fleet-opportunities",
+    sourceTable: "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily",
     items,
     extra: {
       summary: {
         operator_count: items.length,
-        source_hint: "operator_snapshot_daily / vessel_snapshots"
+        source_hint: "operator_snapshot_daily / fleet-memory / operator-opportunities / repeat-callers"
       }
     }
   });
@@ -6202,6 +6288,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
   if (name === "agent-summary") return buildAgentSummary(records, source, generatedAt);
   if (name === "repeat-callers") return buildRepeatCallerSummary(records, source, generatedAt);
   if (name === "fleet-summary") return buildFleetSummary(records, source, generatedAt);
+  if (name === "fleet-intelligence") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-memory") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-expansion") {
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities", items: workerFleetExpansionItems(records) });
@@ -6615,6 +6702,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "agent-summary": "agent_master,agent_operator_links,dashboard_summary_snapshots",
       "repeat-callers": "vessel_visits,vessel_snapshots,dashboard_summary_snapshots",
       "fleet-summary": "operator_snapshot_daily,vessel_snapshots,dashboard_summary_snapshots",
+      "fleet-intelligence": "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily,dashboard_summary_snapshots",
       "fleet-memory": "operator_contact_history,commercial_leads,operator_snapshot_daily,dashboard_summary_snapshots",
       "fleet-expansion": "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities,dashboard_summary_snapshots",
       "fleet-clusters": "operator-opportunities,fleet-memory,operator_snapshot_daily,dashboard_summary_snapshots",
