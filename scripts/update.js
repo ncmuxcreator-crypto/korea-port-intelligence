@@ -4195,6 +4195,7 @@ function buildBootstrapSnapshot({
   topCandidates = {},
   salesPriority = {},
   alerts = {},
+  previousKpiReference = {},
   generatedAt = new Date().toISOString(),
   dataMode = "live"
 } = {}) {
@@ -4208,34 +4209,38 @@ function buildBootstrapSnapshot({
     target_count: Number(port.target_count || port.candidate_count || port.target_vessels || port.sales_candidates || 0),
     hot_count: Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0)
   }));
+  const kpis = {
+    total_vessels: Number(dashboardSummary.total_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
+    sales_target_count: Number(dashboardSummary.sales_target_count || 0),
+    immediate_target_count: Number(dashboardSummary.immediate_target_count || 0),
+    hot_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "HOT").length,
+    warm_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "WARM").length,
+    port_count: Number(dashboardSummary.port_count || ports.length || 0),
+    arrival_pipeline_count: Number(dashboardSummary.arrival_pipeline_count || 0),
+    staying_vessels_count: Number(dashboardSummary.staying_vessels_count || dashboardSummary.staying_vessel_count || 0),
+    anchorage_waiting_count: Number(dashboardSummary.anchorage_waiting_count || 0),
+    high_risk_count: Number(dashboardSummary.high_risk_count || 0),
+    contact_now_count: Number(dashboardSummary.contact_now_count || 0),
+    pre_arrival_target_count: Number(dashboardSummary.pre_arrival_target_count || 0),
+    anchorage_opportunity_count: Number(dashboardSummary.anchorage_opportunity_count || 0),
+    long_stay_risk_count: Number(dashboardSummary.long_stay_risk_count || 0),
+    compliance_target_count: Number(dashboardSummary.compliance_target_count || 0),
+    repeat_caller_count: Number(dashboardSummary.repeat_caller_count || 0),
+    fleet_expansion_count: Number(dashboardSummary.fleet_expansion_count || 0),
+    verify_contact_count: Number(dashboardSummary.verify_contact_count || 0),
+    monitor_count: Number(dashboardSummary.monitor_count || 0),
+    hold_count: Number(dashboardSummary.hold_count || 0)
+  };
+  const kpiTrends = buildKpiTrends(kpis, previousKpiReference);
   return {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
     data_mode: contractDataMode(dataMode, report),
     fallback_used: Boolean(report.fallback_used || dashboardSummary.fallback_used),
     record_count: Number(dashboardSummary.record_count || report.record_count || dashboardSummary.all_vessels_count || 0),
-    kpis: {
-      total_vessels: Number(dashboardSummary.total_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
-      sales_target_count: Number(dashboardSummary.sales_target_count || 0),
-      immediate_target_count: Number(dashboardSummary.immediate_target_count || 0),
-      hot_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "HOT").length,
-      warm_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "WARM").length,
-      port_count: Number(dashboardSummary.port_count || ports.length || 0),
-      arrival_pipeline_count: Number(dashboardSummary.arrival_pipeline_count || 0),
-      staying_vessels_count: Number(dashboardSummary.staying_vessels_count || dashboardSummary.staying_vessel_count || 0),
-      anchorage_waiting_count: Number(dashboardSummary.anchorage_waiting_count || 0),
-      high_risk_count: Number(dashboardSummary.high_risk_count || 0),
-      contact_now_count: Number(dashboardSummary.contact_now_count || 0),
-      pre_arrival_target_count: Number(dashboardSummary.pre_arrival_target_count || 0),
-      anchorage_opportunity_count: Number(dashboardSummary.anchorage_opportunity_count || 0),
-      long_stay_risk_count: Number(dashboardSummary.long_stay_risk_count || 0),
-      compliance_target_count: Number(dashboardSummary.compliance_target_count || 0),
-      repeat_caller_count: Number(dashboardSummary.repeat_caller_count || 0),
-      fleet_expansion_count: Number(dashboardSummary.fleet_expansion_count || 0),
-      verify_contact_count: Number(dashboardSummary.verify_contact_count || 0),
-      monitor_count: Number(dashboardSummary.monitor_count || 0),
-      hold_count: Number(dashboardSummary.hold_count || 0)
-    },
+    kpis,
+    kpi_trends: kpiTrends,
+    trend_metrics: buildGrowthMetrics(kpiTrends),
     ports,
     top_candidates: topItems,
     sales_priority: priorityItems,
@@ -4376,6 +4381,93 @@ function firstFiniteNumber(...values) {
     if (Number.isFinite(number)) return number;
   }
   return null;
+}
+
+const KPI_TREND_ALIASES = {
+  total_vessels: ["total_vessels", "all_vessels_count", "all_collected_vessel_count", "record_count"],
+  sales_target_count: ["sales_target_count", "target_count", "sales_candidate_count"],
+  immediate_target_count: ["immediate_target_count", "immediate_candidate_count"],
+  hot_count: ["hot_count", "hot_vessel_count", "immediate_target_count"],
+  warm_count: ["warm_count"],
+  port_count: ["port_count"],
+  arrival_pipeline_count: ["arrival_pipeline_count"],
+  staying_vessels_count: ["staying_vessels_count", "staying_vessel_count"],
+  anchorage_waiting_count: ["anchorage_waiting_count", "anchorage_detected_count"],
+  high_risk_count: ["high_risk_count"],
+  compliance_target_count: ["compliance_target_count"],
+  contact_now_count: ["contact_now_count"],
+  pre_arrival_target_count: ["pre_arrival_target_count"],
+  anchorage_opportunity_count: ["anchorage_opportunity_count"],
+  long_stay_risk_count: ["long_stay_risk_count"],
+  repeat_caller_count: ["repeat_caller_count"],
+  fleet_expansion_count: ["fleet_expansion_count"],
+  verify_contact_count: ["verify_contact_count"],
+  monitor_count: ["monitor_count"],
+  hold_count: ["hold_count"]
+};
+
+function trendNumber(value) {
+  if (value === undefined || value === null || String(value).trim() === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function previousKpiValue(previous = {}, key) {
+  const aliases = KPI_TREND_ALIASES[key] || [key];
+  const sources = [previous?.kpis, previous];
+  for (const source of sources) {
+    if (!source || typeof source !== "object") continue;
+    for (const alias of aliases) {
+      const value = trendNumber(source[alias]);
+      if (value !== null) return value;
+    }
+  }
+  return null;
+}
+
+function kpiTrend(currentValue, previousValue) {
+  const current = trendNumber(currentValue);
+  const previous = trendNumber(previousValue);
+  const delta = current !== null && previous !== null ? current - previous : null;
+  let deltaPercent = null;
+  if (delta !== null) {
+    if (previous === 0) deltaPercent = current === 0 ? 0 : null;
+    else deltaPercent = Math.round((delta / Math.abs(previous)) * 1000) / 10;
+  }
+  return {
+    current_value: current,
+    previous_value: previous,
+    delta,
+    delta_percent: deltaPercent,
+    direction: delta === null ? "unknown" : delta > 0 ? "up" : delta < 0 ? "down" : "flat"
+  };
+}
+
+function loadPreviousKpiTrendReference() {
+  const bootstrap = readJsonSafe("dashboard/api/bootstrap.json", null);
+  const summary = readJsonSafe("dashboard/api/dashboard-summary.json", null);
+  return bootstrap?.kpis ? bootstrap : summary || bootstrap || {};
+}
+
+function buildKpiTrends(currentKpis = {}, previousReference = {}) {
+  const keys = [...new Set([
+    ...Object.keys(currentKpis || {}),
+    ...Object.keys(KPI_TREND_ALIASES)
+  ])];
+  return Object.fromEntries(keys.map(key => [
+    key,
+    kpiTrend(currentKpis[key], previousKpiValue(previousReference, key))
+  ]));
+}
+
+function buildGrowthMetrics(kpiTrends = {}) {
+  return {
+    vessel_growth: { metric_key: "total_vessels", ...(kpiTrends.total_vessels || {}) },
+    target_growth: { metric_key: "sales_target_count", ...(kpiTrends.sales_target_count || {}) },
+    port_growth: { metric_key: "port_count", ...(kpiTrends.port_count || {}) },
+    risk_growth: { metric_key: "high_risk_count", ...(kpiTrends.high_risk_count || {}) },
+    compliance_growth: { metric_key: "compliance_target_count", ...(kpiTrends.compliance_target_count || {}) }
+  };
 }
 
 function compactInsightFactors(record = {}) {
@@ -8141,15 +8233,20 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  const previousKpiReference = loadPreviousKpiTrendReference();
   const bootstrapPayload = buildBootstrapSnapshot({
     dashboardSummary,
     report,
     portStatistics,
     topCandidates: topCandidatesPayload,
     salesPriority: intelligenceSummaries["sales-priority"],
+    previousKpiReference,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  dashboardSummary.kpis = bootstrapPayload.kpis;
+  dashboardSummary.kpi_trends = bootstrapPayload.kpi_trends;
+  dashboardSummary.trend_metrics = bootstrapPayload.trend_metrics;
   const paginatedVesselOutputs = buildPaginatedVesselOutputs({
     records: allCollectedVessels,
     generatedAt: completedAt,
