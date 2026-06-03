@@ -2423,6 +2423,163 @@ function buildPortOpportunityRanking(records = []) {
   );
 }
 
+const WORKER_PORT_DEMAND_SERVICES = [
+  { key: "hull_cleaning", name: "Hull Cleaning" },
+  { key: "uwi", name: "UWI" },
+  { key: "bunker", name: "Bunker" },
+  { key: "crew_change", name: "Crew Change" },
+  { key: "waste_disposal", name: "Waste Disposal" },
+  { key: "repair", name: "Repair" },
+  { key: "diving", name: "Diving" }
+];
+
+function workerPortDemandText(record = {}) {
+  return String([
+    record.service_type,
+    record.opportunity_type,
+    record.recommended_action,
+    record.recommended_next_action,
+    record.reason_summary,
+    record.why_now,
+    record.status,
+    record.status_bucket,
+    record.vessel_type,
+    record.commercial_signal_flags,
+    record.operational_risk_flags
+  ].flat().filter(Boolean).join(" ")).toLowerCase();
+}
+
+function workerPortDemandIdentity(record = {}) {
+  const rawPort = firstNonEmpty(record.port_name, record.port_name_ko, record.current_port, record.port, record.destination_port, record.destination, record.arrival_port);
+  const normalized = normalizePort(rawPort);
+  const portName = normalized.port_name || rawPort || "미확인 항만";
+  const portCode = normalized.port_code || normalizePortCode(record.port_code || portCodeFromName(portName) || "UNKNOWN");
+  return { port_code: portCode, port_name: portName };
+}
+
+function workerEmptyServiceCounts() {
+  return Object.fromEntries(WORKER_PORT_DEMAND_SERVICES.map(service => [service.name, 0]));
+}
+
+function workerPortDemandFlags(record = {}) {
+  const text = workerPortDemandText(record);
+  const score = salesPriorityScore(record);
+  const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+  const stayHours = Number(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours || 0);
+  const anchorageHours = Number(record.anchorage_hours || record.waiting_hours || stayHours || 0);
+  const stayDays = Math.max(stayHours, anchorageHours) / 24;
+  const gt = Number(record.gt || record.grtg || record.gross_tonnage || 0);
+  const dwt = Number(record.dwt || record.deadweight || 0);
+  const largeVessel = gt >= 10000 || dwt >= 15000;
+  const anchoredOrWaiting = anchorageHours >= 12 || isAnchorageLike(record) || /anchor|anchorage|waiting|묘박|정박|대기/.test(text);
+  const longStay = stayDays >= 3 || anchorageHours >= 72;
+  const arrivalSignal = Boolean(firstNonEmpty(record.eta, record.etb, record.arrival_time, record.predicted_arrival_time)) || /arrival|inbound|입항|예정/.test(text);
+  const repairSignal = /repair|maintenance|drydock|yard|정비|수리|드라이독/.test(text) || Number(record.predicted_cleaning_opportunity_score || 0) >= 65;
+  const biofoulingSignal = risk >= 55 || Number(record.biofouling_exposure_score || record.biofouling_score || record.biofouling_risk_score || 0) >= 55;
+  return {
+    hull_cleaning: score >= 50 || biofoulingSignal || longStay || record.is_cleaning_candidate === true,
+    uwi: risk >= 60 || longStay || repairSignal || /inspection|uwi|underwater|검사|점검/.test(text),
+    bunker: arrivalSignal || largeVessel || /bunker|fuel|급유/.test(text),
+    crew_change: longStay || arrivalSignal || /crew|seafarer|선원|교대/.test(text),
+    waste_disposal: longStay || anchoredOrWaiting || largeVessel || /waste|sludge|garbage|폐기|오염/.test(text),
+    repair: repairSignal || risk >= 65 || /defect|damage|고장|손상/.test(text),
+    diving: anchoredOrWaiting || risk >= 60 || /diving|underwater|잠수/.test(text)
+  };
+}
+
+function buildWorkerPortDemandRadar(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const byPort = new Map();
+  const ensurePort = identity => {
+    const portName = identity.port_name || "미확인 항만";
+    const portCode = identity.port_code || "UNKNOWN";
+    const key = `${portCode}:${portName}`.toLowerCase();
+    if (!byPort.has(key)) {
+      byPort.set(key, {
+        port_code: portCode,
+        port_name: portName,
+        vessel_count: 0,
+        sales_target_count: 0,
+        hot_count: 0,
+        risk_total: 0,
+        score_total: 0,
+        congestion_total: 0,
+        score_count: 0,
+        service_opportunity_counts: workerEmptyServiceCounts()
+      });
+    }
+    return byPort.get(key);
+  };
+  for (const record of activeRecordsOnly(records).filter(hasUsefulVesselIdentity)) {
+    const row = ensurePort(workerPortDemandIdentity(record));
+    const score = salesPriorityScore(record);
+    const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+    row.vessel_count += 1;
+    row.sales_target_count += score >= 50 ? 1 : 0;
+    row.hot_count += score >= 75 ? 1 : 0;
+    row.risk_total += risk;
+    row.score_total += score;
+    row.congestion_total += Number(record.port_congestion_score || record.congestion_score || record.congestion_exposure_score || 0);
+    row.score_count += 1;
+    const flags = workerPortDemandFlags(record);
+    for (const service of WORKER_PORT_DEMAND_SERVICES) {
+      if (flags[service.key]) row.service_opportunity_counts[service.name] += 1;
+    }
+  }
+  for (const port of buildPortOpportunityRanking(records)) {
+    const row = ensurePort({ port_code: port.port_code, port_name: port.port_name });
+    row.vessel_count = Math.max(row.vessel_count, Number(port.vessel_count || 0));
+    row.sales_target_count = Math.max(row.sales_target_count, Number(port.sales_candidates || port.target_vessel_count || 0));
+    row.hot_count = Math.max(row.hot_count, Number(port.immediate_target_count || port.immediate_targets || 0));
+    row.opportunity_signal = Math.max(Number(row.opportunity_signal || 0), Number(port.port_opportunity_score || 0));
+    row.congestion_signal = Math.max(Number(row.congestion_signal || 0), Number(port.congestion_score || 0));
+  }
+  const items = [...byPort.values()]
+    .map(row => {
+      const serviceTotal = Object.values(row.service_opportunity_counts).reduce((sum, value) => sum + Number(value || 0), 0);
+      const averageOpportunity = row.score_count ? Math.round(row.score_total / row.score_count) : Number(row.opportunity_signal || 0);
+      const averageRisk = row.score_count ? Math.round(row.risk_total / row.score_count) : 0;
+      const averageCongestion = row.score_count ? Math.round(row.congestion_total / row.score_count) : Number(row.congestion_signal || 0);
+      const demandScore = Math.min(100, Math.round(
+        Math.min(35, row.vessel_count * 0.08) +
+        Math.min(25, row.sales_target_count * 0.35) +
+        Math.min(20, row.hot_count * 1.2) +
+        averageOpportunity * 0.12 +
+        averageRisk * 0.1 +
+        averageCongestion * 0.08 +
+        Math.min(15, serviceTotal * 0.05)
+      ));
+      const services = WORKER_PORT_DEMAND_SERVICES
+        .map(service => ({ service_name: service.name, count: row.service_opportunity_counts[service.name] || 0 }))
+        .sort((a, b) => Number(b.count || 0) - Number(a.count || 0));
+      return {
+        port_code: row.port_code,
+        port_name: row.port_name,
+        demand_score: demandScore,
+        opportunity_score: demandScore,
+        vessel_count: row.vessel_count,
+        service_opportunity_counts: row.service_opportunity_counts,
+        services,
+        growth_trend: {
+          current_value: row.vessel_count,
+          previous_value: null,
+          delta: null,
+          delta_percent: null,
+          direction: "unknown"
+        },
+        top_factors: services.slice(0, 3).map(service => `${service.service_name} ${service.count}`),
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        average_congestion_score: averageCongestion,
+        reason_summary: `${row.port_name}: 선박 ${row.vessel_count}척, 서비스 신호 ${serviceTotal}건, HOT ${row.hot_count}척`,
+        recommended_action: "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인"
+      };
+    })
+    .sort((a, b) => Number(b.demand_score || 0) - Number(a.demand_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,commercial_opportunity_daily,opportunity_master", items });
+}
+
 function buildBioTimeline(records) {
   const buckets = [
     { key: "0_3d", label: "0-3 days", min: 0, max: 72 },
@@ -3605,11 +3762,15 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "previous_hot_candidates",
   "ports_used",
   "last_seen",
+  "demand_score",
   "vessel_count",
   "hot_count",
   "warm_count",
   "sales_target_count",
   "high_risk_count",
+  "service_opportunity_counts",
+  "services",
+  "growth_trend",
   "known_korea_vessels",
   "total_operator_vessels",
   "high_opportunity_vessels",
@@ -3618,6 +3779,7 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "revenue_opportunity",
   "average_opportunity_score",
   "average_risk_score",
+  "average_congestion_score",
   "opportunity_index",
   "first_seen",
   "visit_history",
@@ -6146,6 +6308,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
     }));
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots", items });
   }
+  if (name === "port-demand-radar") return buildWorkerPortDemandRadar(records, source, generatedAt);
   if (name === "superintendent-targets") {
     const items = buckets.sales_candidates.slice(0, 10).map((record, index) => compactVesselInsight(record, index, {
       operator_name: firstNonEmpty(record.operator_name, record.operator, record.company) || null,
@@ -6459,6 +6622,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "vessel-timeline": "vessel_visits,vessel_snapshot_daily,route_snapshot_daily,risk_history,dashboard_summary_snapshots",
       "korea-presence": "vessel_visits,repeat-callers,route_snapshot_daily,dashboard_summary_snapshots",
       "port-opportunities": "port_summary_current,port_snapshot_daily,port_congestion_snapshots,dashboard_summary_snapshots",
+      "port-demand-radar": "port_summary_current,port_snapshot_daily,port_congestion_snapshots,commercial_opportunity_daily,opportunity_master,dashboard_summary_snapshots",
       "superintendent-targets": "operator_contact_history,commercial_leads,operator_snapshot_daily,dashboard_summary_snapshots",
       "compliance-opportunities": "risk_history,route_snapshot_daily,vessel_visits,dashboard_summary_snapshots",
       "drydock-prediction": "vessel_visits,route_snapshot_daily,vessel_history,opportunity_master,risk_history,dashboard_summary_snapshots",

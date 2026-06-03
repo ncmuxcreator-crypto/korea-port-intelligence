@@ -4010,11 +4010,15 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "previous_hot_candidates",
   "ports_used",
   "last_seen",
+  "demand_score",
   "vessel_count",
   "hot_count",
   "warm_count",
   "sales_target_count",
   "high_risk_count",
+  "service_opportunity_counts",
+  "services",
+  "growth_trend",
   "known_korea_vessels",
   "total_operator_vessels",
   "high_opportunity_vessels",
@@ -4023,6 +4027,7 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "revenue_opportunity",
   "average_opportunity_score",
   "average_risk_score",
+  "average_congestion_score",
   "opportunity_index",
   "first_seen",
   "visit_history",
@@ -5309,6 +5314,163 @@ function buildPortOpportunitiesIntelligenceSummary({ records = [], portStatistic
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,opportunity_master,commercial_opportunity_daily", items });
 }
 
+const PORT_DEMAND_SERVICES = [
+  { key: "hull_cleaning", name: "Hull Cleaning" },
+  { key: "uwi", name: "UWI" },
+  { key: "bunker", name: "Bunker" },
+  { key: "crew_change", name: "Crew Change" },
+  { key: "waste_disposal", name: "Waste Disposal" },
+  { key: "repair", name: "Repair" },
+  { key: "diving", name: "Diving" }
+];
+
+function serviceText(record = {}) {
+  return String([
+    record.service_type,
+    record.opportunity_type,
+    record.recommended_action,
+    record.reason_summary,
+    record.why_now,
+    record.status,
+    record.status_bucket,
+    record.vessel_type,
+    record.commercial_signal_flags,
+    record.operational_risk_flags
+  ].flat().filter(Boolean).join(" ")).toLowerCase();
+}
+
+function serviceDemandFlags(record = {}) {
+  const text = serviceText(record);
+  const score = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const stayDays = dwellDays(record);
+  const anchorageHours = Number(record.anchorage_hours || record.waiting_hours || record.stay_hours || record.current_call_stay_hours || 0);
+  const gt = Number(record.gt || record.grt || record.grtg || record.gross_tonnage || 0);
+  const dwt = Number(record.dwt || record.deadweight || 0);
+  const largeVessel = gt >= 10000 || dwt >= 15000;
+  const anchoredOrWaiting = anchorageHours >= 12 || /anchor|anchorage|waiting|묘박|정박|대기/.test(text);
+  const longStay = stayDays >= 3 || anchorageHours >= 72;
+  const arrivalSignal = Boolean(firstNonEmpty(record.eta, record.etb, record.arrival_time, record.predicted_arrival_time)) || /arrival|inbound|입항|예정/.test(text);
+  const repairSignal = /repair|maintenance|drydock|yard|정비|수리|드라이독/.test(text) || Number(record.predicted_cleaning_opportunity_score || 0) >= 65;
+  const biofoulingSignal = risk >= 55 || Number(record.biofouling_exposure_score || record.biofouling_score || record.biofouling_risk_score || 0) >= 55;
+  return {
+    hull_cleaning: score >= 50 || biofoulingSignal || longStay || record.is_cleaning_candidate === true,
+    uwi: risk >= 60 || longStay || repairSignal || /inspection|uwi|underwater|검사|점검/.test(text),
+    bunker: arrivalSignal || largeVessel || /bunker|fuel|급유/.test(text),
+    crew_change: longStay || arrivalSignal || /crew|seafarer|선원|교대/.test(text),
+    waste_disposal: longStay || anchoredOrWaiting || largeVessel || /waste|sludge|garbage|폐기|오염/.test(text),
+    repair: repairSignal || risk >= 65 || /defect|damage|고장|손상/.test(text),
+    diving: anchoredOrWaiting || risk >= 60 || /diving|underwater|잠수/.test(text)
+  };
+}
+
+function previousPortDemandReference() {
+  const demand = readJsonSafe("dashboard/api/intelligence/port-demand-radar.json", null);
+  const opportunities = readJsonSafe("dashboard/api/intelligence/port-opportunities.json", null);
+  const ports = readJsonSafe("dashboard/api/ports.json", null);
+  return [
+    ...compactItems(demand).map(item => ({ port_name: item.port_name, vessel_count: item.vessel_count })),
+    ...compactItems(opportunities).map(item => ({ port_name: item.port_name, vessel_count: item.vessel_count })),
+    ...compactItems(ports).map(item => ({ port_name: item.port_name || item.display_name || item.port, vessel_count: item.vessel_count || item.total_vessels }))
+  ];
+}
+
+function portGrowthTrend(portName, currentValue, previousRows = []) {
+  const normalizedName = String(portName || "").trim().toLowerCase();
+  const previous = previousRows.find(row => String(row.port_name || row.display_name || row.port || "").trim().toLowerCase() === normalizedName);
+  return kpiTrend(currentValue, previous?.vessel_count);
+}
+
+function emptyServiceCounts() {
+  return Object.fromEntries(PORT_DEMAND_SERVICES.map(service => [service.name, 0]));
+}
+
+function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics = {}, generatedAt, dataMode } = {}) {
+  const previousRows = previousPortDemandReference();
+  const byPort = new Map();
+  const ensurePort = name => {
+    const portName = name || "미확인 항만";
+    if (!byPort.has(portName)) {
+      byPort.set(portName, {
+        port_name: portName,
+        vessel_count: 0,
+        sales_target_count: 0,
+        hot_count: 0,
+        risk_total: 0,
+        score_total: 0,
+        congestion_total: 0,
+        service_opportunity_counts: emptyServiceCounts()
+      });
+    }
+    return byPort.get(portName);
+  };
+  for (const record of records) {
+    const row = ensurePort(recordPortName(record));
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    row.vessel_count += 1;
+    row.sales_target_count += score >= 50 ? 1 : 0;
+    row.hot_count += score >= 75 ? 1 : 0;
+    row.risk_total += risk;
+    row.score_total += score;
+    row.congestion_total += Number(record.port_congestion_score || record.congestion_score || record.congestion_exposure_score || 0);
+    const flags = serviceDemandFlags(record);
+    for (const service of PORT_DEMAND_SERVICES) {
+      if (flags[service.key]) row.service_opportunity_counts[service.name] += 1;
+    }
+  }
+  for (const port of (portStatistics.ports || [])) {
+    const name = port.display_name || port.port_name || port.port || "미확인 항만";
+    const row = ensurePort(name);
+    row.vessel_count = Math.max(row.vessel_count, Number(port.vessel_count || port.total_vessels || 0));
+    row.sales_target_count = Math.max(row.sales_target_count, Number(port.target_count || port.candidate_count || port.sales_candidates || 0));
+    row.hot_count = Math.max(row.hot_count, Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0));
+  }
+  const items = [...byPort.values()]
+    .map(row => {
+      const serviceTotal = Object.values(row.service_opportunity_counts).reduce((sum, value) => sum + Number(value || 0), 0);
+      const averageOpportunity = row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0;
+      const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
+      const averageCongestion = row.vessel_count ? Math.round(row.congestion_total / row.vessel_count) : 0;
+      const demandScore = Math.min(100, Math.round(
+        Math.min(35, row.vessel_count * 0.08) +
+        Math.min(25, row.sales_target_count * 0.35) +
+        Math.min(20, row.hot_count * 1.2) +
+        averageOpportunity * 0.12 +
+        averageRisk * 0.1 +
+        averageCongestion * 0.08 +
+        Math.min(15, serviceTotal * 0.05)
+      ));
+      const services = PORT_DEMAND_SERVICES
+        .map(service => ({ service_name: service.name, count: row.service_opportunity_counts[service.name] || 0 }))
+        .sort((a, b) => Number(b.count || 0) - Number(a.count || 0));
+      const growthTrend = portGrowthTrend(row.port_name, row.vessel_count, previousRows);
+      const trendDelta = Number(growthTrend.delta_percent);
+      const trendFactor = Number.isFinite(trendDelta)
+        ? `추세 ${trendDelta > 0 ? `↑ +${trendDelta}%` : trendDelta < 0 ? `↓ ${trendDelta}%` : "→ 0%"}`
+        : null;
+      return {
+        port_name: row.port_name,
+        demand_score: demandScore,
+        opportunity_score: demandScore,
+        vessel_count: row.vessel_count,
+        service_opportunity_counts: row.service_opportunity_counts,
+        services,
+        growth_trend: growthTrend,
+        top_factors: [...services.slice(0, 3).map(service => `${service.service_name} ${service.count}`), trendFactor].filter(Boolean),
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        average_congestion_score: averageCongestion,
+        reason_summary: `${row.port_name}: 선박 ${row.vessel_count}척, 서비스 신호 ${serviceTotal}건, HOT ${row.hot_count}척`,
+        recommended_action: "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인"
+      };
+    })
+    .sort((a, b) => Number(b.demand_score || 0) - Number(a.demand_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,commercial_opportunity_daily,opportunity_master", items });
+}
+
 function buildSuperintendentTargetsIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = sortCommercialPriority(records)
     .filter(record => salesPriorityScore(record) >= 50)
@@ -5726,6 +5888,7 @@ function buildIntelligenceSummaries({
     "korea-presence": buildKoreaPresenceIntelligenceSummary({ records, generatedAt, dataMode }),
     "cleaning-window": buildCleaningWindowIntelligenceSummary({ records, generatedAt, dataMode }),
     "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
+    "port-demand-radar": buildPortDemandRadarIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
     "superintendent-targets": buildSuperintendentTargetsIntelligenceSummary({ records, generatedAt, dataMode }),
     "compliance-opportunities": buildComplianceOpportunitiesIntelligenceSummary({ records, generatedAt, dataMode }),
     "drydock-prediction": buildDrydockPredictionIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -8397,6 +8560,7 @@ try {
     "dashboard/api/intelligence/korea-presence.json": intelligenceSummaries["korea-presence"],
     "dashboard/api/intelligence/cleaning-window.json": intelligenceSummaries["cleaning-window"],
     "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
+    "dashboard/api/intelligence/port-demand-radar.json": intelligenceSummaries["port-demand-radar"],
     "dashboard/api/intelligence/superintendent-targets.json": intelligenceSummaries["superintendent-targets"],
     "dashboard/api/intelligence/compliance-opportunities.json": intelligenceSummaries["compliance-opportunities"],
     "dashboard/api/intelligence/drydock-prediction.json": intelligenceSummaries["drydock-prediction"],
