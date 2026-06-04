@@ -5,13 +5,13 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260604044537511_7136b2a9",
-  "generated_at": "2026-06-04T04:48:59.056Z",
+  "run_id": "run_20260604051740406_00634d44",
+  "generated_at": "2026-06-04T05:21:51.286Z",
   "report_type": "daily_sales_intelligence",
   "title": "HWK Daily Sales Intelligence Report",
   "executive_summary_ko": "50척 HOT 후보와 0척 WARM 후보가 선별되었습니다.",
   "kpis": {
-    "total_vessels": 1415,
+    "total_vessels": 1442,
     "hot_candidates": 50,
     "warm_candidates": 0,
     "compliance_candidates": 6,
@@ -196,32 +196,32 @@
         "step": 1,
         "source": "active_dataset_pointer",
         "status": "available",
-        "rows": 1415
+        "rows": 1442
       },
       {
         "step": 2,
         "source": "latest_successful_dataset_bundle",
         "status": "available",
-        "rows": 1415,
-        "run_id": "run_20260604044537511_7136b2a9"
+        "rows": 1442,
+        "run_id": "run_20260604051740406_00634d44"
       },
       {
         "step": 3,
         "source": "latest_successful_dataset",
         "status": "available",
-        "rows": 1412
+        "rows": 1437
       },
       {
         "step": 4,
         "source": "latest_snapshot",
         "status": "available",
-        "rows": 1412
+        "rows": 1437
       },
       {
         "step": 5,
         "source": "static_backup",
         "status": "available",
-        "rows": 1324
+        "rows": 1349
       },
       {
         "step": 6,
@@ -235,14 +235,14 @@
       "post_write_verification_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 1415,
+        "vessel_snapshots": 1442,
         "source_collection_logs": 34,
-        "vessel_entities": 1415,
-        "vessel_master": 1415,
-        "port_call_master": 1415,
-        "opportunity_master": 1415,
-        "risk_history": 1338,
-        "vessel_events": 5967,
+        "vessel_entities": 1442,
+        "vessel_master": 1442,
+        "port_call_master": 1442,
+        "opportunity_master": 1442,
+        "risk_history": 1365,
+        "vessel_events": 6073,
         "pilot_schedule_events": 0,
         "port_congestion_snapshots": 8,
         "enrichment_match_candidates": 0,
@@ -251,26 +251,26 @@
         "sales_candidates_current": 21,
         "immediate_targets_current": 21,
         "port_summary_current": 8,
-        "feature_store": 1338,
-        "feature_snapshots": 1338,
-        "rule_evaluations": 1634,
-        "explainability_snapshots": 1338,
-        "model_training_rows": 493,
-        "vessel_snapshot_daily": 1415,
+        "feature_store": 1365,
+        "feature_snapshots": 1365,
+        "rule_evaluations": 1673,
+        "explainability_snapshots": 1365,
+        "model_training_rows": 502,
+        "vessel_snapshot_daily": 1442,
         "port_snapshot_daily": 8,
         "operator_snapshot_daily": 11,
-        "route_snapshot_daily": 465,
-        "commercial_opportunity_daily": 40,
+        "route_snapshot_daily": 469,
+        "commercial_opportunity_daily": 41,
         "vessel_universe_audit": 1
       },
       "successful_dataset_bundle_status": "saved",
-      "successful_dataset_rows": 1415,
+      "successful_dataset_rows": 1442,
       "restore_status": "not_needed"
     }
   },
   "automation_next_step": "Configure email/webhook secrets to deliver this JSON as a scheduled alert.",
-  "status_run_id": "run_20260604044537511_7136b2a9",
-  "active_run_id": "run_20260604044537511_7136b2a9",
+  "status_run_id": "run_20260604051740406_00634d44",
+  "active_run_id": "run_20260604051740406_00634d44",
   "stale_diagnostic": false,
   "placeholder": false
 }

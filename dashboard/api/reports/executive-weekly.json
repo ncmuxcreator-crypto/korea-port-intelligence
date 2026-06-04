@@ -5,16 +5,16 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260604044537511_7136b2a9",
+  "run_id": "run_20260604051740406_00634d44",
   "schema_version": "1.0",
-  "generated_at": "2026-06-04T04:48:59.056Z",
+  "generated_at": "2026-06-04T05:21:51.286Z",
   "data_mode": "live",
   "report_type": "executive_weekly_intelligence",
   "title": "주간 경영 브리핑",
   "source_table": "daily-sales,sales-priority,revenue-forecast,operator-opportunities,compliance-opportunities,fleet-memory",
   "sections": {
     "executive_summary": {
-      "total_vessels": 1415,
+      "total_vessels": 1442,
       "hot_targets": 1,
       "top_operators": [
         {
@@ -26,16 +26,16 @@
           "opportunity_score": 57
         },
         {
+          "operator_name": "MSC",
+          "opportunity_score": 56
+        },
+        {
           "operator_name": "EVERGREEN",
           "opportunity_score": 56
         },
         {
           "operator_name": "KMTC",
           "opportunity_score": 56
-        },
-        {
-          "operator_name": "MSC",
-          "opportunity_score": 55
         }
       ],
       "top_ports": [
@@ -62,7 +62,7 @@
       ]
     },
     "revenue_opportunities": {
-      "estimated_pipeline": 1228000,
+      "estimated_pipeline": 6824160,
       "hot_opportunity_value": {
         "target_count": 1,
         "estimated_revenue_low": 9000,
@@ -75,104 +75,131 @@
           "estimated_revenue_high": 28000
         },
         "WARM": {
-          "target_count": 75,
-          "estimated_revenue_low": 375000,
-          "estimated_revenue_high": 1200000
+          "target_count": 77,
+          "estimated_revenue_low": 385000,
+          "estimated_revenue_high": 1232000
         }
       },
       "by_port": [
         {
-          "port_name": "Busan",
-          "target_count": 483,
-          "estimated_revenue_low": 2415000,
-          "estimated_revenue_high": 10626000,
-          "opportunity_index": 100
+          "port_name": "부산",
+          "target_count": 497,
+          "hot_count": 0,
+          "expected_revenue": 1431360
         },
         {
-          "port_name": "Ulsan",
-          "target_count": 210,
-          "estimated_revenue_low": 1050000,
-          "estimated_revenue_high": 4620000,
-          "opportunity_index": 100
+          "port_name": "울산",
+          "target_count": 213,
+          "hot_count": 0,
+          "expected_revenue": 613440
         },
         {
-          "port_name": "Yeosu/Gwangyang",
-          "target_count": 99,
-          "estimated_revenue_low": 495000,
-          "estimated_revenue_high": 2178000,
-          "opportunity_index": 100
+          "port_name": "인천",
+          "target_count": 138,
+          "hot_count": 0,
+          "expected_revenue": 397440
         },
         {
-          "port_name": "Incheon",
-          "target_count": 135,
-          "estimated_revenue_low": 675000,
-          "estimated_revenue_high": 2970000,
-          "opportunity_index": 100
+          "port_name": "대산",
+          "target_count": 125,
+          "hot_count": 0,
+          "expected_revenue": 360000
         },
         {
-          "port_name": "Pyeongtaek",
-          "target_count": 106,
-          "estimated_revenue_low": 530000,
-          "estimated_revenue_high": 2332000,
-          "opportunity_index": 100
+          "port_name": "미확인 항만",
+          "target_count": 117,
+          "hot_count": 1,
+          "expected_revenue": 336960
+        },
+        {
+          "port_name": "평택·당진",
+          "target_count": 107,
+          "hot_count": 0,
+          "expected_revenue": 308160
+        },
+        {
+          "port_name": "여수",
+          "target_count": 98,
+          "hot_count": 0,
+          "expected_revenue": 282240
+        },
+        {
+          "port_name": "포항",
+          "target_count": 59,
+          "hot_count": 0,
+          "expected_revenue": 169920
         }
       ],
       "by_operator": [
         {
           "operator_name": "PAN OCEAN",
           "target_count": 10,
-          "estimated_revenue_low": 50000,
-          "estimated_revenue_high": 240000,
-          "opportunity_index": 65
+          "hot_count": 7,
+          "expected_revenue": 28800,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
         },
         {
           "operator_name": "HMM",
           "target_count": 12,
-          "estimated_revenue_low": 60000,
-          "estimated_revenue_high": 288000,
-          "opportunity_index": 57
-        },
-        {
-          "operator_name": "EVERGREEN",
-          "target_count": 3,
-          "estimated_revenue_low": 15000,
-          "estimated_revenue_high": 72000,
-          "opportunity_index": 56
-        },
-        {
-          "operator_name": "KMTC",
-          "target_count": 6,
-          "estimated_revenue_low": 30000,
-          "estimated_revenue_high": 144000,
-          "opportunity_index": 56
+          "hot_count": 8,
+          "expected_revenue": 34560,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
         },
         {
           "operator_name": "MSC",
           "target_count": 23,
-          "estimated_revenue_low": 115000,
-          "estimated_revenue_high": 552000,
-          "opportunity_index": 55
+          "hot_count": 10,
+          "expected_revenue": 66240,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
+        },
+        {
+          "operator_name": "EVERGREEN",
+          "target_count": 3,
+          "hot_count": 1,
+          "expected_revenue": 8640,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
+        },
+        {
+          "operator_name": "KMTC",
+          "target_count": 6,
+          "hot_count": 0,
+          "expected_revenue": 17280,
+          "recommended_sales_angle": "반복 입항/한국 항만 활동 기반 관계 구축"
+        },
+        {
+          "operator_name": "ONE / 일본계 선사군",
+          "target_count": 6,
+          "hot_count": 2,
+          "expected_revenue": 17280,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
         },
         {
           "operator_name": "CMA CGM",
           "target_count": 6,
-          "estimated_revenue_low": 30000,
-          "estimated_revenue_high": 144000,
-          "opportunity_index": 55
+          "hot_count": 1,
+          "expected_revenue": 17280,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
         },
         {
-          "operator_name": "ONE / 일본계 선사군",
-          "target_count": 4,
-          "estimated_revenue_low": 20000,
-          "estimated_revenue_high": 96000,
-          "opportunity_index": 55
+          "operator_name": "MAERSK",
+          "target_count": 3,
+          "hot_count": 1,
+          "expected_revenue": 8640,
+          "recommended_sales_angle": "HOT 선박 중심 선대 단위 제안"
         },
         {
           "operator_name": "WAN HAI",
           "target_count": 3,
-          "estimated_revenue_low": 15000,
-          "estimated_revenue_high": 72000,
-          "opportunity_index": 55
+          "hot_count": 0,
+          "expected_revenue": 8640,
+          "recommended_sales_angle": "반복 입항/한국 항만 활동 기반 관계 구축"
+        },
+        {
+          "operator_name": "HYUNDAI GLOVIS",
+          "target_count": 1,
+          "hot_count": 0,
+          "expected_revenue": 2880,
+          "recommended_sales_angle": "반복 입항/한국 항만 활동 기반 관계 구축"
         }
       ]
     },
@@ -515,7 +542,7 @@
         "vessel_name": "17유성호",
         "operator": "-",
         "port": "Incheon",
-        "average_stay_days": 1.5,
+        "average_stay_days": 1.6,
         "visit_count_30d": 0,
         "visit_count_90d": 2,
         "visit_count_365d": 4,
@@ -524,7 +551,7 @@
           "Incheon"
         ],
         "repeat_caller_score": 94,
-        "last_visit": "2026-06-04T04:45:37.528Z",
+        "last_visit": "2026-06-04T05:17:40.419Z",
         "next_eta": "-",
         "opportunity_score": 35,
         "risk_score": 45,
@@ -596,7 +623,7 @@
           "Daesan"
         ],
         "repeat_caller_score": 94,
-        "last_visit": "2026-06-04T04:45:37.528Z",
+        "last_visit": "2026-06-04T05:17:40.419Z",
         "next_eta": "-",
         "opportunity_score": 34,
         "risk_score": 45,
@@ -668,7 +695,7 @@
           "Incheon"
         ],
         "repeat_caller_score": 94,
-        "last_visit": "2026-06-04T04:45:37.528Z",
+        "last_visit": "2026-06-04T05:17:40.419Z",
         "next_eta": "-",
         "opportunity_score": 36,
         "risk_score": 45,
@@ -740,7 +767,7 @@
           "Ulsan"
         ],
         "repeat_caller_score": 94,
-        "last_visit": "2026-06-04T04:45:37.528Z",
+        "last_visit": "2026-06-04T05:17:40.419Z",
         "next_eta": "-",
         "opportunity_score": 34,
         "risk_score": 45,
@@ -812,7 +839,7 @@
           "Ulsan"
         ],
         "repeat_caller_score": 94,
-        "last_visit": "2026-06-04T04:45:37.528Z",
+        "last_visit": "2026-06-04T05:17:40.419Z",
         "next_eta": "-",
         "opportunity_score": 34,
         "risk_score": 45,
@@ -1099,15 +1126,15 @@
   "items": [
     {
       "title": "주간 경영 브리핑",
-      "total_vessels": 1415,
+      "total_vessels": 1442,
       "hot_targets": 1,
-      "estimated_pipeline_high": 1228000,
+      "estimated_pipeline_high": 6824160,
       "risk_count": 0,
       "recommended_action": "HOT 후보와 상위 선사/항만 기회를 기준으로 주간 영업 활동을 배정"
     }
   ],
-  "status_run_id": "run_20260604044537511_7136b2a9",
-  "active_run_id": "run_20260604044537511_7136b2a9",
+  "status_run_id": "run_20260604051740406_00634d44",
+  "active_run_id": "run_20260604051740406_00634d44",
   "stale_diagnostic": false,
   "placeholder": false
 }
