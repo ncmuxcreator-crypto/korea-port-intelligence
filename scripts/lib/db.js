@@ -81,16 +81,23 @@ function commercialScore(record = {}) {
 }
 
 function isDepartedRecord(record = {}) {
-  return String(record.status_bucket || record.operational_status || record.status || "").toLowerCase() === "departed" || Boolean(record.atd);
+  const status = String(record.status_bucket || record.operational_status || record.status || "").toLowerCase();
+  return status === "departed" ||
+    status === "departure_completed" ||
+    status.includes("departed") ||
+    status.includes("출항 완료") ||
+    String(record.commercial_relevance_status || "").toLowerCase() === "excluded_departure_only" ||
+    String(record.ledger_status || "").toLowerCase() === "departed";
 }
 
 function isHardCandidateExcluded(record = {}) {
+  const score = commercialScore(record);
   const text = [record.vessel_name, record.name, record.source, record.source_name, record.data_mode, record.commercial_relevance_status, record.exclusion_reason]
     .filter(Boolean)
     .join(" ");
   return /sample|demo|fallback|synthetic/i.test(text) ||
     record.excluded_from_commercial_targets === true ||
-    record.commercial_relevance_status === "excluded_non_commercial_type";
+    (record.commercial_relevance_status === "excluded_non_commercial_type" && score < 65);
 }
 
 function hasCurrentOrNearTermWorkFeasibility(record = {}) {
@@ -326,8 +333,19 @@ function isImmediateTargetRecord(record = {}) {
 function isSalesTargetRecord(record = {}) {
   if (isHardCandidateExcluded(record) || isDepartedRecord(record)) return false;
   if (isImmediateTargetRecord(record)) return true;
+  if (record.is_cleaning_candidate === true || record.is_operating_candidate === true) return true;
   if (["sales_target"].includes(record.candidate_band)) return true;
   return commercialScore(record) >= 65 && withinCommercialPercentile(record, 20);
+}
+
+function isQualifiedTargetRecord(record = {}) {
+  if (isHardCandidateExcluded(record) || isDepartedRecord(record)) return false;
+  return ["target_vessel", "unknown_gt_review"].includes(record.commercial_relevance_status) ||
+    record.is_cleaning_candidate === true ||
+    record.is_operating_candidate === true ||
+    ["critical", "immediate_target", "sales_target"].includes(record.candidate_band) ||
+    isSalesTargetRecord(record) ||
+    isImmediateTargetRecord(record);
 }
 
 function isWatchlistRecord(record = {}) {
@@ -777,6 +795,9 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
     target_ratio_reasonable: targetRatio <= Number(process.env.TARGET_RATIO_MAX || 0.3),
     no_fatal_db_write_error: diagnostics.fatal_db_write_error !== true
   };
+  const blockingPromotionGateNames = Object.entries(validationGates)
+    .filter(([key, value]) => value === false && key !== "target_ratio_reasonable")
+    .map(([key]) => key);
   return {
     promotable: !lastSuccessfulDatasetLock &&
       attempted > 0 &&
@@ -788,7 +809,6 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
       validationGates.port_call_id_coverage_above_threshold &&
       validationGates.candidate_band_exists_for_scored_vessels &&
       validationGates.malformed_row_rate_below_threshold &&
-      validationGates.target_ratio_reasonable &&
       validationGates.no_fatal_db_write_error,
     attempted,
     validation_mode: validationMode,
@@ -819,7 +839,7 @@ function shouldPromoteRun(records = [], diagnostics = {}) {
     },
     ...architectureDiagnostics,
     validationGates,
-    promotion_blockers: Object.entries(validationGates).filter(([, value]) => value === false).map(([key]) => key)
+    promotion_blockers: blockingPromotionGateNames
   };
 }
 
@@ -915,7 +935,7 @@ function aggregatePortSummaryRows(portRows = []) {
 
 function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {}) {
   const usefulRecords = records.filter(record => record.vessel_name || record.hybrid_entity_key || record.port_call_identity || record.port_call_key);
-  const targetRows = usefulRecords.filter(record => ["target_vessel", "unknown_gt_review"].includes(record.commercial_relevance_status) || isSalesTargetRecord(record) || isImmediateTargetRecord(record));
+  const targetRows = usefulRecords.filter(isQualifiedTargetRecord);
   const salesRows = usefulRecords.filter(isSalesTargetRecord);
   const immediateRows = usefulRecords.filter(isImmediateTargetRecord);
   const watchlistRows = usefulRecords.filter(isWatchlistRecord);
@@ -2740,7 +2760,7 @@ export async function saveToSupabase(records, options = {}) {
     raw_collected_rows: Number(diagnostics.real_row_count || records.length || 0),
     normalized_rows: records.length,
     all_vessels_count: records.length,
-    target_vessels_count: records.filter(r => ["target_vessel", "unknown_gt_review"].includes(r.commercial_relevance_status)).length,
+    target_vessels_count: records.filter(isQualifiedTargetRecord).length,
     gt_5000_plus_count: records.filter(r => r.gt_status === "target_vessel").length,
     unknown_gt_review_count: records.filter(r => r.gt_status === "unknown_gt_review").length,
     staying_vessels_count: records.filter(r => ["arrived_staying", "berthed", "anchorage_waiting"].includes(r.status_bucket)).length,

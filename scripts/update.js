@@ -2190,6 +2190,33 @@ function isWatchlistVessel(v = {}) {
   return !isDepartedRecord(v) && !isHardCandidateExcluded(v) && score >= 50 && score < SALES_CANDIDATE_THRESHOLD;
 }
 
+function annotateTargetClassification(records = []) {
+  annotateCommercialRanks(records);
+  for (const vessel of records) {
+    const score = Number(vessel.commercial_value_score || vessel.total_sales_priority_score || vessel.cleaning_candidate_score || 0);
+    const priorityScore = salesPriorityScore(vessel);
+    const salesCandidateFlag = isSalesCandidate(vessel) || hasSalesRelevantSignal(vessel) || isMainCommercialVessel(vessel);
+    const immediateFlag = isImmediateTarget(vessel);
+    vessel.is_cleaning_candidate = salesCandidateFlag;
+    vessel.is_immediate_candidate = immediateFlag;
+    vessel.is_operating_candidate = vessel.is_cleaning_candidate;
+    vessel.is_operating_immediate_candidate = vessel.is_immediate_candidate;
+    vessel.candidate_band = immediateFlag && score >= CRITICAL_TARGET_THRESHOLD
+      ? "critical"
+      : immediateFlag
+        ? "immediate_target"
+        : salesCandidateFlag
+          ? "sales_target"
+          : isWatchlistVessel(vessel)
+            ? "watchlist"
+            : "general";
+    vessel.priority_label = salesPriorityBand(priorityScore);
+    vessel.sales_priority_band = vessel.priority_label;
+    vessel.vessel_display = vesselDisplay(vessel);
+  }
+  return records;
+}
+
 function commercialExclusionReason(v = {}) {
   if (v.commercial_relevance_status === "excluded_non_commercial_type") return "excluded_non_commercial_type";
   if (v.commercial_relevance_status === "excluded_departure_only") return "excluded_departure_only";
@@ -4227,6 +4254,22 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     };
   }
   return outputs;
+}
+
+function cleanupStalePaginatedVesselFiles(expectedOutputs = {}, report = {}) {
+  const indexPath = routeApiOutputPath("dashboard/api/vessels/index.json", report);
+  const dir = indexPath.split("/").slice(0, -1).join("/");
+  if (!fs.existsSync(dir)) return { removed: [] };
+  const expected = new Set(Object.keys(expectedOutputs)
+    .filter(filePath => /dashboard\/api\/vessels\/page-\d+\.json$/.test(filePath))
+    .map(filePath => filePath.split("/").pop()));
+  const removed = [];
+  for (const file of fs.readdirSync(dir)) {
+    if (!/^page-\d+\.json$/.test(file) || expected.has(file)) continue;
+    fs.unlinkSync(`${dir}/${file}`);
+    removed.push(file);
+  }
+  return { removed };
 }
 
 function compactItems(value) {
@@ -7434,6 +7477,35 @@ function isSupabaseWriteFinal(status) {
   return ["completed", "failed"].includes(String(status || "").toLowerCase());
 }
 
+async function saveFinalDashboardDatasetToSupabase(records, { runId, startedAt, status }) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { status: "not_configured" };
+  }
+  const result = await saveToSupabase(records, {
+    runId,
+    startedAt,
+    diagnostics: getCollectorDiagnostics(),
+    status
+  });
+  const finalized = result?.post_write_verification?.status === "completed";
+  return {
+    status: finalized ? "completed" : "failed",
+    legacy_status: finalized ? "synced" : null,
+    storage_finalization_status: result?.post_write_verification?.status || "unknown",
+    ...result,
+    promotion_blockers: result?.promotion?.promotion_blockers || result?.post_write_verification?.promotion_blockers || [],
+    post_write_verification: result?.post_write_verification || {
+      status: "failed",
+      errors: ["missing_post_write_verification"]
+    },
+    failure_behavior: finalized ? null : {
+      fail_production_run: true,
+      preserve_previous_successful_static_outputs: true,
+      dashboard_banner: "최신 수집은 완료됐지만 DB 저장이 완료되지 않아 마지막 정상 데이터를 표시 중입니다."
+    }
+  };
+}
+
 function promotionRequiredInProduction() {
   return String(process.env.REQUIRE_PROMOTION_IN_PRODUCTION || "true").toLowerCase() !== "false";
 }
@@ -8682,32 +8754,20 @@ try {
   vessels = dedupeVesselDataset(
     enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))))
   );
+  vessels = dedupeVesselDataset(
+    ensureOutputContractFields(activeRecordsOnly(vessels), {
+      runId,
+      generatedAt: new Date().toISOString(),
+      dataSourceUsed: "supabase_normalized_snapshot"
+    })
+  );
+  annotateTargetClassification(vessels);
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    supabaseWrite = { status: "syncing" };
-    const result = await saveToSupabase(vessels, {
-      runId,
-      startedAt,
-      diagnostics: getCollectorDiagnostics(),
-      status
-    });
-    const finalized = result?.post_write_verification?.status === "completed";
     supabaseWrite = {
-      status: finalized ? "completed" : "failed",
-      legacy_status: finalized ? "synced" : null,
-      storage_finalization_status: result?.post_write_verification?.status || "unknown",
-      ...result,
-      promotion_blockers: result?.promotion?.promotion_blockers || result?.post_write_verification?.promotion_blockers || [],
-      post_write_verification: result?.post_write_verification || {
-        status: "failed",
-        errors: ["missing_post_write_verification"]
-      },
-      failure_behavior: finalized ? null : {
-        fail_production_run: true,
-        preserve_previous_successful_static_outputs: true,
-        dashboard_banner: "최신 수집은 완료됐지만 DB 저장이 완료되지 않아 마지막 정상 데이터를 표시 중입니다."
-      }
+      status: "pending_final_snapshot",
+      note: "Supabase write is deferred until the merged dashboard snapshot is classified."
     };
     supabaseStatus = supabaseWrite.status;
   }
@@ -8911,20 +8971,7 @@ try {
     )
   );
   const targetVesselsRaw = allCollectedVessels.filter(v => isMainCommercialVessel(v) || isSalesCandidate(v) || hasSalesRelevantSignal(v));
-  annotateCommercialRanks(targetVesselsRaw);
-  for (const vessel of targetVesselsRaw) {
-    const score = Number(vessel.commercial_value_score || vessel.total_sales_priority_score || vessel.cleaning_candidate_score || 0);
-    const priorityScore = salesPriorityScore(vessel);
-    const salesCandidateFlag = isSalesCandidate(vessel) || hasSalesRelevantSignal(vessel) || isMainCommercialVessel(vessel);
-    vessel.is_cleaning_candidate = salesCandidateFlag;
-    vessel.is_immediate_candidate = isImmediateTarget(vessel);
-    vessel.is_operating_candidate = vessel.is_cleaning_candidate;
-    vessel.is_operating_immediate_candidate = vessel.is_immediate_candidate;
-    vessel.candidate_band = isImmediateTarget(vessel) && score >= CRITICAL_TARGET_THRESHOLD ? "critical" : isImmediateTarget(vessel) ? "immediate_target" : salesCandidateFlag ? "sales_target" : isWatchlistVessel(vessel) ? "watchlist" : "general";
-    vessel.priority_label = salesPriorityBand(priorityScore);
-    vessel.sales_priority_band = vessel.priority_label;
-    vessel.vessel_display = vesselDisplay(vessel);
-  }
+  annotateTargetClassification(targetVesselsRaw);
   const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
   const anchorageWaiting = buildAnchorageWaiting(allCollectedVessels);
   const stayingVessels = sortCommercialPriority(dedupeCandidateRows(allCollectedVessels.filter(v =>
@@ -8953,6 +9000,45 @@ try {
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
   const targetCategorySummary = buildTargetCategorySummary(salesCandidates, { generatedAt: completedAt });
   salesCandidates = targetCategorySummary.items;
+
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && status !== "failed") {
+    try {
+      supabaseWrite = { status: "syncing" };
+      supabaseWrite = await saveFinalDashboardDatasetToSupabase(allCollectedVessels, {
+        runId,
+        startedAt,
+        status
+      });
+      supabaseStatus = supabaseWrite.status;
+    } catch (error) {
+      status = "failed";
+      errorMessage = error?.message || String(error);
+      supabaseWrite = {
+        status: "failed",
+        error: errorMessage,
+        failed_stage: "supabase_write",
+        failure_type: error?.failure_type || error?.persistence_failure_type || "db_write_failed",
+        post_write_verification: error?.postWriteVerification || {
+          status: "failed",
+          errors: ["supabase_write_threw_before_finalization"]
+        },
+        failure_behavior: {
+          fail_production_run: true,
+          preserve_previous_successful_static_outputs: true,
+          dashboard_banner: "최신 수집은 완료됐지만 DB 저장이 완료되지 않아 마지막 정상 데이터를 표시 중입니다."
+        },
+        note: "Supabase write started but did not complete successfully."
+      };
+      supabaseStatus = "failed";
+    }
+    baseReport.supabase_status = supabaseStatus;
+    baseReport.status = status;
+    baseReport.error = errorMessage;
+    baseReport.data_mode_detail = buildDataMode(allCollectedVessels, detectSecrets(), supabaseStatus);
+    baseReport.data_mode = baseReport.data_mode_detail.mode;
+    baseReport.cloud_master_db = buildCloudMasterDbStrategy(allCollectedVessels, detectSecrets(), supabaseStatus);
+  }
+
   const scoringDiagnostics = buildScoringDiagnostics(allCollectedVessels);
   const operatorDiagnostics = buildOperatorDiagnostics(vessels, salesCandidates, immediateTargets);
   const matchingDiagnostics = buildMatchingDiagnostics(allCollectedVessels);
@@ -9633,6 +9719,7 @@ try {
   writeApiJson("dashboard/api/review/basic-info-missing.json", buildBasicInfoMissingReview(vessels), report);
   writeApiJson("dashboard/api/predicted-arrivals.json", arrivalPipeline, report);
   writeStaticDatasetJson("dashboard/api/vessels.json", vessels, report, staticOutputManifest);
+  cleanupStalePaginatedVesselFiles(paginatedVesselOutputs, report);
   for (const [filePath, payload] of Object.entries(paginatedVesselOutputs)) {
     writeApiJson(filePath, payload, report);
   }

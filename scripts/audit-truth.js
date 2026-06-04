@@ -214,8 +214,8 @@ async function main() {
     fetchRows("port_summary_current", { filters: runFilter, maxRows: 1000 })
   ]);
 
-  const salesCurrent = await fetchRows("sales_candidates_current", { filters: runFilter, maxRows: 1000 });
-  const immediateCurrent = await fetchRows("immediate_targets_current", { filters: runFilter, maxRows: 1000 });
+  const salesCurrent = await fetchRows("sales_candidates_current", { filters: runFilter, maxRows: 6000 });
+  const immediateCurrent = await fetchRows("immediate_targets_current", { filters: runFilter, maxRows: 6000 });
 
   console.log("End-to-End Dashboard Truth Audit");
   console.log("================================");
@@ -226,7 +226,7 @@ async function main() {
   console.log("1. Dashboard visible numbers");
   compareNumber("총 선박", "dashboard-summary.all_vessels_count", summary.all_vessels_count, "vessel_snapshots latest run", vesselSnapshots.rows.length);
   compareNumber("영업대상", "dashboard-summary.record_count", summary.record_count, "data_collection_runs.target_vessels_count", run.target_vessels_count ?? staticTargetRows.length);
-  compareNumber("영업 후보", "dashboard-summary.sales_target_count", summary.sales_target_count, "vessel_snapshots score>=65", dashboardSalesTargetCount(vesselSnapshots.rows));
+  compareNumber("영업 후보", "dashboard-summary.sales_target_count", summary.sales_target_count, "sales_candidates_current", salesCurrent.rows.length);
   compareNumber("즉시영업후보", "dashboard-summary.immediate_target_count", summary.immediate_target_count, "immediate_targets_current", immediateCurrent.rows.length);
   compareNumber("항만 수", "dashboard-summary.port_count", summary.port_count, "port_summary_current normalized ports", portSummaryCurrent.rows.length || rows(summary.ports).length);
   console.log("");
