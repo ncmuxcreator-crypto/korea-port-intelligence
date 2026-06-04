@@ -4273,10 +4273,12 @@ function buildBootstrapSnapshot({
   const alertItems = compactItems(alerts.items || alerts.alerts || alerts).slice(0, 10);
   const ports = compactItems(portStatistics.ports || dashboardSummary.ports).slice(0, 20).map(port => ({
     port_code: port.port_code || null,
+    port_name: port.port_name || port.display_name || port.port || "미확인 항만",
     display_name: port.display_name || port.port_name || port.port || "미확인 항만",
     vessel_count: Number(port.vessel_count || port.total_vessels || 0),
-    target_count: Number(port.target_count || port.candidate_count || port.target_vessels || port.sales_candidates || 0),
-    hot_count: Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0)
+    target_count: Number(port.target_count || port.sales_target_count || port.candidate_count || port.target_vessels || port.sales_candidates || port.sales_targets || 0),
+    hot_count: Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || port.immediate_targets || 0),
+    avg_opportunity_score: firstFiniteNumber(port.avg_opportunity_score, port.average_opportunity_score, port.port_opportunity_score, port.opportunity_index) ?? null
   }));
   const kpis = {
     total_vessels: Number(dashboardSummary.total_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
