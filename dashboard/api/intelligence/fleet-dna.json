@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-04T09:05:56.883Z",
+  "generated_at": "2026-06-04T13:12:34.295Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -8,28 +8,28 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "average_stay_days": 3.2,
+      "average_stay_days": 3.3,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
       "preferred_ports": [
         {
           "port_name": "부산",
-          "count": 449
+          "count": 452
         },
         {
           "port_name": "울산",
           "count": 227
         },
         {
-          "port_name": "인천",
-          "count": 133
+          "port_name": "대산",
+          "count": 132
         },
         {
-          "port_name": "대산",
+          "port_name": "인천",
           "count": 131
         },
         {
           "port_name": "미확인 항만",
-          "count": 111
+          "count": 114
         }
       ],
       "repeat_visit_frequency": 1.1,
@@ -40,15 +40,15 @@
         },
         {
           "vessel_type": "container",
-          "count": 258
+          "count": 259
         },
         {
           "vessel_type": "unknown",
-          "count": 229
+          "count": 231
         },
         {
           "vessel_type": "general_cargo",
-          "count": 218
+          "count": 219
         }
       ],
       "compliance_exposure_tags": [
@@ -99,7 +99,7 @@
     {
       "rank": 2,
       "operator_name": "MSC",
-      "average_stay_days": 2.3,
+      "average_stay_days": 2.4,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
       "preferred_ports": [
         {
@@ -166,7 +166,7 @@
     {
       "rank": 3,
       "operator_name": "HMM",
-      "average_stay_days": 2.4,
+      "average_stay_days": 2.5,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
       "preferred_ports": [
         {
@@ -242,7 +242,7 @@
     {
       "rank": 4,
       "operator_name": "PAN OCEAN",
-      "average_stay_days": 2.7,
+      "average_stay_days": 2.8,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, 장기체류형, 다항만 활동",
       "preferred_ports": [
         {
@@ -323,7 +323,7 @@
     {
       "rank": 5,
       "operator_name": "ONE / 일본계 선사군",
-      "average_stay_days": 1.4,
+      "average_stay_days": 1.5,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형",
       "preferred_ports": [
         {
@@ -382,7 +382,7 @@
     {
       "rank": 6,
       "operator_name": "MAERSK",
-      "average_stay_days": 1.8,
+      "average_stay_days": 1.9,
       "fleet_profile": "HOT 후보 집중, 반복입항형, 장기체류형",
       "preferred_ports": [
         {
@@ -442,8 +442,81 @@
     },
     {
       "rank": 7,
+      "operator_name": "EVERGREEN",
+      "average_stay_days": 2.4,
+      "fleet_profile": "반복입항형, 장기체류형, 다항만 활동",
+      "preferred_ports": [
+        {
+          "port_name": "부산",
+          "count": 3
+        },
+        {
+          "port_name": "울산",
+          "count": 1
+        },
+        {
+          "port_name": "인천",
+          "count": 1
+        },
+        {
+          "port_name": "여수",
+          "count": 1
+        }
+      ],
+      "repeat_visit_frequency": 1,
+      "common_vessel_types": [
+        {
+          "vessel_type": "container",
+          "count": 5
+        },
+        {
+          "vessel_type": "general_cargo",
+          "count": 1
+        }
+      ],
+      "compliance_exposure_tags": [],
+      "congestion_exposure": 0,
+      "commercial_tendency": "반복입항형",
+      "recommended_sales_strategy": "반복 입항 이력을 근거로 정기 점검/세척 제안",
+      "opportunity_score": 54,
+      "reason_summary": "EVERGREEN: 반복입항형, 장기체류형, 다항만 활동",
+      "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "EVERGREEN",
+        "company": "EVERGREEN",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 0,
+        "opportunity_score": 54,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "EVERGREEN: 반복입항형, 장기체류형, 다항만 활동",
+        "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
+        "data_sources": []
+      }
+    },
+    {
+      "rank": 8,
       "operator_name": "CMA CGM",
-      "average_stay_days": 1.8,
+      "average_stay_days": 1.9,
       "fleet_profile": "WARM 후보 풀, 반복입항형, 장기체류형",
       "preferred_ports": [
         {
@@ -470,7 +543,7 @@
       "congestion_exposure": 0,
       "commercial_tendency": "WARM 후보 풀",
       "recommended_sales_strategy": "선대별 상위 후보와 항만 패턴을 묶어 관계 구축",
-      "opportunity_score": 54,
+      "opportunity_score": 50,
       "reason_summary": "CMA CGM: WARM 후보 풀, 반복입항형, 장기체류형",
       "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
       "vessel_display": {
@@ -496,7 +569,7 @@
         "last_seen_at": "-",
         "data_source": "-",
         "confidence_score": 0,
-        "opportunity_score": 54,
+        "opportunity_score": 50,
         "risk_score": 0,
         "contact_readiness_score": 0,
         "priority_label": "LOW",
@@ -506,7 +579,7 @@
       }
     },
     {
-      "rank": 8,
+      "rank": 9,
       "operator_name": "KMTC",
       "average_stay_days": 1.5,
       "fleet_profile": "WARM 후보 풀, 반복입항형, 장기체류형",
@@ -567,82 +640,9 @@
       }
     },
     {
-      "rank": 9,
-      "operator_name": "EVERGREEN",
-      "average_stay_days": 2.3,
-      "fleet_profile": "WARM 후보 풀, 반복입항형, 장기체류형, 다항만 활동",
-      "preferred_ports": [
-        {
-          "port_name": "부산",
-          "count": 3
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        },
-        {
-          "port_name": "인천",
-          "count": 1
-        },
-        {
-          "port_name": "여수",
-          "count": 1
-        }
-      ],
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 5
-        },
-        {
-          "vessel_type": "general_cargo",
-          "count": 1
-        }
-      ],
-      "compliance_exposure_tags": [],
-      "congestion_exposure": 0,
-      "commercial_tendency": "WARM 후보 풀",
-      "recommended_sales_strategy": "선대별 상위 후보와 항만 패턴을 묶어 관계 구축",
-      "opportunity_score": 50,
-      "reason_summary": "EVERGREEN: WARM 후보 풀, 반복입항형, 장기체류형, 다항만 활동",
-      "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "EVERGREEN",
-        "company": "EVERGREEN",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 50,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "EVERGREEN: WARM 후보 풀, 반복입항형, 장기체류형, 다항만 활동",
-        "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
-        "data_sources": []
-      }
-    },
-    {
       "rank": 10,
       "operator_name": "WAN HAI",
-      "average_stay_days": 2.1,
+      "average_stay_days": 2.3,
       "fleet_profile": "WARM 후보 풀, 반복입항형, 장기체류형",
       "preferred_ports": [
         {

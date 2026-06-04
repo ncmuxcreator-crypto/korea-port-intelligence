@@ -2507,8 +2507,11 @@ function buildDataContinuityReport({ report = {}, dashboardSummary = {}, healthP
   ];
   const blocking = currentRows <= 0 || report.fallback_used === true || String(report.data_mode || "").toLowerCase() === "no_live_data";
   return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
     status: blocking ? "fallback_active" : "healthy",
+    record_count: currentRows,
+    source_table: "active_dataset_pointer,latest_successful_dataset_bundle,static_dashboard_snapshot",
     objective: "Dashboard must never become empty when collection or storage fails.",
     current_run: {
       run_id: report.run_id || null,
