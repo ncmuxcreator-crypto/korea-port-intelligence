@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-04T06:13:01.275Z",
+  "generated_at": "2026-06-04T06:52:53.485Z",
   "data_mode": "live",
-  "record_count": 1372,
+  "record_count": 1384,
   "source_table": "operator_contact_history,commercial_leads,agent-followup-queue,sales_candidates_current,opportunity_master",
   "items": [
     {
@@ -3158,98 +3158,6 @@
     },
     {
       "rank": 36,
-      "vessel_name": "HMM RUBY",
-      "call_sign": "5LRB6",
-      "operator": "HMM",
-      "company": "HMM",
-      "agent": "에이치엠엠(주)",
-      "port": "Busan",
-      "port_code": "020",
-      "opportunity_score": 53,
-      "commercial_value_score": 53,
-      "confidence_score": 90,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "OPERATOR_IDENTIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "REPEAT_OPERATOR_CALL",
-        "NORTH_AMERICA_ROUTE",
-        "HIGH_ESG_PRESSURE",
-        "BERTH_WINDOW_AVAILABLE"
-      ],
-      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OWNER",
-      "known_company": "HMM",
-      "missing_fields": [
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "HMM RUBY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LRB6",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "HMM",
-        "company": "HMM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 90,
-        "opportunity_score": 53,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "vessel_master",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 37,
       "vessel_name": "PAN UNIVERSAL",
       "call_sign": "5LTC9",
       "operator": "PAN OCEAN",
@@ -3316,6 +3224,98 @@
         "manager": "-",
         "technical_manager": "-",
         "current_port": "Yeosu",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 90,
+        "opportunity_score": 52,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 37,
+      "vessel_name": "HMM RUBY",
+      "call_sign": "5LRB6",
+      "operator": "HMM",
+      "company": "HMM",
+      "agent": "에이치엠엠(주)",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 52,
+      "commercial_value_score": 52,
+      "confidence_score": 90,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "OPERATOR_IDENTIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "REPEAT_OPERATOR_CALL",
+        "NORTH_AMERICA_ROUTE",
+        "HIGH_ESG_PRESSURE",
+        "BERTH_WINDOW_AVAILABLE"
+      ],
+      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OWNER",
+      "known_company": "HMM",
+      "missing_fields": [
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "HMM RUBY",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5LRB6",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "HMM",
+        "company": "HMM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
         "eta": "-",
         "etb": "-",
         "ata": "-",
@@ -6069,6 +6069,95 @@
     },
     {
       "rank": 68,
+      "vessel_name": "한유 빅토리아",
+      "call_sign": "DSRP4",
+      "company": "(주)한유",
+      "agent": "(주)한유",
+      "port": "Ulsan",
+      "port_code": "820",
+      "opportunity_score": 47,
+      "commercial_value_score": 47,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "(주)한유",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "port_operation_ulsan_o",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_ulsan_o",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "한유 빅토리아",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "DSRP4",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "(주)한유",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Ulsan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 35,
+        "opportunity_score": 47,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_ulsan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 69,
       "vessel_name": "MSC IRIS",
       "call_sign": "5LYN4",
       "operator": "MSC",
@@ -6163,7 +6252,7 @@
       }
     },
     {
-      "rank": 69,
+      "rank": 70,
       "vessel_name": "NISALAH",
       "call_sign": "HZFF",
       "company": "케이마린에이젠시(주)",
@@ -6252,7 +6341,7 @@
       }
     },
     {
-      "rank": 70,
+      "rank": 71,
       "vessel_name": "MARAN ARTEMIS",
       "call_sign": "SVCK7",
       "company": "(주)울산마리타임",
@@ -6341,7 +6430,7 @@
       }
     },
     {
-      "rank": 71,
+      "rank": 72,
       "vessel_name": "MARAN ANTIOPE",
       "call_sign": "SVDL5",
       "company": "(주)쌍용에이젼시",
@@ -6430,7 +6519,7 @@
       }
     },
     {
-      "rank": 72,
+      "rank": 73,
       "vessel_name": "G.FUTURE",
       "call_sign": "3E3703",
       "company": "(주)세바해운",
@@ -6519,7 +6608,7 @@
       }
     },
     {
-      "rank": 73,
+      "rank": 74,
       "vessel_name": "ONE FRIENDSHIP",
       "call_sign": "9V7360",
       "operator": "ONE / 일본계 선사군",
@@ -6611,7 +6700,7 @@
       }
     },
     {
-      "rank": 74,
+      "rank": 75,
       "vessel_name": "에코 가스",
       "call_sign": "240018",
       "company": "유니온쉬핑(주)",
@@ -6703,7 +6792,7 @@
       }
     },
     {
-      "rank": 75,
+      "rank": 76,
       "vessel_name": "유한1호",
       "call_sign": "162805",
       "company": "(주)교성",
@@ -6792,7 +6881,7 @@
       }
     },
     {
-      "rank": 76,
+      "rank": 77,
       "vessel_name": "ANDEAN SUN",
       "call_sign": "3E4071",
       "company": "(주)신성해운",
@@ -6884,7 +6973,7 @@
       }
     },
     {
-      "rank": 77,
+      "rank": 78,
       "vessel_name": "ABRACADABRA",
       "call_sign": "V7B2847",
       "company": "팬오션 주식회사",
@@ -6976,7 +7065,7 @@
       }
     },
     {
-      "rank": 78,
+      "rank": 79,
       "vessel_name": "PENEL",
       "call_sign": "3E8781",
       "company": "주식회사 에이치쉬핑",
@@ -7065,7 +7154,7 @@
       }
     },
     {
-      "rank": 79,
+      "rank": 80,
       "vessel_name": "JOSCO DEZHOU",
       "call_sign": "VRMU6",
       "company": "신양상선(주)",
@@ -7154,7 +7243,7 @@
       }
     },
     {
-      "rank": 80,
+      "rank": 81,
       "vessel_name": "ONE SPHERE",
       "call_sign": "9V9626",
       "operator": "ONE / 일본계 선사군",
@@ -7249,7 +7338,7 @@
       }
     },
     {
-      "rank": 81,
+      "rank": 82,
       "vessel_name": "CSC LEADER",
       "call_sign": "3E2045",
       "company": "(주) 화이브오션",
@@ -7338,7 +7427,7 @@
       }
     },
     {
-      "rank": 82,
+      "rank": 83,
       "vessel_name": "ONE OWL",
       "call_sign": "7KBK",
       "operator": "ONE / 일본계 선사군",
@@ -7433,7 +7522,7 @@
       }
     },
     {
-      "rank": 83,
+      "rank": 84,
       "vessel_name": "MAERSK EUREKA",
       "call_sign": "OVZO2",
       "operator": "MAERSK",
@@ -7528,7 +7617,7 @@
       }
     },
     {
-      "rank": 84,
+      "rank": 85,
       "vessel_name": "영흥",
       "call_sign": "V7MA7",
       "company": "대한상선(주)",
@@ -7617,7 +7706,7 @@
       }
     },
     {
-      "rank": 85,
+      "rank": 86,
       "vessel_name": "HMM AQUAMARINE",
       "call_sign": "5LPX9",
       "operator": "HMM",
@@ -7709,7 +7798,7 @@
       }
     },
     {
-      "rank": 86,
+      "rank": 87,
       "vessel_name": "MSC JUSTICE VIII",
       "call_sign": "CQIY7",
       "operator": "MSC",
@@ -7804,7 +7893,7 @@
       }
     },
     {
-      "rank": 87,
+      "rank": 88,
       "vessel_name": "MSC DARLENE",
       "call_sign": "5LFC3",
       "operator": "MSC",
@@ -7896,7 +7985,7 @@
       }
     },
     {
-      "rank": 88,
+      "rank": 89,
       "vessel_name": "HMM BLESSING",
       "call_sign": "D7EW",
       "operator": "HMM",
@@ -7991,7 +8080,99 @@
       }
     },
     {
-      "rank": 89,
+      "rank": 90,
+      "vessel_name": "MAERSK EL BOSQUE",
+      "call_sign": "3E8352",
+      "operator": "MAERSK",
+      "company": "MAERSK",
+      "agent": "한국머스크 (주)",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 45,
+      "commercial_value_score": 45,
+      "confidence_score": 90,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "OPERATOR_IDENTIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "REPEAT_OPERATOR_CALL",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type"
+      ],
+      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OWNER",
+      "known_company": "MAERSK",
+      "missing_fields": [
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "MAERSK EL BOSQUE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8352",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "MAERSK",
+        "company": "MAERSK",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 90,
+        "opportunity_score": 45,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 91,
       "vessel_name": "CMA CGM HERMES",
       "call_sign": "9HA5498",
       "operator": "CMA CGM",
@@ -8086,7 +8267,7 @@
       }
     },
     {
-      "rank": 90,
+      "rank": 92,
       "vessel_name": "GOLDEN VOYAGER",
       "call_sign": "3E2715",
       "company": "(주)세바해운",
@@ -8175,7 +8356,7 @@
       }
     },
     {
-      "rank": 91,
+      "rank": 93,
       "vessel_name": "ELEGANT SALUTE",
       "call_sign": "5LYH2",
       "company": "남해해상(주)",
@@ -8264,7 +8445,7 @@
       }
     },
     {
-      "rank": 92,
+      "rank": 94,
       "vessel_name": "AMOY APOLLO",
       "call_sign": "VRXL4",
       "company": "서보해운(주)",
@@ -8353,7 +8534,7 @@
       }
     },
     {
-      "rank": 93,
+      "rank": 95,
       "vessel_name": "SSI GLORIOUS",
       "call_sign": "V7XC5",
       "company": "서보해운(주)",
@@ -8442,7 +8623,7 @@
       }
     },
     {
-      "rank": 94,
+      "rank": 96,
       "vessel_name": "CHEM RON",
       "call_sign": "VRVX2",
       "company": "(주)신성해운",
@@ -8534,7 +8715,7 @@
       }
     },
     {
-      "rank": 95,
+      "rank": 97,
       "vessel_name": "TOMBARRA",
       "call_sign": "9HA4367",
       "company": "유코카캐리어스(주)",
@@ -8626,7 +8807,7 @@
       }
     },
     {
-      "rank": 96,
+      "rank": 98,
       "vessel_name": "CF DIAMOND",
       "call_sign": "V7JH8",
       "company": "한일상선(주)",
@@ -8715,7 +8896,7 @@
       }
     },
     {
-      "rank": 97,
+      "rank": 99,
       "vessel_name": "CHEM STELLAR",
       "call_sign": "V7ST9",
       "company": "동진상운(주)",
@@ -8807,7 +8988,7 @@
       }
     },
     {
-      "rank": 98,
+      "rank": 100,
       "vessel_name": "SEAWAYS MOMENT",
       "call_sign": "V7A6974",
       "company": "선우해상 주식회사",
@@ -8899,7 +9080,7 @@
       }
     },
     {
-      "rank": 99,
+      "rank": 101,
       "vessel_name": "ASL ORCHID",
       "call_sign": "9V6096",
       "company": "엘앤씨마리타임(주)",
@@ -8991,7 +9172,7 @@
       }
     },
     {
-      "rank": 100,
+      "rank": 102,
       "vessel_name": "METIS CHALLENGER",
       "call_sign": "V7A3338",
       "company": "그로발스타해운(주)",
@@ -9080,7 +9261,7 @@
       }
     },
     {
-      "rank": 101,
+      "rank": 103,
       "vessel_name": "MARVEL I",
       "call_sign": "A8WR3",
       "company": "(유)조영해운",
@@ -9169,7 +9350,7 @@
       }
     },
     {
-      "rank": 102,
+      "rank": 104,
       "vessel_name": "MINERAL SLOVENIJA",
       "call_sign": "ONMK",
       "company": "선양해운 주식회사",
@@ -9261,7 +9442,7 @@
       }
     },
     {
-      "rank": 103,
+      "rank": 105,
       "vessel_name": "MARCHEN MAERSK",
       "call_sign": "OWUJ2",
       "company": "한국머스크 (주)",
@@ -9350,7 +9531,7 @@
       }
     },
     {
-      "rank": 104,
+      "rank": 106,
       "vessel_name": "BULK PASSION",
       "call_sign": "VRQD3",
       "company": "(주) 화이브오션",
@@ -9439,7 +9620,7 @@
       }
     },
     {
-      "rank": 105,
+      "rank": 107,
       "vessel_name": "HMM EMERALD",
       "call_sign": "5LQI5",
       "operator": "HMM",
@@ -9534,7 +9715,7 @@
       }
     },
     {
-      "rank": 106,
+      "rank": 108,
       "vessel_name": "HMM TURQUOISE",
       "call_sign": "5LTT5",
       "operator": "HMM",
@@ -9626,7 +9807,7 @@
       }
     },
     {
-      "rank": 107,
+      "rank": 109,
       "vessel_name": "HYUNDAI FORCE",
       "call_sign": "V7PT8",
       "operator": "HMM",
@@ -9718,7 +9899,7 @@
       }
     },
     {
-      "rank": 108,
+      "rank": 110,
       "vessel_name": "EVER FOREVER",
       "call_sign": "H3WC",
       "operator": "EVERGREEN",
@@ -9810,7 +9991,7 @@
       }
     },
     {
-      "rank": 109,
+      "rank": 111,
       "vessel_name": "LILA MARSEILLE",
       "call_sign": "5LYL2",
       "company": "(주)쌍용에이젼시",
@@ -9899,7 +10080,7 @@
       }
     },
     {
-      "rank": 110,
+      "rank": 112,
       "vessel_name": "PAN REGINA",
       "call_sign": "3EGA9",
       "operator": "PAN OCEAN",
@@ -9991,7 +10172,7 @@
       }
     },
     {
-      "rank": 111,
+      "rank": 113,
       "vessel_name": "스키야토스",
       "call_sign": "V7A3508",
       "company": "선양해운 주식회사",
@@ -10080,7 +10261,7 @@
       }
     },
     {
-      "rank": 112,
+      "rank": 114,
       "vessel_name": "에이치엘 오셔닉",
       "call_sign": "V7A4617",
       "company": "에이치라인해운(주)",
@@ -10169,7 +10350,7 @@
       }
     },
     {
-      "rank": 113,
+      "rank": 115,
       "vessel_name": "ICONSHIP",
       "call_sign": "5LQN3",
       "company": "(주)케이라인마리타임코리아",
@@ -10258,7 +10439,99 @@
       }
     },
     {
-      "rank": 114,
+      "rank": 116,
+      "vessel_name": "MOL CHARISMA",
+      "call_sign": "C6WN8",
+      "operator": "ONE / 일본계 선사군",
+      "company": "ONE / 일본계 선사군",
+      "agent": "오션네트워크익스프레스코리아(주)",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 44,
+      "commercial_value_score": 44,
+      "confidence_score": 90,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "OPERATOR_IDENTIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "REPEAT_OPERATOR_CALL",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type"
+      ],
+      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OWNER",
+      "known_company": "ONE / 일본계 선사군",
+      "missing_fields": [
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "data_sources": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "MOL CHARISMA",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "C6WN8",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "ONE / 일본계 선사군",
+        "company": "ONE / 일본계 선사군",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 90,
+        "opportunity_score": 44,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "PORT-MIS VsslEtrynd5 Busan I",
+          "port_operation_busan_i",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 117,
       "vessel_name": "ONE SOLIDARITY",
       "call_sign": "S6UW4",
       "operator": "ONE / 일본계 선사군",
@@ -10350,7 +10623,7 @@
       }
     },
     {
-      "rank": 115,
+      "rank": 118,
       "vessel_name": "디엘 다이아몬드호",
       "call_sign": "DSPQ4",
       "company": "동림탱커(주)",
@@ -10439,7 +10712,7 @@
       }
     },
     {
-      "rank": 116,
+      "rank": 119,
       "vessel_name": "HUA HANG HE SHUN",
       "call_sign": "BPMR2",
       "company": "(주)신성해운",
@@ -10528,7 +10801,7 @@
       }
     },
     {
-      "rank": 117,
+      "rank": 120,
       "vessel_name": "제8우진호",
       "call_sign": "212838",
       "company": "거상해운",
@@ -10617,7 +10890,7 @@
       }
     },
     {
-      "rank": 118,
+      "rank": 121,
       "vessel_name": "YUAN JU WAN",
       "call_sign": "BONH2",
       "company": "(주)신성해운",
@@ -10706,7 +10979,7 @@
       }
     },
     {
-      "rank": 119,
+      "rank": 122,
       "vessel_name": "RENAD",
       "call_sign": "HZKD",
       "company": "아성마린(주)",
@@ -10795,7 +11068,7 @@
       }
     },
     {
-      "rank": 120,
+      "rank": 123,
       "vessel_name": "AQUALEO",
       "call_sign": "D5OV4",
       "company": "신양상선(주)",
@@ -10884,7 +11157,7 @@
       }
     },
     {
-      "rank": 121,
+      "rank": 124,
       "vessel_name": "BOYM",
       "call_sign": "5LMN3",
       "company": "주식회사 포스인터내셔날",
@@ -10973,7 +11246,7 @@
       }
     },
     {
-      "rank": 122,
+      "rank": 125,
       "vessel_name": "BERNINA",
       "call_sign": "V7AJ4",
       "company": "(주) 웰스해운",
@@ -10985,6 +11258,7 @@
       "confidence_score": 35,
       "priority_label": "LOW",
       "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL",
         "HIGH_VALUE_GT_30000_PLUS",
@@ -10995,8 +11269,7 @@
         "CONTACT_PATH_AVAILABLE",
         "HIGH_GT_EXPOSURE",
         "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type"
+        "Low-speed or waiting condition"
       ],
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
       "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
@@ -11062,7 +11335,7 @@
       }
     },
     {
-      "rank": 123,
+      "rank": 126,
       "vessel_name": "WASHINGTON",
       "call_sign": "KLBO",
       "company": "허브에이젠시(주)",
@@ -11074,6 +11347,7 @@
       "confidence_score": 35,
       "priority_label": "LOW",
       "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL",
         "HIGH_VALUE_GT_30000_PLUS",
@@ -11084,8 +11358,7 @@
         "CONTACT_PATH_AVAILABLE",
         "HIGH_GT_EXPOSURE",
         "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type"
+        "Low-speed or waiting condition"
       ],
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
       "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
@@ -11151,7 +11424,7 @@
       }
     },
     {
-      "rank": 124,
+      "rank": 127,
       "vessel_name": "MINGFA",
       "call_sign": "V7IV8",
       "company": "(주)지엔에스해운",
@@ -11240,7 +11513,7 @@
       }
     },
     {
-      "rank": 125,
+      "rank": 128,
       "vessel_name": "KRUGER",
       "call_sign": "3X2065",
       "company": "케이앤제이오션(주)",
@@ -11329,7 +11602,7 @@
       }
     },
     {
-      "rank": 126,
+      "rank": 129,
       "vessel_name": "ARDMORE ENCOUNTER",
       "call_sign": "V7AY3",
       "company": "(주)세바해운",
@@ -11418,7 +11691,7 @@
       }
     },
     {
-      "rank": 127,
+      "rank": 130,
       "vessel_name": "SM NAVIGATOR",
       "call_sign": "3EKY5",
       "company": "삼진에이전시",
@@ -11507,7 +11780,96 @@
       }
     },
     {
-      "rank": 128,
+      "rank": 131,
+      "vessel_name": "FEDERAL INSPIRE",
+      "call_sign": "3E4039",
+      "company": "(주)신성해운",
+      "agent": "(주)신성해운",
+      "port": "Yeosu",
+      "port_code": "620",
+      "opportunity_score": 43,
+      "commercial_value_score": 43,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "(주)신성해운",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "PORT-MIS VsslEtrynd5 Yeosu/Gwangyang I",
+        "port_operation_yeosu_gwangyang_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "data_sources": [
+        "PORT-MIS VsslEtrynd5 Yeosu/Gwangyang I",
+        "port_operation_yeosu_gwangyang_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "FEDERAL INSPIRE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E4039",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "(주)신성해운",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Yeosu",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 35,
+        "opportunity_score": 43,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "PORT-MIS VsslEtrynd5 Yeosu/Gwangyang I",
+          "port_operation_yeosu_gwangyang_i",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 132,
       "vessel_name": "MEDI EGEO",
       "call_sign": "D5SQ2",
       "company": "오스카마리타임 주식회사",
@@ -11596,7 +11958,7 @@
       }
     },
     {
-      "rank": 129,
+      "rank": 133,
       "vessel_name": "EM ZENITH",
       "call_sign": "9VDG9",
       "company": "삼진에이전시",
@@ -11685,7 +12047,7 @@
       }
     },
     {
-      "rank": 130,
+      "rank": 134,
       "vessel_name": "CORONA UTILITY",
       "call_sign": "7JWB",
       "company": "(주)케이라인마리타임코리아",
@@ -11774,7 +12136,7 @@
       }
     },
     {
-      "rank": 131,
+      "rank": 135,
       "vessel_name": "JACOB OLDENDORFF",
       "call_sign": "D5YN4",
       "company": "그로발스타해운(주)",
@@ -11863,7 +12225,7 @@
       }
     },
     {
-      "rank": 132,
+      "rank": 136,
       "vessel_name": "VALENTIN BUTUZOV",
       "call_sign": "D5KU8",
       "company": "벤라인에이전시즈코리아주식회사",
@@ -11952,7 +12314,7 @@
       }
     },
     {
-      "rank": 133,
+      "rank": 137,
       "vessel_name": "GRAND CRU",
       "call_sign": "V7B3038",
       "company": "더블유케이해운(주)",
@@ -12041,7 +12403,96 @@
       }
     },
     {
-      "rank": 134,
+      "rank": 138,
+      "vessel_name": "ALBANY PIONEER",
+      "call_sign": "7JZS",
+      "company": "엠오엘코리아(주)",
+      "agent": "엠오엘코리아(주)",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 43,
+      "commercial_value_score": 43,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "엠오엘코리아(주)",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "data_sources": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "ALBANY PIONEER",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "7JZS",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "엠오엘코리아(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 35,
+        "opportunity_score": 43,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "PORT-MIS VsslEtrynd5 Busan I",
+          "port_operation_busan_i",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 139,
       "vessel_name": "HONG JUN",
       "call_sign": "D5PK4",
       "company": "두일해운(주)",
@@ -12130,7 +12581,7 @@
       }
     },
     {
-      "rank": 135,
+      "rank": 140,
       "vessel_name": "SFL PEARL",
       "call_sign": "VRJN4",
       "company": "(주)해강해운",
@@ -12219,7 +12670,7 @@
       }
     },
     {
-      "rank": 136,
+      "rank": 141,
       "vessel_name": "AFRICAN CARDINAL",
       "call_sign": "3EQY6",
       "company": "(주)해강해운",
@@ -12308,7 +12759,7 @@
       }
     },
     {
-      "rank": 137,
+      "rank": 142,
       "vessel_name": "EPIC SERENITY",
       "call_sign": "3E2140",
       "company": "허브에이젠시(주)",
@@ -12397,7 +12848,7 @@
       }
     },
     {
-      "rank": 138,
+      "rank": 143,
       "vessel_name": "CORONA DYNAMIC",
       "call_sign": "3EHX5",
       "company": "(주)케이라인마리타임코리아",
@@ -12486,7 +12937,7 @@
       }
     },
     {
-      "rank": 139,
+      "rank": 144,
       "vessel_name": "PUTERI SELANGOR",
       "call_sign": "5LQX3",
       "company": "(주)위즈쉬핑",
@@ -12575,7 +13026,7 @@
       }
     },
     {
-      "rank": 140,
+      "rank": 145,
       "vessel_name": "ASIA EXCELLENCE",
       "call_sign": "C6AX5",
       "company": "주식회사 플랜에이쉬핑",
@@ -12664,7 +13115,7 @@
       }
     },
     {
-      "rank": 141,
+      "rank": 146,
       "vessel_name": "NOHSHU MARU",
       "call_sign": "C6CU8",
       "company": "허브에이젠시(주)",
@@ -12753,7 +13204,7 @@
       }
     },
     {
-      "rank": 142,
+      "rank": 147,
       "vessel_name": "알리칸테 크누센",
       "call_sign": "FMRQ",
       "company": "(주)세바해운",
@@ -12842,7 +13293,96 @@
       }
     },
     {
-      "rank": 143,
+      "rank": 148,
+      "vessel_name": "DIAMOND GAS CRYSTAL",
+      "call_sign": "9V7021",
+      "company": "유니푸로스부산 주식회사",
+      "agent": "유니푸로스부산 주식회사",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 43,
+      "commercial_value_score": 43,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "유니푸로스부산 주식회사",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "data_sources": [
+        "PORT-MIS VsslEtrynd5 Busan I",
+        "port_operation_busan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "DIAMOND GAS CRYSTAL",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "9V7021",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "유니푸로스부산 주식회사",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 35,
+        "opportunity_score": 43,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "PORT-MIS VsslEtrynd5 Busan I",
+          "port_operation_busan_i",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 149,
       "vessel_name": "AL SADAF",
       "call_sign": "5LPF8",
       "company": "윌헴슨협운포트서비스 주식회사",
@@ -12931,7 +13471,7 @@
       }
     },
     {
-      "rank": 144,
+      "rank": 150,
       "vessel_name": "GLOVIS TWILIGHT",
       "call_sign": "3EA5142",
       "operator": "HYUNDAI GLOVIS",
@@ -13026,7 +13566,7 @@
       }
     },
     {
-      "rank": 145,
+      "rank": 151,
       "vessel_name": "CMA CGM MONACO",
       "call_sign": "9HA5941",
       "operator": "CMA CGM",
@@ -13118,102 +13658,7 @@
       }
     },
     {
-      "rank": 146,
-      "vessel_name": "CMA CGM TAGE",
-      "call_sign": "9HA3777",
-      "operator": "CMA CGM",
-      "company": "CMA CGM",
-      "agent": "씨엠에이씨지엠코리아(주)",
-      "port": "Busan",
-      "port_code": "020",
-      "opportunity_score": 43,
-      "commercial_value_score": 43,
-      "confidence_score": 90,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "OPERATOR_IDENTIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_ARRIVAL_OPPORTUNITY",
-        "ETA_24_72H_WINDOW",
-        "HIGH_GT_EXPOSURE",
-        "REPEAT_OPERATOR_CALL",
-        "BERTH_WINDOW_AVAILABLE"
-      ],
-      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OWNER",
-      "known_company": "CMA CGM",
-      "missing_fields": [
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "port_operation_busan_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_busan_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "CMA CGM TAGE",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "9HA3777",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "CMA CGM",
-        "company": "CMA CGM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 90,
-        "opportunity_score": 43,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_busan_i",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "vessel_master",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 147,
+      "rank": 152,
       "vessel_name": "나디 치프",
       "call_sign": "9V2531",
       "company": "(주)협운인터내셔날",
@@ -13302,7 +13747,99 @@
       }
     },
     {
-      "rank": 148,
+      "rank": 153,
+      "vessel_name": "PARNASSOS",
+      "call_sign": "5LZX5",
+      "company": "세화해운 주식회사",
+      "agent": "세화해운 주식회사",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 43,
+      "commercial_value_score": 43,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "HIGH_CONGESTION_EXPOSURE"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "세화해운 주식회사",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "port_operation_busan_i",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_busan_i",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "PARNASSOS",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5LZX5",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "세화해운 주식회사",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 35,
+        "opportunity_score": 43,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_busan_i",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 154,
       "vessel_name": "ZEUS LUMOS",
       "call_sign": "5LOS8",
       "company": "오션네트워크익스프레스코리아(주)",
@@ -13394,7 +13931,7 @@
       }
     },
     {
-      "rank": 149,
+      "rank": 155,
       "vessel_name": "에이치엠엠 라온",
       "call_sign": "D7NK",
       "company": "에이치엠엠(주)",
@@ -13483,7 +14020,7 @@
       }
     },
     {
-      "rank": 150,
+      "rank": 156,
       "vessel_name": "신정3호",
       "call_sign": "170002",
       "company": "(주)신정마린",
@@ -13572,7 +14109,7 @@
       }
     },
     {
-      "rank": 151,
+      "rank": 157,
       "vessel_name": "비케이 25",
       "call_sign": "240026",
       "company": "대덕마린",
@@ -13661,7 +14198,7 @@
       }
     },
     {
-      "rank": 152,
+      "rank": 158,
       "vessel_name": "타히티",
       "call_sign": "260002",
       "company": "(주)동신기업",
@@ -13750,7 +14287,7 @@
       }
     },
     {
-      "rank": 153,
+      "rank": 159,
       "vessel_name": "스카이마스",
       "call_sign": "230010",
       "company": "광훈선박(주)",
@@ -13839,7 +14376,7 @@
       }
     },
     {
-      "rank": 154,
+      "rank": 160,
       "vessel_name": "디엘 앰버",
       "call_sign": "211024",
       "company": "동림탱커(주)",
@@ -13928,7 +14465,7 @@
       }
     },
     {
-      "rank": 155,
+      "rank": 161,
       "vessel_name": "CHARLOTTE MAERSK",
       "call_sign": "OWLD2",
       "company": "한국머스크 (주)",
@@ -14017,7 +14554,7 @@
       }
     },
     {
-      "rank": 156,
+      "rank": 162,
       "vessel_name": "YOKOHAMA EXPRESS",
       "call_sign": "9V7315",
       "company": "하파그로이드코리아(주)",
@@ -14106,7 +14643,7 @@
       }
     },
     {
-      "rank": 157,
+      "rank": 163,
       "vessel_name": "YM TRILLION",
       "call_sign": "5LGV4",
       "company": "양밍한국(주)",
@@ -14195,7 +14732,7 @@
       }
     },
     {
-      "rank": 158,
+      "rank": 164,
       "vessel_name": "KURE",
       "call_sign": "D5MA7",
       "company": "엠에스씨코리아(주)",
@@ -14284,7 +14821,7 @@
       }
     },
     {
-      "rank": 159,
+      "rank": 165,
       "vessel_name": "CORCOVADO",
       "call_sign": "D5HF3",
       "company": "하파그로이드코리아(주)",
@@ -14376,7 +14913,7 @@
       }
     },
     {
-      "rank": 160,
+      "rank": 166,
       "vessel_name": "OOCL MALAYSIA",
       "call_sign": "VRME7",
       "company": "(주)오오씨엘 코리아",
@@ -14465,7 +15002,102 @@
       }
     },
     {
-      "rank": 161,
+      "rank": 167,
+      "vessel_name": "CMA CGM TAGE",
+      "call_sign": "9HA3777",
+      "operator": "CMA CGM",
+      "company": "CMA CGM",
+      "agent": "씨엠에이씨지엠코리아(주)",
+      "port": "Busan",
+      "port_code": "020",
+      "opportunity_score": 42,
+      "commercial_value_score": 42,
+      "confidence_score": 90,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "OPERATOR_IDENTIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "ETA_24_72H_WINDOW",
+        "HIGH_GT_EXPOSURE",
+        "REPEAT_OPERATOR_CALL",
+        "BERTH_WINDOW_AVAILABLE"
+      ],
+      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OWNER",
+      "known_company": "CMA CGM",
+      "missing_fields": [
+        "owner",
+        "manager",
+        "contact_person"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "port_operation_busan_i",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_busan_i",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "CMA CGM TAGE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "9HA3777",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "CMA CGM",
+        "company": "CMA CGM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 90,
+        "opportunity_score": 42,
+        "risk_score": 0,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_busan_i",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 168,
       "vessel_name": "12청경호",
       "call_sign": "120061",
       "company": "세종유업",
@@ -14554,99 +15186,7 @@
       }
     },
     {
-      "rank": 162,
-      "vessel_name": "PARNASSOS",
-      "call_sign": "5LZX5",
-      "company": "세화해운 주식회사",
-      "agent": "세화해운 주식회사",
-      "port": "Busan",
-      "port_code": "020",
-      "opportunity_score": 42,
-      "commercial_value_score": 42,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "HIGH_CONGESTION_EXPOSURE"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "세화해운 주식회사",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "port_operation_busan_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_busan_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "PARNASSOS",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LZX5",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "세화해운 주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 42,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_busan_i",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 163,
+      "rank": 169,
       "vessel_name": "YM TROPHY",
       "call_sign": "9V6598",
       "company": "양밍한국(주)",
@@ -14735,7 +15275,7 @@
       }
     },
     {
-      "rank": 164,
+      "rank": 170,
       "vessel_name": "파이오니어호",
       "call_sign": "DSRF7",
       "company": "대유상선(주)",
@@ -14824,7 +15364,7 @@
       }
     },
     {
-      "rank": 165,
+      "rank": 171,
       "vessel_name": "ILSHIN POLARIS ROYAL",
       "call_sign": "D9QY",
       "company": "그레이트해운(주)",
@@ -14916,7 +15456,7 @@
       }
     },
     {
-      "rank": 166,
+      "rank": 172,
       "vessel_name": "우림 드라곤 7호",
       "call_sign": "DSQI3",
       "company": "우림해운(주)",
@@ -15005,7 +15545,7 @@
       }
     },
     {
-      "rank": 167,
+      "rank": 173,
       "vessel_name": "CL YINGDU",
       "call_sign": "V7A4482",
       "company": "제이앤씨쉬핑",
@@ -15094,7 +15634,7 @@
       }
     },
     {
-      "rank": 168,
+      "rank": 174,
       "vessel_name": "DALMA",
       "call_sign": "V7CT6",
       "company": "제이앤씨쉬핑",
@@ -15183,7 +15723,7 @@
       }
     },
     {
-      "rank": 169,
+      "rank": 175,
       "vessel_name": "SOUTHERN HOPE",
       "call_sign": "3E2422",
       "company": "엠오엘코리아(주)",
@@ -15272,96 +15812,7 @@
       }
     },
     {
-      "rank": 170,
-      "vessel_name": "DIAMOND GAS CRYSTAL",
-      "call_sign": "9V7021",
-      "company": "유니푸로스부산 주식회사",
-      "agent": "유니푸로스부산 주식회사",
-      "port": "Busan",
-      "port_code": "020",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Workable UWC window available"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "유니푸로스부산 주식회사",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "PORT-MIS VsslEtrynd5 Busan I",
-        "port_operation_busan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "PORT-MIS VsslEtrynd5 Busan I",
-        "port_operation_busan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "DIAMOND GAS CRYSTAL",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "9V7021",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "유니푸로스부산 주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "PORT-MIS VsslEtrynd5 Busan I",
-          "port_operation_busan_i",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 171,
+      "rank": 176,
       "vessel_name": "자리브",
       "call_sign": "HOA7380",
       "company": "팬오션 주식회사",
@@ -15450,7 +15901,7 @@
       }
     },
     {
-      "rank": 172,
+      "rank": 177,
       "vessel_name": "SH UNITY",
       "call_sign": "V7B2879",
       "company": "선우해상 주식회사",
@@ -15539,7 +15990,7 @@
       }
     },
     {
-      "rank": 173,
+      "rank": 178,
       "vessel_name": "POST MARVEL",
       "call_sign": "5LSI3",
       "company": "주식회사 에이치쉬핑",
@@ -15628,7 +16079,7 @@
       }
     },
     {
-      "rank": 174,
+      "rank": 179,
       "vessel_name": "TM LUSTROUS",
       "call_sign": "3E6610",
       "company": "(주)해강해운",
@@ -15717,7 +16168,7 @@
       }
     },
     {
-      "rank": 175,
+      "rank": 180,
       "vessel_name": "GUI CHI",
       "call_sign": "BPGF",
       "company": "(주)세바해운",
@@ -15806,7 +16257,7 @@
       }
     },
     {
-      "rank": 176,
+      "rank": 181,
       "vessel_name": "MANDARIN ARROW",
       "call_sign": "C6OA3",
       "company": "세양해운(주)",
@@ -15895,7 +16346,7 @@
       }
     },
     {
-      "rank": 177,
+      "rank": 182,
       "vessel_name": "ORION TRADER",
       "call_sign": "DYTK",
       "company": "에스케이해운 주식회사",
@@ -15987,7 +16438,7 @@
       }
     },
     {
-      "rank": 178,
+      "rank": 183,
       "vessel_name": "FAREAST HONESTY",
       "call_sign": "VRKD2",
       "company": "하나로해운(주)",
@@ -16079,7 +16530,7 @@
       }
     },
     {
-      "rank": 179,
+      "rank": 184,
       "vessel_name": "FIONAN",
       "call_sign": "3E6928",
       "company": "대한해운(주)",
@@ -16168,7 +16619,7 @@
       }
     },
     {
-      "rank": 180,
+      "rank": 185,
       "vessel_name": "NAVE CASSIOPEIA",
       "call_sign": "D5CT4",
       "company": "(주)세바해운",
@@ -16260,7 +16711,7 @@
       }
     },
     {
-      "rank": 181,
+      "rank": 186,
       "vessel_name": "MSC ROSHNEY V",
       "call_sign": "D5OO9",
       "operator": "MSC",
@@ -16352,7 +16803,7 @@
       }
     },
     {
-      "rank": 182,
+      "rank": 187,
       "vessel_name": "MSC ACCRA IV",
       "call_sign": "5BXQ6",
       "operator": "MSC",
@@ -16444,7 +16895,7 @@
       }
     },
     {
-      "rank": 183,
+      "rank": 188,
       "vessel_name": "CURIA",
       "call_sign": "HBLM",
       "company": "신양상선(주)",
@@ -16536,7 +16987,7 @@
       }
     },
     {
-      "rank": 184,
+      "rank": 189,
       "vessel_name": "MARINE HONOR",
       "call_sign": "5LEZ7",
       "company": "해왕해운(주)",
@@ -16625,7 +17076,7 @@
       }
     },
     {
-      "rank": 185,
+      "rank": 190,
       "vessel_name": "HMM PLATINUM",
       "call_sign": "D5EC4",
       "operator": "HMM",
@@ -16717,7 +17168,7 @@
       }
     },
     {
-      "rank": 186,
+      "rank": 191,
       "vessel_name": "EXPRESS ATHENS",
       "call_sign": "A8YC3",
       "company": "엠에스씨코리아(주)",
@@ -16806,7 +17257,7 @@
       }
     },
     {
-      "rank": 187,
+      "rank": 192,
       "vessel_name": "MSC SHINA V",
       "call_sign": "5LTI2",
       "operator": "MSC",
@@ -16898,7 +17349,7 @@
       }
     },
     {
-      "rank": 188,
+      "rank": 193,
       "vessel_name": "WAN HAI 521",
       "call_sign": "9V3760",
       "operator": "WAN HAI",
@@ -16990,7 +17441,7 @@
       }
     },
     {
-      "rank": 189,
+      "rank": 194,
       "vessel_name": "IQUIQUE EXPRESS",
       "call_sign": "5LQD5",
       "company": "하파그로이드코리아(주)",
@@ -17079,7 +17530,7 @@
       }
     },
     {
-      "rank": 190,
+      "rank": 195,
       "vessel_name": "SEASPAN BEYOND",
       "call_sign": "9VMW7",
       "company": "오션네트워크익스프레스코리아(주)",
@@ -17168,7 +17619,7 @@
       }
     },
     {
-      "rank": 191,
+      "rank": 196,
       "vessel_name": "KOI",
       "call_sign": "D5NZ4",
       "company": "씨엠에이씨지엠코리아(주)",
@@ -17257,7 +17708,7 @@
       }
     },
     {
-      "rank": 192,
+      "rank": 197,
       "vessel_name": "ASIAN DYNASTY",
       "call_sign": "D7NS",
       "company": "유코카캐리어스(주)",
@@ -17346,7 +17797,7 @@
       }
     },
     {
-      "rank": 193,
+      "rank": 198,
       "vessel_name": "BESS",
       "call_sign": "LAZD8",
       "company": "유코카캐리어스(주)",
@@ -17438,7 +17889,7 @@
       }
     },
     {
-      "rank": 194,
+      "rank": 199,
       "vessel_name": "PORGY",
       "call_sign": "LAWR8",
       "company": "유코카캐리어스(주)",
@@ -17530,7 +17981,7 @@
       }
     },
     {
-      "rank": 195,
+      "rank": 200,
       "vessel_name": "TOREADOR",
       "call_sign": "9HA4856",
       "company": "유코카캐리어스(주)",
@@ -17617,459 +18068,8 @@
           "grtg"
         ]
       }
-    },
-    {
-      "rank": 196,
-      "vessel_name": "RCC EUROPE",
-      "call_sign": "C6WY7",
-      "company": "현대글로비스주식회사",
-      "agent": "현대글로비스주식회사",
-      "port": "Ulsan",
-      "port_code": "820",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "PCTC_HIGH_VALUE_TYPE",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Workable UWC window available",
-        "GT_30000_PLUS"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "현대글로비스주식회사",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "RCC EUROPE",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "C6WY7",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "현대글로비스주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Ulsan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 197,
-      "vessel_name": "PACIFIC ENLIGHTEN",
-      "call_sign": "C6WE9",
-      "company": "그레이트해운(주)",
-      "agent": "그레이트해운(주)",
-      "port": "Ulsan",
-      "port_code": "820",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_ARRIVAL_OPPORTUNITY",
-        "ETA_24_72H_WINDOW",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Workable UWC window available"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "그레이트해운(주)",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "PACIFIC ENLIGHTEN",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "C6WE9",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "그레이트해운(주)",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Ulsan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 198,
-      "vessel_name": "FEDERAL DART",
-      "call_sign": "V7GG7",
-      "company": "(주)여진해운 광양",
-      "agent": "(주)여진해운 광양",
-      "port": "South Gyeongsang",
-      "port_code": "622",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "LONG_PORT_STAY",
-        "LOW_SPEED_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "(주)여진해운 광양",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "port_operation_south_gyeongsang_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_south_gyeongsang_i",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "FEDERAL DART",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7GG7",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "(주)여진해운 광양",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "South Gyeongsang",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_south_gyeongsang_i",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 199,
-      "vessel_name": "PAN RUBY",
-      "call_sign": "3E5311",
-      "operator": "PAN OCEAN",
-      "company": "PAN OCEAN",
-      "agent": "팬오션 주식회사",
-      "port": "South Gyeongsang",
-      "port_code": "622",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 90,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "OPERATOR_IDENTIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "LONG_PORT_STAY",
-        "LOW_SPEED_EXPOSURE",
-        "REPEAT_OPERATOR_CALL",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition"
-      ],
-      "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OWNER",
-      "known_company": "PAN OCEAN",
-      "missing_fields": [
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "vessel_master",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "PAN RUBY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "3E5311",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "PAN OCEAN",
-        "company": "PAN OCEAN",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "South Gyeongsang",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 90,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 연락 준비를 위해 회사/담당자 정보 보강이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "vessel_master",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 200,
-      "vessel_name": "SPECTRUM OF THE SEAS",
-      "call_sign": "5BDR6",
-      "company": "유니푸로스부산 주식회사",
-      "agent": "유니푸로스부산 주식회사",
-      "port": "Busan",
-      "port_code": "020",
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "GT_30000_PLUS"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "유니푸로스부산 주식회사",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person"
-      ],
-      "source_names": [
-        "PORT-MIS VsslEtrynd5 Busan I",
-        "port_operation_busan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "data_sources": [
-        "PORT-MIS VsslEtrynd5 Busan I",
-        "port_operation_busan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "SPECTRUM OF THE SEAS",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5BDR6",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "유니푸로스부산 주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 35,
-        "opportunity_score": 41,
-        "risk_score": 0,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "PORT-MIS VsslEtrynd5 Busan I",
-          "port_operation_busan_i",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
     }
   ],
-  "total_count": 1372,
+  "total_count": 1384,
   "returned_count": 200
 }

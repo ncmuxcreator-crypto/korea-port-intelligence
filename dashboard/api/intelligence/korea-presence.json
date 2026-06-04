@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-04T06:13:01.275Z",
+  "generated_at": "2026-06-04T06:52:53.485Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -7,6 +7,75 @@
   "items": [
     {
       "rank": 1,
+      "vessel_name": "다온",
+      "port": "Busan",
+      "stay_days": 15.3,
+      "visit_count_30d": 0,
+      "visit_count_90d": 2,
+      "visit_count_365d": 5,
+      "ports_visited": [
+        "Busan",
+        "울산"
+      ],
+      "korea_presence_score": 93,
+      "opportunity_score": 45,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED"
+      ],
+      "reason_summary": "한국 기항 영향도 93점: 반복 기항, 체류, 항만 다양성 신호 기반",
+      "recommended_action": "반복 기항 이력을 근거로 선사/대리점 접점을 우선 확인",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_busan_o",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "다온",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 0,
+        "opportunity_score": 45,
+        "risk_score": 45,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "한국 기항 영향도 93점: 반복 기항, 체류, 항만 다양성 신호 기반",
+        "recommended_action": "반복 기항 이력을 근거로 선사/대리점 접점을 우선 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_busan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 2,
       "vessel_name": "뉴동신호",
       "port": "Busan",
       "stay_days": 8.9,
@@ -77,7 +146,7 @@
       }
     },
     {
-      "rank": 2,
+      "rank": 3,
       "vessel_name": "부광5호",
       "port": "Busan",
       "stay_days": 6.9,
@@ -146,7 +215,7 @@
       }
     },
     {
-      "rank": 3,
+      "rank": 4,
       "vessel_name": "12청경호",
       "port": "Ulsan",
       "stay_days": 23,
@@ -215,7 +284,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 5,
       "vessel_name": "타히티",
       "port": "Busan",
       "stay_days": 13.5,
@@ -284,7 +353,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 6,
       "vessel_name": "신정3호",
       "port": "Busan",
       "stay_days": 12,
@@ -346,75 +415,6 @@
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_busan_i",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 6,
-      "vessel_name": "다온",
-      "port": "Busan",
-      "stay_days": 15.3,
-      "visit_count_30d": 0,
-      "visit_count_90d": 2,
-      "visit_count_365d": 3,
-      "ports_visited": [
-        "Busan",
-        "울산"
-      ],
-      "korea_presence_score": 82,
-      "opportunity_score": 45,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED"
-      ],
-      "reason_summary": "한국 기항 영향도 82점: 반복 기항, 체류, 항만 다양성 신호 기반",
-      "recommended_action": "반복 기항 이력을 근거로 선사/대리점 접점을 우선 확인",
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_busan_o",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "다온",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 45,
-        "risk_score": 45,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "한국 기항 영향도 82점: 반복 기항, 체류, 항만 다양성 신호 기반",
-        "recommended_action": "반복 기항 이력을 근거로 선사/대리점 접점을 우선 확인",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_busan_o",
           "real_public_api_snapshot",
           "port_operation",
           "grtg"

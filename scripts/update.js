@@ -4097,6 +4097,8 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "days_visible",
   "contact_count",
   "missed_opportunity_score",
+  "win_probability",
+  "actionability_score",
   "monthly_opportunity_trend",
   "seasonality_score",
   "peak_months",
@@ -6618,6 +6620,82 @@ function buildMissedOpportunityIntelligenceSummary({ records = [], generatedAt, 
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "opportunity-memory,sales-pipeline,relationship-intelligence", items });
 }
 
+function buildWinProbabilityIntelligenceSummary({ records = [], fleetOpportunities = [], portStatistics = {}, generatedAt, dataMode } = {}) {
+  const relationshipItems = buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }).items || [];
+  const revenueSummary = buildRevenueForecastIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode });
+  const revenueRows = revenueSummary?.by_operator || revenueSummary?.extra?.by_operator || [];
+  const maxRevenue = Math.max(1, ...revenueRows.map(row => Number(row.expected_revenue || 0)));
+  const revenueByOperator = new Map(revenueRows.map(row => [String(row.operator_name || "").toLowerCase(), row]));
+  const relationshipByEntity = new Map();
+  for (const item of relationshipItems) {
+    const key = String(item.entity_name || item.operator_name || item.vessel_name || "").toLowerCase();
+    if (key && (!relationshipByEntity.has(key) || Number(item.relationship_score || 0) > Number(relationshipByEntity.get(key)?.relationship_score || 0))) {
+      relationshipByEntity.set(key, item);
+    }
+  }
+
+  const source = dedupeCandidateRows(sortCommercialPriority(records).filter(record => salesPriorityScore(record) >= 45 || isSalesCandidate(record)));
+  const items = source
+    .map((record, index) => {
+      const operatorName = operatorFleetName(record);
+      const vesselName = firstNonEmpty(record.vessel_name, record.name, record.ship_name);
+      const relationshipRow = relationshipByEntity.get(String(operatorName || "").toLowerCase()) || relationshipByEntity.get(String(vesselName || "").toLowerCase());
+      const revenueRow = revenueByOperator.get(String(operatorName || "").toLowerCase());
+      const opportunityScore = salesPriorityScore(record);
+      const contact = contactHistoryCounts(record);
+      const memory = opportunityMemoryCounts(record);
+      const confidenceScore = firstFiniteNumber(record.contact_readiness_score, record.data_confidence_score, record.confidence_score, record.candidate_confidence, 45, 0) || 0;
+      const relationshipScore = firstFiniteNumber(
+        relationshipRow?.relationship_score,
+        record.relationship_score,
+        Math.min(100, contact.previous_contacts * 12 + contact.previous_quotes * 18 + contact.previous_wins * 25 + repeatCallerVisitCount(record, 90) * 8),
+        0
+      ) || 0;
+      const revenueScore = revenueRow ? Math.round((Number(revenueRow.expected_revenue || 0) / maxRevenue) * 100) : 0;
+      const hasPort = Boolean(firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port));
+      const hasEta = Boolean(firstNonEmpty(record.eta, record.etb, record.arrival_time, record.expected_arrival_at));
+      const hasContactPath = Boolean(firstNonEmpty(record.operator, record.owner, record.manager, record.local_agent, record.agent_name, record.call_sign));
+      const priorityBoost = salesPriorityBand(opportunityScore) === "HOT" ? 20 : salesPriorityBand(opportunityScore) === "WARM" ? 10 : 0;
+      const actionabilityScore = Math.min(100, Math.round(
+        (hasPort ? 22 : 0) +
+        (hasEta ? 14 : 0) +
+        (hasContactPath ? 22 : 0) +
+        Math.min(22, Number(record.contact_readiness_score || 0) * 0.22) +
+        priorityBoost +
+        Math.min(20, repeatCallerVisitCount(record, 90) * 5)
+      ));
+      const repeatScore = Math.min(100, (memory.hot_count_90d || 0) * 22 + (memory.warm_count_90d || 0) * 10 + (memory.target_count_90d || 0) * 6);
+      const winProbability = Math.min(95, Math.max(5, Math.round(
+        opportunityScore * 0.36 +
+        relationshipScore * 0.22 +
+        actionabilityScore * 0.18 +
+        confidenceScore * 0.12 +
+        revenueScore * 0.07 +
+        repeatScore * 0.05
+      )));
+      return compactVesselInsight(record, index, {
+        win_probability: winProbability,
+        confidence_score: Math.round(confidenceScore),
+        relationship_score: Math.round(relationshipScore),
+        opportunity_score: opportunityScore,
+        actionability_score: actionabilityScore,
+        reason_summary: `기회 ${opportunityScore}점, 관계 ${Math.round(relationshipScore)}점, 실행가능성 ${actionabilityScore}점 기준 Experimental 수주 가능성`,
+        recommended_action: winProbability >= 70 ? "수주 가능성 상위 후보로 연락 경로와 제안 각도를 즉시 확인" : "관계/연락처 보강 후 후속 영업 후보로 관리"
+      });
+    })
+    .filter(item => Number(item.win_probability || 0) >= 20)
+    .sort((a, b) => Number(b.win_probability || 0) - Number(a.win_probability || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "relationship-intelligence,sales-pipeline,revenue-forecast,opportunity-memory,opportunity_master",
+    items,
+    summary: { label: "Experimental", disclaimer: "Operational sales probability signal only. Not a guaranteed win forecast." }
+  });
+}
+
 function recordMonthIndex(record = {}, generatedAt = new Date().toISOString()) {
   const value = firstNonEmpty(record.snapshot_date, record.visit_date, record.collected_at, record.generated_at, record.eta, record.ata, generatedAt);
   const date = parseScheduleTime(value);
@@ -6748,6 +6826,7 @@ function buildIntelligenceSummaries({
     "relationship-intelligence": buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }),
     "opportunity-decay": buildOpportunityDecayIntelligenceSummary({ records, generatedAt, dataMode }),
     "missed-opportunities": buildMissedOpportunityIntelligenceSummary({ records, generatedAt, dataMode }),
+    "win-probability": buildWinProbabilityIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "port-seasonality": buildPortSeasonalityIntelligenceSummary({ records, generatedAt, dataMode }),
     "fleet-heatmap": buildFleetHeatmapIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
@@ -9436,6 +9515,7 @@ try {
     "dashboard/api/intelligence/relationship-intelligence.json": intelligenceSummaries["relationship-intelligence"],
     "dashboard/api/intelligence/opportunity-decay.json": intelligenceSummaries["opportunity-decay"],
     "dashboard/api/intelligence/missed-opportunities.json": intelligenceSummaries["missed-opportunities"],
+    "dashboard/api/intelligence/win-probability.json": intelligenceSummaries["win-probability"],
     "dashboard/api/intelligence/port-seasonality.json": intelligenceSummaries["port-seasonality"],
     "dashboard/api/intelligence/fleet-heatmap.json": intelligenceSummaries["fleet-heatmap"],
     "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
