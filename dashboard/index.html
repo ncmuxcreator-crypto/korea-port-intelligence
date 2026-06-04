@@ -103,6 +103,9 @@ const INTELLIGENCE_ENDPOINTS=[
   {key:"risk",title:"리스크 분석",path:"/api/intelligence/risk-summary.json"},
   {key:"biofoulingRisk",title:"고위험 선박",path:"/api/intelligence/biofouling-risk.json"},
   {key:"cleaningWindow",title:"클리닝 적기 선박",path:"/api/intelligence/cleaning-window.json"},
+  {key:"complianceExposure",title:"Compliance 노출도",path:"/api/intelligence/compliance-exposure.json"},
+  {key:"opportunityDecay",title:"기회 소멸 위험",path:"/api/intelligence/opportunity-decay.json"},
+  {key:"missedOpportunities",title:"놓친 기회",path:"/api/intelligence/missed-opportunities.json"},
   {key:"prediction",title:"예측 신호 / 실험 기능",path:"/api/intelligence/prediction-summary.json"},
   {key:"explainability",title:"점수 설명",path:"/api/intelligence/explainability.json"},
   {key:"route",title:"항로 인사이트",path:"/api/intelligence/route-summary.json"},
@@ -110,11 +113,14 @@ const INTELLIGENCE_ENDPOINTS=[
   {key:"operatorOpportunities",title:"선사별 기회 분석",path:"/api/intelligence/operator-opportunities.json"},
   {key:"agent",title:"대리점 인사이트",path:"/api/intelligence/agent-summary.json"},
   {key:"agentIntelligence",title:"에이전트 인텔리전스",path:"/api/intelligence/agent-intelligence.json"},
+  {key:"relationshipIntelligence",title:"관계 인텔리전스",path:"/api/intelligence/relationship-intelligence.json"},
   {key:"repeatCallers",title:"반복 입항 선박",path:"/api/intelligence/repeat-callers.json"},
   {key:"fleet",title:"선대 인텔리전스",path:"/api/intelligence/fleet-intelligence.json"},
+  {key:"fleetHeatmap",title:"선대 기회 히트맵",path:"/api/intelligence/fleet-heatmap.json"},
   {key:"fleetDna",title:"선대 DNA",path:"/api/intelligence/fleet-dna.json"},
   {key:"fleetMemory",title:"선사 관계 이력",path:"/api/intelligence/fleet-memory.json"},
   {key:"portOpportunities",title:"항만별 영업 기회",path:"/api/intelligence/port-opportunities.json"},
+  {key:"portSeasonality",title:"항만 계절성",path:"/api/intelligence/port-seasonality.json"},
   {key:"portDemandRadar",title:"항만 수요 레이더",path:"/api/intelligence/port-demand-radar.json"},
   {key:"superintendentTargets",title:"기술감독 타겟",path:"/api/intelligence/superintendent-targets.json"},
   {key:"complianceOpportunities",title:"Compliance Opportunity",path:"/api/intelligence/compliance-opportunities.json"},
@@ -129,7 +135,7 @@ const INTELLIGENCE_ENDPOINTS=[
   {key:"commercial",title:"상업 기회",path:"/api/intelligence/commercial-summary.json"}
 ];
 const INSIGHT_GROUPS=[["basic","기본 정보","insightCardsBasic","insightBadgeBasic"],["sales","영업 인텔리전스","insightCardsSales","insightBadgeSales"],["port","항만 인텔리전스","insightCardsPort","insightBadgePort"],["operator","선사 인텔리전스","insightCardsOperator","insightBadgeOperator"],["advanced","고급 분석","insightCardsAdvanced","insightBadgeAdvanced"]];
-const INSIGHT_GROUP_BY_KEY={salesPriority:"sales",risk:"sales",biofoulingRisk:"sales",cleaningWindow:"sales",complianceOpportunities:"sales",revenueForecast:"sales",commercial:"sales",opportunityMemory:"sales",route:"port",portOpportunities:"port",portDemandRadar:"port",congestion:"port",operator:"operator",operatorOpportunities:"operator",agent:"operator",agentIntelligence:"operator",repeatCallers:"operator",fleet:"operator",fleetDna:"operator",fleetMemory:"operator",fleetExpansion:"operator",fleetClusters:"operator",superintendentTargets:"operator",prediction:"advanced",explainability:"advanced",drydockPrediction:"advanced",vesselTimeline:"advanced",koreaPresence:"advanced",dataQuality:"basic",sourceHealth:"basic"};
+const INSIGHT_GROUP_BY_KEY={salesPriority:"sales",risk:"sales",biofoulingRisk:"sales",cleaningWindow:"sales",complianceExposure:"sales",complianceOpportunities:"sales",opportunityDecay:"sales",missedOpportunities:"sales",revenueForecast:"sales",commercial:"sales",opportunityMemory:"sales",route:"port",portOpportunities:"port",portSeasonality:"port",portDemandRadar:"port",congestion:"port",operator:"operator",operatorOpportunities:"operator",agent:"operator",agentIntelligence:"operator",relationshipIntelligence:"operator",repeatCallers:"operator",fleet:"operator",fleetHeatmap:"operator",fleetDna:"operator",fleetMemory:"operator",fleetExpansion:"operator",fleetClusters:"operator",superintendentTargets:"operator",prediction:"advanced",explainability:"advanced",drydockPrediction:"advanced",vesselTimeline:"advanced",koreaPresence:"advanced",dataQuality:"basic",sourceHealth:"basic"};
 INTELLIGENCE_ENDPOINTS.push({key:"dataQuality",title:"데이터 품질",path:"/api/quality/data-quality.json"},{key:"sourceHealth",title:"데이터 소스 상태",path:"/api/source-health.json"},{key:"congestion",title:"체선 점수",path:"/api/congestion-watchlist.json"});
 for(const def of INTELLIGENCE_ENDPOINTS)def.group=def.group||INSIGHT_GROUP_BY_KEY[def.key]||"advanced";
 const $=id=>document.getElementById(id);

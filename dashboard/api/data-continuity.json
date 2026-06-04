@@ -5,16 +5,16 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260604051740406_00634d44",
-  "generated_at": "2026-06-04T05:21:51.286Z",
+  "run_id": "run_20260604060814011_da7ea4eb",
+  "generated_at": "2026-06-04T06:13:01.275Z",
   "status": "healthy",
   "objective": "Dashboard must never become empty when collection or storage fails.",
   "current_run": {
-    "run_id": "run_20260604051740406_00634d44",
+    "run_id": "run_20260604060814011_da7ea4eb",
     "data_mode": "static_snapshot",
     "data_status": "ready",
-    "rows": 1442,
-    "target_vessels_count": 1354,
+    "rows": 1461,
+    "target_vessels_count": 1372,
     "fallback_used": false,
     "fallback_reason": null
   },
@@ -23,14 +23,14 @@
     "post_write_verification_status": "completed",
     "promotion_status": "promoted",
     "rows_written_by_table": {
-      "vessel_snapshots": 1442,
+      "vessel_snapshots": 1461,
       "source_collection_logs": 34,
-      "vessel_entities": 1442,
-      "vessel_master": 1442,
-      "port_call_master": 1442,
-      "opportunity_master": 1442,
-      "risk_history": 1365,
-      "vessel_events": 6073,
+      "vessel_entities": 1461,
+      "vessel_master": 1461,
+      "port_call_master": 1461,
+      "opportunity_master": 1461,
+      "risk_history": 1383,
+      "vessel_events": 6147,
       "pilot_schedule_events": 0,
       "port_congestion_snapshots": 8,
       "enrichment_match_candidates": 0,
@@ -39,26 +39,26 @@
       "sales_candidates_current": 21,
       "immediate_targets_current": 21,
       "port_summary_current": 8,
-      "feature_store": 1365,
-      "feature_snapshots": 1365,
-      "rule_evaluations": 1673,
-      "explainability_snapshots": 1365,
-      "model_training_rows": 502,
-      "vessel_snapshot_daily": 1442,
+      "feature_store": 1383,
+      "feature_snapshots": 1383,
+      "rule_evaluations": 1703,
+      "explainability_snapshots": 1383,
+      "model_training_rows": 505,
+      "vessel_snapshot_daily": 1461,
       "port_snapshot_daily": 8,
       "operator_snapshot_daily": 11,
-      "route_snapshot_daily": 469,
+      "route_snapshot_daily": 467,
       "commercial_opportunity_daily": 41,
       "vessel_universe_audit": 1
     },
     "successful_dataset_bundle_status": "saved",
-    "successful_dataset_rows": 1442,
+    "successful_dataset_rows": 1461,
     "restore_status": "not_needed"
   },
   "health": {
     "api_health_status": "success",
-    "summary_generated_at": "2026-06-04T05:21:51.286Z",
-    "last_success_at": "2026-06-04T05:21:51.286Z",
+    "summary_generated_at": "2026-06-04T06:13:01.275Z",
+    "last_success_at": "2026-06-04T06:13:01.275Z",
     "production_ready": true
   },
   "fallback_order": [
@@ -66,32 +66,32 @@
       "step": 1,
       "source": "active_dataset_pointer",
       "status": "available",
-      "rows": 1442
+      "rows": 1461
     },
     {
       "step": 2,
       "source": "latest_successful_dataset_bundle",
       "status": "available",
-      "rows": 1442,
-      "run_id": "run_20260604051740406_00634d44"
+      "rows": 1461,
+      "run_id": "run_20260604060814011_da7ea4eb"
     },
     {
       "step": 3,
       "source": "latest_successful_dataset",
       "status": "available",
-      "rows": 1437
+      "rows": 1453
     },
     {
       "step": 4,
       "source": "latest_snapshot",
       "status": "available",
-      "rows": 1437
+      "rows": 1453
     },
     {
       "step": 5,
       "source": "static_backup",
       "status": "available",
-      "rows": 1349
+      "rows": 1365
     },
     {
       "step": 6,
@@ -101,8 +101,8 @@
     }
   ],
   "operator_message_ko": "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다.",
-  "status_run_id": "run_20260604051740406_00634d44",
-  "active_run_id": "run_20260604051740406_00634d44",
+  "status_run_id": "run_20260604060814011_da7ea4eb",
+  "active_run_id": "run_20260604060814011_da7ea4eb",
   "stale_diagnostic": false,
   "placeholder": false
 }

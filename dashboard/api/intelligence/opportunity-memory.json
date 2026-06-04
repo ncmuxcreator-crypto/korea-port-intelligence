@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-04T05:21:51.286Z",
+  "generated_at": "2026-06-04T06:13:01.275Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -16,7 +16,7 @@
       "previous_priority_labels": [
         "HOT"
       ],
-      "last_hot_at": "2026-06-04T05:17:40.419Z",
+      "last_hot_at": "2026-06-04T06:08:14.029Z",
       "repeat_target_score": 67,
       "opportunity_score": 80,
       "risk_score": 45,
@@ -63,6 +63,61 @@
     },
     {
       "rank": 2,
+      "vessel_name": "유한1호",
+      "port": "Yeosu",
+      "hot_count_30d": 0,
+      "hot_count_90d": 0,
+      "warm_count_90d": 0,
+      "target_count_90d": 4,
+      "previous_priority_labels": [
+        "LOW"
+      ],
+      "repeat_target_score": 66,
+      "opportunity_score": 54,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "BULK_OR_TANKER"
+      ],
+      "reason_summary": "최근 90일 대상 신호 4회, HOT 0회, WARM 0회",
+      "recommended_action": "다음 입항과 연락 가능성을 모니터링",
+      "vessel_display": {
+        "vessel_name": "유한1호",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Yeosu",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 0,
+        "opportunity_score": 54,
+        "risk_score": 45,
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "reason_summary": "최근 90일 대상 신호 4회, HOT 0회, WARM 0회",
+        "recommended_action": "다음 입항과 연락 가능성을 모니터링",
+        "data_sources": []
+      }
+    },
+    {
+      "rank": 3,
       "vessel_name": "화정에이스",
       "port": "Daesan",
       "hot_count_30d": 0,
@@ -117,7 +172,7 @@
       }
     },
     {
-      "rank": 3,
+      "rank": 4,
       "vessel_name": "창용1호",
       "port": "Yeosu",
       "hot_count_30d": 0,
@@ -172,7 +227,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 5,
       "vessel_name": "LONE STAR MARINER",
       "port": "Daesan",
       "hot_count_30d": 0,
@@ -227,7 +282,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 6,
       "vessel_name": "SPRING SKY",
       "port": "Ulsan",
       "hot_count_30d": 0,
@@ -277,61 +332,6 @@
         "contact_readiness_score": 0,
         "priority_label": "WARM",
         "reason_summary": "최근 90일 대상 신호 1회, HOT 0회, WARM 1회",
-        "recommended_action": "다음 입항과 연락 가능성을 모니터링",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 6,
-      "vessel_name": "유한1호",
-      "port": "Busan",
-      "hot_count_30d": 0,
-      "hot_count_90d": 0,
-      "warm_count_90d": 0,
-      "target_count_90d": 3,
-      "previous_priority_labels": [
-        "LOW"
-      ],
-      "repeat_target_score": 55,
-      "opportunity_score": 51,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED"
-      ],
-      "reason_summary": "최근 90일 대상 신호 3회, HOT 0회, WARM 0회",
-      "recommended_action": "다음 입항과 연락 가능성을 모니터링",
-      "vessel_display": {
-        "vessel_name": "유한1호",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 51,
-        "risk_score": 45,
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "최근 90일 대상 신호 3회, HOT 0회, WARM 0회",
         "recommended_action": "다음 입항과 연락 가능성을 모니터링",
         "data_sources": []
       }
@@ -563,7 +563,7 @@
       "hot_vessels_90d": 1,
       "target_vessels_90d": 10,
       "repeat_target_count": 5,
-      "repeat_opportunity_score": 57,
+      "repeat_opportunity_score": 58,
       "recommended_sales_angle": "반복 HOT 선박을 묶어 선대 단위 후속 연락"
     }
   ],
@@ -594,11 +594,39 @@
         "previous_priority_labels": [
           "HOT"
         ],
-        "last_hot_at": "2026-06-04T05:17:40.419Z",
+        "last_hot_at": "2026-06-04T06:08:14.029Z",
         "repeat_target_score": 67
       },
       {
         "rank": 2,
+        "vessel_name": "유한1호",
+        "imo": null,
+        "mmsi": null,
+        "port": "Yeosu",
+        "opportunity_score": 54,
+        "risk_score": 45,
+        "reason_summary": "최근 90일 대상 신호 4회, HOT 0회, WARM 0회",
+        "top_factors": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "BULK_OR_TANKER"
+        ],
+        "recommended_action": "다음 입항과 연락 가능성을 모니터링",
+        "source_id": "MASTER-PORTCALL-MASTER-CALLSIGN-162805-620-620-2026-004-162805",
+        "hot_count_30d": 0,
+        "hot_count_90d": 0,
+        "warm_count_90d": 0,
+        "target_count_90d": 4,
+        "previous_priority_labels": [
+          "LOW"
+        ],
+        "last_hot_at": null,
+        "repeat_target_score": 66
+      },
+      {
+        "rank": 3,
         "vessel_name": "화정에이스",
         "imo": null,
         "mmsi": null,
@@ -626,7 +654,7 @@
         "repeat_target_score": 66
       },
       {
-        "rank": 3,
+        "rank": 4,
         "vessel_name": "창용1호",
         "imo": null,
         "mmsi": null,
@@ -654,7 +682,7 @@
         "repeat_target_score": 56
       },
       {
-        "rank": 4,
+        "rank": 5,
         "vessel_name": "LONE STAR MARINER",
         "imo": null,
         "mmsi": null,
@@ -682,7 +710,7 @@
         "repeat_target_score": 55
       },
       {
-        "rank": 5,
+        "rank": 6,
         "vessel_name": "SPRING SKY",
         "imo": null,
         "mmsi": null,
@@ -705,34 +733,6 @@
         "target_count_90d": 1,
         "previous_priority_labels": [
           "WARM"
-        ],
-        "last_hot_at": null,
-        "repeat_target_score": 55
-      },
-      {
-        "rank": 6,
-        "vessel_name": "유한1호",
-        "imo": null,
-        "mmsi": null,
-        "port": "Busan",
-        "opportunity_score": 51,
-        "risk_score": 45,
-        "reason_summary": "최근 90일 대상 신호 3회, HOT 0회, WARM 0회",
-        "top_factors": [
-          "MASTER_DB_MATCH_FOUND",
-          "EXTENDED_IDLE_PERIOD",
-          "BULK_OR_TANKER",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "AGENT_IDENTIFIED"
-        ],
-        "recommended_action": "다음 입항과 연락 가능성을 모니터링",
-        "source_id": "MASTER-PORTCALL-MASTER-CALLSIGN-162805-020-020-2026-044-162805",
-        "hot_count_30d": 0,
-        "hot_count_90d": 0,
-        "warm_count_90d": 0,
-        "target_count_90d": 3,
-        "previous_priority_labels": [
-          "LOW"
         ],
         "last_hot_at": null,
         "repeat_target_score": 55
@@ -856,7 +856,7 @@
         "hot_vessels_90d": 1,
         "target_vessels_90d": 10,
         "repeat_target_count": 5,
-        "repeat_opportunity_score": 57,
+        "repeat_opportunity_score": 58,
         "recommended_sales_angle": "반복 HOT 선박을 묶어 선대 단위 후속 연락"
       }
     ],
