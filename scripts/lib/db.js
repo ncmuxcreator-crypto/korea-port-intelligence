@@ -570,22 +570,22 @@ function withDedupedUpserts(supabase, audit = {}) {
 function pickStaticFields(record = {}) {
   const payload = record.payload && typeof record.payload === "object" && !Array.isArray(record.payload) ? record.payload : {};
   return {
-    imo: record.imo || null,
-    mmsi: record.mmsi || null,
-    call_sign: record.call_sign || null,
-    vessel_name: record.canonical_name || record.vessel_name || null,
+    imo: record.imo || payload.imo || null,
+    mmsi: record.mmsi || payload.mmsi || null,
+    call_sign: record.call_sign || payload.call_sign || payload.callsign || payload.clsgn || null,
+    vessel_name: record.canonical_name || record.vessel_name || payload.vessel_name || null,
     normalized_vessel_name: record.normalized_name || normalizeVesselName(record.canonical_name || record.vessel_name),
-    vessel_type: record.vessel_type || null,
-    vessel_type_group: record.vessel_type_group || null,
-    gt: record.gt || null,
-    dwt: record.dwt || null,
+    vessel_type: record.vessel_type || payload.vessel_type || null,
+    vessel_type_group: record.vessel_type_group || payload.vessel_type_group || null,
+    gt: record.gt || payload.gt || payload.grtg || payload.gross_tonnage || null,
+    dwt: record.dwt || payload.dwt || payload.deadweight || payload.deadweight_tonnage || null,
     loa: record.loa || null,
     beam: record.beam || null,
-    operator: record.operator || null,
-    operator_normalized: record.operator_normalized || null,
+    operator: record.operator || payload.operator_name || payload.operator || null,
+    operator_normalized: record.operator_normalized || payload.operator_normalized || normalizeCompanyName(payload.operator_name || payload.operator) || null,
     owner_name: record.owner_name || payload.owner_name || payload.owner || payload.ship_owner || payload.registered_owner || null,
     manager_name: record.manager_name || payload.manager_name || payload.manager || payload.ship_manager || payload.technical_manager || null,
-    flag: record.flag || null,
+    flag: record.flag || payload.flag || payload.vsslNltyNm || payload.nationality || null,
     master_vessel_id: record.master_vessel_id || null,
     identity_confidence: Number(record.identity_confidence || 0),
     imo_status: record.imo_status || (record.imo ? "present" : null)
@@ -614,7 +614,10 @@ function mergeCachedStaticInfo(record = {}, cached = {}, strategy = "unknown") {
     operator_confidence: Math.max(Number(record.operator_confidence || 0), cached.operator ? 95 : 0),
     operator_inferred: record.operator_inferred ?? false,
     owner_name: record.owner_name || record.owner || cached.owner_name || "",
+    owner: record.owner || record.owner_name || cached.owner_name || "",
     manager_name: record.manager_name || record.manager || cached.manager_name || "",
+    manager: record.manager || record.manager_name || cached.manager_name || "",
+    technical_manager: record.technical_manager || record.ship_manager || record.manager_name || record.manager || cached.manager_name || "",
     flag: record.flag || cached.flag || "",
     master_vessel_id: cached.master_vessel_id || record.master_vessel_id,
     vessel_master_cache_match: true,
@@ -1422,6 +1425,8 @@ function compactPayload(record = {}) {
     vessel_type: record.vessel_type || null,
     vessel_type_group: record.vessel_type_group || null,
     gt: record.gt || record.grtg || record.intrlGrtg || null,
+    dwt: record.dwt || record.deadweight || record.deadweight_tonnage || null,
+    flag: record.flag || record.vsslNltyNm || record.vsslNltyCd || record.nationality || null,
     imo: record.imo || null,
     mmsi: record.mmsi || null,
     call_sign: record.call_sign || null,
@@ -1436,7 +1441,17 @@ function compactPayload(record = {}) {
     candidate_band: candidateLabel(record),
     reason_codes: record.reason_codes || [],
     operator_name: record.operator_name || record.operator || null,
+    operator: record.operator || record.operator_name || null,
+    operator_normalized: record.operator_normalized || normalizeCompanyName(record.operator_name || record.operator) || null,
+    operator_source: record.operator_source || null,
+    owner_name: record.owner_name || record.owner || record.ship_owner || record.registered_owner || null,
+    manager_name: record.manager_name || record.manager || record.ship_manager || record.technical_manager || null,
+    technical_manager: record.technical_manager || record.ship_manager || record.manager_name || record.manager || null,
     agent_name: record.agent_name || record.agent || record.satmntEntrpsNm || record.entrpsCdNm || null,
+    agent_source: record.agent_source || null,
+    enrichment_source: record.enrichment_source || record.imo_recovery_source || null,
+    enrichment_sources: record.enrichment_sources || record.source_children || [],
+    data_sources: record.data_sources || record.source_names || [],
     contact_readiness_score: scoreNumber(record.contact_readiness_score),
     data_confidence_score: scoreNumber(record.data_confidence_score),
     data_quality_score: scoreNumber(record.data_quality_score),
@@ -1445,6 +1460,44 @@ function compactPayload(record = {}) {
     source_name: record.source || record.source_name || record.source_mode || null,
     collected_at: record.collected_at || null
   };
+}
+
+function mergePayloadPreservingKnown(existingPayload = {}, nextPayload = {}) {
+  const oldPayload = existingPayload && typeof existingPayload === "object" && !Array.isArray(existingPayload) ? existingPayload : {};
+  const newPayload = nextPayload && typeof nextPayload === "object" && !Array.isArray(nextPayload) ? nextPayload : {};
+  const merged = { ...oldPayload, ...newPayload };
+  for (const key of [
+    "imo",
+    "mmsi",
+    "call_sign",
+    "vessel_type",
+    "vessel_type_group",
+    "gt",
+    "dwt",
+    "flag",
+    "operator",
+    "operator_name",
+    "operator_normalized",
+    "operator_source",
+    "owner",
+    "owner_name",
+    "ship_owner",
+    "registered_owner",
+    "manager",
+    "manager_name",
+    "ship_manager",
+    "technical_manager"
+  ]) {
+    if (!hasValue(merged[key]) && hasValue(oldPayload[key])) merged[key] = oldPayload[key];
+  }
+  for (const key of ["reason_codes", "enrichment_sources", "data_sources", "source_children"]) {
+    const values = [
+      ...(Array.isArray(oldPayload[key]) ? oldPayload[key] : hasValue(oldPayload[key]) ? [oldPayload[key]] : []),
+      ...(Array.isArray(newPayload[key]) ? newPayload[key] : hasValue(newPayload[key]) ? [newPayload[key]] : [])
+    ];
+    if (values.length) merged[key] = [...new Set(values.filter(hasValue))];
+  }
+  return merged;
 }
 
 function storagePayload(record = {}) {
@@ -3027,7 +3080,7 @@ export async function saveToSupabase(records, options = {}) {
     if (!ids.length) continue;
     const { data, error } = await supabase
       .from("vessel_master")
-      .select("master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,loa,beam,operator,operator_normalized,flag,identity_confidence,imo_status,first_seen")
+      .select("master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,loa,beam,operator,operator_normalized,flag,identity_confidence,imo_status,first_seen,payload")
       .in("master_vessel_id", ids);
     if (error) throw error;
     for (const row of data || []) existingMasters.set(row.master_vessel_id, row);
@@ -3057,7 +3110,8 @@ export async function saveToSupabase(records, options = {}) {
       flag: row.flag || old.flag || null,
       identity_confidence: Math.max(oldConfidence, newConfidence),
       imo_status: row.imo_status || old.imo_status || null,
-      first_seen: old.first_seen || row.first_seen
+      first_seen: old.first_seen || row.first_seen,
+      payload: mergePayloadPreservingKnown(old.payload, row.payload)
     };
   }), row => row.master_vessel_id, "vessel_master_after_merge", upsertDedupeAudit);
 

@@ -122,15 +122,175 @@ function payload(row = {}) {
   return row.payload && typeof row.payload === "object" && !Array.isArray(row.payload) ? row.payload : {};
 }
 
+const FOCUS_FIELDS = [
+  { key: "imo", label: "IMO", keys: ["imo"] },
+  { key: "mmsi", label: "MMSI", keys: ["mmsi"] },
+  { key: "call_sign", label: "Call Sign", keys: ["call_sign", "callsign", "clsgn"] },
+  { key: "operator", label: "Operator", keys: ["operator_name", "operator", "operator_normalized"] },
+  { key: "owner", label: "Owner", keys: ["owner_name", "owner", "ship_owner", "registered_owner"] },
+  { key: "manager", label: "Manager", keys: ["manager_name", "manager", "ship_manager", "technical_manager"] },
+  { key: "vessel_type", label: "Vessel Type", keys: ["vessel_type", "vessel_type_group", "vsslKndNm"] },
+  { key: "gt", label: "GT", keys: ["gt", "grtg", "intrlGrtg", "gross_tonnage"] },
+  { key: "dwt", label: "DWT", keys: ["dwt", "deadweight", "deadweight_tonnage"] },
+  { key: "flag", label: "Flag", keys: ["flag", "vsslNltyNm", "vsslNltyCd", "nationality"] }
+];
+
+function objectValue(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+}
+
+function beforePayloads(row = {}) {
+  return [
+    objectValue(row.before_enrichment),
+    objectValue(row.pre_enrichment),
+    objectValue(row.pre_enrichment_payload),
+    objectValue(row.raw_source_payload),
+    objectValue(row.raw_payload),
+    objectValue(row.source_payload),
+    objectValue(row.original_payload),
+    objectValue(payload(row).before_enrichment),
+    objectValue(payload(row).pre_enrichment),
+    objectValue(payload(row).raw_source_payload),
+    objectValue(payload(row).raw_payload),
+    objectValue(payload(row).source_payload)
+  ].filter(Boolean);
+}
+
+function firstFromObject(object = {}, keys = []) {
+  for (const key of keys) {
+    if (hasValue(object[key])) return object[key];
+  }
+  return undefined;
+}
+
+function beforePrefixedField(row = {}, keys = []) {
+  const merged = { ...payload(row), ...row };
+  for (const key of keys) {
+    for (const prefix of ["pre_enrichment_", "before_enrichment_", "raw_", "source_", "original_"]) {
+      const value = merged[`${prefix}${key}`];
+      if (hasValue(value)) return value;
+    }
+  }
+  return undefined;
+}
+
+function beforeField(row = {}, keys = []) {
+  const direct = beforePrefixedField(row, keys);
+  if (hasValue(direct)) return direct;
+  for (const source of beforePayloads(row)) {
+    const value = firstFromObject(source, keys);
+    if (hasValue(value)) return value;
+  }
+  return undefined;
+}
+
 function field(row = {}, keys = []) {
   const merged = { ...payload(row), ...row, ...(row.vessel_display || {}) };
   return keys.map(key => merged[key]).find(hasValue);
 }
 
-function coverage(records, label, keys) {
-  const count = records.filter(record => hasValue(field(record, keys))).length;
+function hasFieldValue(def = {}, value) {
+  if (!hasValue(value)) return false;
+  if (["gt", "dwt"].includes(def.key)) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number > 0 : true;
+  }
+  if (def.key === "mmsi") {
+    const number = Number(value);
+    return Number.isFinite(number) ? number > 0 : true;
+  }
+  return true;
+}
+
+function coverage(records, label, keys, mode = "after") {
+  const getter = mode === "before" ? beforeField : field;
+  const def = FOCUS_FIELDS.find(item => item.keys === keys || item.label === label.replace(/ coverage$/, ""));
+  const count = records.filter(record => hasFieldValue(def, getter(record, keys))).length;
   console.log(`- ${label}: ${count}/${records.length} (${pct(count, records.length)})`);
   return count;
+}
+
+function sourceText(record = {}) {
+  const values = [
+    record.source,
+    record.source_name,
+    record.source_label,
+    record.data_source_used,
+    record.source_mode,
+    record.operator_source,
+    record.agent_source,
+    record.enrichment_source,
+    record.imo_recovery_source,
+    record.berth_data_source,
+    record.gt_source,
+    record.eta_source,
+    record.score_source,
+    ...(Array.isArray(record.enrichment_sources) ? record.enrichment_sources : []),
+    ...(Array.isArray(record.source_names) ? record.source_names : []),
+    ...(Array.isArray(record.data_sources) ? record.data_sources : []),
+    ...(Array.isArray(record.source_children) ? record.source_children : []),
+    record.vessel_master_seed_match ? "vessel_master_seed_csv" : "",
+    record.imo_recovered_from_seed ? "source_csv_imo_recovery" : "",
+    record.vessel_master_cache_match ? "vessel_master_cache" : "",
+    record.imo_recovered_from_cache ? "vessel_master_cache_imo_recovery" : "",
+    record.secondary_enrichment_matched ? "secondary_port_facility_enrichment" : ""
+  ];
+  return values.filter(hasValue).join(" | ");
+}
+
+function sourceBuckets(record = {}) {
+  const text = sourceText(record);
+  const buckets = new Set();
+  if (/source[_-]?csv|csv|vessel_master_seed|reference|dictionary/i.test(text)) buckets.add("source.csv");
+  if (/vessel[_-]?spec|ship[_-]?spec|spec_api/i.test(text)) buckets.add("vessel_spec");
+  if (/mof[_-]?ais[_-]?info|ais[_-]?info|\bAIS\b|VTS|mmsi/i.test(text)) buckets.add("AIS info");
+  if (/vessel_master_cache|master_db|vessel_master/i.test(text)) buckets.add("vessel_master_cache");
+  if (/port_facility|secondary_port_facility|berth|terminal|pilot/i.test(text)) buckets.add("port/berth enrichment");
+  if (!buckets.size) buckets.add("unknown");
+  return [...buckets];
+}
+
+function emptyContribution() {
+  return Object.fromEntries(FOCUS_FIELDS.map(field => [field.key, 0]));
+}
+
+function buildContribution(records = []) {
+  const bySource = new Map();
+  const recordCounts = new Map();
+  for (const record of records) {
+    const recoveredFields = FOCUS_FIELDS.filter(def =>
+      !hasFieldValue(def, beforeField(record, def.keys)) && hasFieldValue(def, field(record, def.keys))
+    );
+    if (!recoveredFields.length) continue;
+    for (const source of sourceBuckets(record)) {
+      if (!bySource.has(source)) bySource.set(source, emptyContribution());
+      recordCounts.set(source, (recordCounts.get(source) || 0) + 1);
+      const row = bySource.get(source);
+      for (const def of recoveredFields) row[def.key] += 1;
+    }
+  }
+  return { bySource, recordCounts };
+}
+
+function printCoverageBlock(records = [], mode = "after") {
+  for (const def of FOCUS_FIELDS) coverage(records, `${def.label} coverage`, def.keys, mode);
+}
+
+function printContribution(records = []) {
+  const { bySource, recordCounts } = buildContribution(records);
+  const preferred = ["source.csv", "vessel_spec", "AIS info", "vessel_master_cache", "port/berth enrichment", "unknown"];
+  console.log("\nFields recovered by source:");
+  for (const source of preferred) {
+    const row = bySource.get(source) || emptyContribution();
+    const fields = FOCUS_FIELDS.map(def => `${def.label} ${row[def.key] || 0}`).join(", ");
+    console.log(`- ${source}: ${fields}`);
+  }
+  console.log("\nSource contributions:");
+  for (const source of preferred) {
+    const present = records.filter(record => sourceBuckets(record).includes(source)).length;
+    const recovered = recordCounts.get(source) || 0;
+    console.log(`- ${source} contribution: ${present} records present, ${recovered} records recovered fields`);
+  }
 }
 
 function staticRecords() {
@@ -187,16 +347,15 @@ async function main() {
   console.log(`- source: ${source}`);
   console.log(`- latest_successful_run_id: ${runId || "unknown"}`);
   console.log(`- total vessels: ${records.length}`);
+  const beforeBasisRows = records.filter(record => beforePayloads(record).length || FOCUS_FIELDS.some(def => hasFieldValue(def, beforePrefixedField(record, def.keys)))).length;
+  console.log(`- before_enrichment_basis_rows: ${beforeBasisRows}/${records.length}`);
+  console.log(`- before_enrichment_basis: ${beforeBasisRows ? "raw/pre-enrichment payload fields" : "not retained in current snapshot; recovered counts use available raw/source-prefixed fields only"}`);
 
-  coverage(records, "IMO coverage", ["imo"]);
-  coverage(records, "Call Sign coverage", ["call_sign", "callsign", "clsgn"]);
-  coverage(records, "Operator coverage", ["operator_name", "operator", "operator_normalized"]);
-  coverage(records, "Owner coverage", ["owner_name", "owner", "ship_owner", "registered_owner"]);
-  coverage(records, "Manager coverage", ["manager_name", "manager", "ship_manager", "technical_manager"]);
-  coverage(records, "Vessel Type coverage", ["vessel_type", "vessel_type_group", "vsslKndNm"]);
-  coverage(records, "GT coverage", ["gt", "grtg", "intrlGrtg", "gross_tonnage"]);
-  coverage(records, "DWT coverage", ["dwt", "deadweight", "deadweight_tonnage"]);
-  coverage(records, "Flag coverage", ["flag", "vsslNltyNm", "vsslNltyCd", "nationality"]);
+  console.log("\nField coverage before enrichment:");
+  printCoverageBlock(records, "before");
+  console.log("\nField coverage after enrichment:");
+  printCoverageBlock(records, "after");
+  printContribution(records);
 
   const enrichmentCandidates = records.filter(record =>
     !hasValue(field(record, ["imo"])) ||
@@ -214,8 +373,8 @@ async function main() {
 
   const attempts = Number(dailyRuntime.input_rows || 0) || Number(matchCandidates.count || 0) + Number(recoveryQueue.count || 0);
   const successes = records.filter(record =>
-    hasValue(field(record, ["imo"])) &&
-    (hasValue(field(record, ["operator_name", "operator"])) || hasValue(field(record, ["call_sign", "callsign", "clsgn"])))
+    sourceBuckets(record).some(bucket => bucket !== "unknown") &&
+    FOCUS_FIELDS.some(def => hasFieldValue(def, field(record, def.keys)))
   ).length;
   const failures = attempts ? Math.max(0, attempts - successes) : 0;
 

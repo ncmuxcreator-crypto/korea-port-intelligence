@@ -5,26 +5,94 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260602003048084_0f6e3182",
-  "generated_at": "2026-06-02T00:36:13.758Z",
+  "run_id": "run_20260604044537511_7136b2a9",
+  "generated_at": "2026-06-04T04:48:59.056Z",
   "report_type": "daily_sales_intelligence",
   "title": "HWK Daily Sales Intelligence Report",
-  "executive_summary_ko": "32척 HOT 후보와 17척 WARM 후보가 선별되었습니다.",
+  "executive_summary_ko": "50척 HOT 후보와 0척 WARM 후보가 선별되었습니다.",
   "kpis": {
-    "total_vessels": 1346,
-    "hot_candidates": 32,
-    "warm_candidates": 17,
-    "compliance_candidates": 1,
+    "total_vessels": 1415,
+    "hot_candidates": 50,
+    "warm_candidates": 0,
+    "compliance_candidates": 6,
     "fallback_active": false
   },
   "contact_today": [
     {
       "rank": 1,
-      "vessel_name": "HG NAPLES",
+      "vessel_name": "스텔라 벤쳐",
+      "port": "South Gyeongsang",
+      "score": 80,
+      "band": "HOT",
+      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 11.6일째인 GT 133,793 벌크선으로, 출항 전 약 148시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "next_action": "운영선사 확인",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET"
+      ]
+    },
+    {
+      "rank": 2,
+      "vessel_name": "스텔라 벤쳐",
+      "port": "South Gyeongsang",
+      "score": 76,
+      "band": "HOT",
+      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 11.6일째인 GT 133,793 벌크선으로, 출항 전 약 148시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "next_action": "운영선사 확인",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET"
+      ]
+    },
+    {
+      "rank": 3,
+      "vessel_name": "LONE STAR MARINER",
+      "port": "Daesan",
+      "score": 71,
+      "band": "HOT",
+      "why_now": "Daesan D-1정박지에서 묘박/대기 5.2일째인 GT 29,649 unknown으로, 출항 전 약 273시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+      "next_action": "운영선사 확인",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "ANCHORAGE_CLASSIFIED"
+      ]
+    },
+    {
+      "rank": 4,
+      "vessel_name": "SPRING SKY",
       "port": "Ulsan",
+      "score": 70,
+      "band": "HOT",
+      "why_now": "Ulsan 정박지-E3에서 묘박/대기 10.7일째인 GT 34,764 벌크선으로, 출항 전 약 270시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "next_action": "운영선사 확인",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS"
+      ]
+    },
+    {
+      "rank": 5,
+      "vessel_name": "NEW DEDICATION",
+      "port": "Busan",
       "score": 69,
       "band": "HOT",
-      "why_now": "Ulsan 정박지-E3에서 묘박/대기 7.9일째인 GT 35,908 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 21.4일째인 GT 35,832 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
       "next_action": "ETA 48h 전 연락",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -36,80 +104,12 @@
       ]
     },
     {
-      "rank": 2,
-      "vessel_name": "에스엠 타이거",
-      "port": "South Gyeongsang",
+      "rank": 6,
+      "vessel_name": "POSILLIPO",
+      "port": "Ulsan",
       "score": 69,
       "band": "HOT",
-      "why_now": "South Gyeongsang 원료부두 6선석에서 체류 5.5일째인 GT 93,816 벌크선으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
-      "next_action": "운영선사 확인",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED"
-      ]
-    },
-    {
-      "rank": 3,
-      "vessel_name": "NEW DEDICATION",
-      "port": "Busan",
-      "score": 67,
-      "band": "HOT",
-      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 20.6일째인 GT 35,832 벌크선으로, 출항 전 약 8시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "next_action": "운영선사 확인",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS"
-      ]
-    },
-    {
-      "rank": 4,
-      "vessel_name": "PAN QUEEN",
-      "port": "Incheon",
-      "score": 66,
-      "band": "HOT",
-      "why_now": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 3척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 53점이며 평균 바이오파울링 노출 34점, 평균 체선노출 11점입니다. Incheon 내항 6부두 60선석에서 체류 9.4일째인 GT 33,001 벌크선으로, 출항 전 약 104시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "next_action": "운영선사 선대 담당팀 접촉",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
-      ]
-    },
-    {
-      "rank": 5,
-      "vessel_name": "ASTERAS",
-      "port": "South Gyeongsang",
-      "score": 66,
-      "band": "HOT",
-      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 7.3일째인 GT 33,456 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "next_action": "운영선사 확인",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS"
-      ]
-    },
-    {
-      "rank": 6,
-      "vessel_name": "LUDOLF OLDENDORFF",
-      "port": "South Gyeongsang",
-      "score": 65,
-      "band": "HOT",
-      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 6일째인 GT 107,553 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 정박지-E3에서 묘박/대기 8.4일째인 GT 42,446 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "next_action": "ETA 48h 전 연락",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -122,70 +122,70 @@
     },
     {
       "rank": 7,
-      "vessel_name": "THEODOROS P",
+      "vessel_name": "ASTERAS",
       "port": "South Gyeongsang",
-      "score": 64,
+      "score": 68,
       "band": "HOT",
-      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 11일째인 GT 92,865 벌크선으로, 출항 전 약 314시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "next_action": "운영선사 확인",
+      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 7.3일째인 GT 33,456 벌크선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "next_action": "ETA 48h 전 연락",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
         "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
+        "HIGH_VALUE_GT_30000_PLUS"
       ]
     },
     {
       "rank": 8,
-      "vessel_name": "12청경호",
-      "port": "Ulsan",
-      "score": 64,
+      "vessel_name": "NEW DEDICATION",
+      "port": "Busan",
+      "score": 67,
       "band": "HOT",
-      "why_now": "Ulsan 정박지-M1에서 묘박/대기 23일째인 탱커으로, 출항 전 약 62시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 21.4일째인 GT 35,832 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
+      "next_action": "ETA 48h 전 연락",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS"
+      ]
+    },
+    {
+      "rank": 9,
+      "vessel_name": "SPRING SKY",
+      "port": "Ulsan",
+      "score": 67,
+      "band": "HOT",
+      "why_now": "Ulsan 정박지-E3에서 묘박/대기 10.7일째인 GT 34,764 벌크선으로, 출항 전 약 270시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "next_action": "운영선사 확인",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LONG_ANCHORAGE_WAIT",
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
-      ]
-    },
-    {
-      "rank": 9,
-      "vessel_name": "HL SAMCHEONPO",
-      "port": "Incheon",
-      "score": 63,
-      "band": "HOT",
-      "why_now": "Incheon 영흥도 영흥화력2돌핀에서 체류 13.9일째인 GT 79,560 벌크선으로, 출항 전 약 152시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "next_action": "운영선사 확인",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
         "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
+        "HIGH_VALUE_GT_30000_PLUS"
       ]
     },
     {
       "rank": 10,
-      "vessel_name": "SANMAR SAROD",
-      "port": "Daesan",
-      "score": 63,
+      "vessel_name": "ADMIRAL SCHMIDT",
+      "port": "Busan",
+      "score": 67,
       "band": "HOT",
-      "why_now": "Daesan W구역에서 체류 12.8일째인 GT 40,953 탱커으로, 출항 전 약 325시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 10.4일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
       "next_action": "운영선사 확인",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
         "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
+        "HIGH_VALUE_GT_30000_PLUS"
       ]
     }
   ],
@@ -196,32 +196,32 @@
         "step": 1,
         "source": "active_dataset_pointer",
         "status": "available",
-        "rows": 1346
+        "rows": 1415
       },
       {
         "step": 2,
         "source": "latest_successful_dataset_bundle",
         "status": "available",
-        "rows": 1346,
-        "run_id": "run_20260602003048084_0f6e3182"
+        "rows": 1415,
+        "run_id": "run_20260604044537511_7136b2a9"
       },
       {
         "step": 3,
         "source": "latest_successful_dataset",
         "status": "available",
-        "rows": 1341
+        "rows": 1412
       },
       {
         "step": 4,
         "source": "latest_snapshot",
         "status": "available",
-        "rows": 1341
+        "rows": 1412
       },
       {
         "step": 5,
         "source": "static_backup",
         "status": "available",
-        "rows": 1265
+        "rows": 1324
       },
       {
         "step": 6,
@@ -235,42 +235,42 @@
       "post_write_verification_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 1346,
+        "vessel_snapshots": 1415,
         "source_collection_logs": 34,
-        "vessel_entities": 1346,
-        "vessel_master": 1346,
-        "port_call_master": 1346,
-        "opportunity_master": 1346,
-        "risk_history": 1273,
-        "vessel_events": 5581,
+        "vessel_entities": 1415,
+        "vessel_master": 1415,
+        "port_call_master": 1415,
+        "opportunity_master": 1415,
+        "risk_history": 1338,
+        "vessel_events": 5967,
         "pilot_schedule_events": 0,
         "port_congestion_snapshots": 8,
         "enrichment_match_candidates": 0,
         "commercial_leads": 1,
         "dashboard_summary_snapshots": 1,
-        "sales_candidates_current": 17,
-        "immediate_targets_current": 17,
+        "sales_candidates_current": 21,
+        "immediate_targets_current": 21,
         "port_summary_current": 8,
-        "feature_store": 1273,
-        "feature_snapshots": 1273,
-        "rule_evaluations": 1498,
-        "explainability_snapshots": 1273,
-        "model_training_rows": 426,
-        "vessel_snapshot_daily": 1346,
+        "feature_store": 1338,
+        "feature_snapshots": 1338,
+        "rule_evaluations": 1634,
+        "explainability_snapshots": 1338,
+        "model_training_rows": 493,
+        "vessel_snapshot_daily": 1415,
         "port_snapshot_daily": 8,
         "operator_snapshot_daily": 11,
-        "route_snapshot_daily": 448,
-        "commercial_opportunity_daily": 32,
+        "route_snapshot_daily": 465,
+        "commercial_opportunity_daily": 40,
         "vessel_universe_audit": 1
       },
       "successful_dataset_bundle_status": "saved",
-      "successful_dataset_rows": 1346,
+      "successful_dataset_rows": 1415,
       "restore_status": "not_needed"
     }
   },
   "automation_next_step": "Configure email/webhook secrets to deliver this JSON as a scheduled alert.",
-  "status_run_id": "run_20260602003048084_0f6e3182",
-  "active_run_id": "run_20260602003048084_0f6e3182",
+  "status_run_id": "run_20260604044537511_7136b2a9",
+  "active_run_id": "run_20260604044537511_7136b2a9",
   "stale_diagnostic": false,
   "placeholder": false
 }
