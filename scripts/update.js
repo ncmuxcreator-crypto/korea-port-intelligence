@@ -2368,7 +2368,12 @@ function writeApiJson(filePath, payload, report = {}) {
     contractDataMode(existingPayload.data_mode) !== "live" &&
     rowCountFromPayload(existingPayload) === 0 &&
     rowCountFromPayload(payload) > 0;
-  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic)) {
+  const shouldRefreshNonLiveStatic = existingPayload &&
+    contractDataMode(existingPayload.data_mode) !== "live" &&
+    contractDataMode(payload?.data_mode, report) !== "live" &&
+    rowCountFromPayload(payload) > 0 &&
+    String(payload?.generated_at || "") > String(existingPayload?.generated_at || "");
+  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic)) {
     fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
     fs.writeFileSync(normalized, JSON.stringify(payload, null, 2));
   }
@@ -3835,6 +3840,197 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
   });
 }
 
+const LEAD_CONVERSION_STAGES = [
+  "NEW_TARGET",
+  "CONTACT_PLANNED",
+  "CONTACTED",
+  "QUOTE_REQUESTED",
+  "QUOTE_SENT",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+  "ARCHIVED"
+];
+
+function normalizeLeadConversionStage(value) {
+  const text = String(value || "").normalize("NFKC").trim().toLowerCase();
+  if (!text) return null;
+  if (/archive|archived|hold|excluded|보류|제외/.test(text)) return "ARCHIVED";
+  if (/lost|loss|failed|fail|실패|실주/.test(text)) return "LOST";
+  if (/won|win|closed_won|수주|성공/.test(text)) return "WON";
+  if (/negotiat|협상|조율/.test(text)) return "NEGOTIATION";
+  if (/quote_sent|quoted|quotation_sent|proposal_sent|견적.?발송|견적.?전달/.test(text)) return "QUOTE_SENT";
+  if (/quote_requested|quote_request|quotation_requested|quotation_request|rfq|견적.?요청/.test(text)) return "QUOTE_REQUESTED";
+  if (/contacted|contact_complete|last_contact|연락.?완료|접촉.?완료/.test(text)) return "CONTACTED";
+  if (/contact_planned|contact_ready|planned|scheduled|follow.?up|verify_contact|contact_now|연락.?예정|연락.?준비/.test(text)) return "CONTACT_PLANNED";
+  if (/new_target|new_lead|identified|qualified|candidate|target|monitor|new|신규|대상/.test(text)) return "NEW_TARGET";
+  return null;
+}
+
+function leadConversionStage(record = {}) {
+  const values = [
+    record.current_stage,
+    record.pipeline_stage,
+    record.sales_stage,
+    record.lead_stage,
+    record.opportunity_stage,
+    record.lead_status,
+    record.opportunity_state,
+    record.quote_status,
+    record.action_type,
+    record.primary_category_code,
+    record.contact_path_status
+  ];
+  for (const value of values) {
+    const stage = normalizeLeadConversionStage(value);
+    if (["ARCHIVED", "LOST", "WON", "NEGOTIATION", "QUOTE_SENT", "QUOTE_REQUESTED", "CONTACTED"].includes(stage)) return stage;
+  }
+  for (const value of values) {
+    const stage = normalizeLeadConversionStage(value);
+    if (stage) return stage;
+  }
+  const contact = contactHistoryCounts(record);
+  if (contact.previous_wins > 0) return "WON";
+  if (contact.previous_quotes > 0) return "QUOTE_SENT";
+  if (contact.previous_contacts > 0) return "CONTACTED";
+  if (firstNonEmpty(record.agent, record.agent_name, record.operator, record.operator_name) || Number(record.contact_readiness_score || 0) >= 50) return "CONTACT_PLANNED";
+  return "NEW_TARGET";
+}
+
+function previousLeadConversionStage(record = {}, currentStage = "NEW_TARGET") {
+  const explicit = normalizeLeadConversionStage(firstNonEmpty(
+    record.previous_stage,
+    record.previous_pipeline_stage,
+    record.previous_sales_stage,
+    record.previous_lead_status,
+    record.previous_opportunity_state
+  ));
+  if (explicit) return explicit;
+  const index = LEAD_CONVERSION_STAGES.indexOf(currentStage);
+  if (index > 0 && !["LOST", "ARCHIVED"].includes(currentStage)) return LEAD_CONVERSION_STAGES[index - 1];
+  return null;
+}
+
+function leadConversionStageUpdatedAt(record = {}, currentStage = "NEW_TARGET", generatedAt = new Date().toISOString()) {
+  const stageSpecific = currentStage === "QUOTE_SENT"
+    ? firstNonEmpty(record.quote_sent_at, record.quoted_at)
+    : currentStage === "QUOTE_REQUESTED"
+      ? firstNonEmpty(record.quote_requested_at, record.rfq_at)
+      : currentStage === "CONTACTED"
+        ? firstNonEmpty(record.contacted_at, record.last_contacted_at, record.last_contact_at)
+        : currentStage === "WON"
+          ? firstNonEmpty(record.won_at, record.closed_at)
+          : currentStage === "LOST"
+            ? firstNonEmpty(record.lost_at, record.closed_at)
+            : null;
+  return firstNonEmpty(
+    stageSpecific,
+    record.stage_updated_at,
+    record.pipeline_stage_updated_at,
+    record.lead_status_updated_at,
+    record.opportunity_state_updated_at,
+    record.updated_at,
+    record.last_seen_at,
+    record.collected_at,
+    generatedAt
+  );
+}
+
+function leadConversionNextAction(stage, record = {}) {
+  const existing = firstNonEmpty(record.recommended_next_action, record.recommended_action, record.next_action);
+  if (existing) return existing;
+  const byStage = {
+    NEW_TARGET: "영업 대상 여부와 연락 경로를 확인",
+    CONTACT_PLANNED: "담당자/대리점에 연락 일정을 확정",
+    CONTACTED: "요청사항을 확인하고 견적 필요 여부를 추적",
+    QUOTE_REQUESTED: "작업 범위와 선박 스펙을 확인해 견적 준비",
+    QUOTE_SENT: "견적 후속 확인 및 의사결정자 응답 추적",
+    NEGOTIATION: "가격/작업창 조건을 조율하고 다음 액션 확정",
+    WON: "작업 일정과 사후 기록 업데이트",
+    LOST: "실패 사유 기록 후 재접촉 가능 시점 보관",
+    ARCHIVED: "보류 사유 확인 후 필요 시 재활성화"
+  };
+  return byStage[stage] || byStage.NEW_TARGET;
+}
+
+function buildLeadConversionPipelinePayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const summaryItems = Array.isArray(summary.items) ? summary.items : [];
+  const seedItems = summaryItems.length ? summaryItems : [
+    ...compactItems(readJsonSafe("dashboard/api/sales/actions.json", null)),
+    ...compactItems(readJsonSafe("dashboard/api/targets/current.json", null)),
+    ...compactItems(readJsonSafe("dashboard/api/candidates/top.json", null)),
+    ...compactItems(readJsonSafe("dashboard/api/intelligence/opportunity-memory.json", null))
+  ];
+  const byIdentity = new Map();
+  for (const record of seedItems) {
+    const stage = leadConversionStage(record);
+    if (record.primary_category_code === "HOLD" && !["ARCHIVED", "LOST", "WON"].includes(stage)) continue;
+    const key = opportunityMemoryIdentityKey(record);
+    const current = byIdentity.get(key);
+    const currentScore = salesPriorityScore(current || {});
+    const score = salesPriorityScore(record);
+    const stageRank = LEAD_CONVERSION_STAGES.indexOf(stage);
+    const currentStageRank = current ? LEAD_CONVERSION_STAGES.indexOf(leadConversionStage(current)) : -1;
+    if (!current || score > currentScore || (score === currentScore && stageRank > currentStageRank)) byIdentity.set(key, record);
+  }
+  const items = [...byIdentity.values()]
+    .map((record, index) => {
+      const currentStage = leadConversionStage(record);
+      const previousStage = previousLeadConversionStage(record, currentStage);
+      const stageUpdatedAt = leadConversionStageUpdatedAt(record, currentStage, generatedAt);
+      const daysInStage = daysSinceValue(stageUpdatedAt, generatedAt) ?? 0;
+      const opportunityScore = salesPriorityScore(record);
+      const priorityLabel = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore))).toUpperCase();
+      return withVesselDisplay({
+        rank: index + 1,
+        vessel_display: record.vessel_display || vesselDisplay(record),
+        vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name),
+        imo: firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo) || null,
+        mmsi: firstNonEmpty(record.mmsi, record.vessel_display?.mmsi) || null,
+        operator_name: operatorFleetName(record),
+        port: firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port),
+        opportunity_score: opportunityScore,
+        priority_label: priorityLabel,
+        current_stage: currentStage,
+        previous_stage: previousStage,
+        stage_updated_at: stageUpdatedAt,
+        days_in_stage: daysInStage,
+        recommended_next_action: leadConversionNextAction(currentStage, record),
+        recommended_action: leadConversionNextAction(currentStage, record),
+        reason_summary: firstNonEmpty(
+          record.reason_summary,
+          record.why_now,
+          `${currentStage} 단계: ${priorityLabel} 후보, 기회점수 ${Math.round(Number(opportunityScore || 0))}`
+        )
+      });
+    })
+    .sort((a, b) => {
+      const terminalRank = stage => ["WON", "LOST", "ARCHIVED"].includes(stage) ? 1 : 0;
+      const priorityRank = label => ({ HOT: 0, WARM: 1, LOW: 2 }[String(label || "").toUpperCase()] ?? 3);
+      return terminalRank(a.current_stage) - terminalRank(b.current_stage) ||
+        priorityRank(a.priority_label) - priorityRank(b.priority_label) ||
+        Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) ||
+        LEAD_CONVERSION_STAGES.indexOf(a.current_stage) - LEAD_CONVERSION_STAGES.indexOf(b.current_stage) ||
+        Number(b.days_in_stage || 0) - Number(a.days_in_stage || 0);
+    })
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  const stage_counts = Object.fromEntries(LEAD_CONVERSION_STAGES.map(stage => [stage, items.filter(item => item.current_stage === stage).length]));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode,
+    report,
+    sourceTable: "sales-pipeline,sales/actions,operator_contact_history,commercial_leads,relationship-intelligence,opportunity-memory",
+    items: items.slice(0, 300),
+    extra: {
+      total_count: items.length,
+      returned_count: Math.min(items.length, 300),
+      stage_counts,
+      pipeline_stages: LEAD_CONVERSION_STAGES,
+      ...(items.length ? {} : { status: "empty", reason: "전환 파이프라인에 표시할 영업 대상이 없습니다." })
+    }
+  });
+}
+
 function regulatedRouteSignal(v = {}) {
   const route = [v.destination, v.destination_port, v.next_port, v.previous_port, v.route_region].filter(Boolean).join(" ").toLowerCase();
   return /australia|port hedland|new zealand|brazil|ponta da madeira|santos|호주|뉴질랜드|브라질/.test(route);
@@ -4129,6 +4325,10 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "previous_priority_labels",
   "last_hot_at",
   "repeat_target_score",
+  "current_stage",
+  "previous_stage",
+  "stage_updated_at",
+  "days_in_stage",
   "hot_vessels_90d",
   "target_vessels_90d",
   "repeat_target_count",
@@ -9712,6 +9912,12 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const conversionPipelinePayload = buildLeadConversionPipelinePayload({
+    summary: targetCategorySummary,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -9763,6 +9969,7 @@ try {
     "dashboard/api/sales/verification-queue.json": verificationQueuePayload,
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
+    "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
@@ -9896,6 +10103,7 @@ try {
   writeApiJson("dashboard/api/sales/verification-queue.json", verificationQueuePayload, report);
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
+  writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
   writeApiJson("dashboard/api/targets/static.json", staticTargetsPayload, report);
