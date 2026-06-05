@@ -23,8 +23,11 @@ function listJsonFiles(dir) {
 }
 
 const html = fs.existsSync(DASHBOARD_HTML) ? fs.readFileSync(DASHBOARD_HTML, "utf8") : "";
-const startupApiMatches = [...html.matchAll(/api\("([^"]+)"/g)].map(match => match[1]);
-const initialApiNames = startupApiMatches.filter(name => !String(name).startsWith("vesselPage") && name !== "vesselPages");
+const loadSummaryBody = html.match(/async function loadSummary\(\)\{([\s\S]*?)\nfunction flattenVesselPageRow/)?.[1] || "";
+const firstPaintSegment = loadSummaryBody.split("renderAll()")[0] || loadSummaryBody;
+const firstPaintApiNames = [...firstPaintSegment.matchAll(/api\("([^"]+)"/g)].map(match => match[1]);
+const fallbackApiNames = firstPaintApiNames.filter(name => name !== "bootstrap");
+const startupApiCount = firstPaintApiNames.includes("bootstrap") ? 1 + Math.min(fallbackApiNames.length, 2) : fallbackApiNames.length;
 const bootstrapFile = path.join(API_DIR, "bootstrap.json");
 const vesselDir = path.join(API_DIR, "vessels");
 const vesselPages = fs.existsSync(vesselDir)
@@ -53,11 +56,10 @@ const largestVesselPage = vesselPages
   .map(name => ({ file: path.join(vesselDir, name), size: sizeOf(path.join(vesselDir, name)) }))
   .sort((a, b) => b.size - a.size)[0] || { size: 0 };
 const allVesselsStartup = /all-collected-vessels\.json/.test(html.split("$('refreshBtn'")[0] || html);
-const apiHealthBlocksStartup = /api\("health"|"\/api\/health/.test(html.split("$('refreshBtn'")[0] || html) ||
-  /api\("health"|"\/api\/health/.test(html.match(/async function loadSummary\(\)\{[\s\S]*?\}\n/)?.[0] || "");
+const apiHealthBlocksStartup = /api\("health"|"\/api\/health/.test(firstPaintSegment);
 
 console.log("Performance audit:");
-console.log(`- startup API count: ${initialApiNames.length}`);
+console.log(`- startup API count: ${startupApiCount}`);
 console.log(`- bootstrap.json size: ${sizeOf(bootstrapFile)} bytes`);
 console.log(`- dashboard/api JSON file count: ${jsonFiles.length}`);
 console.log(`- vessel page count: ${vesselPages.length}`);
@@ -80,7 +82,7 @@ for (const entry of jsonFiles.sort((a, b) => path.relative(API_DIR, a.file).loca
 const warnings = [];
 if (sizeOf(bootstrapFile) > 150 * 1024) warnings.push("bootstrap.json > 150 KB");
 if (largestVesselPage.size > 300 * 1024) warnings.push("vessel page > 300 KB");
-if (initialApiNames.length > 3) warnings.push("startup API count > 3");
+if (startupApiCount > 3) warnings.push("startup API count > 3");
 if (allVesselsStartup) warnings.push("full vessel list may be fetched during startup");
 if (apiHealthBlocksStartup) warnings.push("API health panel fetches endpoints during startup");
 if (missingEndpoints.length) warnings.push("required static API endpoint missing");

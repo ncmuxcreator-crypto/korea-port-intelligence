@@ -87,6 +87,7 @@ Run:
 
 ```bash
 npm run audit:ui
+npm run audit:truth
 ```
 
 Expected outcome after this pass:
@@ -94,3 +95,4 @@ Expected outcome after this pass:
 - Hidden intelligence with `record_count > 0`: none.
 - UI sections with missing endpoint: none.
 - Missing feature candidates are reported as `NEEDS_UI` only when the endpoint itself is absent.
+- When Supabase credentials are not present locally, `audit:truth` reports DB checks as `not_checked` instead of treating unavailable DB counts as real mismatches.

@@ -5,6 +5,7 @@ const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/+$/, "");
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const REST_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1` : "";
 const PAGE_SIZE = 1000;
+const DB_AVAILABLE = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 
 const findings = [];
 
@@ -127,13 +128,23 @@ function printLine({ ui, json, db, status, reason = "" }) {
 }
 
 function addFinding(level, ui, reason) {
-  const adjustedLevel = (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) && level === "error" ? "warning" : level;
+  const adjustedLevel = !DB_AVAILABLE && level === "error" ? "warning" : level;
   findings.push({ level: adjustedLevel, ui, reason });
 }
 
 function compareNumber(ui, jsonSource, jsonValue, dbSource, dbValue, { tolerance = 0 } = {}) {
   const j = numberOrNull(jsonValue);
   const d = numberOrNull(dbValue);
+  if (!DB_AVAILABLE) {
+    printLine({
+      ui,
+      json: `${jsonSource}=${j ?? "missing"}`,
+      db: `${dbSource}=not_checked`,
+      status: "not_checked",
+      reason: "Supabase env missing; DB comparison skipped"
+    });
+    return;
+  }
   const match = j !== null && d !== null && Math.abs(j - d) <= tolerance;
   printLine({
     ui,
@@ -221,7 +232,7 @@ async function main() {
   console.log("End-to-End Dashboard Truth Audit");
   console.log("================================");
   console.log(`run_id: ${runId || "unknown"}`);
-  console.log(`db_available: ${Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)}`);
+  console.log(`db_available: ${DB_AVAILABLE}`);
   console.log("");
 
   console.log("1. Dashboard visible numbers");
@@ -249,6 +260,19 @@ async function main() {
     if (mmsi && seenMmsi.has(mmsi)) addFinding("error", label, `duplicate MMSI ${mmsi}`);
     if (imo) seenImo.add(imo);
     if (mmsi) seenMmsi.add(mmsi);
+
+    if (!DB_AVAILABLE) {
+      const hasJsonSupport = clean(item.reason_summary) && (numberOrNull(item.opportunity_score) !== null || numberOrNull(item.risk_score) !== null);
+      printLine({
+        ui: label,
+        json: "dashboard/api/intelligence/sales-priority.json",
+        db: "not_checked",
+        status: hasJsonSupport ? "json_ok" : "mismatch",
+        reason: hasJsonSupport ? "Supabase env missing; DB backing check skipped" : "sales priority card is missing score or reason_summary"
+      });
+      if (!hasJsonSupport) addFinding("warning", label, "sales priority card is missing score or reason_summary");
+      continue;
+    }
 
     const masterMatch = matchedRows(masterIndex, item);
     const snapshotMatch = matchedRows(snapshotIndex, item);
@@ -279,16 +303,18 @@ async function main() {
   const normalizedPorts = new Map();
   let unknownCount = 0;
   let missingPort = 0;
-  for (const row of vesselSnapshots.rows) {
-    const raw = clean(row.port_code || row.port_name || row.port);
-    if (!raw) {
-      missingPort += 1;
-      continue;
+  if (DB_AVAILABLE) {
+    for (const row of vesselSnapshots.rows) {
+      const raw = clean(row.port_code || row.port_name || row.port);
+      if (!raw) {
+        missingPort += 1;
+        continue;
+      }
+      const port = normalizePort(raw);
+      const key = port.port_code || port.port_name || "UNKNOWN";
+      normalizedPorts.set(key, port);
+      if (key === "UNKNOWN") unknownCount += 1;
     }
-    const port = normalizePort(raw);
-    const key = port.port_code || port.port_name || "UNKNOWN";
-    normalizedPorts.set(key, port);
-    if (key === "UNKNOWN") unknownCount += 1;
   }
   const summaryPortNames = rows(summary.ports).map(port => port.display_name || port.port_name).filter(Boolean);
   const duplicateDisplayNames = summaryPortNames.filter((name, index) => summaryPortNames.indexOf(name) !== index);
@@ -296,7 +322,7 @@ async function main() {
   printLine({
     ui: "항만 별칭 정규화",
     json: `display_names=${summaryPortNames.length}`,
-    db: `duplicates=${duplicateDisplayNames.length}, unknown=${unknownCount}, missing_port=${missingPort}`,
+    db: DB_AVAILABLE ? `duplicates=${duplicateDisplayNames.length}, unknown=${unknownCount}, missing_port=${missingPort}` : `duplicates=${duplicateDisplayNames.length}, db=not_checked`,
     status: duplicateDisplayNames.length ? "mismatch" : "match",
     reason: duplicateDisplayNames.length ? `duplicate aliases: ${duplicateDisplayNames.join(", ")}` : "aliases normalized"
   });
@@ -343,6 +369,16 @@ async function main() {
     ["static all-vessels count", staticAllMismatch, `static=${staticAllRows.length} db=${run.all_vessels_count}`],
     ["static target-vessels count", staticTargetMismatch, `static=${staticTargetRows.length} db=${run.target_vessels_count}`]
   ]) {
+    if (!DB_AVAILABLE) {
+      printLine({
+        ui: check[0],
+        json: "static dashboard JSON",
+        db: "not_checked",
+        status: "not_checked",
+        reason: "Supabase env missing; DB staleness comparison skipped"
+      });
+      continue;
+    }
     printLine({
       ui: check[0],
       json: "static dashboard JSON",
