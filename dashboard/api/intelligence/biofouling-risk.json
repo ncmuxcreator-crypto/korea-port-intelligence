@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T07:43:56.975Z",
+  "generated_at": "2026-06-05T12:26:29.623Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -7,6 +7,73 @@
   "items": [
     {
       "rank": 1,
+      "vessel_name": "PAN BONA",
+      "port": "South Gyeongsang",
+      "risk_level": "HIGH",
+      "factors": [
+        "PORT_DWELL_TIME",
+        "VESSEL_TYPE_EXPOSURE"
+      ],
+      "opportunity_score": 69,
+      "risk_score": 100,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET"
+      ],
+      "reason_summary": "PORT_DWELL_TIME, VESSEL_TYPE_EXPOSURE 기반 운영 리스크 신호",
+      "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "vessel_master",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "PAN BONA",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "South Gyeongsang",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "stay_days": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "confidence_score": 0,
+        "opportunity_score": 69,
+        "risk_score": 100,
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "reason_summary": "PORT_DWELL_TIME, VESSEL_TYPE_EXPOSURE 기반 운영 리스크 신호",
+        "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 2,
       "vessel_name": "NEW DEDICATION",
       "port": "Busan",
       "risk_level": "HIGH",
@@ -76,7 +143,7 @@
       }
     },
     {
-      "rank": 2,
+      "rank": 3,
       "vessel_name": "ADMIRAL SCHMIDT",
       "port": "Busan",
       "risk_level": "HIGH",
@@ -145,7 +212,7 @@
       }
     },
     {
-      "rank": 3,
+      "rank": 4,
       "vessel_name": "SH UNITY",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -211,7 +278,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 5,
       "vessel_name": "SUN PLUS",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -280,7 +347,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 6,
       "vessel_name": "POSILLIPO",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -349,7 +416,7 @@
       }
     },
     {
-      "rank": 6,
+      "rank": 7,
       "vessel_name": "SPRING SKY",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -418,7 +485,7 @@
       }
     },
     {
-      "rank": 7,
+      "rank": 8,
       "vessel_name": "MONA",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -487,7 +554,7 @@
       }
     },
     {
-      "rank": 8,
+      "rank": 9,
       "vessel_name": "FOSEP",
       "port": "Incheon",
       "risk_level": "HIGH",
@@ -554,7 +621,7 @@
       }
     },
     {
-      "rank": 9,
+      "rank": 10,
       "vessel_name": "HL SAMCHEONPO",
       "port": "Incheon",
       "risk_level": "HIGH",
@@ -614,72 +681,6 @@
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_incheon_o",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 10,
-      "vessel_name": "AMOY APOLLO",
-      "port": "South Gyeongsang",
-      "risk_level": "HIGH",
-      "factors": [
-        "PORT_DWELL_TIME",
-        "REPEATED_INACTIVITY",
-        "VESSEL_TYPE_EXPOSURE"
-      ],
-      "opportunity_score": 65,
-      "risk_score": 100,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
-      ],
-      "reason_summary": "PORT_DWELL_TIME, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE 기반 운영 리스크 신호",
-      "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_south_gyeongsang_o",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "AMOY APOLLO",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "South Gyeongsang",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 65,
-        "risk_score": 100,
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "PORT_DWELL_TIME, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE 기반 운영 리스크 신호",
-        "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_south_gyeongsang_o",
           "real_public_api_snapshot",
           "port_operation",
           "grtg"

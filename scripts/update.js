@@ -4468,6 +4468,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "candidate_band",
   "sales_priority_band",
   "priority_label",
+  "watch_type",
+  "watch_name",
+  "priority",
+  "current_status",
+  "current_port",
+  "change_events",
   "primary_category",
   "primary_category_code",
   "primary_category_label",
@@ -7674,6 +7680,255 @@ function buildIntelligenceSummaries({
   };
 }
 
+function watchlistEvent(eventType, eventTime, eventSummary) {
+  return {
+    event_type: eventType,
+    event_time: eventTime,
+    event_summary: eventSummary
+  };
+}
+
+function watchlistLastSeen(record = {}, generatedAt = new Date().toISOString()) {
+  return firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.ata, record.etb, record.eta, record.generated_at, generatedAt) || generatedAt;
+}
+
+function watchlistComplianceScore(record = {}) {
+  const regions = complianceExposureRegions(record);
+  const risk = recordRiskScore(record);
+  const pressure = firstFiniteNumber(record.compliance_pressure_score, record.compliance_score, regions.length ? 45 : 0, 0) || 0;
+  return Math.min(100, Math.round(
+    Math.min(45, regions.length * 22) +
+    Math.min(20, pressure) +
+    Math.min(20, risk * 0.25) +
+    (regulatedRouteSignal(record) || record.compliance_watch ? 15 : 0)
+  ));
+}
+
+function watchlistChangeEvents(record = {}, generatedAt = new Date().toISOString()) {
+  const eventTime = watchlistLastSeen(record, generatedAt);
+  const events = [];
+  const port = recordPortName(record);
+  const score = salesPriorityScore(record);
+  const band = salesPriorityBand(score);
+  const operator = operatorFleetName(record);
+  const complianceScore = watchlistComplianceScore(record);
+  const congestionScore = firstFiniteNumber(record.congestion_score, record.port_congestion_score, record.congestion_exposure_score, 0) || 0;
+  const windowScore = firstFiniteNumber(record.cleaning_window_score, record.work_feasibility_score, record.window_score, 0) || 0;
+  if (hasPortSignal(record)) events.push(watchlistEvent("ENTERED_KOREA", eventTime, `${port} 권역에서 확인되었습니다.`));
+  if (["berthed", "arrived_staying"].includes(String(record.status_bucket || "")) || firstNonEmpty(record.ata, record.atb)) {
+    events.push(watchlistEvent("ARRIVED_PORT", eventTime, `${port} 도착/접안 신호가 있습니다.`));
+  }
+  if (isDepartedRecord(record) || firstNonEmpty(record.atd, record.departure_time)) {
+    events.push(watchlistEvent("DEPARTED_PORT", eventTime, `${port} 출항 신호가 있습니다.`));
+  }
+  if (band === "HOT") events.push(watchlistEvent("BECAME_HOT", eventTime, `영업 우선순위가 HOT입니다. 기회점수 ${score}점.`));
+  else if (band === "WARM") events.push(watchlistEvent("BECAME_WARM", eventTime, `영업 우선순위가 WARM입니다. 기회점수 ${score}점.`));
+  if (complianceScore >= 45 || complianceExposureRegions(record).length) {
+    events.push(watchlistEvent("COMPLIANCE_EXPOSURE_CHANGED", eventTime, complianceRouteSignal(record) || "Compliance 노출 신호가 있습니다."));
+  }
+  if (record.operator_changed || (firstNonEmpty(record.previous_operator, record.last_operator) && firstNonEmpty(record.previous_operator, record.last_operator) !== operator)) {
+    events.push(watchlistEvent("OPERATOR_CHANGED", eventTime, `${operator} 운영사/관리사 단서가 변경되었습니다.`));
+  }
+  if (congestionScore >= 70) events.push(watchlistEvent("HIGH_CONGESTION_DETECTED", eventTime, `${port} 체선/혼잡 신호가 높습니다.`));
+  if (windowScore >= 60 || hasAnchorageWaitingSignal(record) || dwellDays(record) >= 3) {
+    events.push(watchlistEvent("CLEANING_WINDOW_OPENED", eventTime, "묘박/장기체류/작업 가능 창 신호가 열렸습니다."));
+  }
+  return events.slice(0, 6);
+}
+
+function watchlistPriority({ opportunityScore = 0, riskScore = 0, complianceScore = 0, changeEvents = [] } = {}) {
+  if (opportunityScore >= 75 || riskScore >= 75 || complianceScore >= 70 || changeEvents.some(event => ["BECAME_HOT", "CLEANING_WINDOW_OPENED"].includes(event.event_type))) return "HIGH";
+  if (opportunityScore >= 55 || riskScore >= 55 || complianceScore >= 45 || changeEvents.length) return "MEDIUM";
+  return "LOW";
+}
+
+function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOString()) {
+  return sortCommercialPriority(dedupeCandidateRows(records.filter(record => {
+    const score = salesPriorityScore(record);
+    return !isSyntheticSample(record) &&
+      !isHardCandidateExcluded(record) &&
+      (isWatchlistVessel(record) ||
+        isSalesCandidate(record) ||
+        score >= 55 ||
+        recordRiskScore(record) >= 60 ||
+        watchlistComplianceScore(record) >= 45 ||
+        hasAnchorageWaitingSignal(record) ||
+        hasArrivalPipelineSignal(record));
+  })))
+    .map((record, index) => {
+      const display = vesselDisplay(record);
+      const opportunityScore = salesPriorityScore(record);
+      const riskScore = recordRiskScore(record);
+      const complianceScore = watchlistComplianceScore(record);
+      const changeEvents = watchlistChangeEvents(record, generatedAt);
+      const band = salesPriorityBand(opportunityScore);
+      return {
+        rank: index + 1,
+        watch_type: "VESSEL",
+        watch_name: display.vessel_name,
+        vessel_display: display,
+        operator: display.operator,
+        priority: watchlistPriority({ opportunityScore, riskScore, complianceScore, changeEvents }),
+        current_status: `${band} · ${firstNonEmpty(record.status_bucket, record.status, "상태 확인")}`,
+        current_port: display.current_port,
+        opportunity_score: opportunityScore,
+        risk_score: riskScore,
+        compliance_score: complianceScore,
+        last_seen_at: watchlistLastSeen(record, generatedAt),
+        change_events: changeEvents,
+        reason_summary: compactReasonSummary(record),
+        recommended_action: compactRecommendedAction(record)
+      };
+    })
+    .sort((a, b) =>
+      (b.priority === "HIGH") - (a.priority === "HIGH") ||
+      Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) ||
+      Number(b.risk_score || 0) - Number(a.risk_score || 0) ||
+      Number(b.compliance_score || 0) - Number(a.compliance_score || 0)
+    )
+    .slice(0, 12)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+}
+
+function buildWatchlistOperatorGroups(records = []) {
+  const groups = new Map();
+  for (const record of records) {
+    const operator = operatorFleetName(record);
+    if (!operator || operator === "운영사 확인 필요") continue;
+    const current = groups.get(operator) || {
+      operator,
+      vessel_count: 0,
+      hot_count: 0,
+      warm_count: 0,
+      score_total: 0,
+      risk_total: 0,
+      compliance_total: 0,
+      ports: new Map(),
+      last_seen_at: null
+    };
+    const score = salesPriorityScore(record);
+    const band = salesPriorityBand(score);
+    current.vessel_count += 1;
+    current.hot_count += band === "HOT" ? 1 : 0;
+    current.warm_count += band === "WARM" ? 1 : 0;
+    current.score_total += score;
+    current.risk_total += recordRiskScore(record);
+    current.compliance_total += watchlistComplianceScore(record);
+    const port = recordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    const seen = watchlistLastSeen(record, "");
+    if (seen && (!current.last_seen_at || String(seen) > String(current.last_seen_at))) current.last_seen_at = seen;
+    groups.set(operator, current);
+  }
+  return [...groups.values()].map(group => {
+    const topPort = [...group.ports.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "미확인 항만";
+    const opportunityScore = Math.round(group.score_total / Math.max(1, group.vessel_count));
+    const riskScore = Math.round(group.risk_total / Math.max(1, group.vessel_count));
+    const complianceScore = Math.round(group.compliance_total / Math.max(1, group.vessel_count));
+    const events = [];
+    if (group.hot_count) events.push(watchlistEvent("BECAME_HOT", group.last_seen_at, `${group.hot_count}척 HOT 후보가 있습니다.`));
+    if (complianceScore >= 45) events.push(watchlistEvent("COMPLIANCE_EXPOSURE_CHANGED", group.last_seen_at, "선대 내 compliance 노출 신호가 있습니다."));
+    return { ...group, topPort, opportunityScore, riskScore, complianceScore, events };
+  });
+}
+
+function buildWatchlistAggregateItems(records = [], portStatistics = {}, generatedAt = new Date().toISOString()) {
+  const operators = buildWatchlistOperatorGroups(records)
+    .sort((a, b) => b.hot_count - a.hot_count || b.opportunityScore - a.opportunityScore || b.vessel_count - a.vessel_count);
+  const operatorItems = operators.slice(0, 3).map((group, index) => ({
+    rank: index + 1,
+    watch_type: "OPERATOR",
+    watch_name: group.operator,
+    priority: watchlistPriority({ opportunityScore: group.opportunityScore, riskScore: group.riskScore, complianceScore: group.complianceScore, changeEvents: group.events }),
+    current_status: `${group.hot_count} HOT / ${group.warm_count} WARM`,
+    current_port: group.topPort,
+    opportunity_score: group.opportunityScore,
+    risk_score: group.riskScore,
+    compliance_score: group.complianceScore,
+    last_seen_at: group.last_seen_at || generatedAt,
+    change_events: group.events,
+    reason_summary: `${group.vessel_count}척 한국 항만 신호, HOT ${group.hot_count}척`,
+    recommended_action: "운영사 단위로 담당자와 반복 입항/작업 가능 선박을 확인"
+  }));
+  const fleetItems = operators.filter(group => group.vessel_count >= 2).slice(0, 3).map((group, index) => ({
+    rank: index + 1,
+    watch_type: "FLEET",
+    watch_name: group.operator,
+    priority: watchlistPriority({ opportunityScore: group.opportunityScore, riskScore: group.riskScore, complianceScore: group.complianceScore, changeEvents: group.events }),
+    current_status: `${group.vessel_count}척 선대 감시`,
+    current_port: group.topPort,
+    opportunity_score: group.opportunityScore,
+    risk_score: group.riskScore,
+    compliance_score: group.complianceScore,
+    last_seen_at: group.last_seen_at || generatedAt,
+    change_events: group.events,
+    reason_summary: "같은 운영사/선대에서 복수 선박 기회가 관측되었습니다.",
+    recommended_action: "선대 단위 제안 가능성을 점검"
+  }));
+  const portRows = Array.isArray(portStatistics?.ports) ? portStatistics.ports : Array.isArray(portStatistics) ? portStatistics : [];
+  const portItems = portRows
+    .map(port => {
+      const opportunityScore = firstFiniteNumber(port.avg_opportunity_score, port.average_opportunity_score, port.opportunity_index, port.port_opportunity_score, 0) || 0;
+      const hot = firstFiniteNumber(port.hot_candidate_count, port.hot_count, port.immediate_target_count, 0) || 0;
+      const vesselCount = firstFiniteNumber(port.vessel_count, port.total_vessels, port.all_vessels_count, 0) || 0;
+      const changeEvents = hot ? [watchlistEvent("BECAME_HOT", generatedAt, `${hot}척 HOT 후보가 있는 항만입니다.`)] : [];
+      if (firstFiniteNumber(port.congestion_score, port.avg_congestion_score, 0) >= 70) {
+        changeEvents.push(watchlistEvent("HIGH_CONGESTION_DETECTED", generatedAt, "항만 혼잡/체선 신호가 높습니다."));
+      }
+      return {
+        watch_type: "PORT",
+        watch_name: port.display_name || port.port_name || port.port_code || "미확인 항만",
+        priority: watchlistPriority({ opportunityScore, riskScore: 0, complianceScore: 0, changeEvents }),
+        current_status: `${vesselCount}척 / HOT ${hot}척`,
+        current_port: port.display_name || port.port_name || port.port_code || "미확인 항만",
+        opportunity_score: Math.round(opportunityScore),
+        risk_score: 0,
+        compliance_score: 0,
+        last_seen_at: port.last_seen_at || generatedAt,
+        change_events: changeEvents,
+        reason_summary: "항만 단위 영업 기회 밀도를 감시합니다.",
+        recommended_action: "항만별 HOT/대기/입항 후보를 함께 확인"
+      };
+    })
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 2)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return [...operatorItems, ...fleetItems, ...portItems];
+}
+
+function buildWatchlistPayload({ records = [], portStatistics = {}, generatedAt, dataMode, report = {} } = {}) {
+  const vesselItems = buildWatchlistVesselItems(records, generatedAt);
+  const aggregateItems = buildWatchlistAggregateItems(records, portStatistics, generatedAt);
+  const items = [...vesselItems, ...aggregateItems]
+    .sort((a, b) =>
+      (b.priority === "HIGH") - (a.priority === "HIGH") ||
+      (b.priority === "MEDIUM") - (a.priority === "MEDIUM") ||
+      Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) ||
+      Number(b.risk_score || 0) - Number(a.risk_score || 0)
+    )
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode,
+    report,
+    sourceTable: "vessel_display,opportunity_memory,sales/actions,relationship-intelligence,fleet-intelligence,alerts/latest,compliance-exposure",
+    items,
+    extra: {
+      status: items.length ? "active" : "empty",
+      reason: items.length ? null : "감시 조건에 맞는 선박/운영사/항만이 없습니다.",
+      summary: {
+        watchlist_count: items.length,
+        active_watchlist_count: items.filter(item => item.priority !== "LOW").length,
+        vessels_with_changes: items.filter(item => item.watch_type === "VESSEL" && Array.isArray(item.change_events) && item.change_events.length).length,
+        operator_watchlist_count: items.filter(item => item.watch_type === "OPERATOR").length,
+        fleet_watchlist_count: items.filter(item => item.watch_type === "FLEET").length,
+        port_watchlist_count: items.filter(item => item.watch_type === "PORT").length
+      }
+    }
+  });
+}
+
 function buildCandidateChangesPayload(candidateChanges = {}, generatedAt = new Date().toISOString()) {
   return {
     generated_at: generatedAt,
@@ -10215,6 +10470,13 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  const watchlistPayload = buildWatchlistPayload({
+    records: allCollectedVessels,
+    portStatistics,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_json",
+    report
+  });
   const previousKpiReference = loadPreviousKpiTrendReference();
   const bootstrapPayload = buildBootstrapSnapshot({
     dashboardSummary,
@@ -10375,6 +10637,7 @@ try {
     "dashboard/api/sales/actions.json": salesActionsPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
+    "dashboard/api/watchlist/current.json": watchlistPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
@@ -10512,6 +10775,7 @@ try {
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
+  writeApiJson("dashboard/api/watchlist/current.json", watchlistPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
   writeApiJson("dashboard/api/targets/static.json", staticTargetsPayload, report);

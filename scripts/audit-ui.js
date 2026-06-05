@@ -17,6 +17,7 @@ const FEATURE_CATALOG = [
   ["target categories", "dashboard/api/targets/categories.json", "영업 대상 카테고리", ["targetCategoryCards", "target_categories"]],
   ["sales actions", "dashboard/api/sales/actions.json", "오늘의 영업 액션", ["/api/sales/actions.json", "sales/actions"]],
   ["verification queue", "dashboard/api/sales/verification-queue.json", "연락처 확인 필요", ["verification-queue.json", "followupRows"]],
+  ["watchlist", "dashboard/api/watchlist/current.json", "관심 선박", ["watchlist/current.json", "watchlistRows"]],
   ["message drafts", "dashboard/api/sales/message-drafts.json", "오늘의 영업 액션", ["message-drafts", "message_draft"]],
   ["daily sales report", "dashboard/api/reports/daily-sales-report.json", "예상 매출", ["daily-sales-report", "executiveWeekly"]],
   ["repeat callers", "dashboard/api/intelligence/repeat-callers.json", "선대 인텔리전스", ["repeat-callers.json", "repeatCallers"]],
