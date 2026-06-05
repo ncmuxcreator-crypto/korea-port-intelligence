@@ -6055,6 +6055,141 @@ function serviceDemandFlags(record = {}) {
   };
 }
 
+const SERVICE_BUNDLE_SERVICES = [
+  "Hull Cleaning",
+  "UWI",
+  "Propeller Polish",
+  "Biofouling Report",
+  "Performance Report",
+  "Pre-docking Inspection"
+];
+
+function serviceBundleSignals(record = {}) {
+  const text = serviceText(record);
+  const demand = serviceDemandFlags(record);
+  const opportunity = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const stay = dwellDays(record);
+  const waitingHours = firstFiniteNumber(record.waiting_hours, record.anchorage_hours, record.estimated_waiting_time, record.current_call_stay_hours, record.stay_hours, 0) || 0;
+  const gt = Number(record.gt || record.grt || record.grtg || record.gross_tonnage || 0);
+  const dwt = Number(record.dwt || record.deadweight || 0);
+  const largeVessel = gt >= 10000 || dwt >= 15000;
+  const complianceSignal = regulatedRouteSignal(record) || complianceExposureRegions(record).length > 0 || /compliance|biosecurity|biofouling|brazil|australia|new zealand|california|canada/i.test(text);
+  const performanceSignal = /fuel|performance|cii|efficiency|speed|consumption|연료|효율|성능/i.test(text) || opportunity >= 65 || largeVessel;
+  const dockingSignal = /drydock|dock|yard|repair|inspection|정비|수리|드라이독|도크/i.test(text) || risk >= 70 || Number(record.predicted_cleaning_opportunity_score || 0) >= 65;
+  const cleaningWindowSignal = Number(record.window_score || record.cleaning_window_score || 0) >= 55 || stay >= 3 || waitingHours >= 24 || hasAnchorageWaitingSignal(record);
+  return {
+    opportunity,
+    risk,
+    stay,
+    waitingHours,
+    largeVessel,
+    complianceSignal,
+    performanceSignal,
+    dockingSignal,
+    cleaningWindowSignal,
+    demand
+  };
+}
+
+function serviceBundleRecommendation(record = {}) {
+  const signals = serviceBundleSignals(record);
+  const services = [];
+  const reasons = [];
+  const add = (service, reason) => {
+    if (!services.includes(service)) services.push(service);
+    if (reason) reasons.push(reason);
+  };
+
+  if (signals.demand.hull_cleaning || signals.opportunity >= 55 || signals.risk >= 55 || signals.cleaningWindowSignal) {
+    add("Hull Cleaning", `기회 ${signals.opportunity}점 / 리스크 ${signals.risk}점`);
+  }
+  if (signals.demand.uwi || signals.risk >= 60 || signals.dockingSignal || signals.waitingHours >= 24) {
+    add("UWI", "리스크/대기/점검 신호");
+  }
+  if (signals.performanceSignal && (signals.largeVessel || signals.opportunity >= 65 || signals.risk >= 50)) {
+    add("Propeller Polish", "대형선 또는 성능/연료 효율 개선 신호");
+  }
+  if (signals.complianceSignal || signals.risk >= 60) {
+    add("Biofouling Report", "Compliance 또는 biofouling 리스크 신호");
+  }
+  if (signals.performanceSignal || signals.opportunity >= 70) {
+    add("Performance Report", "연료 효율/CII/운항 성능 제안 신호");
+  }
+  if (signals.dockingSignal || signals.stay >= 5 || signals.risk >= 70) {
+    add("Pre-docking Inspection", "드라이독/정비 전 점검 신호");
+  }
+
+  if (!services.length && signals.opportunity >= 45) {
+    add("Hull Cleaning", "기본 상업 기회 신호");
+    if (signals.risk >= 40) add("Biofouling Report", "보조 리스크 설명 자료 필요");
+  }
+
+  const bundleScore = Math.min(100, Math.round(
+    signals.opportunity * 0.38 +
+    signals.risk * 0.22 +
+    Math.min(18, services.length * 4) +
+    (signals.cleaningWindowSignal ? 10 : 0) +
+    (signals.complianceSignal ? 8 : 0) +
+    (signals.performanceSignal ? 6 : 0) +
+    (signals.dockingSignal ? 6 : 0)
+  ));
+
+  return {
+    services: services.slice(0, 6),
+    reasons: [...new Set(reasons)].slice(0, 5),
+    bundle_score: bundleScore
+  };
+}
+
+function serviceBundleValueBand(bundleScore = 0, serviceCount = 0) {
+  const score = Number(bundleScore || 0);
+  if (score >= 80 || serviceCount >= 5) return "HIGH";
+  if (score >= 60 || serviceCount >= 3) return "MEDIUM";
+  return "LOW";
+}
+
+function buildServiceBundleIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const items = sortCommercialPriority(records)
+    .map((record, index) => {
+      const recommendation = serviceBundleRecommendation(record);
+      const services = recommendation.services;
+      const serviceTextValue = services.join(" + ");
+      const estimatedValueBand = serviceBundleValueBand(recommendation.bundle_score, services.length);
+      return compactVesselInsight(record, index, {
+        recommended_bundle: services,
+        bundle_score: recommendation.bundle_score,
+        opportunity_score: salesPriorityScore(record),
+        risk_score: recordRiskScore(record),
+        estimated_value_band: estimatedValueBand,
+        top_factors: services,
+        reason_summary: services.length
+          ? `${serviceTextValue} 번들 제안 가능: ${recommendation.reasons.join(", ") || compactReasonSummary(record)}`
+          : compactReasonSummary(record),
+        recommended_action: services.length
+          ? `${serviceTextValue} 묶음 제안서 준비 후 작업 가능 시간과 연락 경로를 확인`
+          : "서비스 번들 가능성을 모니터링",
+        data_sources: displaySources(record).length ? displaySources(record) : ["opportunity_master", "risk_history", "compliance-exposure", "cleaning-window", "sales/actions"]
+      });
+    })
+    .filter(item => item.recommended_bundle.length >= 2 && Number(item.bundle_score || 0) >= 45)
+    .sort((a, b) => Number(b.bundle_score || 0) - Number(a.bundle_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  const bundle_counts = Object.fromEntries(SERVICE_BUNDLE_SERVICES.map(service => [service, items.filter(item => item.recommended_bundle.includes(service)).length]));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "opportunity_master,risk_history,compliance-exposure,cleaning-window,sales/actions",
+    items,
+    summary: {
+      bundle_counts,
+      service_catalog: SERVICE_BUNDLE_SERVICES
+    },
+    extra: { bundle_counts }
+  });
+}
+
 function previousPortDemandReference() {
   const demand = readJsonSafe("dashboard/api/intelligence/port-demand-radar.json", null);
   const opportunities = readJsonSafe("dashboard/api/intelligence/port-opportunities.json", null);
@@ -7518,6 +7653,7 @@ function buildIntelligenceSummaries({
     "vessel-timeline": buildVesselTimelineIntelligenceSummary({ records, generatedAt, dataMode }),
     "korea-presence": buildKoreaPresenceIntelligenceSummary({ records, generatedAt, dataMode }),
     "cleaning-window": buildCleaningWindowIntelligenceSummary({ records, generatedAt, dataMode }),
+    "service-bundles": buildServiceBundleIntelligenceSummary({ records, generatedAt, dataMode }),
     "compliance-exposure": buildComplianceExposureIntelligenceSummary({ records, generatedAt, dataMode }),
     "relationship-intelligence": buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }),
     "opportunity-decay": buildOpportunityDecayIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -10266,6 +10402,7 @@ try {
     "dashboard/api/intelligence/vessel-timeline.json": intelligenceSummaries["vessel-timeline"],
     "dashboard/api/intelligence/korea-presence.json": intelligenceSummaries["korea-presence"],
     "dashboard/api/intelligence/cleaning-window.json": intelligenceSummaries["cleaning-window"],
+    "dashboard/api/intelligence/service-bundles.json": intelligenceSummaries["service-bundles"],
     "dashboard/api/intelligence/compliance-exposure.json": intelligenceSummaries["compliance-exposure"],
     "dashboard/api/intelligence/relationship-intelligence.json": intelligenceSummaries["relationship-intelligence"],
     "dashboard/api/intelligence/opportunity-decay.json": intelligenceSummaries["opportunity-decay"],
