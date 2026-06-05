@@ -41,6 +41,71 @@ function numberValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function missingSchemaColumnName(error) {
+  const text = [
+    error?.message,
+    error?.details,
+    error?.hint
+  ].filter(Boolean).join(" ");
+  const schemaCacheMatch = text.match(/Could not find the ['"]([^'"]+)['"] column/i);
+  if (schemaCacheMatch?.[1]) return schemaCacheMatch[1];
+  const columnMissingMatch = text.match(/column\s+(?:(?:["']?[a-zA-Z0-9_]+["']?\.)?["']?)([a-zA-Z0-9_]+)["']?\s+does not exist/i);
+  if (columnMissingMatch?.[1]) return columnMissingMatch[1];
+  return null;
+}
+
+function stripColumnsFromRows(rows = [], columns = []) {
+  const columnSet = new Set(columns.filter(Boolean));
+  if (!columnSet.size) return rows;
+  return rows.map(row => {
+    const next = { ...row };
+    for (const column of columnSet) delete next[column];
+    return next;
+  });
+}
+
+function onConflictColumns(value = "") {
+  return String(value || "")
+    .split(",")
+    .map(column => column.trim())
+    .filter(Boolean);
+}
+
+function optionalColumnsForRows(rows = [], options = {}) {
+  const conflict = new Set(onConflictColumns(options.onConflict));
+  return new Set(rows.flatMap(row => Object.keys(row || {})).filter(column => !conflict.has(column)));
+}
+
+async function selectRowsWithSchemaCompatibility({ table, columns = [], buildQuery, optionalColumns = columns } = {}) {
+  const optional = new Set(optionalColumns);
+  const stripped = new Set();
+  let activeColumns = columns.slice();
+  let retryCount = 0;
+
+  while (true) {
+    const { data, error } = await buildQuery(activeColumns);
+    if (!error) {
+      return {
+        data: data || [],
+        schemaCompatibility: {
+          table,
+          stripped_optional_columns: [...stripped],
+          retry_count: retryCount,
+          status: stripped.size ? "optional_columns_stripped" : "native_schema"
+        }
+      };
+    }
+
+    const missingColumn = missingSchemaColumnName(error);
+    if (!missingColumn || !optional.has(missingColumn) || stripped.has(missingColumn)) throw error;
+
+    stripped.add(missingColumn);
+    activeColumns = activeColumns.filter(column => column !== missingColumn);
+    retryCount += 1;
+    console.warn(`[HWK] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
+  }
+}
+
 function commercialScore(record = {}) {
   return numberValue(record.commercial_value_score || record.total_sales_priority_score || record.predicted_cleaning_opportunity_score);
 }
@@ -159,33 +224,41 @@ async function loadCandidateSnapshots(supabase) {
     "agent_normalized",
     "agent_source",
     "collected_at"
-  ].join(",");
+  ];
 
-  let query = supabase
-    .from("vessel_snapshots")
-    .select(columns)
-    .order("commercial_value_score", { ascending: false })
-    .limit(DAILY_ENRICHMENT_LIMIT * 4);
+  const { data, schemaCompatibility } = await selectRowsWithSchemaCompatibility({
+    table: "vessel_snapshots",
+    columns,
+    buildQuery: activeColumns => {
+      let query = supabase
+        .from("vessel_snapshots")
+        .select(activeColumns.join(","))
+        .order("commercial_value_score", { ascending: false })
+        .limit(DAILY_ENRICHMENT_LIMIT * 4);
 
-  if (activeRunId) query = query.eq("run_id", activeRunId);
-  else query = query.order("collected_at", { ascending: false });
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return { records: dedupeAndPrioritize(data || []), activeRunId };
+      if (activeRunId) query = query.eq("run_id", activeRunId);
+      else query = query.order("collected_at", { ascending: false });
+      return query;
+    }
+  });
+  return { records: dedupeAndPrioritize(data || []), activeRunId, schemaCompatibility };
 }
 
 async function loadHistoricalMatches(supabase, records = []) {
   const names = [...new Set(records.map(record => normalizeVesselName(record.vessel_name)).filter(Boolean))].slice(0, 100);
   if (!names.length) return new Map();
-  const { data, error } = await supabase
-    .from("enrichment_match_candidates")
-    .select("normalized_vessel_name,call_sign,port_code,source_name,match_score,confidence,match_reasons,matched_fields,created_at")
-    .in("normalized_vessel_name", names)
-    .gte("match_score", 60)
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (error) return new Map();
+  const columns = ["normalized_vessel_name", "call_sign", "port_code", "source_name", "match_score", "confidence", "match_reasons", "matched_fields", "created_at"];
+  const { data } = await selectRowsWithSchemaCompatibility({
+    table: "enrichment_match_candidates",
+    columns,
+    buildQuery: activeColumns => supabase
+      .from("enrichment_match_candidates")
+      .select(activeColumns.join(","))
+      .in("normalized_vessel_name", names)
+      .gte("match_score", 60)
+      .order("created_at", { ascending: false })
+      .limit(500)
+  }).catch(() => ({ data: [] }));
   const map = new Map();
   for (const row of data || []) {
     const key = `${row.normalized_vessel_name || ""}|${normalizeCallSign(row.call_sign || "")}|${row.port_code || ""}`;
@@ -387,15 +460,25 @@ function snapshotPatch(before = {}, after = {}) {
 
 async function upsertRows(supabase, table, rows, options = {}) {
   const batchSize = Number(process.env.SUPABASE_BATCH_SIZE || 200);
+  const optionalColumns = optionalColumnsForRows(rows, options);
+  const strippedColumns = new Set();
   let saved = 0;
   for (let index = 0; index < rows.length; index += batchSize) {
     const batch = rows.slice(index, index + batchSize);
     if (!batch.length) continue;
-    const query = options.onConflict
-      ? supabase.from(table).upsert(batch, { onConflict: options.onConflict })
-      : supabase.from(table).insert(batch);
-    const { error } = await query;
-    if (error) throw error;
+    while (true) {
+      const writeRows = stripColumnsFromRows(batch, [...strippedColumns]);
+      const query = options.onConflict
+        ? supabase.from(table).upsert(writeRows, { onConflict: options.onConflict })
+        : supabase.from(table).insert(writeRows);
+      const { error } = await query;
+      if (!error) break;
+
+      const missingColumn = missingSchemaColumnName(error);
+      if (!missingColumn || !optionalColumns.has(missingColumn) || strippedColumns.has(missingColumn)) throw error;
+      strippedColumns.add(missingColumn);
+      console.warn(`[HWK] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying write without optional column.`);
+    }
     saved += batch.length;
   }
   return saved;
@@ -403,15 +486,26 @@ async function upsertRows(supabase, table, rows, options = {}) {
 
 async function updateSnapshots(supabase, beforeRecords = [], afterRecords = []) {
   const byId = new Map(beforeRecords.map(record => [record.id, record]));
+  const strippedColumns = new Set();
   let updated = 0;
   for (const after of afterRecords.slice(0, DAILY_ENRICHMENT_UPDATE_LIMIT)) {
     const before = byId.get(after.id);
     if (!before?.id) continue;
     const patch = snapshotPatch(before, after);
     if (!Object.keys(patch).length) continue;
-    const { error } = await supabase.from("vessel_snapshots").update(patch).eq("id", before.id);
-    if (error) throw error;
-    updated += 1;
+    while (true) {
+      const writePatch = stripColumnsFromRows([patch], [...strippedColumns])[0] || {};
+      if (!Object.keys(writePatch).length) break;
+      const { error } = await supabase.from("vessel_snapshots").update(writePatch).eq("id", before.id);
+      if (!error) {
+        updated += 1;
+        break;
+      }
+      const missingColumn = missingSchemaColumnName(error);
+      if (!missingColumn || !(missingColumn in patch) || strippedColumns.has(missingColumn)) throw error;
+      strippedColumns.add(missingColumn);
+      console.warn(`[HWK] Daily enrichment schema compatibility: vessel_snapshots.${missingColumn} missing; retrying update without optional column.`);
+    }
   }
   return updated;
 }
@@ -421,7 +515,7 @@ async function main() {
   const now = new Date().toISOString();
   const supabase = getSupabase();
 
-  const { records, activeRunId } = await loadCandidateSnapshots(supabase);
+  const { records, activeRunId, schemaCompatibility } = await loadCandidateSnapshots(supabase);
   const cacheResult = await enrichWithVesselMasterCache(records);
   const enrichedRecords = cacheResult.records;
   const historicalMatches = await loadHistoricalMatches(supabase, enrichedRecords);
@@ -454,6 +548,9 @@ async function main() {
       daily_enrichment_limit: DAILY_ENRICHMENT_LIMIT,
       match_time_window_hours: MATCH_TIME_WINDOW_HOURS,
       strong_time_match_hours: STRONG_TIME_MATCH_HOURS,
+      schema_compatibility: {
+        vessel_snapshots_select: schemaCompatibility
+      },
       missing_imo_count: enrichedRecords.filter(record => !record.imo).length,
       operator_missing_count: enrichedRecords.filter(record => !record.operator_name && !record.operator).length,
       historical_match_reused_count: matchRows.filter(row => row.reused_historical_match).length,
