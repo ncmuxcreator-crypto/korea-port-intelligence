@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-05T05:54:34.011Z",
+  "data_mode": "fallback",
+  "record_count": 0,
+  "source_table": "private_sales_activity,commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence",
+  "items": [
+    {
+      "activity_type": "contact_attempt",
+      "label": "연락 시도",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "quote_sent",
+      "label": "견적 발송",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "quote_value",
+      "label": "견적 금액 기록",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "quote_result",
+      "label": "견적 결과 기록",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "won",
+      "label": "수주",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "lost",
+      "label": "실주",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "loss_reason",
+      "label": "실패 사유 기록",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "operation_completed",
+      "label": "작업 완료",
+      "count": 0,
+      "latest_activity_at": null
+    },
+    {
+      "activity_type": "customer_feedback",
+      "label": "고객 피드백 기록",
+      "count": 0,
+      "latest_activity_at": null
+    }
+  ],
+  "total_private_activity_count": 0,
+  "sensitive_details_exposed": false,
+  "totals": {
+    "contact_attempt_count": 0,
+    "quote_sent_count": 0,
+    "quote_value_count": 0,
+    "quote_result_count": 0,
+    "won_count": 0,
+    "lost_count": 0,
+    "loss_reason_count": 0,
+    "operation_completed_count": 0,
+    "customer_feedback_count": 0
+  },
+  "privacy": {
+    "public_snapshot": "aggregated_counts_only",
+    "sensitive_storage": "Supabase private tables only"
+  },
+  "status": "empty",
+  "reason": "비공개 영업 활동 원천기록이 아직 집계되지 않았습니다."
+}

@@ -521,6 +521,7 @@ const OPTIONAL_DB_WRITE_TABLES = new Set([
   "vessel_route_history",
   "predicted_arrivals",
   "commercial_leads",
+  "private_sales_activity",
   "opportunity_master",
   "enrichment_match_candidates",
   "vessel_aliases",
@@ -1101,6 +1102,104 @@ function scoreNumber(value) {
 
 function hasValue(value) {
   return value !== null && value !== undefined && String(value).trim() !== "";
+}
+
+const PRIVATE_SALES_ACTIVITY_TYPES = [
+  "contact_attempt",
+  "quote_sent",
+  "quote_value",
+  "quote_result",
+  "won",
+  "lost",
+  "loss_reason",
+  "operation_completed",
+  "customer_feedback"
+];
+
+function truthyActivityValue(value) {
+  if (value === true) return true;
+  if (value === false || value === null || value === undefined) return false;
+  const text = String(value).trim().toLowerCase();
+  return Boolean(text) && !["false", "0", "no", "none", "null", "undefined"].includes(text);
+}
+
+function privateSalesActivityTypes(record = {}) {
+  const types = [];
+  const leadStatus = String(record.lead_status || record.opportunity_state || record.current_stage || "").toLowerCase();
+  const quoteStatus = String(record.quote_status || "").toLowerCase();
+  if (truthyActivityValue(record.contact_attempt) || hasValue(record.contact_attempt_at) || hasValue(record.contacted_at) || hasValue(record.last_contacted_at)) types.push("contact_attempt");
+  if (truthyActivityValue(record.quote_sent) || hasValue(record.quote_sent_at) || ["quote_sent", "quoted", "sent"].includes(quoteStatus) || leadStatus === "quoted") types.push("quote_sent");
+  if (hasValue(record.quote_value)) types.push("quote_value");
+  if (hasValue(record.quote_result)) types.push("quote_result");
+  if (truthyActivityValue(record.won) || hasValue(record.won_at) || leadStatus === "won") types.push("won");
+  if (truthyActivityValue(record.lost) || hasValue(record.lost_at) || leadStatus === "lost") types.push("lost");
+  if (hasValue(record.loss_reason)) types.push("loss_reason");
+  if (truthyActivityValue(record.operation_completed) || hasValue(record.operation_completed_at)) types.push("operation_completed");
+  if (hasValue(record.customer_feedback) || hasValue(record.customer_feedback_summary)) types.push("customer_feedback");
+  return [...new Set(types)].filter(type => PRIVATE_SALES_ACTIVITY_TYPES.includes(type));
+}
+
+function parseActivityTimestamp(value) {
+  if (!hasValue(value)) return null;
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function privateSalesActivityAt(record = {}, type, now) {
+  const byType = {
+    contact_attempt: record.contact_attempt_at || record.contacted_at || record.last_contacted_at,
+    quote_sent: record.quote_sent_at || record.quoted_at,
+    quote_value: record.quote_value_at || record.quote_sent_at || record.quoted_at,
+    quote_result: record.quote_result_at || record.quote_decided_at,
+    won: record.won_at || record.closed_at,
+    lost: record.lost_at || record.closed_at,
+    loss_reason: record.lost_at || record.closed_at,
+    operation_completed: record.operation_completed_at,
+    customer_feedback: record.customer_feedback_at || record.feedback_at
+  };
+  return parseActivityTimestamp(byType[type] || record.private_activity_at || record.updated_at || record.collected_at) || now;
+}
+
+function buildPrivateSalesActivityRows(records = [], { runId, now } = {}) {
+  return uniqueBy(records.flatMap(record => {
+    const types = privateSalesActivityTypes(record);
+    if (!types.length) return [];
+    const entityKey = record.hybrid_entity_key || record.vessel_id || record.master_vessel_id || record.imo || record.mmsi || record.vessel_name || "unknown";
+    const portKey = record.port_call_identity || record.port_code || record.port_name || record.port || "";
+    const leadId = stableEntityId("LEAD", `${entityKey}-${portKey}`);
+    const historyId = stableEntityId("OCH", `${runId}-${entityKey}-${portKey}`);
+    return types.map(type => {
+      const activityAt = privateSalesActivityAt(record, type, now);
+      return {
+        activity_id: stableHashId("PSA", `${runId}|${entityKey}|${portKey}|${type}|${activityAt}`),
+        run_id: runId,
+        lead_id: leadId,
+        history_id: historyId,
+        master_vessel_id: fallbackMasterId(record),
+        hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
+        vessel_name: record.vessel_name || record.name || record.ship_name || null,
+        operator_name: record.operator_name || record.operator || null,
+        agent_name: record.agent_name || record.agent || record.local_agent || record.satmntEntrpsNm || record.entrpsCdNm || null,
+        port_code: record.port_code || null,
+        port_name: record.port_name || record.port || record.current_port || null,
+        activity_type: type,
+        activity_at: activityAt,
+        stage: record.current_stage || record.lead_status || record.opportunity_state || null,
+        quote_value: type === "quote_value" && hasValue(record.quote_value) ? scoreNumber(record.quote_value) : null,
+        quote_currency: record.quote_currency || record.currency || "USD",
+        quote_result: ["quote_result", "won", "lost"].includes(type) ? (record.quote_result || record.lead_status || record.opportunity_state || null) : null,
+        loss_reason: ["lost", "loss_reason"].includes(type) ? (record.loss_reason || record.close_reason || null) : null,
+        operation_completed: type === "operation_completed" ? Boolean(truthyActivityValue(record.operation_completed) || hasValue(record.operation_completed_at)) : false,
+        customer_feedback_summary: record.customer_feedback_summary || null,
+        sensitive_payload: storagePayload({
+          ...record,
+          private_activity_type: type,
+          private_activity_at: activityAt
+        }),
+        updated_at: now
+      };
+    });
+  }), row => row.activity_id);
 }
 
 function candidateLabel(record = {}) {
@@ -3547,6 +3646,13 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  const privateSalesActivityRows = buildPrivateSalesActivityRows(records, { runId, now });
+  for (let index = 0; index < privateSalesActivityRows.length; index += batchSize) {
+    const batch = privateSalesActivityRows.slice(index, index + batchSize);
+    const { error } = await supabase.from("private_sales_activity").upsert(batch, { onConflict: "activity_id" });
+    if (error) throw error;
+  }
+
   const opportunityRows = uniqueBy(records
     .filter(isOpportunityEligible)
     .map(r => {
@@ -4471,6 +4577,7 @@ export async function saveToSupabase(records, options = {}) {
     port_congestion_snapshots: congestionRows.length,
     enrichment_match_candidates: enrichmentMatchRows.length,
     commercial_leads: commercialLeadRows.length,
+    private_sales_activity: privateSalesActivityRows.length,
     dashboard_summary_snapshots: dashboardSummarySnapshotResult.summary_snapshot_rows,
     sales_candidates_current: currentMaterializedResult.sales_candidates_current_rows,
     immediate_targets_current: currentMaterializedResult.immediate_targets_current_rows,
@@ -4575,6 +4682,7 @@ export async function saveToSupabase(records, options = {}) {
     routePatternRowsSaved: routePatternRows.length,
     vesselRouteHistoryRowsSaved: vesselRouteHistoryRows.length,
     predictedArrivalRowsSaved: predictedArrivalRows.length,
+    privateSalesActivityRowsSaved: privateSalesActivityRows.length,
     identityCandidatesSaved: identityCandidates.length,
     imoRecoveryQueueRowsSaved,
     riskRowsSaved: riskRows.length,

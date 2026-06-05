@@ -4031,6 +4031,114 @@ function buildLeadConversionPipelinePayload({ summary = {}, generatedAt = new Da
   });
 }
 
+const PRIVATE_ACTIVITY_TYPES = [
+  "contact_attempt",
+  "quote_sent",
+  "quote_value",
+  "quote_result",
+  "won",
+  "lost",
+  "loss_reason",
+  "operation_completed",
+  "customer_feedback"
+];
+
+const PRIVATE_ACTIVITY_LABELS = {
+  contact_attempt: "연락 시도",
+  quote_sent: "견적 발송",
+  quote_value: "견적 금액 기록",
+  quote_result: "견적 결과 기록",
+  won: "수주",
+  lost: "실주",
+  loss_reason: "실패 사유 기록",
+  operation_completed: "작업 완료",
+  customer_feedback: "고객 피드백 기록"
+};
+
+function privateActivitySignal(record = {}, type) {
+  const leadStatus = String(firstNonEmpty(record.lead_status, record.opportunity_state, record.current_stage, "")).toLowerCase();
+  const quoteStatus = String(record.quote_status || "").toLowerCase();
+  const present = value => value !== null && value !== undefined && String(value).trim() !== "" && !["false", "0", "no", "none", "null", "undefined"].includes(String(value).trim().toLowerCase());
+  if (type === "contact_attempt") return present(record.contact_attempt) || present(record.contact_attempt_at) || present(record.contacted_at) || present(record.last_contacted_at);
+  if (type === "quote_sent") return present(record.quote_sent) || present(record.quote_sent_at) || ["quote_sent", "quoted", "sent"].includes(quoteStatus) || leadStatus === "quoted";
+  if (type === "quote_value") return present(record.quote_value);
+  if (type === "quote_result") return present(record.quote_result);
+  if (type === "won") return present(record.won) || present(record.won_at) || leadStatus === "won";
+  if (type === "lost") return present(record.lost) || present(record.lost_at) || leadStatus === "lost";
+  if (type === "loss_reason") return present(record.loss_reason);
+  if (type === "operation_completed") return present(record.operation_completed) || present(record.operation_completed_at);
+  if (type === "customer_feedback") return present(record.customer_feedback) || present(record.customer_feedback_summary);
+  return false;
+}
+
+function privateActivityCount(record = {}, type) {
+  const directKeys = [
+    `${type}_count`,
+    `${type}s_count`,
+    `${type}_total`
+  ];
+  if (type === "contact_attempt") directKeys.push("contact_attempts", "contact_attempt_count", "previous_contacts");
+  if (type === "quote_sent") directKeys.push("quotes_sent", "previous_quotes");
+  for (const key of directKeys) {
+    const value = Number(record[key]);
+    if (Number.isFinite(value) && value > 0) return Math.round(value);
+  }
+  return privateActivitySignal(record, type) ? 1 : 0;
+}
+
+function privateActivityTimestamp(record = {}, type) {
+  const value = {
+    contact_attempt: firstNonEmpty(record.contact_attempt_at, record.contacted_at, record.last_contacted_at),
+    quote_sent: firstNonEmpty(record.quote_sent_at, record.quoted_at),
+    quote_value: firstNonEmpty(record.quote_value_at, record.quote_sent_at, record.quoted_at),
+    quote_result: firstNonEmpty(record.quote_result_at, record.quote_decided_at),
+    won: firstNonEmpty(record.won_at, record.closed_at),
+    lost: firstNonEmpty(record.lost_at, record.closed_at),
+    loss_reason: firstNonEmpty(record.lost_at, record.closed_at),
+    operation_completed: record.operation_completed_at,
+    customer_feedback: firstNonEmpty(record.customer_feedback_at, record.feedback_at)
+  }[type] || firstNonEmpty(record.private_activity_at, record.updated_at, record.collected_at, record.last_seen_at);
+  const parsed = parseScheduleTime(value);
+  return parsed ? parsed.toISOString() : null;
+}
+
+function buildPrivateActivitySummaryPayload({ records = [], generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const latestByType = Object.fromEntries(PRIVATE_ACTIVITY_TYPES.map(type => [type, null]));
+  const counts = Object.fromEntries(PRIVATE_ACTIVITY_TYPES.map(type => [type, 0]));
+  for (const record of records) {
+    for (const type of PRIVATE_ACTIVITY_TYPES) {
+      const count = privateActivityCount(record, type);
+      if (count <= 0) continue;
+      counts[type] += count;
+      const timestamp = privateActivityTimestamp(record, type);
+      if (timestamp && (!latestByType[type] || timestamp > latestByType[type])) latestByType[type] = timestamp;
+    }
+  }
+  const items = PRIVATE_ACTIVITY_TYPES.map(type => ({
+    activity_type: type,
+    label: PRIVATE_ACTIVITY_LABELS[type],
+    count: counts[type],
+    latest_activity_at: latestByType[type]
+  }));
+  const total = Object.values(counts).reduce((sum, count) => sum + Number(count || 0), 0);
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt || report?.generated_at || report?.completed_at || new Date().toISOString(),
+    data_mode: contractDataMode(dataMode, report),
+    record_count: total,
+    source_table: "private_sales_activity,commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence",
+    items,
+    total_private_activity_count: total,
+    sensitive_details_exposed: false,
+    totals: Object.fromEntries(PRIVATE_ACTIVITY_TYPES.map(type => [`${type}_count`, counts[type]])),
+    privacy: {
+      public_snapshot: "aggregated_counts_only",
+      sensitive_storage: "Supabase private tables only"
+    },
+    ...(total ? {} : { status: "empty", reason: "비공개 영업 활동 원천기록이 아직 집계되지 않았습니다." })
+  };
+}
+
 function regulatedRouteSignal(v = {}) {
   const route = [v.destination, v.destination_port, v.next_port, v.previous_port, v.route_region].filter(Boolean).join(" ").toLowerCase();
   return /australia|port hedland|new zealand|brazil|ponta da madeira|santos|호주|뉴질랜드|브라질/.test(route);
@@ -9918,6 +10026,12 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const privateActivitySummaryPayload = buildPrivateActivitySummaryPayload({
+    records: vessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -9970,6 +10084,7 @@ try {
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
+    "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
@@ -10104,6 +10219,7 @@ try {
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
+  writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
   writeApiJson("dashboard/api/targets/static.json", staticTargetsPayload, report);
