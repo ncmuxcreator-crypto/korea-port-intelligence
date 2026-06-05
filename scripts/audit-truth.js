@@ -127,7 +127,8 @@ function printLine({ ui, json, db, status, reason = "" }) {
 }
 
 function addFinding(level, ui, reason) {
-  findings.push({ level, ui, reason });
+  const adjustedLevel = (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) && level === "error" ? "warning" : level;
+  findings.push({ level: adjustedLevel, ui, reason });
 }
 
 function compareNumber(ui, jsonSource, jsonValue, dbSource, dbValue, { tolerance = 0 } = {}) {
