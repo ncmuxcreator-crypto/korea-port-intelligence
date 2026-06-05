@@ -2361,7 +2361,14 @@ function writeApiJson(filePath, payload, report = {}) {
   fs.mkdirSync(target.split("/").slice(0, -1).join("/"), { recursive: true });
   fs.writeFileSync(target, JSON.stringify(payload, null, 2));
   const normalized = String(filePath || "").replace(/\\/g, "/");
-  if (target !== normalized && normalized.startsWith("dashboard/api/") && !fs.existsSync(normalized)) {
+  const existingPayload = target !== normalized && normalized.startsWith("dashboard/api/") && fs.existsSync(normalized)
+    ? readJsonSafe(normalized, null)
+    : null;
+  const shouldBackfillEmptyStatic = existingPayload &&
+    contractDataMode(existingPayload.data_mode) !== "live" &&
+    rowCountFromPayload(existingPayload) === 0 &&
+    rowCountFromPayload(payload) > 0;
+  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic)) {
     fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
     fs.writeFileSync(normalized, JSON.stringify(payload, null, 2));
   }
@@ -4087,7 +4094,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "average_opportunity_score",
   "average_risk_score",
   "average_congestion_score",
+  "average_waiting_hours",
   "opportunity_index",
+  "dominant_vessel_types",
+  "top_operators",
+  "commercial_density",
+  "port_personality",
   "first_seen",
   "visit_history",
   "risk_history",
@@ -5842,6 +5854,181 @@ function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics 
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,commercial_opportunity_daily,opportunity_master", items });
 }
 
+function buildPortDnaIntelligenceSummary({ records = [], portStatistics = {}, generatedAt, dataMode } = {}) {
+  const byPort = new Map();
+  const increment = (map, key, amount = 1) => {
+    const label = firstNonEmpty(key, "-");
+    map.set(label, Number(map.get(label) || 0) + amount);
+  };
+  const topFromMap = (map, labelKey, limit = 5) => [...map.entries()]
+    .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0) || String(a[0]).localeCompare(String(b[0]), "ko"))
+    .slice(0, limit)
+    .map(([label, count]) => ({ [labelKey]: label, count }));
+  const ensurePort = portInfo => {
+    const info = portInfo || { port_code: "UNKNOWN", display_name: "미확인 항만", port_name: "미확인 항만" };
+    const key = info.port_code || info.display_name || info.port_name || "UNKNOWN";
+    if (!byPort.has(key)) {
+      byPort.set(key, {
+        port_code: info.port_code || "UNKNOWN",
+        port_name: info.display_name || info.port_name || "미확인 항만",
+        vessel_count: 0,
+        sales_target_count: 0,
+        hot_count: 0,
+        repeat_caller_count: 0,
+        compliance_exposure_count: 0,
+        score_total: 0,
+        risk_total: 0,
+        stay_days_total: 0,
+        waiting_hours_total: 0,
+        large_vessel_count: 0,
+        missing_operator_count: 0,
+        vessel_types: new Map(),
+        operators: new Map()
+      });
+    }
+    return byPort.get(key);
+  };
+
+  for (const record of records) {
+    const portInfo = normalizedPortInfo(record);
+    const row = ensurePort(portInfo);
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    const stayDays = dwellDays(record);
+    const waitingHours = firstFiniteNumber(
+      record.waiting_hours,
+      record.anchorage_hours,
+      record.current_waiting_hours,
+      record.berth_waiting_hours,
+      hasAnchorageSignal(record) ? firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, 0) : 0,
+      0
+    ) || 0;
+    const operator = operatorFleetName(record);
+    const vesselType = firstNonEmpty(record.vessel_type_group, record.vessel_type, record.ship_type, record.type, "미확인 선종");
+    const gt = firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, 0) || 0;
+    const dwt = firstFiniteNumber(record.dwt, record.deadweight, 0) || 0;
+
+    row.vessel_count += 1;
+    row.score_total += score;
+    row.risk_total += risk;
+    row.stay_days_total += stayDays;
+    row.waiting_hours_total += Number(waitingHours || 0);
+    if (isSalesCandidate(record) || score >= 50) row.sales_target_count += 1;
+    if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || score >= 75) row.hot_count += 1;
+    if (repeatCallerVisitCount(record, 90) >= 2 || repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0) row.repeat_caller_count += 1;
+    if (regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch || Number(record.compliance_score || 0) >= 50) row.compliance_exposure_count += 1;
+    if (gt >= 30000 || dwt >= 50000 || /bulk|tanker|container|lng|lpg|carrier/i.test(String(vesselType))) row.large_vessel_count += 1;
+    if (operator === "미확인 운영사" || operator === "운영사 확인 필요") row.missing_operator_count += 1;
+    increment(row.vessel_types, vesselType);
+    increment(row.operators, operator);
+  }
+
+  for (const port of (portStatistics.ports || [])) {
+    const normalized = normalizePort(firstNonEmpty(port.display_name, port.port_name, port.port, port.name));
+    const row = ensurePort({
+      port_code: firstNonEmpty(port.port_code, normalized.port_code, "UNKNOWN"),
+      port_name: firstNonEmpty(normalized.display_name, normalized.port_name, port.display_name, port.port_name, "미확인 항만"),
+      display_name: firstNonEmpty(normalized.display_name, normalized.port_name, port.display_name, port.port_name, "미확인 항만")
+    });
+    row.vessel_count = Math.max(row.vessel_count, Number(port.vessel_count || port.total_vessels || 0));
+    row.sales_target_count = Math.max(row.sales_target_count, Number(port.target_count || port.candidate_count || port.sales_candidates || port.sales_target_count || 0));
+    row.hot_count = Math.max(row.hot_count, Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0));
+  }
+  const seedPortRows = [
+    ...compactItems(readJsonSafe("dashboard/api/intelligence/port-opportunities.json", null)),
+    ...compactItems(readJsonSafe("dashboard/api/intelligence/port-demand-radar.json", null)),
+    ...compactItems(readJsonSafe("dashboard/api/congestion-watchlist.json", null)),
+    ...(readJsonSafe("dashboard/api/bootstrap.json", {})?.ports || [])
+  ];
+  for (const port of seedPortRows) {
+    const normalized = normalizePort(firstNonEmpty(port.display_name, port.port_name, port.port, port.name));
+    const row = ensurePort({
+      port_code: firstNonEmpty(port.port_code, normalized.port_code, "UNKNOWN"),
+      port_name: firstNonEmpty(normalized.display_name, normalized.port_name, port.display_name, port.port_name, port.port, "미확인 항만"),
+      display_name: firstNonEmpty(normalized.display_name, normalized.port_name, port.display_name, port.port_name, port.port, "미확인 항만")
+    });
+    row.vessel_count = Math.max(row.vessel_count, Number(port.vessel_count || port.total_vessels || 0));
+    row.sales_target_count = Math.max(row.sales_target_count, Number(port.sales_target_count || port.target_count || port.candidate_count || port.sales_candidates || 0));
+    row.hot_count = Math.max(row.hot_count, Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || 0));
+    row.repeat_caller_count = Math.max(row.repeat_caller_count, Number(port.repeat_caller_count || 0));
+    row.compliance_exposure_count = Math.max(row.compliance_exposure_count, Number(port.compliance_exposure_count || 0));
+    const averageOpportunity = firstFiniteNumber(port.average_opportunity_score, port.avg_opportunity_score, port.opportunity_index, port.demand_score, port.opportunity_score);
+    const averageRisk = firstFiniteNumber(port.average_risk_score, port.avg_risk, port.risk_score);
+    if (averageOpportunity !== undefined && averageOpportunity !== null) row.score_total = Math.max(row.score_total, Number(averageOpportunity || 0) * Math.max(1, row.vessel_count));
+    if (averageRisk !== undefined && averageRisk !== null) row.risk_total = Math.max(row.risk_total, Number(averageRisk || 0) * Math.max(1, row.vessel_count));
+    if (port.average_stay_days) row.stay_days_total = Math.max(row.stay_days_total, Number(port.average_stay_days || 0) * Math.max(1, row.vessel_count));
+    if (port.average_waiting_hours) row.waiting_hours_total = Math.max(row.waiting_hours_total, Number(port.average_waiting_hours || 0) * Math.max(1, row.vessel_count));
+    for (const item of (port.dominant_vessel_types || port.common_vessel_types || [])) increment(row.vessel_types, firstNonEmpty(item.vessel_type, item.name, item.label), Number(item.count || 1));
+    for (const item of (port.top_operators || port.operators || [])) increment(row.operators, firstNonEmpty(item.operator_name, item.operator, item.name, item.label), Number(item.count || 1));
+  }
+
+  const items = [...byPort.values()]
+    .map(row => {
+      const averageStayDays = row.vessel_count ? Math.round((row.stay_days_total / row.vessel_count) * 10) / 10 : 0;
+      const averageWaitingHours = row.vessel_count ? Math.round((row.waiting_hours_total / row.vessel_count) * 10) / 10 : 0;
+      const averageOpportunity = row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0;
+      const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
+      const targetRatio = row.vessel_count ? row.sales_target_count / row.vessel_count : 0;
+      const hotRatio = row.vessel_count ? row.hot_count / row.vessel_count : 0;
+      const repeatRatio = row.vessel_count ? row.repeat_caller_count / row.vessel_count : 0;
+      const complianceRatio = row.vessel_count ? row.compliance_exposure_count / row.vessel_count : 0;
+      const missingOperatorRatio = row.vessel_count ? row.missing_operator_count / row.vessel_count : 0;
+      const largeRatio = row.vessel_count ? row.large_vessel_count / row.vessel_count : 0;
+      const commercialDensity = Math.min(100, Math.round(
+        averageOpportunity * 0.35 +
+        averageRisk * 0.1 +
+        targetRatio * 30 +
+        hotRatio * 20 +
+        repeatRatio * 15 +
+        complianceRatio * 15 +
+        Math.min(10, averageStayDays * 1.2) +
+        Math.min(8, averageWaitingHours * 0.12)
+      ));
+      let portPersonality = "영업 기회 관찰 항만";
+      if (missingOperatorRatio >= 0.5 && row.sales_target_count > 0) portPersonality = "에이전트 확인 필요 항만";
+      else if (complianceRatio >= 0.15 || row.compliance_exposure_count >= 2) portPersonality = "Compliance 노출 항만";
+      else if (averageStayDays >= 3 || averageWaitingHours >= 24) portPersonality = "장기체류형 항만";
+      else if (repeatRatio >= 0.2 || row.repeat_caller_count >= 2) portPersonality = "반복입항 강한 항만";
+      else if (largeRatio >= 0.3 || row.large_vessel_count >= 3) portPersonality = "대형선 중심 항만";
+      const recommendedSalesStrategy = portPersonality === "에이전트 확인 필요 항만"
+        ? "HOT/WARM 선박의 현지 에이전트와 운영사 확인을 우선 처리"
+        : portPersonality === "Compliance 노출 항만"
+          ? "출항 전 목적지와 biofouling compliance 확인 메시지를 준비"
+          : portPersonality === "장기체류형 항만"
+            ? "체류/대기 시간이 긴 선박부터 작업 가능 시간과 서비스 가능성을 확인"
+            : portPersonality === "반복입항 강한 항만"
+              ? "반복 입항 이력을 근거로 운영사 단위 정기 제안을 준비"
+              : portPersonality === "대형선 중심 항만"
+                ? "대형선 운영사와 대리점 중심으로 작업 리드타임을 선점"
+                : "항만별 상위 후보와 수요 레이더를 함께 확인";
+      return {
+        port_code: row.port_code,
+        port_name: row.port_name,
+        vessel_count: row.vessel_count,
+        sales_target_count: row.sales_target_count,
+        hot_count: row.hot_count,
+        average_stay_days: averageStayDays,
+        average_waiting_hours: averageWaitingHours,
+        dominant_vessel_types: topFromMap(row.vessel_types, "vessel_type", 5),
+        top_operators: topFromMap(row.operators, "operator_name", 5),
+        repeat_caller_count: row.repeat_caller_count,
+        compliance_exposure_count: row.compliance_exposure_count,
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        commercial_density: commercialDensity,
+        opportunity_score: commercialDensity,
+        port_personality: portPersonality,
+        recommended_sales_strategy: recommendedSalesStrategy,
+        reason_summary: `${row.port_name}: ${portPersonality}, 영업대상 ${row.sales_target_count}척, HOT ${row.hot_count}척, 평균체류 ${averageStayDays}일`,
+        recommended_action: recommendedSalesStrategy
+      };
+    })
+    .sort((a, b) => Number(b.commercial_density || 0) - Number(a.commercial_density || 0) || Number(b.hot_count || 0) - Number(a.hot_count || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "port_summary_current,port_snapshot_daily,port_congestion_snapshots,opportunity_master,commercial_opportunity_daily,port-opportunities,port-demand-radar,congestion-watchlist", items });
+}
+
 function buildSuperintendentTargetsIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = sortCommercialPriority(records)
     .filter(record => salesPriorityScore(record) >= 50)
@@ -6879,6 +7066,7 @@ function buildIntelligenceSummaries({
     "fleet-heatmap": buildFleetHeatmapIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "port-opportunities": buildPortOpportunitiesIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
     "port-demand-radar": buildPortDemandRadarIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
+    "port-dna": buildPortDnaIntelligenceSummary({ records, portStatistics, generatedAt, dataMode }),
     "superintendent-targets": buildSuperintendentTargetsIntelligenceSummary({ records, generatedAt, dataMode }),
     "compliance-opportunities": buildComplianceOpportunitiesIntelligenceSummary({ records, generatedAt, dataMode }),
     "drydock-prediction": buildDrydockPredictionIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -9611,6 +9799,7 @@ try {
     "dashboard/api/intelligence/fleet-heatmap.json": intelligenceSummaries["fleet-heatmap"],
     "dashboard/api/intelligence/port-opportunities.json": intelligenceSummaries["port-opportunities"],
     "dashboard/api/intelligence/port-demand-radar.json": intelligenceSummaries["port-demand-radar"],
+    "dashboard/api/intelligence/port-dna.json": intelligenceSummaries["port-dna"],
     "dashboard/api/intelligence/superintendent-targets.json": intelligenceSummaries["superintendent-targets"],
     "dashboard/api/intelligence/compliance-opportunities.json": intelligenceSummaries["compliance-opportunities"],
     "dashboard/api/intelligence/drydock-prediction.json": intelligenceSummaries["drydock-prediction"],
