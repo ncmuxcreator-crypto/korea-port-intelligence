@@ -7163,6 +7163,159 @@ function buildMissedOpportunityIntelligenceSummary({ records = [], generatedAt, 
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "opportunity-memory,sales-pipeline,relationship-intelligence", items });
 }
 
+const LOST_OPPORTUNITY_REASON_LABELS = {
+  NO_CONTACT_INFO: "연락 정보 부족",
+  TIMING_MISSED: "타이밍 지연",
+  LOW_CONFIDENCE: "낮은 신뢰도",
+  WRONG_PORT: "항만 불일치",
+  VESSEL_DEPARTED: "선박 출항",
+  NO_RESPONSE: "무응답",
+  PRICE_REJECTED: "가격 거절",
+  COMPETITOR_USED: "경쟁사 이용",
+  INTERNAL_CAPACITY: "내부 작업 여력 부족"
+};
+
+function hasContactIdentity(record = {}) {
+  return Boolean(firstNonEmpty(
+    record.operator,
+    record.operator_name,
+    record.owner,
+    record.owner_name,
+    record.manager,
+    record.manager_name,
+    record.technical_manager,
+    record.agent,
+    record.agent_name,
+    record.local_agent,
+    record.call_sign,
+    record.callsign
+  ));
+}
+
+function lossReasonText(record = {}) {
+  return [
+    record.loss_reason,
+    record.lost_reason,
+    record.close_reason,
+    record.quote_result,
+    record.quote_status,
+    record.lead_status,
+    record.opportunity_state,
+    record.reason_summary,
+    record.why_now,
+    record.recommended_action,
+    record.recommended_next_action,
+    record.notes
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function classifyLostOpportunityReason(record = {}, generatedAt = new Date().toISOString()) {
+  const evidence = [];
+  const text = lossReasonText(record);
+  const opportunity = salesPriorityScore(record);
+  const priority = salesPriorityBand(opportunity);
+  const contact = contactHistoryCounts(record);
+  const daysVisible = daysSinceValue(firstOpportunitySeenAt(record), generatedAt) ?? 0;
+  const daysSinceContact = daysSinceValue(contact.last_contacted_at, generatedAt);
+  const confidence = firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.contact_readiness_score, 0) || 0;
+  const currentPort = firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port);
+  const expectedPort = firstNonEmpty(record.expected_port, record.target_port, record.recommended_port);
+
+  if (/competitor|competition|other vendor|타사|경쟁/i.test(text)) {
+    evidence.push("실패/메모 텍스트에 경쟁사 이용 신호가 있습니다.");
+    return { reason: "COMPETITOR_USED", evidence };
+  }
+  if (/price|cost|expensive|too high|가격|비싸|견적.*거절/i.test(text)) {
+    evidence.push("견적/실패 텍스트에 가격 거절 신호가 있습니다.");
+    return { reason: "PRICE_REJECTED", evidence };
+  }
+  if (/capacity|resource|crew unavailable|internal|작업\s*불가|여력|인력|장비/i.test(text)) {
+    evidence.push("메모 텍스트에 내부 여력/작업 가능성 부족 신호가 있습니다.");
+    return { reason: "INTERNAL_CAPACITY", evidence };
+  }
+  if (isDepartedRecord(record) || firstNonEmpty(record.atd, record.departure_time, record.departed_at)) {
+    evidence.push("출항 상태 또는 ATD/출항 시각이 확인됩니다.");
+    return { reason: "VESSEL_DEPARTED", evidence };
+  }
+  if (expectedPort && currentPort && normalizeVesselName(expectedPort) !== normalizeVesselName(currentPort) && /wrong_port|port_mismatch|항만.*불일치|다른\s*항만/i.test(text)) {
+    evidence.push(`기대 항만(${expectedPort})과 현재 항만(${currentPort})이 다릅니다.`);
+    return { reason: "WRONG_PORT", evidence };
+  }
+  if (!hasContactIdentity(record) || Number(record.contact_readiness_score || 0) < 35) {
+    evidence.push("운항사/소유주/관리사/대리점/콜사인 등 연락 경로 정보가 부족합니다.");
+    return { reason: "NO_CONTACT_INFO", evidence };
+  }
+  if (/no response|unresponsive|no_reply|무응답|응답\s*없/i.test(text) || (contact.previous_contacts > 0 && daysSinceContact !== null && daysSinceContact >= 3 && !["won", "quoted", "scheduled"].includes(String(record.lead_status || "").toLowerCase()))) {
+    evidence.push(`기존 접촉 ${contact.previous_contacts}건 이후 응답/진전 신호가 약합니다.`);
+    return { reason: "NO_RESPONSE", evidence };
+  }
+  if (confidence > 0 && confidence < 45) {
+    evidence.push(`데이터 신뢰도 ${Math.round(confidence)}점으로 낮습니다.`);
+    return { reason: "LOW_CONFIDENCE", evidence };
+  }
+  if (daysVisible >= 3 || Number(record.decay_score || 0) >= 60 || Number(record.missed_opportunity_score || 0) >= 60) {
+    evidence.push(`${priority} 후보가 ${daysVisible}일 동안 노출되어 영업 타이밍 지연 가능성이 있습니다.`);
+    return { reason: "TIMING_MISSED", evidence };
+  }
+  evidence.push("HOT/WARM 후보이나 명확한 실주 원인이 없어 우선 신뢰도와 연락 경로를 확인해야 합니다.");
+  return { reason: confidence < 55 ? "LOW_CONFIDENCE" : "TIMING_MISSED", evidence };
+}
+
+function lostOpportunityPrevention(reason) {
+  return {
+    NO_CONTACT_INFO: "연락처 확인 큐에 올리고 운항사/대리점/기술감독 정보를 먼저 보강",
+    TIMING_MISSED: "HOT/WARM 전환 후 당일 연락 SLA와 출항 전 알림을 강화",
+    LOW_CONFIDENCE: "IMO/MMSI/항만/ETA 필드를 보강한 뒤 재분류",
+    WRONG_PORT: "항만 정규화와 현재항/목적항 검증 후 담당 항만을 재배정",
+    VESSEL_DEPARTED: "출항 전 작업 가능 시간 알림과 장기체류/묘박 신호 우선순위를 높임",
+    NO_RESPONSE: "대체 연락 경로와 에이전트 follow-up을 병행",
+    PRICE_REJECTED: "서비스 범위와 ROI 근거를 보강한 대안 견적을 준비",
+    COMPETITOR_USED: "경쟁사 사용 선박을 관계 이력에 저장하고 다음 입항 전 선제 제안",
+    INTERNAL_CAPACITY: "작업 리소스 가능 시간과 항만별 대응 여력을 먼저 확인"
+  }[reason] || "원인 필드를 확인하고 다음 후보의 예방 액션을 기록";
+}
+
+function buildLostOpportunityReasonIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const source = sortCommercialPriority(records)
+    .filter(record => {
+      const score = salesPriorityScore(record);
+      const label = salesPriorityBand(score);
+      const text = lossReasonText(record);
+      return ["HOT", "WARM"].includes(label) ||
+        isSalesCandidate(record) ||
+        /lost|closed|no response|price|competitor|capacity|실주|무응답|거절|경쟁/i.test(text);
+    });
+  const items = source
+    .map((record, index) => {
+      const opportunity = salesPriorityScore(record);
+      const classified = classifyLostOpportunityReason(record, generatedAt);
+      return compactVesselInsight(record, index, {
+        opportunity_score: opportunity,
+        priority_label: salesPriorityBand(opportunity),
+        lost_reason: classified.reason,
+        lost_reason_label: LOST_OPPORTUNITY_REASON_LABELS[classified.reason] || classified.reason,
+        evidence: classified.evidence,
+        reason_summary: `${LOST_OPPORTUNITY_REASON_LABELS[classified.reason] || classified.reason}: ${classified.evidence.join(" ")}`,
+        recommended_prevention: lostOpportunityPrevention(classified.reason),
+        recommended_action: lostOpportunityPrevention(classified.reason),
+        data_sources: displaySources(record).length ? displaySources(record) : ["missed-opportunities", "opportunity-decay", "sales-pipeline", "opportunity-memory"]
+      });
+    })
+    .filter(item => Number(item.opportunity_score || 0) >= 50 || ["NO_RESPONSE", "PRICE_REJECTED", "COMPETITOR_USED", "INTERNAL_CAPACITY", "VESSEL_DEPARTED"].includes(item.lost_reason))
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || String(a.lost_reason || "").localeCompare(String(b.lost_reason || "")))
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  const reason_counts = Object.fromEntries(Object.keys(LOST_OPPORTUNITY_REASON_LABELS).map(reason => [reason, items.filter(item => item.lost_reason === reason).length]));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "missed-opportunities,opportunity-decay,sales-pipeline,opportunity-memory",
+    items,
+    summary: { reason_counts },
+    extra: { reason_counts }
+  });
+}
+
 function buildWinProbabilityIntelligenceSummary({ records = [], fleetOpportunities = [], portStatistics = {}, generatedAt, dataMode } = {}) {
   const relationshipItems = buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }).items || [];
   const revenueSummary = buildRevenueForecastIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode });
@@ -7369,6 +7522,7 @@ function buildIntelligenceSummaries({
     "relationship-intelligence": buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }),
     "opportunity-decay": buildOpportunityDecayIntelligenceSummary({ records, generatedAt, dataMode }),
     "missed-opportunities": buildMissedOpportunityIntelligenceSummary({ records, generatedAt, dataMode }),
+    "lost-opportunity-reasons": buildLostOpportunityReasonIntelligenceSummary({ records, generatedAt, dataMode }),
     "win-probability": buildWinProbabilityIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
     "port-seasonality": buildPortSeasonalityIntelligenceSummary({ records, generatedAt, dataMode }),
     "fleet-heatmap": buildFleetHeatmapIntelligenceSummary({ records, fleetOpportunities, portStatistics, generatedAt, dataMode }),
@@ -10116,6 +10270,7 @@ try {
     "dashboard/api/intelligence/relationship-intelligence.json": intelligenceSummaries["relationship-intelligence"],
     "dashboard/api/intelligence/opportunity-decay.json": intelligenceSummaries["opportunity-decay"],
     "dashboard/api/intelligence/missed-opportunities.json": intelligenceSummaries["missed-opportunities"],
+    "dashboard/api/intelligence/lost-opportunity-reasons.json": intelligenceSummaries["lost-opportunity-reasons"],
     "dashboard/api/intelligence/win-probability.json": intelligenceSummaries["win-probability"],
     "dashboard/api/intelligence/port-seasonality.json": intelligenceSummaries["port-seasonality"],
     "dashboard/api/intelligence/fleet-heatmap.json": intelligenceSummaries["fleet-heatmap"],
