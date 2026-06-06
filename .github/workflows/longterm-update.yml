@@ -164,6 +164,18 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Compute SST cache key
+        id: sst-cache-key
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore daily NOAA SST cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: noaa-sst-${{ runner.os }}-${{ steps.sst-cache-key.outputs.date }}
+          restore-keys: |
+            noaa-sst-${{ runner.os }}-
+
       - name: Reset npm registry
         run: |
           npm config set registry https://registry.npmjs.org/
