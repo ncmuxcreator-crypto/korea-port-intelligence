@@ -35,6 +35,7 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/repeat-callers.json",
   "dashboard/api/intelligence/fleet-summary.json",
   "dashboard/api/intelligence/fleet-memory.json",
+  "dashboard/api/intelligence/customer-memory.json",
   "dashboard/api/intelligence/fleet-expansion.json",
   "dashboard/api/intelligence/vessel-timeline.json",
   "dashboard/api/intelligence/korea-presence.json",
@@ -163,6 +164,7 @@ const intelligencePayloads = {
   repeatCallers: readJson("dashboard/api/intelligence/repeat-callers.json"),
   fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
   fleetMemory: readJson("dashboard/api/intelligence/fleet-memory.json"),
+  customerMemory: readJson("dashboard/api/intelligence/customer-memory.json"),
   fleetExpansion: readJson("dashboard/api/intelligence/fleet-expansion.json"),
   vesselTimeline: readJson("dashboard/api/intelligence/vessel-timeline.json"),
   koreaPresence: readJson("dashboard/api/intelligence/korea-presence.json"),
@@ -303,6 +305,7 @@ for (const marker of [
   "/api/intelligence/cleaning-window.json",
   "/api/intelligence/operator-opportunities.json",
   "/api/intelligence/fleet-memory.json",
+  "/api/intelligence/customer-memory.json",
   "/api/intelligence/fleet-expansion.json",
   "/api/intelligence/vessel-timeline.json",
   "/api/intelligence/korea-presence.json",
@@ -397,6 +400,13 @@ for (const item of rows(intelligencePayloads.drydockPrediction)) {
   assert(Number(item.drydock_probability || 0) >= 0 && Number(item.drydock_probability || 0) <= 100, "Drydock probability must be a 0-100 score.");
   assert(String(item.reason_summary || "").length > 0, "Drydock prediction item must explain why it is recommended.");
   assert(String(item.recommended_action || "").length > 0, "Drydock prediction item must include a recommended action.");
+}
+for (const item of rows(intelligencePayloads.customerMemory)) {
+  for (const field of ["customer_name", "contact_attempts", "quote_history_count", "won_projects", "lost_projects", "customer_feedback_count", "fleet_history", "customer_memory_score", "reason_summary", "recommended_action"]) {
+    assert(field in item, `Customer memory item missing required field: ${field}`);
+  }
+  assert(item.sensitive_details_exposed === false, "Customer memory must not expose sensitive contact or quote details.");
+  assert(item.fleet_history && typeof item.fleet_history === "object", "Customer memory item must include fleet history summary.");
 }
 for (const item of rows(intelligencePayloads.fleetExpansion)) {
   for (const field of ["operator_name", "known_korea_vessels", "total_operator_vessels", "high_opportunity_vessels", "unseen_vessels", "fleet_expansion_score", "recommended_action"]) {
