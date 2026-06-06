@@ -55,6 +55,7 @@ const REQUIRED_FILES = [
 const AUTOMATION_FILES = [
   "dashboard/api/reports/daily-sales-report.json",
   "dashboard/api/reports/daily-summary.json",
+  "dashboard/api/reports/morning-brief.json",
   "dashboard/api/reports/executive-weekly.json",
   "dashboard/api/alerts/sales-alerts.json",
   "dashboard/api/alerts/latest.json"
@@ -147,6 +148,7 @@ const targetCategoriesPayload = readJson("dashboard/api/targets/categories.json"
 const salesActionsPayload = readJson("dashboard/api/sales/actions.json");
 const alerts = readJson("dashboard/api/alerts/latest.json");
 const report = readJson("dashboard/api/reports/daily-summary.json");
+const morningBrief = readJson("dashboard/api/reports/morning-brief.json");
 const executiveWeekly = readJson("dashboard/api/reports/executive-weekly.json");
 const dashboardSource = readText("dashboard/index.html");
 const publicSource = readText("public/index.html");
@@ -318,6 +320,7 @@ for (const marker of [
   "/api/intelligence/compliance-opportunities.json",
   "/api/intelligence/drydock-prediction.json",
   "/api/intelligence/revenue-forecast.json",
+  "/api/reports/morning-brief.json",
   "/api/reports/executive-weekly.json"
 ]) {
   assert(dashboardSource.includes(marker), `Dashboard advanced intelligence endpoint missing marker: ${marker}`);
@@ -327,6 +330,7 @@ for (const marker of [
   "isLatestSnapshotAssetRoute",
   'pathname.endsWith("/targets/current.json")',
   'pathname.endsWith("/arrival-pipeline.json")',
+  'pathname.endsWith("/reports/morning-brief.json")',
   'pathname.endsWith("/reports/executive-weekly.json")',
   '/^\\/api\\/vessels\\/(?:index|page-\\d+)\\.json$/.test(pathname)',
   '/^\\/api\\/biofouling\\/[^/]+\\.(?:json|geojson)$/.test(pathname)',
@@ -437,6 +441,17 @@ for (const item of rows(intelligencePayloads.fleetClusters)) {
     assert(field in item, `Fleet cluster item missing required field: ${field}`);
   }
 }
+for (const field of ["hot_count", "immediate_actions", "expected_revenue", "top_fleets", "top_ports", "compliance_opportunities", "warnings", "sections", "items"]) {
+  assert(field in morningBrief, `Morning brief missing required field: ${field}`);
+}
+for (const section of ["executive_summary", "immediate_actions", "revenue", "top_fleets", "top_ports", "compliance_opportunities", "warnings"]) {
+  assert(section in (morningBrief.sections || {}), `Morning brief missing section: ${section}`);
+}
+assert(Array.isArray(morningBrief.immediate_actions), "Morning brief immediate_actions must be an array.");
+assert(Array.isArray(morningBrief.top_fleets), "Morning brief top_fleets must be an array.");
+assert(Array.isArray(morningBrief.top_ports), "Morning brief top_ports must be an array.");
+assert(Array.isArray(morningBrief.compliance_opportunities), "Morning brief compliance_opportunities must be an array.");
+assert(Array.isArray(morningBrief.warnings), "Morning brief warnings must be an array.");
 for (const section of ["executive_summary", "revenue_opportunities", "compliance_opportunities", "repeat_caller_insights", "fleet_expansion_opportunities", "risks"]) {
   assert(section in (executiveWeekly.sections || {}), `Executive weekly report missing section: ${section}`);
 }

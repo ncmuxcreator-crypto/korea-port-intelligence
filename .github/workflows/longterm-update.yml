@@ -325,6 +325,7 @@ jobs:
               biofouling/brazil-compliance-risk.json \
               biofouling/port-risk-map.geojson \
               biofouling/hotspots.geojson \
+              reports/morning-brief.json \
               reports/executive-weekly.json; do
               copy_api_asset "$file"
             done
