@@ -36,6 +36,7 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/fleet-summary.json",
   "dashboard/api/intelligence/fleet-memory.json",
   "dashboard/api/intelligence/customer-memory.json",
+  "dashboard/api/intelligence/fleet-penetration.json",
   "dashboard/api/intelligence/fleet-expansion.json",
   "dashboard/api/intelligence/vessel-timeline.json",
   "dashboard/api/intelligence/korea-presence.json",
@@ -165,6 +166,7 @@ const intelligencePayloads = {
   fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
   fleetMemory: readJson("dashboard/api/intelligence/fleet-memory.json"),
   customerMemory: readJson("dashboard/api/intelligence/customer-memory.json"),
+  fleetPenetration: readJson("dashboard/api/intelligence/fleet-penetration.json"),
   fleetExpansion: readJson("dashboard/api/intelligence/fleet-expansion.json"),
   vesselTimeline: readJson("dashboard/api/intelligence/vessel-timeline.json"),
   koreaPresence: readJson("dashboard/api/intelligence/korea-presence.json"),
@@ -306,6 +308,7 @@ for (const marker of [
   "/api/intelligence/operator-opportunities.json",
   "/api/intelligence/fleet-memory.json",
   "/api/intelligence/customer-memory.json",
+  "/api/intelligence/fleet-penetration.json",
   "/api/intelligence/fleet-expansion.json",
   "/api/intelligence/vessel-timeline.json",
   "/api/intelligence/korea-presence.json",
@@ -408,6 +411,12 @@ for (const item of rows(intelligencePayloads.customerMemory)) {
   }
   assert(item.sensitive_details_exposed === false, "Customer memory must not expose sensitive contact or quote details.");
   assert(item.fleet_history && typeof item.fleet_history === "object", "Customer memory item must include fleet history summary.");
+}
+for (const item of rows(intelligencePayloads.fleetPenetration)) {
+  for (const field of ["operator_name", "fleet_size_korea", "targeted_vessels", "won_vessels", "penetration_rate", "opportunity_gap", "estimated_remaining_revenue", "reason_summary", "recommended_action"]) {
+    assert(field in item, `Fleet penetration item missing required field: ${field}`);
+  }
+  assert(Number(item.penetration_rate || 0) >= 0 && Number(item.penetration_rate || 0) <= 100, "Fleet penetration rate must be a 0-100 percentage.");
 }
 for (const item of rows(intelligencePayloads.fleetExpansion)) {
   for (const field of ["operator_name", "known_korea_vessels", "total_operator_vessels", "high_opportunity_vessels", "unseen_vessels", "fleet_expansion_score", "recommended_action"]) {

@@ -3774,6 +3774,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "latest_contact_at",
   "latest_quote_at",
   "latest_feedback_at",
+  "targeted_vessels",
+  "won_vessels",
+  "captured_vessels",
+  "penetration_rate",
+  "opportunity_gap",
+  "estimated_remaining_revenue",
   "vessels_seen",
   "previous_targets",
   "previous_hot_candidates",
@@ -6503,6 +6509,128 @@ function buildWorkerCustomerMemorySummary(records = [], source = {}, generatedAt
   });
 }
 
+function workerFleetPenetrationTargetSignal(record = {}) {
+  const score = salesPriorityScore(record);
+  const stageText = String(firstNonEmpty(record.current_stage, record.pipeline_stage, record.sales_stage, record.lead_stage, record.lead_status, record.opportunity_state, record.action_type, record.primary_category_code, "")).toLowerCase();
+  return isSalesCandidate(record) ||
+    score >= 50 ||
+    /contact|quote|negotiat|won|target|candidate|연락|견적|수주|대상/.test(stageText) ||
+    workerPrivateActivityCount(record, "contact_attempt") > 0 ||
+    workerPrivateActivityCount(record, "quote_sent") > 0 ||
+    workerPrivateActivityCount(record, "won") > 0;
+}
+
+function workerFleetPenetrationWonSignal(record = {}) {
+  const contact = workerContactHistoryCounts(record);
+  const text = String(firstNonEmpty(record.current_stage, record.pipeline_stage, record.sales_stage, record.lead_status, record.opportunity_state, record.quote_result, record.quote_status, "")).toLowerCase();
+  return workerPrivateActivityCount(record, "won") > 0 ||
+    contact.previous_wins > 0 ||
+    /won|closed_won|수주/.test(text);
+}
+
+function buildWorkerFleetPenetrationSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const assumptions = {
+    currency: "USD",
+    average_cleaning_price: 18000,
+    expected_conversion_rate: 0.16,
+    note: "Estimated Opportunity Only - guaranteed revenue가 아닙니다."
+  };
+  const byOperator = new Map();
+  const ensure = operator => {
+    const current = byOperator.get(operator) || {
+      operator_name: operator,
+      vesselKeys: new Set(),
+      targetedKeys: new Set(),
+      wonKeys: new Set(),
+      totalFleetHint: 0,
+      targetedHint: 0,
+      score_total: 0,
+      risk_total: 0,
+      ports: new Map(),
+      top_vessels: []
+    };
+    byOperator.set(operator, current);
+    return current;
+  };
+  for (const record of records) {
+    const operator = firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company);
+    if (!operator || operator === "미확인 운영사" || operator === "운영사 확인 필요" || operator === "-") continue;
+    const current = ensure(operator);
+    const key = workerCustomerMemoryIdentityKey(record);
+    const score = salesPriorityScore(record);
+    const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+    current.vesselKeys.add(key);
+    if (workerFleetPenetrationTargetSignal(record)) current.targetedKeys.add(key);
+    if (workerFleetPenetrationWonSignal(record)) current.wonKeys.add(key);
+    current.totalFleetHint = Math.max(current.totalFleetHint, firstFiniteNumber(record.total_operator_vessels, record.operator_vessel_count, record.current_vessel_count, record.fleet_size_korea, 0) || 0);
+    const hintedTargets = Number(record.hot_count || 0) + Number(record.warm_count || 0);
+    current.targetedHint = Math.max(current.targetedHint, firstFiniteNumber(record.target_vessel_count, record.target_vessels, record.sales_target_count, hintedTargets, 0) || 0);
+    current.score_total += score;
+    current.risk_total += risk;
+    const port = workerRecordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    current.top_vessels.push({
+      vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+      imo: firstNonEmpty(record.imo, record.imo_no, "-"),
+      port,
+      opportunity_score: score,
+      priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, salesPriorityBand(score))
+    });
+  }
+  const items = [...byOperator.values()]
+    .map(row => {
+      const fleetSize = Math.max(row.vesselKeys.size, row.totalFleetHint);
+      const wonVessels = row.wonKeys.size;
+      const targetedVessels = Math.max(row.targetedKeys.size, row.targetedHint, wonVessels);
+      const capturedVessels = wonVessels;
+      const penetrationRate = fleetSize > 0 ? Math.round((capturedVessels / fleetSize) * 1000) / 10 : 0;
+      const opportunityGap = Math.max(0, fleetSize - capturedVessels);
+      const estimatedRemainingRevenue = Math.round(opportunityGap * assumptions.average_cleaning_price * assumptions.expected_conversion_rate);
+      const averageOpportunity = fleetSize ? Math.round(row.score_total / Math.max(1, row.vesselKeys.size)) : 0;
+      const topPorts = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([port_name, count]) => ({ port_name, count }));
+      return {
+        operator_name: row.operator_name,
+        fleet_size_korea: fleetSize,
+        targeted_vessels: targetedVessels,
+        won_vessels: wonVessels,
+        captured_vessels: capturedVessels,
+        penetration_rate: penetrationRate,
+        opportunity_gap: opportunityGap,
+        estimated_remaining_revenue: estimatedRemainingRevenue,
+        currency: assumptions.currency,
+        average_opportunity_score: averageOpportunity,
+        opportunity_score: Math.min(100, Math.round((100 - penetrationRate) * 0.25 + averageOpportunity * 0.35 + opportunityGap * 3 + targetedVessels * 2 + wonVessels * 6)),
+        top_ports: topPorts,
+        top_vessels: row.top_vessels.sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0)).slice(0, 5),
+        reason_summary: `${row.operator_name}: 한국 확인 선대 ${fleetSize}척 중 수주/작업 포착 ${capturedVessels}척, 침투율 ${penetrationRate}%`,
+        recommended_action: opportunityGap > 0 ? "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비" : "포착 선박의 수주/재방문 이력을 유지하며 반복 기회를 추적",
+        data_sources: ["fleet-intelligence", "vessel_visits", "operator_snapshot_daily", "commercial_leads"]
+      };
+    })
+    .filter(item => item.fleet_size_korea > 0)
+    .sort((a, b) =>
+      Number(b.estimated_remaining_revenue || 0) - Number(a.estimated_remaining_revenue || 0) ||
+      Number(b.opportunity_gap || 0) - Number(a.opportunity_gap || 0) ||
+      Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0)
+    )
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "fleet-intelligence,vessel_visits,operator_snapshot_daily,commercial_leads",
+    items,
+    extra: {
+      summary: {
+        operator_count: items.length,
+        assumptions,
+        definition: "penetration_rate = won_vessels / fleet_size_korea; targeted_vessels는 파이프라인 커버리지입니다."
+      }
+    }
+  });
+}
+
 function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, generatedAt = new Date().toISOString()) {
   const buckets = buildVisibilityBuckets(records);
   if (name === "risk-summary") {
@@ -6558,6 +6686,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
   if (name === "fleet-intelligence") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-memory") return buildFleetSummary(records, source, generatedAt);
   if (name === "customer-memory") return buildWorkerCustomerMemorySummary(records, source, generatedAt);
+  if (name === "fleet-penetration") return buildWorkerFleetPenetrationSummary(records, source, generatedAt);
   if (name === "fleet-expansion") {
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities", items: workerFleetExpansionItems(records) });
   }
@@ -6973,6 +7102,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "fleet-intelligence": "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily,dashboard_summary_snapshots",
       "fleet-memory": "operator_contact_history,commercial_leads,operator_snapshot_daily,dashboard_summary_snapshots",
       "customer-memory": "commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence,fleet-memory,dashboard_summary_snapshots",
+      "fleet-penetration": "fleet-intelligence,vessel_visits,operator_snapshot_daily,commercial_leads,dashboard_summary_snapshots",
       "fleet-expansion": "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities,dashboard_summary_snapshots",
       "fleet-clusters": "operator-opportunities,fleet-memory,operator_snapshot_daily,dashboard_summary_snapshots",
       "cleaning-window": "vessel_snapshot_daily,opportunity_master,risk_history,dashboard_summary_snapshots",
