@@ -2199,6 +2199,7 @@ function isLatestSnapshotAssetRoute(pathname = "") {
     pathname.endsWith("/alerts/sales-alerts.json") ||
     pathname.endsWith("/sales/verification-queue.json") ||
     pathname.endsWith("/sales/actions.json") ||
+    pathname.endsWith("/reports/morning-brief.json") ||
     pathname.endsWith("/reports/executive-weekly.json") ||
     /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname) ||
     /^\/api\/biofouling\/[^/]+\.(?:json|geojson)$/.test(pathname) ||
@@ -7084,6 +7085,57 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
         returned_count: Math.min(verificationItems.length, VERIFICATION_QUEUE_OUTPUT_LIMIT)
       }
     });
+  }
+  if (pathname.endsWith("/reports/morning-brief.json")) {
+    const hot = items.filter(item => item.sales_priority_band === "HOT" || item.priority_label === "HOT" || Number(item.opportunity_score || 0) >= 75);
+    const ports = Array.isArray(summary.ports) ? summary.ports.slice(0, 5) : [];
+    const warnings = [];
+    if (summary.fallback_used) warnings.push({ severity: "WARNING", feature: "snapshot", message: "fallback snapshot 사용 중" });
+    return {
+      schema_version: PUBLIC_API_SCHEMA_VERSION,
+      generated_at: generatedAt,
+      data_mode: publicDataMode(summary.data_source_used || source.data_source_used, source),
+      report_type: "executive_morning_brief",
+      title: "오늘의 브리핑",
+      source_table: "daily-sales,revenue-forecast,sales/actions,compliance-exposure,fleet-intelligence,dashboard_summary_snapshots",
+      record_count: 1,
+      hot_count: Number(summary.hot_count || summary.immediate_target_count || hot.length || 0),
+      immediate_actions: items.slice(0, 10),
+      expected_revenue: 0,
+      estimated_revenue_high: 0,
+      top_fleets: [],
+      top_ports: ports,
+      compliance_opportunities: [],
+      warnings,
+      sections: {
+        executive_summary: {
+          total_vessels: Number(summary.all_vessels_count || summary.total_vessels || summary.record_count || 0),
+          sales_target_count: Number(summary.sales_target_count || summary.target_count || 0),
+          hot_count: Number(summary.hot_count || summary.immediate_target_count || hot.length || 0),
+          expected_revenue: 0,
+          warning_count: warnings.length,
+          last_successful_update: summary.generated_at || generatedAt
+        },
+        immediate_actions: items.slice(0, 10),
+        revenue: { expected_revenue: 0, estimated_revenue_high: 0, disclaimer: "Estimated Opportunity Only" },
+        top_fleets: [],
+        top_ports: ports,
+        compliance_opportunities: [],
+        warnings
+      },
+      items: [{
+        title: "오늘의 브리핑",
+        hot_count: Number(summary.hot_count || summary.immediate_target_count || hot.length || 0),
+        immediate_action_count: Math.min(items.length, 10),
+        expected_revenue: 0,
+        top_fleet: null,
+        top_port: ports[0]?.port_name || ports[0]?.display_name || null,
+        compliance_count: 0,
+        warning_count: warnings.length,
+        reason_summary: "최신 정적 morning brief가 없어서 dashboard summary 기반 fallback을 표시합니다.",
+        recommended_action: "정적 morning-brief.json 생성 상태를 확인하고 HOT 후보부터 연락 우선순위를 배정"
+      }]
+    };
   }
   const intelligence = pathname.match(/^\/api\/intelligence\/([^/]+)\.json$/);
   if (intelligence) {

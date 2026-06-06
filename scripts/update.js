@@ -9411,6 +9411,123 @@ function buildExecutiveWeeklyReportPayload({
   };
 }
 
+function buildExecutiveMorningBriefPayload({
+  dashboardSummary = {},
+  dailySales = {},
+  revenueForecast = {},
+  salesActions = {},
+  complianceExposure = {},
+  fleetIntelligence = {},
+  portOpportunities = {},
+  dataContinuity = {},
+  report = {},
+  generatedAt = new Date().toISOString()
+} = {}) {
+  const revenue = revenueForecast.summary || revenueForecast.sections || revenueForecast.items?.[0]?.sections || {};
+  const revenueItem = revenueForecast.items?.[0] || {};
+  const actions = compactItems(salesActions).slice(0, 10);
+  const dailyHot = Number(dailySales.kpis?.hot_candidates || 0);
+  const hotCount = Number(dashboardSummary.hot_count || dashboardSummary.immediate_target_count || revenue.HOT?.target_count || dailyHot || 0);
+  const fleetRows = (fleetIntelligence.items || []);
+  const topFleets = (fleetRows.filter(row => !/미확인|unknown|확인 필요/i.test(String(row.operator_name || ""))).length
+    ? fleetRows.filter(row => !/미확인|unknown|확인 필요/i.test(String(row.operator_name || "")))
+    : fleetRows)
+    .slice(0, 5)
+    .map(row => ({
+      operator_name: row.operator_name,
+      fleet_size_korea: row.fleet_size_korea || row.vessel_count || 0,
+      hot_count: row.hot_count || 0,
+      average_opportunity_score: row.average_opportunity_score || row.opportunity_score || 0,
+      recommended_sales_angle: row.recommended_sales_angle || row.recommended_action || ""
+    }));
+  const portRows = (portOpportunities.items || []).length ? portOpportunities.items : (dashboardSummary.ports || []);
+  const topPorts = (portRows.filter(row => !/미확인|unknown/i.test(String(row.port_name || row.display_name || row.port_code || ""))).length
+    ? portRows.filter(row => !/미확인|unknown/i.test(String(row.port_name || row.display_name || row.port_code || "")))
+    : portRows)
+    .slice(0, 5)
+    .map(row => ({
+      port_name: row.port_name || row.display_name || row.port_code || "미확인 항만",
+      vessel_count: row.vessel_count || 0,
+      sales_target_count: row.sales_target_count || row.target_count || row.hot_candidate_count || 0,
+      opportunity_index: row.opportunity_index || row.average_opportunity_score || row.avg_opportunity_score || 0
+    }));
+  const complianceItems = (complianceExposure.items || []).slice(0, 10);
+  const warnings = [];
+  const totalVessels = Number(dashboardSummary.all_vessels_count || dashboardSummary.total_vessels || dashboardSummary.record_count || 0);
+  const targetCount = Number(dashboardSummary.sales_target_count || dashboardSummary.target_count || dashboardSummary.kpis?.sales_target_count || 0);
+  const targetRatio = totalVessels > 0 ? targetCount / totalVessels : null;
+  if (dataContinuity.status === "fallback_active" || dashboardSummary.fallback_used) warnings.push({ severity: "WARNING", feature: "snapshot", message: "fallback snapshot 사용 중" });
+  if (targetRatio !== null && targetRatio < 0.2) warnings.push({ severity: "WARNING", feature: "sales_target_ratio", message: "영업대상 비율이 낮습니다.", observed_value: Math.round(targetRatio * 1000) / 10, expected_value: "20% 이상 또는 명확한 제외 사유" });
+  if (report.missing_required_config?.length) warnings.push({ severity: "CRITICAL", feature: "config", message: `필수 설정 누락: ${report.missing_required_config.join(", ")}` });
+  if (report.source_failures?.length) warnings.push({ severity: "WARNING", feature: "sources", message: "일부 데이터 소스 실패", observed_value: report.source_failures.length });
+  const storage = dataContinuity.storage_verification || {};
+  if (storage.supabase_write_status && storage.supabase_write_status !== "completed") warnings.push({ severity: "CRITICAL", feature: "supabase", message: "Supabase 저장 상태 확인 필요", observed_value: storage.supabase_write_status });
+  if (storage.promotion_status && !/promoted|active_dataset_available/i.test(String(storage.promotion_status))) warnings.push({ severity: "CRITICAL", feature: "promotion", message: "데이터 승격 상태 확인 필요", observed_value: storage.promotion_status });
+  const expectedRevenue = Number(
+    revenueItem.expected_revenue ||
+    revenueItem.portfolio?.expected_revenue ||
+    revenue.portfolio?.expected_revenue ||
+    revenueForecast.portfolio?.expected_revenue ||
+    0
+  );
+  const highRevenue = Number(
+    revenueItem.aggressive_revenue ||
+    revenueItem.estimated_revenue_high ||
+    revenueItem.portfolio?.aggressive_revenue ||
+    revenue.portfolio?.aggressive_revenue ||
+    0
+  );
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dashboardSummary.data_mode || report.data_mode, report),
+    report_type: "executive_morning_brief",
+    title: "오늘의 브리핑",
+    source_table: "daily-sales,revenue-forecast,sales/actions,compliance-exposure,fleet-intelligence",
+    record_count: 1,
+    hot_count: hotCount,
+    immediate_actions: actions,
+    expected_revenue: expectedRevenue,
+    estimated_revenue_high: highRevenue,
+    top_fleets: topFleets,
+    top_ports: topPorts,
+    compliance_opportunities: complianceItems,
+    warnings,
+    sections: {
+      executive_summary: {
+        total_vessels: totalVessels,
+        sales_target_count: targetCount,
+        hot_count: hotCount,
+        expected_revenue: expectedRevenue,
+        warning_count: warnings.length,
+        last_successful_update: dashboardSummary.generated_at || report.completed_at || generatedAt
+      },
+      immediate_actions: actions,
+      revenue: {
+        expected_revenue: expectedRevenue,
+        estimated_revenue_high: highRevenue,
+        disclaimer: "Estimated Opportunity Only"
+      },
+      top_fleets: topFleets,
+      top_ports: topPorts,
+      compliance_opportunities: complianceItems,
+      warnings
+    },
+    items: [{
+      title: "오늘의 브리핑",
+      hot_count: hotCount,
+      immediate_action_count: actions.length,
+      expected_revenue: expectedRevenue,
+      top_fleet: topFleets[0]?.operator_name || null,
+      top_port: topPorts[0]?.port_name || null,
+      compliance_count: complianceItems.length,
+      warning_count: warnings.length,
+      reason_summary: `HOT ${hotCount}건, 즉시 액션 ${actions.length}건, 예상 기회 ${expectedRevenue} ${revenueForecast.summary?.assumptions?.currency || revenueItem.portfolio?.currency || "USD"}`,
+      recommended_action: actions[0]?.recommended_action || actions[0]?.next_action || "HOT 후보, 상위 선대, Compliance 노출 선박 순으로 오늘의 연락 우선순위를 배정"
+    }]
+  };
+}
+
 function buildScoringDiagnostics(records = []) {
   const buckets = {
     score_0_20: 0,
@@ -12043,6 +12160,18 @@ try {
     report,
     generatedAt: completedAt
   });
+  const morningBriefPayload = buildExecutiveMorningBriefPayload({
+    dashboardSummary,
+    dailySales: dailySalesReportPayload,
+    revenueForecast: intelligenceSummaries["revenue-forecast"],
+    salesActions: salesActionsPayload,
+    complianceExposure: intelligenceSummaries["compliance-exposure"],
+    fleetIntelligence: intelligenceSummaries["fleet-intelligence"],
+    portOpportunities: intelligenceSummaries["port-opportunities"],
+    dataContinuity: dataContinuityReport,
+    report,
+    generatedAt: completedAt
+  });
   report.successful_dataset_bundle = successfulDatasetBundle;
   report.successful_dataset_restore = restoreResult;
   report.data_continuity = dataContinuityReport;
@@ -12062,6 +12191,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-sales-report.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/daily-summary.json", dailySalesReportPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/reports/executive-weekly.json", executiveWeeklyReportPayload, finalRunOrigin);
+  writeRuntimeDiagnosticJson("dashboard/api/reports/morning-brief.json", morningBriefPayload, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);
