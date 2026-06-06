@@ -3759,6 +3759,11 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "superintendent_probability",
   "contact_confidence",
   "relationship_score",
+  "repeat_interactions",
+  "opportunity_value",
+  "opportunity_value_currency",
+  "ports_served",
+  "operators_served",
   "customer_type",
   "customer_name",
   "contact_attempts",
@@ -6335,6 +6340,105 @@ function workerRecordPortName(record = {}) {
   return firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port, record.destination, "미확인 항만");
 }
 
+function buildWorkerAgentRelationshipSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const byAgent = new Map();
+  for (const record of records) {
+    const agentName = firstNonEmpty(record.local_agent, record.agent_name, record.agent, record.satmntEntrpsNm, record.entrpsCdNm, "미확인 에이전트");
+    const current = byAgent.get(agentName) || {
+      agent_name: agentName,
+      vesselKeys: new Set(),
+      hot_count: 0,
+      warm_count: 0,
+      target_count: 0,
+      repeat_interactions: 0,
+      score_total: 0,
+      ports: new Map(),
+      operators: new Set(),
+      top_record: null
+    };
+    const score = salesPriorityScore(record);
+    const priority = salesPriorityBand(score);
+    const contact = workerContactHistoryCounts(record);
+    const repeatSignal = repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.vesselKeys.add(workerCustomerMemoryIdentityKey(record));
+    current.hot_count += priority === "HOT" || score >= 75 ? 1 : 0;
+    current.warm_count += priority === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
+    current.target_count += score >= 50 || isSalesCandidate(record) ? 1 : 0;
+    current.repeat_interactions += Math.max(
+      repeatSignal,
+      contact.previous_contacts,
+      contact.previous_quotes,
+      contact.previous_wins,
+      workerPrivateActivityCount(record, "contact_attempt"),
+      workerPrivateActivityCount(record, "quote_sent"),
+      workerPrivateActivityCount(record, "won")
+    );
+    current.score_total += score;
+    const port = workerRecordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    current.operators.add(firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company, "미확인 운영사"));
+    if (!current.top_record || score > salesPriorityScore(current.top_record)) current.top_record = record;
+    byAgent.set(agentName, current);
+  }
+  const items = [...byAgent.values()]
+    .map(row => {
+      const vesselCount = row.vesselKeys.size;
+      const averageOpportunity = vesselCount ? Math.round(row.score_total / vesselCount) : 0;
+      const opportunityValue = Math.round(row.hot_count * 28000 + row.warm_count * 16000 + Math.max(0, row.target_count - row.hot_count - row.warm_count) * 9000);
+      const relationshipScore = Math.min(100, Math.round(
+        averageOpportunity * 0.40 +
+        Math.min(100, row.repeat_interactions * 12) * 0.30 +
+        Math.min(100, vesselCount * 8 + row.hot_count * 10) * 0.30
+      ));
+      const portsServed = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([port_name, count]) => ({ port_name, count }));
+      return withVesselDisplay({
+        agent_name: row.agent_name,
+        relationship_score: relationshipScore,
+        vessel_count: vesselCount,
+        hot_count: row.hot_count,
+        warm_count: row.warm_count,
+        target_count: row.target_count,
+        repeat_interactions: row.repeat_interactions,
+        opportunity_value: opportunityValue,
+        opportunity_value_currency: "USD",
+        average_opportunity_score: averageOpportunity,
+        ports_served: portsServed,
+        operators_served: [...row.operators].filter(Boolean).slice(0, 6),
+        opportunity_score: Math.max(relationshipScore, averageOpportunity),
+        vessel_display: row.top_record ? vesselDisplay(row.top_record) : undefined,
+        reason_summary: `${row.agent_name}: 관련 선박 ${vesselCount}척, HOT ${row.hot_count}척, 반복/접촉 신호 ${row.repeat_interactions}건`,
+        recommended_action: row.agent_name === "미확인 에이전트"
+          ? "미확인 에이전트 선박은 연락처 확인 큐에서 담당 대리점부터 확인"
+          : row.hot_count > 0
+            ? "HOT 후보와 예상 기회 금액을 묶어 대리점 접점 우선순위를 확인"
+            : "담당 항만과 운영사별 후보를 묶어 접점 가능성을 확인",
+        data_sources: ["agent-intelligence", "operator_contact_history", "commercial_leads", "relationship-intelligence"]
+      });
+    })
+    .filter(item => Number(item.relationship_score || 0) > 0 || Number(item.vessel_count || 0) > 0)
+    .sort((a, b) =>
+      Number(b.relationship_score || 0) - Number(a.relationship_score || 0) ||
+      Number(b.hot_count || 0) - Number(a.hot_count || 0) ||
+      Number(b.opportunity_value || 0) - Number(a.opportunity_value || 0)
+    )
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "agent-intelligence,operator_contact_history,commercial_leads,relationship-intelligence",
+    items,
+    extra: {
+      summary: {
+        agent_relationship_count: items.length,
+        opportunity_value_currency: "USD",
+        source_hint: "agent-intelligence + relationship-intelligence + commercial contact signals"
+      }
+    }
+  });
+}
+
 function buildWorkerCustomerMemorySummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
   const byCustomer = new Map();
   for (const record of records) {
@@ -6682,6 +6786,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
   }
   if (name === "operator-opportunities") return buildFleetSummary(records, source, generatedAt);
   if (name === "agent-summary") return buildAgentSummary(records, source, generatedAt);
+  if (name === "agent-relationship") return buildWorkerAgentRelationshipSummary(records, source, generatedAt);
   if (name === "repeat-callers") return buildRepeatCallerSummary(records, source, generatedAt);
   if (name === "fleet-summary") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-intelligence") return buildFleetSummary(records, source, generatedAt);
@@ -7149,6 +7254,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "operator-summary": "operator_snapshot_daily,dashboard_summary_snapshots",
       "operator-opportunities": "operator_snapshot_daily,commercial_opportunity_daily,dashboard_summary_snapshots",
       "agent-summary": "agent_master,agent_operator_links,dashboard_summary_snapshots",
+      "agent-relationship": "agent-intelligence,operator_contact_history,commercial_leads,relationship-intelligence,dashboard_summary_snapshots",
       "repeat-callers": "vessel_visits,vessel_snapshots,dashboard_summary_snapshots",
       "fleet-summary": "operator_snapshot_daily,vessel_snapshots,dashboard_summary_snapshots",
       "fleet-intelligence": "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily,dashboard_summary_snapshots",
