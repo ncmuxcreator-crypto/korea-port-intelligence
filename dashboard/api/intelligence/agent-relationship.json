@@ -1,0 +1,781 @@
+{
+  "generated_at": "2026-06-06T08:28:36.804Z",
+  "schema_version": "1.0",
+  "data_mode": "live",
+  "record_count": 10,
+  "source_table": "agent-intelligence,operator_contact_history,commercial_leads,relationship-intelligence",
+  "items": [
+    {
+      "rank": 1,
+      "agent_name": "(주)세바해운",
+      "relationship_score": 86,
+      "repeat_interactions": 30,
+      "opportunity_value": 347000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "대산",
+          "count": 26
+        },
+        {
+          "port_name": "여수",
+          "count": 3
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 1
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사"
+      ],
+      "vessel_count": 30,
+      "hot_count": 0,
+      "warm_count": 11,
+      "average_opportunity_score": 45,
+      "target_count": 30,
+      "opportunity_score": 86,
+      "reason_summary": "(주)세바해운: 관련 선박 30척, HOT 0척, 반복/접촉 신호 30건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "SHAN CHI",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "BPGJ",
+        "flag": "-",
+        "vessel_type": "Tanker",
+        "gt": 30325,
+        "dwt": 0,
+        "operator": "-",
+        "company": "(주)세바해운",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Daesan",
+        "eta": "2026-06-14T14:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-01 06:00:00+09:00",
+        "atb": "-",
+        "stay_days": 9.7,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Daesan W구역에서 체류 9.7일째인 GT 30,325 탱커으로, 출항 전 약 30시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_daesan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 2,
+      "agent_name": "팬오션 주식회사",
+      "relationship_score": 85,
+      "repeat_interactions": 29,
+      "opportunity_value": 289000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 9
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 9
+        },
+        {
+          "port_name": "인천",
+          "count": 5
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 4
+        },
+        {
+          "port_name": "울산",
+          "count": 2
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "PAN OCEAN"
+      ],
+      "vessel_count": 29,
+      "hot_count": 0,
+      "warm_count": 4,
+      "average_opportunity_score": 39,
+      "target_count": 29,
+      "opportunity_score": 85,
+      "reason_summary": "팬오션 주식회사: 관련 선박 29척, HOT 0척, 반복/접촉 신호 29건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "NEW DEDICATION",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3EPP8",
+        "flag": "-",
+        "vessel_type": "Bulk Carrier",
+        "gt": 35832,
+        "dwt": 0,
+        "operator": "-",
+        "company": "팬오션 주식회사",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-06T04:51:00.000Z",
+        "etb": "-",
+        "ata": "2026-05-13 04:30:00+09:00",
+        "atb": "-",
+        "stay_days": 21.4,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 21.4일째인 GT 35,832 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_busan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 3,
+      "agent_name": "엠에스씨코리아(주)",
+      "relationship_score": 85,
+      "repeat_interactions": 30,
+      "opportunity_value": 277000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 28
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 2
+        }
+      ],
+      "operators_served": [
+        "MSC",
+        "미확인 운영사"
+      ],
+      "vessel_count": 30,
+      "hot_count": 0,
+      "warm_count": 1,
+      "average_opportunity_score": 41,
+      "target_count": 30,
+      "opportunity_score": 85,
+      "reason_summary": "엠에스씨코리아(주): 관련 선박 30척, HOT 0척, 반복/접촉 신호 30건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "MSC IRIS",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5LYN4",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 155104,
+        "dwt": 0,
+        "operator": "MSC",
+        "company": "MSC",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-08T11:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-05-30 12:20:00+09:00",
+        "atb": "-",
+        "stay_days": 6.3,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 46,
+        "risk_score": 45,
+        "contact_readiness_score": 90,
+        "priority_label": "HOT",
+        "reason_summary": "Busan 신항 1부두 3선석에서 체류 6.3일째인 GT 155,104 컨테이너선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "선박 스케줄 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_busan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 4,
+      "agent_name": "(주)신성해운",
+      "relationship_score": 85,
+      "repeat_interactions": 22,
+      "opportunity_value": 219000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "대산",
+          "count": 15
+        },
+        {
+          "port_name": "여수",
+          "count": 7
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사"
+      ],
+      "vessel_count": 22,
+      "hot_count": 0,
+      "warm_count": 3,
+      "average_opportunity_score": 41,
+      "target_count": 22,
+      "opportunity_score": 85,
+      "reason_summary": "(주)신성해운: 관련 선박 22척, HOT 0척, 반복/접촉 신호 22건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "SANMAR SAROD",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "VTPZ",
+        "flag": "-",
+        "vessel_type": "Tanker",
+        "gt": 40953,
+        "dwt": 0,
+        "operator": "-",
+        "company": "(주)신성해운",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Daesan",
+        "eta": "2026-06-08T23:30:00.000Z",
+        "etb": "-",
+        "ata": "2026-05-21 16:12:00+09:00",
+        "atb": "-",
+        "stay_days": 15.7,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 15.7일째인 GT 40,953 탱커으로, 출항 전 약 222시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_daesan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 5,
+      "agent_name": "에이치엠엠(주)",
+      "relationship_score": 85,
+      "repeat_interactions": 22,
+      "opportunity_value": 219000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 14
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 3
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 2
+        },
+        {
+          "port_name": "포항",
+          "count": 2
+        },
+        {
+          "port_name": "인천",
+          "count": 1
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "HMM"
+      ],
+      "vessel_count": 22,
+      "hot_count": 0,
+      "warm_count": 3,
+      "average_opportunity_score": 40,
+      "target_count": 22,
+      "opportunity_score": 85,
+      "reason_summary": "에이치엠엠(주): 관련 선박 22척, HOT 0척, 반복/접촉 신호 22건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "HYUNDAI SHANGHAI",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5BZM3",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 74651,
+        "dwt": 0,
+        "operator": "HMM",
+        "company": "HMM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-08T10:15:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-04 11:03:00+09:00",
+        "atb": "-",
+        "stay_days": 4.4,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 41,
+        "risk_score": 45,
+        "contact_readiness_score": 90,
+        "priority_label": "WARM",
+        "reason_summary": "HMM 선사는 현재 한국 항만에 12척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 30점, 평균 체선노출 4점입니다. Busan 신항 4부두 3선석에서 체류 1.3일째인 GT 74,651 컨테이너선으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "선박 스케줄 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 6,
+      "agent_name": "그레이트해운(주)",
+      "relationship_score": 84,
+      "repeat_interactions": 29,
+      "opportunity_value": 268000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "울산",
+          "count": 29
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "EVERGREEN"
+      ],
+      "vessel_count": 29,
+      "hot_count": 0,
+      "warm_count": 1,
+      "average_opportunity_score": 36,
+      "target_count": 29,
+      "opportunity_score": 84,
+      "reason_summary": "그레이트해운(주): 관련 선박 29척, HOT 0척, 반복/접촉 신호 29건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "스카이블루",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7A3688",
+        "flag": "-",
+        "vessel_type": "Tanker",
+        "gt": 8686,
+        "dwt": 0,
+        "operator": "-",
+        "company": "그레이트해운(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Ulsan",
+        "eta": "2026-06-11T11:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-05-30 12:00:00+09:00",
+        "atb": "-",
+        "stay_days": 8.3,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 45,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Ulsan 정박지-E1에서 묘박/대기 8.3일째인 GT 8,686 탱커으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_ulsan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 7,
+      "agent_name": "오션네트워크익스프레스코리아(주)",
+      "relationship_score": 84,
+      "repeat_interactions": 26,
+      "opportunity_value": 234000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 26
+        }
+      ],
+      "operators_served": [
+        "ONE / 일본계 선사군",
+        "미확인 운영사"
+      ],
+      "vessel_count": 26,
+      "hot_count": 0,
+      "warm_count": 0,
+      "average_opportunity_score": 35,
+      "target_count": 26,
+      "opportunity_score": 84,
+      "reason_summary": "오션네트워크익스프레스코리아(주): 관련 선박 26척, HOT 0척, 반복/접촉 신호 26건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "ZEUS LUMOS",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5LOS8",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 149525,
+        "dwt": 0,
+        "operator": "-",
+        "company": "오션네트워크익스프레스코리아(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-07-02T00:58:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-03 00:25:00+09:00",
+        "atb": "-",
+        "stay_days": 4.4,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 74,
+        "opportunity_score": 41,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "WARM",
+        "reason_summary": "Busan 신항 3부두 1선석에서 체류 2.3일째인 GT 149,525 컨테이너선으로, 출항도선 신호가 강하지 않습니다 · europe 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 8,
+      "agent_name": "한국머스크 (주)",
+      "relationship_score": 84,
+      "repeat_interactions": 21,
+      "opportunity_value": 189000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 16
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 2
+        },
+        {
+          "port_name": "인천",
+          "count": 2
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 1
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "MAERSK"
+      ],
+      "vessel_count": 21,
+      "hot_count": 0,
+      "warm_count": 0,
+      "average_opportunity_score": 35,
+      "target_count": 21,
+      "opportunity_score": 84,
+      "reason_summary": "한국머스크 (주): 관련 선박 21척, HOT 0척, 반복/접촉 신호 21건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "MAERSK EL BOSQUE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8352",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 127814,
+        "dwt": 0,
+        "operator": "MAERSK",
+        "company": "MAERSK",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-10T15:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-08 10:00:00+09:00",
+        "atb": "-",
+        "stay_days": 2.1,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 44,
+        "risk_score": 45,
+        "contact_readiness_score": 90,
+        "priority_label": "HOT",
+        "reason_summary": "Busan 신항 2부두 4선석에서 체류 1.1일째인 GT 127,814 컨테이너선으로, 출항 전 약 67시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "선박 스케줄 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 9,
+      "agent_name": "고려해운(주)",
+      "relationship_score": 83,
+      "repeat_interactions": 37,
+      "opportunity_value": 333000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 33
+        },
+        {
+          "port_name": "울산",
+          "count": 2
+        },
+        {
+          "port_name": "인천",
+          "count": 2
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "KMTC"
+      ],
+      "vessel_count": 37,
+      "hot_count": 0,
+      "warm_count": 0,
+      "average_opportunity_score": 33,
+      "target_count": 37,
+      "opportunity_score": 83,
+      "reason_summary": "고려해운(주): 관련 선박 37척, HOT 0척, 반복/접촉 신호 37건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "케이엠티씨 호치민",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "D7BM",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 28927,
+        "dwt": 0,
+        "operator": "-",
+        "company": "고려해운(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-13T12:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-09 07:00:00+09:00",
+        "atb": "-",
+        "stay_days": 4,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 33,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "LOW",
+        "reason_summary": "Busan 신감만부두 3선석에서 체류 1.6일째인 GT 28,927 컨테이너선으로, 출항 전 약 100시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 10,
+      "agent_name": "장금상선(주)",
+      "relationship_score": 83,
+      "repeat_interactions": 26,
+      "opportunity_value": 234000,
+      "opportunity_value_currency": "USD",
+      "ports_served": [
+        {
+          "port_name": "부산",
+          "count": 21
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 4
+        },
+        {
+          "port_name": "인천",
+          "count": 1
+        }
+      ],
+      "operators_served": [
+        "미확인 운영사",
+        "SINOKOR"
+      ],
+      "vessel_count": 26,
+      "hot_count": 0,
+      "warm_count": 0,
+      "average_opportunity_score": 33,
+      "target_count": 26,
+      "opportunity_score": 83,
+      "reason_summary": "장금상선(주): 관련 선박 26척, HOT 0척, 반복/접촉 신호 26건",
+      "recommended_action": "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락",
+      "data_sources": [
+        "agent-intelligence",
+        "operator_contact_history",
+        "commercial_leads",
+        "relationship-intelligence"
+      ],
+      "vessel_display": {
+        "vessel_name": "싸왓디 퍼시픽",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "D7IN",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 18051,
+        "dwt": 0,
+        "operator": "-",
+        "company": "장금상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-11T11:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-08 08:00:00+09:00",
+        "atb": "-",
+        "stay_days": 4.3,
+        "last_seen_at": "2026-06-06T08:25:56.320Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 38,
+        "risk_score": 45,
+        "contact_readiness_score": 35,
+        "priority_label": "WARM",
+        "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 2일째인 GT 18,051 컨테이너선으로, 출항 전 약 92시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "agent_relationship_count": 20,
+    "opportunity_value_currency": "USD",
+    "source_hint": "agent-intelligence + relationship-intelligence + commercial contact signals"
+  }
+}

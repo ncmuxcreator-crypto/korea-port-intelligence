@@ -32,6 +32,7 @@ const REQUIRED_FILES = [
   "dashboard/api/intelligence/operator-summary.json",
   "dashboard/api/intelligence/operator-opportunities.json",
   "dashboard/api/intelligence/agent-summary.json",
+  "dashboard/api/intelligence/agent-relationship.json",
   "dashboard/api/intelligence/repeat-callers.json",
   "dashboard/api/intelligence/fleet-summary.json",
   "dashboard/api/intelligence/fleet-memory.json",
@@ -164,6 +165,7 @@ const intelligencePayloads = {
   operator: readJson("dashboard/api/intelligence/operator-summary.json"),
   operatorOpportunities: readJson("dashboard/api/intelligence/operator-opportunities.json"),
   agent: readJson("dashboard/api/intelligence/agent-summary.json"),
+  agentRelationship: readJson("dashboard/api/intelligence/agent-relationship.json"),
   repeatCallers: readJson("dashboard/api/intelligence/repeat-callers.json"),
   fleet: readJson("dashboard/api/intelligence/fleet-summary.json"),
   fleetMemory: readJson("dashboard/api/intelligence/fleet-memory.json"),
@@ -309,6 +311,7 @@ for (const marker of [
   "/api/intelligence/cleaning-window.json",
   "/api/intelligence/operator-opportunities.json",
   "/api/intelligence/fleet-memory.json",
+  "/api/intelligence/agent-relationship.json",
   "/api/intelligence/customer-memory.json",
   "/api/intelligence/fleet-penetration.json",
   "/api/intelligence/fleet-expansion.json",
@@ -335,6 +338,7 @@ for (const marker of [
   '/^\\/api\\/vessels\\/(?:index|page-\\d+)\\.json$/.test(pathname)',
   '/^\\/api\\/biofouling\\/[^/]+\\.(?:json|geojson)$/.test(pathname)',
   '/^\\/api\\/intelligence\\/[^/]+\\.json$/.test(pathname)',
+  '"agent-relationship": "agent-intelligence,operator_contact_history',
   '"customer-memory": "commercial_leads,operator_contact_history'
 ]) {
   assert(workerSource.includes(marker), `Worker must serve latest static snapshot before DB summary fallback: ${marker}`);
@@ -346,6 +350,11 @@ for (const [name, payload] of Object.entries(intelligencePayloads)) {
   }
   assert(Array.isArray(payload.items), `Intelligence endpoint ${name} must expose items array.`);
   assert(payload.items.length <= 10, `Intelligence endpoint ${name} must be capped to 10 items.`);
+}
+for (const item of rows(intelligencePayloads.agentRelationship)) {
+  for (const field of ["agent_name", "relationship_score", "vessel_count", "hot_count", "repeat_interactions", "opportunity_value", "recommended_action"]) {
+    assert(field in item, `Agent relationship item missing required field: ${field}`);
+  }
 }
 for (const [name, payload] of Object.entries(biofoulingPayloads).filter(([name]) => !name.endsWith("Geojson"))) {
   assert(payload && typeof payload === "object", `Biofouling endpoint must be valid JSON: ${name}`);

@@ -4381,6 +4381,11 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "superintendent_probability",
   "contact_confidence",
   "relationship_score",
+  "repeat_interactions",
+  "opportunity_value",
+  "opportunity_value_currency",
+  "ports_served",
+  "operators_served",
   "entity_type",
   "entity_name",
   "related_vessels_count",
@@ -5305,6 +5310,108 @@ function buildAgentChannelIntelligenceSummary({ records = [], generatedAt, dataM
     dataMode,
     sourceTable: "agent,local_agent,operator_contact_history,commercial_leads,agent-followup-queue,verification-queue,sales/actions",
     items
+  });
+}
+
+function buildAgentRelationshipIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
+  const relationshipByAgent = new Map(
+    buildRelationshipRows(records, "AGENT").map(row => [row.entity_name, row])
+  );
+  const byAgent = new Map();
+  for (const record of records) {
+    const agentName = agentDisplayName(record);
+    const current = byAgent.get(agentName) || {
+      agent_name: agentName,
+      vesselKeys: new Set(),
+      hot_count: 0,
+      warm_count: 0,
+      target_count: 0,
+      repeat_interactions: 0,
+      score_total: 0,
+      ports: new Map(),
+      operators: new Set(),
+      top_record: null
+    };
+    const score = salesPriorityScore(record);
+    const priority = salesPriorityBand(score);
+    const contact = contactHistoryCounts(record);
+    const repeatSignal = repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.vesselKeys.add(opportunityMemoryIdentityKey(record));
+    current.hot_count += priority === "HOT" || score >= 75 ? 1 : 0;
+    current.warm_count += priority === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
+    current.target_count += score >= 50 || isSalesCandidate(record) ? 1 : 0;
+    current.repeat_interactions += Math.max(
+      repeatSignal,
+      contact.previous_contacts,
+      contact.previous_quotes,
+      contact.previous_wins,
+      privateActivityCount(record, "contact_attempt"),
+      privateActivityCount(record, "quote_sent"),
+      privateActivityCount(record, "won")
+    );
+    current.score_total += score;
+    current.ports.set(recordPortName(record), (current.ports.get(recordPortName(record)) || 0) + 1);
+    current.operators.add(operatorFleetName(record));
+    if (!current.top_record || score > salesPriorityScore(current.top_record)) current.top_record = record;
+    byAgent.set(agentName, current);
+  }
+  const items = [...byAgent.values()]
+    .map(row => {
+      const vesselCount = row.vesselKeys.size;
+      const averageOpportunity = vesselCount ? Math.round(row.score_total / vesselCount) : 0;
+      const relationship = relationshipByAgent.get(row.agent_name);
+      const opportunityValue = Math.round(row.hot_count * 28000 + row.warm_count * 16000 + Math.max(0, row.target_count - row.hot_count - row.warm_count) * 9000);
+      const relationshipScore = Math.min(100, Math.round(
+        firstFiniteNumber(relationship?.relationship_score, 0) * 0.45 +
+        averageOpportunity * 0.25 +
+        Math.min(100, row.repeat_interactions * 12) * 0.18 +
+        Math.min(100, vesselCount * 8 + row.hot_count * 10) * 0.12
+      ));
+      const portsServed = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([port_name, count]) => ({ port_name, count }));
+      return withVesselDisplay({
+        agent_name: row.agent_name,
+        relationship_score: relationshipScore,
+        vessel_count: vesselCount,
+        hot_count: row.hot_count,
+        warm_count: row.warm_count,
+        target_count: row.target_count,
+        repeat_interactions: row.repeat_interactions,
+        opportunity_value: opportunityValue,
+        opportunity_value_currency: "USD",
+        average_opportunity_score: averageOpportunity,
+        ports_served: portsServed,
+        operators_served: [...row.operators].filter(Boolean).slice(0, 6),
+        opportunity_score: Math.max(relationshipScore, averageOpportunity),
+        vessel_display: row.top_record ? vesselDisplay(row.top_record) : undefined,
+        reason_summary: `${row.agent_name}: 관련 선박 ${vesselCount}척, HOT ${row.hot_count}척, 반복/접촉 신호 ${row.repeat_interactions}건`,
+        recommended_action: row.agent_name === "미확인 에이전트"
+          ? "미확인 에이전트 선박은 연락처 확인 큐에서 담당 대리점부터 확인"
+          : row.hot_count > 0
+            ? "HOT 후보와 예상 기회 금액을 묶어 대리점 접점 우선순위를 확인"
+            : row.repeat_interactions > 0
+              ? "반복 접점 이력을 바탕으로 다음 입항/체류 선박 후속 연락"
+              : "담당 항만과 운영사별 후보를 묶어 최초 접점 가능성을 확인",
+        data_sources: ["agent-intelligence", "operator_contact_history", "commercial_leads", "relationship-intelligence"]
+      });
+    })
+    .filter(item => Number(item.relationship_score || 0) > 0 || Number(item.vessel_count || 0) > 0)
+    .sort((a, b) =>
+      Number(b.relationship_score || 0) - Number(a.relationship_score || 0) ||
+      Number(b.hot_count || 0) - Number(a.hot_count || 0) ||
+      Number(b.opportunity_value || 0) - Number(a.opportunity_value || 0)
+    )
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "agent-intelligence,operator_contact_history,commercial_leads,relationship-intelligence",
+    items,
+    summary: {
+      agent_relationship_count: items.length,
+      opportunity_value_currency: "USD",
+      source_hint: "agent-intelligence + relationship-intelligence + commercial contact signals"
+    }
   });
 }
 
@@ -8926,6 +9033,7 @@ function buildIntelligenceSummaries({
     "operator-opportunities": buildOperatorOpportunitiesIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "agent-summary": buildAgentIntelligenceSummary({ records, generatedAt, dataMode }),
     "agent-intelligence": buildAgentChannelIntelligenceSummary({ records, generatedAt, dataMode }),
+    "agent-relationship": buildAgentRelationshipIntelligenceSummary({ records, generatedAt, dataMode }),
     "repeat-callers": buildRepeatCallerIntelligenceSummary({ records, generatedAt, dataMode }),
     "fleet-summary": buildFleetIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-intelligence": buildFleetIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
@@ -12080,6 +12188,7 @@ try {
     "dashboard/api/intelligence/operator-opportunities.json": intelligenceSummaries["operator-opportunities"],
     "dashboard/api/intelligence/agent-summary.json": intelligenceSummaries["agent-summary"],
     "dashboard/api/intelligence/agent-intelligence.json": intelligenceSummaries["agent-intelligence"],
+    "dashboard/api/intelligence/agent-relationship.json": intelligenceSummaries["agent-relationship"],
     "dashboard/api/intelligence/repeat-callers.json": intelligenceSummaries["repeat-callers"],
     "dashboard/api/intelligence/fleet-summary.json": intelligenceSummaries["fleet-summary"],
     "dashboard/api/intelligence/fleet-intelligence.json": intelligenceSummaries["fleet-intelligence"],
