@@ -354,6 +354,13 @@ for (const [name, payload] of Object.entries({ portRiskMapGeojson: biofoulingPay
   assert(payload?.type === "FeatureCollection", `Biofouling ${name} must be a GeoJSON FeatureCollection.`);
   assert(Array.isArray(payload.features), `Biofouling ${name} must expose features array.`);
 }
+const majorBiofoulingPortCodes = ["020", "820", "620-YEOSU", "620-GWANGYANG", "030", "031", "810", "622", "070", "080", "621", "120", "940"];
+const portRiskFeatureCodes = new Set(biofoulingPayloads.portRiskMapGeojson.features.map(feature => feature?.properties?.port_code).filter(Boolean));
+const portRiskItemCodes = new Set(rows(biofoulingPayloads.portRiskMap).map(item => item.port_code).filter(Boolean));
+for (const code of majorBiofoulingPortCodes) {
+  assert(portRiskFeatureCodes.has(code), `Biofouling port risk GeoJSON must include major port code: ${code}`);
+  assert(portRiskItemCodes.has(code), `Biofouling port risk JSON must include major port code: ${code}`);
+}
 assert(publicSource.includes("biofoulingNav") && dashboardSource.includes("biofoulingNav"), "Dashboard must expose the Biofouling navigation tab.");
 assert(publicSource.includes("/api/biofouling/vessel-risk-scores.json") && dashboardSource.includes("/api/biofouling/vessel-risk-scores.json"), "Dashboard must lazy-load Biofouling vessel risk scores.");
 assert(publicSource.includes("/api/intelligence/hull-cleaning-engine.json") && dashboardSource.includes("/api/intelligence/hull-cleaning-engine.json"), "Dashboard must surface the Hull Cleaning Intelligence Engine endpoint.");

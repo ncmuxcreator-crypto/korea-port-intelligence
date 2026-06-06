@@ -5847,6 +5847,9 @@ const BIOFOULING_PORT_ENVIRONMENT = [
   { port_code: "622", port_name: "마산/창원", lat: 35.18, lon: 128.57, sst_anomaly: 0.8, salinity_proxy: 0.86 },
   { port_code: "070", port_name: "목포", lat: 34.79, lon: 126.39, sst_anomaly: 0.7, salinity_proxy: 0.83 },
   { port_code: "080", port_name: "군산", lat: 35.98, lon: 126.63, sst_anomaly: 0.6, salinity_proxy: 0.82 },
+  { port_code: "621", port_name: "대산", lat: 37.01, lon: 126.35, sst_anomaly: 0.6, salinity_proxy: 0.82 },
+  { port_code: "120", port_name: "동해/묵호", lat: 37.49, lon: 129.13, sst_anomaly: 0.6, salinity_proxy: 0.90 },
+  { port_code: "940", port_name: "제주", lat: 33.52, lon: 126.54, sst_anomaly: 0.7, salinity_proxy: 0.88 },
   { port_code: "UNKNOWN", port_name: "미확인 항만", lat: 35.50, lon: 128.30, sst_anomaly: 0.7, salinity_proxy: 0.86 }
 ];
 const BIOFOULING_PORT_ENV_BY_CODE = new Map(BIOFOULING_PORT_ENVIRONMENT.map(port => [port.port_code, port]));
@@ -5879,7 +5882,7 @@ function normalizeSalinityProxy(value) {
 function biofoulingPortEnvironment(recordOrPort = {}) {
   const normalized = typeof recordOrPort === "string"
     ? normalizePort(recordOrPort)
-    : normalizePort(recordPortName(recordOrPort));
+    : normalizeRecordPort(recordOrPort).port || normalizePort(recordPortName(recordOrPort));
   const byCode = BIOFOULING_PORT_ENV_BY_CODE.get(normalized.port_code || "UNKNOWN");
   if (byCode) return { ...byCode, port_code: normalized.port_code || byCode.port_code, port_name: normalized.port_name || byCode.port_name };
   const name = String(normalized.port_name || recordPortName(recordOrPort) || "").toLowerCase();
@@ -6122,7 +6125,12 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
         hot_candidate_count: 0,
         risk_total: 0,
         sst_anomaly_total: 0,
-        salinity_total: 0
+        salinity_total: 0,
+        environment_seeded: false,
+        observed: false,
+        source_status: "environment_proxy",
+        proxy_sst_anomaly: null,
+        proxy_salinity_proxy: null
       });
     }
     return byPort.get(key);
@@ -6130,6 +6138,8 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
   for (const item of vesselItems) {
     const env = biofoulingPortEnvironment(item);
     const row = ensurePort(env);
+    row.observed = true;
+    row.source_status = "observed_vessels";
     row.vessel_count += 1;
     row.high_risk_count += Number(item.biofouling_risk_score || 0) >= 70 ? 1 : 0;
     row.hot_candidate_count += Number(item.hull_cleaning_candidate_score || 0) >= 70 ? 1 : 0;
@@ -6138,17 +6148,40 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
     row.salinity_total += Number(item.salinity_proxy || 0);
   }
   for (const port of (portStatistics.ports || [])) {
-    const env = biofoulingPortEnvironment(port.display_name || port.port_name || port.port_code);
+    const env = biofoulingPortEnvironment(port);
     const row = ensurePort(env);
     row.vessel_count = Math.max(row.vessel_count, Number(port.vessel_count || 0));
     row.hot_candidate_count = Math.max(row.hot_candidate_count, Number(port.hot_candidate_count || port.hot_count || 0));
+    if (row.vessel_count > 0 || row.hot_candidate_count > 0) {
+      row.observed = true;
+      row.source_status = "port_summary_current";
+    }
+  }
+  for (const env of BIOFOULING_PORT_ENVIRONMENT) {
+    if (!env.port_code || env.port_code === "UNKNOWN") continue;
+    const row = ensurePort(env);
+    const noaa = sstContext?.ports?.[env.port_code] || {};
+    row.environment_seeded = true;
+    row.proxy_sst_anomaly = firstFiniteNumber(noaa.sst_anomaly, env.sst_anomaly, 0) || 0;
+    row.proxy_salinity_proxy = normalizeSalinityProxy(firstFiniteNumber(noaa.salinity_proxy, env.salinity_proxy, 0.86));
   }
   const portItems = [...byPort.values()]
     .map(row => {
-      const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
-      const averageSst = row.vessel_count ? Math.round((row.sst_anomaly_total / row.vessel_count) * 100) / 100 : 0;
-      const averageSalinity = row.vessel_count ? Math.round((row.salinity_total / row.vessel_count) * 1000) / 1000 : 0;
-      const hotspotScore = Math.min(100, Math.round(averageRisk * 0.65 + row.high_risk_count * 7 + row.hot_candidate_count * 4));
+      const env = BIOFOULING_PORT_ENV_BY_CODE.get(row.port_code) || biofoulingPortEnvironment(row);
+      const noaa = sstContext?.ports?.[row.port_code] || {};
+      const proxySst = firstFiniteNumber(noaa.sst_anomaly, row.proxy_sst_anomaly, env.sst_anomaly, 0) || 0;
+      const proxySalinity = normalizeSalinityProxy(firstFiniteNumber(noaa.salinity_proxy, row.proxy_salinity_proxy, env.salinity_proxy, 0.86));
+      const proxyRisk = Math.round(clamp01(
+        0.5 * normalizeBiofoulingAnomaly(proxySst) +
+        0.1 * (1 - proxySalinity)
+      ) * 100);
+      const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : proxyRisk;
+      const averageSst = row.vessel_count ? Math.round((row.sst_anomaly_total / row.vessel_count) * 100) / 100 : Math.round(proxySst * 100) / 100;
+      const averageSalinity = row.vessel_count ? Math.round((row.salinity_total / row.vessel_count) * 1000) / 1000 : Math.round(proxySalinity * 1000) / 1000;
+      const hotspotScore = row.vessel_count
+        ? Math.min(100, Math.round(averageRisk * 0.65 + row.high_risk_count * 7 + row.hot_candidate_count * 4))
+        : Math.min(100, Math.round(averageRisk * 0.65));
+      const mapStatus = row.observed ? "observed" : "environment_proxy";
       return {
         port_code: row.port_code,
         port_name: row.port_name,
@@ -6164,8 +6197,17 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
         hotspot_score: hotspotScore,
         risk_level: biofoulingRiskLevel(hotspotScore),
         opportunity_score: hotspotScore,
-        reason_summary: `${row.port_name}: 평균 리스크 ${averageRisk}점, 고위험 ${row.high_risk_count}척, Hull Cleaning 후보 ${row.hot_candidate_count}척`,
-        recommended_action: hotspotScore >= 70 ? "상위 리스크 선박과 항만 대기 시간을 묶어 당일 영업 우선순위를 점검" : "항만 체류/수온 신호를 모니터링"
+        map_status: mapStatus,
+        source_status: row.source_status,
+        data_sources: row.observed ? ["NOAA SST", "AIS dwell time", "port_summary_current"] : ["NOAA SST proxy", "Korea port climate proxy"],
+        reason_summary: row.observed
+          ? `${row.port_name}: 평균 리스크 ${averageRisk}점, 고위험 ${row.high_risk_count}척, Hull Cleaning 후보 ${row.hot_candidate_count}척`
+          : `${row.port_name}: 현재 선박 관측 0척, SST/salinity proxy 기반 기본 리스크 ${averageRisk}점`,
+        recommended_action: row.observed && hotspotScore >= 70
+          ? "상위 리스크 선박과 항만 대기 시간을 묶어 당일 영업 우선순위를 점검"
+          : row.observed
+            ? "항만 체류/수온 신호를 모니터링"
+            : "해당 항만 관측 데이터가 들어오면 선박별 리스크와 함께 재평가"
       };
     })
     .sort((a, b) => Number(b.hotspot_score || 0) - Number(a.hotspot_score || 0) || Number(b.vessel_count || 0) - Number(a.vessel_count || 0))
