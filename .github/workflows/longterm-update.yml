@@ -295,6 +295,7 @@ jobs:
               intelligence/sales-priority.json \
               intelligence/risk-summary.json \
               intelligence/biofouling-risk.json \
+              intelligence/hull-cleaning-engine.json \
               intelligence/cleaning-window.json \
               intelligence/explainability.json \
               intelligence/commercial-summary.json \
@@ -329,6 +330,13 @@ jobs:
               mkdir -p dashboard/api/vessels
               cp ./api.cloudflare-upload-full/vessels/index.json dashboard/api/vessels/ 2>/dev/null || true
               cp ./api.cloudflare-upload-full/vessels/page-*.json dashboard/api/vessels/ 2>/dev/null || true
+            fi
+            if [ -d ./api.cloudflare-upload-full/ports ]; then
+              while IFS= read -r src; do
+                rel="${src#./api.cloudflare-upload-full/}"
+                mkdir -p "dashboard/api/$(dirname "$rel")"
+                cp "$src" "dashboard/api/$rel"
+              done < <(find ./api.cloudflare-upload-full/ports -path '*/hull-cleaning.json' -type f)
             fi
             find dashboard/api -type f | sort
             trap 'rm -rf dashboard/api; mv ./api.cloudflare-upload-full dashboard/api' EXIT

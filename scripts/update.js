@@ -4342,6 +4342,21 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "waiting_hours",
   "risk_level",
   "biofouling_risk_score",
+  "hull_cleaning_opportunity_score",
+  "departure_prediction_eta",
+  "departure_prediction_confidence",
+  "departure_prediction_source",
+  "port_congestion_index",
+  "hot_prospect_rank",
+  "loitering_detected",
+  "loitering_hours",
+  "loitering_reason",
+  "hourly_ais_bucket",
+  "hourly_ais_duplicate_count",
+  "sst_anomaly_z_score",
+  "pilot_event_suppressed",
+  "pilot_suppression_reason",
+  "alert_dedupe_window_hours",
   "hull_cleaning_candidate_score",
   "hotspot_score",
   "sst_anomaly",
@@ -6219,6 +6234,474 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
       "dashboard/api/biofouling/port-risk-map.geojson": featureCollection(portFeatures, { generated_at: generatedAt, model_version: BIOFOULING_MODEL_VERSION, layer: "port_biofouling_risk_map" }),
       "dashboard/api/biofouling/hotspots.geojson": featureCollection(hotspotFeatures, { generated_at: generatedAt, model_version: BIOFOULING_MODEL_VERSION, layer: "biofouling_hotspots" })
     }
+  };
+}
+
+const HULL_CLEANING_ENGINE_MODEL_VERSION = "hull_cleaning_engine_v1";
+const HULL_CLEANING_ALERT_DEDUPE_HOURS = 72;
+
+function isoOrNull(value) {
+  const date = parseScheduleTime(value);
+  return date ? date.toISOString() : null;
+}
+
+function addHoursIso(value, hours) {
+  const date = parseScheduleTime(value);
+  const number = Number(hours);
+  if (!date || !Number.isFinite(number)) return null;
+  return new Date(date.getTime() + number * 36e5).toISOString();
+}
+
+function hullCleaningIdentityKey(record = {}) {
+  const imo = firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo);
+  if (imo && imo !== "-") return `imo:${String(imo).toUpperCase()}`;
+  const mmsi = firstNonEmpty(record.mmsi, record.vessel_display?.mmsi);
+  if (mmsi && mmsi !== "-") return `mmsi:${String(mmsi).toUpperCase()}`;
+  const name = firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name, "unknown");
+  const port = recordPortName(record);
+  return `name:${String(name).toUpperCase().replace(/\s+/g, " ").trim()}|port:${String(port).toUpperCase()}`;
+}
+
+function hullCleaningObservationTime(record = {}, generatedAt = new Date().toISOString()) {
+  return firstNonEmpty(
+    record.ais_timestamp,
+    record.position_timestamp,
+    record.last_position_at,
+    record.last_seen_at,
+    record.updated_at,
+    record.collected_at,
+    record.ata,
+    record.atb,
+    record.eta,
+    generatedAt
+  ) || generatedAt;
+}
+
+function hullCleaningHourBucket(record = {}, generatedAt = new Date().toISOString()) {
+  const date = parseScheduleTime(hullCleaningObservationTime(record, generatedAt)) || new Date(generatedAt);
+  if (Number.isNaN(date.getTime())) return String(generatedAt).slice(0, 13);
+  date.setMinutes(0, 0, 0);
+  return date.toISOString();
+}
+
+function hullCleaningAisObservations(records = [], generatedAt = new Date().toISOString()) {
+  const observations = [];
+  for (const record of records) {
+    const tracks = [
+      record.ais_tracks,
+      record.ais_track,
+      record.track_points,
+      record.position_history
+    ].find(Array.isArray);
+    if (Array.isArray(tracks) && tracks.length) {
+      for (const point of tracks) {
+        if (!point || typeof point !== "object") continue;
+        observations.push({
+          ...record,
+          ...point,
+          ais_timestamp: firstNonEmpty(point.timestamp, point.ts, point.collected_at, point.position_time, record.ais_timestamp, record.last_seen_at, generatedAt),
+          ais_track_source: true
+        });
+      }
+    } else {
+      observations.push(record);
+    }
+  }
+  return observations;
+}
+
+function buildHourlyAisDeduplication(records = [], generatedAt = new Date().toISOString()) {
+  const observations = hullCleaningAisObservations(records, generatedAt);
+  const buckets = new Map();
+  const duplicateByIdentity = new Map();
+  for (const observation of observations) {
+    const identity = hullCleaningIdentityKey(observation);
+    const hour = hullCleaningHourBucket(observation, generatedAt);
+    const key = `${identity}|${hour}`;
+    const current = buckets.get(key);
+    const nextTime = parseScheduleTime(hullCleaningObservationTime(observation, generatedAt))?.getTime() || 0;
+    const nextScore = salesPriorityScore(observation) + recordRiskScore(observation);
+    if (!current) {
+      buckets.set(key, { record: observation, identity, hour, score: nextScore, time: nextTime, count: 1 });
+    } else {
+      current.count += 1;
+      duplicateByIdentity.set(identity, (duplicateByIdentity.get(identity) || 0) + 1);
+      if (nextScore > current.score || (nextScore === current.score && nextTime > current.time)) {
+        current.record = observation;
+        current.score = nextScore;
+        current.time = nextTime;
+      }
+    }
+  }
+  const dedupedRecords = [...buckets.values()].map(bucket => ({
+    ...bucket.record,
+    hourly_ais_bucket: bucket.hour,
+    hourly_ais_duplicate_count: Math.max(0, bucket.count - 1)
+  }));
+  return {
+    raw_rows: observations.length,
+    deduped_rows: dedupedRecords.length,
+    duplicate_rows_removed: Math.max(0, observations.length - dedupedRecords.length),
+    bucket_count: buckets.size,
+    duplicate_by_identity: Object.fromEntries(duplicateByIdentity.entries()),
+    dedupedRecords
+  };
+}
+
+function hullCleaningSpeedKnots(record = {}) {
+  return firstFiniteNumber(record.speed_knots, record.sog, record.speed, record.ais_speed, record.avg_speed, record.average_speed);
+}
+
+function detectHullCleaningLoitering(record = {}) {
+  const speed = hullCleaningSpeedKnots(record);
+  const dwellHours = firstFiniteNumber(
+    record.low_speed_hours,
+    record.loitering_hours,
+    record.ais_dwell_hours,
+    record.dwell_hours,
+    record.anchorage_hours,
+    record.waiting_hours,
+    record.current_call_stay_hours,
+    record.stay_hours,
+    0
+  ) || 0;
+  const statusText = [
+    record.status_bucket,
+    record.status,
+    record.operational_status,
+    record.movement_status,
+    record.port_call_status,
+    record.anchorage_name,
+    record.anchorage_area,
+    record.location_area
+  ].filter(Boolean).join(" ");
+  const lowSpeed = speed !== null && speed < 2;
+  const repeatedSameArea = Number(record.same_area_sightings || record.observation_count || record.sighting_count || record.snapshot_count || 0) >= 2 && dwellHours >= 6;
+  const anchorageSignal = hasAnchorageWaitingSignal(record) || /loiter|idle|drifting|anchor|anchorage|waiting|묘박|정박|대기/i.test(statusText);
+  const detected = Boolean(
+    (lowSpeed && dwellHours >= 6) ||
+    Number(record.low_speed_hours || 0) >= 6 ||
+    (anchorageSignal && dwellHours >= 6) ||
+    repeatedSameArea
+  );
+  const hours = detected
+    ? Math.round(Math.max(Number(record.low_speed_hours || 0), Number(record.loitering_hours || 0), Number(dwellHours || 0)) * 10) / 10
+    : 0;
+  const reason = lowSpeed && dwellHours >= 6
+    ? "<2kn 저속 상태가 6시간 이상 지속된 신호"
+    : Number(record.low_speed_hours || 0) >= 6
+      ? "AIS 저속 누적 시간이 6시간 이상"
+      : anchorageSignal && dwellHours >= 6
+        ? "묘박/대기 상태와 장시간 체류 신호"
+        : repeatedSameArea
+          ? "동일 항만/해역 반복 관측 신호"
+          : "loitering 신호 없음";
+  return {
+    loitering_detected: detected,
+    loitering_hours: hours,
+    loitering_reason: reason
+  };
+}
+
+function buildSstZScoreContext(records = [], sstContext = {}) {
+  const values = records.map(record => biofoulingEnvironmentalInput(record, sstContext).sst_anomaly).filter(value => Number.isFinite(Number(value)));
+  const mean = values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : 0;
+  const variance = values.length ? values.reduce((sum, value) => sum + (Number(value) - mean) ** 2, 0) / values.length : 0;
+  const stddev = Math.sqrt(variance) || 0;
+  const byIdentity = new Map();
+  for (const record of records) {
+    const env = biofoulingEnvironmentalInput(record, sstContext);
+    const z = stddev ? (Number(env.sst_anomaly || 0) - mean) / stddev : 0;
+    byIdentity.set(hullCleaningIdentityKey(record), Math.round(z * 100) / 100);
+  }
+  return {
+    mean: Math.round(mean * 100) / 100,
+    stddev: Math.round(stddev * 100) / 100,
+    byIdentity
+  };
+}
+
+function deriveHullDeparturePrediction(record = {}, generatedAt = new Date().toISOString()) {
+  const atd = isoOrNull(record.atd || record.departure_time);
+  if (atd) return { departure_prediction_eta: atd, departure_prediction_confidence: 98, departure_prediction_source: "ATD_CONFIRMED" };
+  const pilotDirection = String(record.pilot_direction || record.movement_type || "").toLowerCase();
+  const pilotTime = firstNonEmpty(record.pilot_time, record.movement_time, record.pilot_event_time);
+  if (pilotDirection === "outbound" && pilotTime) {
+    return { departure_prediction_eta: isoOrNull(pilotTime), departure_prediction_confidence: 86, departure_prediction_source: "PORT_MIS_OUTBOUND_PILOT" };
+  }
+  const etd = firstNonEmpty(record.etd, record.etd_candidate, record.predicted_departure_time);
+  if (etd) return { departure_prediction_eta: isoOrNull(etd), departure_prediction_confidence: record.pilot_schedule_matched ? 82 : 72, departure_prediction_source: "ETD" };
+  const metrics = deriveScheduleMetrics(record);
+  if (Number(metrics.work_window_hours || 0) > 0) {
+    return { departure_prediction_eta: addHoursIso(generatedAt, metrics.work_window_hours), departure_prediction_confidence: 58, departure_prediction_source: "WORK_WINDOW" };
+  }
+  const anchorOrStay = firstFiniteNumber(record.anchorage_hours, record.waiting_hours, record.stay_hours, record.current_call_stay_hours, 0) || 0;
+  if (anchorOrStay >= 72 && !isDepartedRecord(record)) {
+    return { departure_prediction_eta: addHoursIso(generatedAt, 24), departure_prediction_confidence: 36, departure_prediction_source: "LONG_STAY_HEURISTIC" };
+  }
+  return { departure_prediction_eta: null, departure_prediction_confidence: 0, departure_prediction_source: "UNKNOWN" };
+}
+
+function derivePilotEventSuppression(record = {}, departure = {}) {
+  const pilotDirection = String(record.pilot_direction || record.movement_type || "").toLowerCase();
+  const departureTime = parseScheduleTime(departure.departure_prediction_eta);
+  const hoursToDeparture = departureTime ? (departureTime.getTime() - Date.now()) / 36e5 : null;
+  if (isDepartedRecord(record) || firstNonEmpty(record.atd, record.departure_time)) {
+    return { pilot_event_suppressed: true, pilot_suppression_reason: "ATD/출항 완료 신호", score_penalty: 45 };
+  }
+  if (record.outbound_pilot_scheduled || pilotDirection === "outbound") {
+    const penalty = hoursToDeparture !== null && hoursToDeparture <= 12 ? 35 : hoursToDeparture !== null && hoursToDeparture <= 24 ? 25 : 18;
+    return { pilot_event_suppressed: true, pilot_suppression_reason: "출항 도선 일정으로 작업 가능 창 축소", score_penalty: penalty };
+  }
+  return { pilot_event_suppressed: false, pilot_suppression_reason: "", score_penalty: 0 };
+}
+
+function hullCleaningVesselProfileScore(record = {}) {
+  const age = firstFiniteNumber(record.vessel_age, record.age);
+  const builtYear = firstFiniteNumber(record.build_year, record.year_built, record.built_year);
+  const currentYear = new Date().getUTCFullYear();
+  const resolvedAge = Number.isFinite(age) ? age : Number.isFinite(builtYear) ? currentYear - builtYear : 0;
+  const type = String([record.vessel_type, record.vessel_type_group, record.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
+  let score = 0;
+  if (resolvedAge >= 15) score += 35;
+  else if (resolvedAge >= 8) score += 22;
+  else if (resolvedAge >= 3) score += 10;
+  if (/bulk|bulker|tanker|vlcc|lng|lpg|container|pctc|cruise|cargo|carrier/.test(type)) score += 45;
+  else if (/general|chemical|product/.test(type)) score += 25;
+  return boundedScore(score);
+}
+
+function deriveHullCleaningOpportunityScore(record = {}, context = {}) {
+  const metrics = deriveScheduleMetrics(record);
+  const baseCleaning = firstFiniteNumber(
+    record.predicted_cleaning_opportunity_score,
+    record.hull_cleaning_candidate_score,
+    record.cleaning_candidate_score,
+    record.cleaning_window_score,
+    0
+  ) || 0;
+  const opportunity = salesPriorityScore(record);
+  const bio = firstFiniteNumber(context.biofoulingRiskScore, record.biofouling_risk_score, record.biofouling_exposure_score, record.biofouling_score, recordRiskScore(record), 0) || 0;
+  const loiteringScore = context.loitering?.loitering_detected ? Math.min(100, Number(context.loitering.loitering_hours || 0) * 8) : 0;
+  const congestion = firstFiniteNumber(context.portCongestionIndex, record.port_congestion_score, record.congestion_score, deriveCongestionScore(record, metrics), 0) || 0;
+  const vesselProfile = hullCleaningVesselProfileScore(record);
+  const sstBoost = Math.max(0, Number(context.sstAnomalyZScore || 0)) * 4;
+  const penalty = Number(context.pilotSuppression?.score_penalty || 0);
+  return boundedScore(
+    baseCleaning * 0.32 +
+    opportunity * 0.22 +
+    bio * 0.20 +
+    loiteringScore * 0.10 +
+    congestion * 0.08 +
+    vesselProfile * 0.05 +
+    sstBoost -
+    penalty
+  );
+}
+
+function hullCleaningReason(record = {}, item = {}) {
+  const reasons = [];
+  if (item.loitering_detected) reasons.push(`loitering ${item.loitering_hours}h`);
+  if (Number(item.biofouling_risk_score || 0) >= 60) reasons.push(`biofouling ${item.biofouling_risk_score}점`);
+  if (Number(item.port_congestion_index || 0) >= 50) reasons.push(`항만 혼잡 ${item.port_congestion_index}점`);
+  if (Number(item.sst_anomaly_z_score || 0) > 0.5) reasons.push(`SST z-score ${item.sst_anomaly_z_score}`);
+  if (item.departure_prediction_eta) reasons.push(`출항 예측 ${String(item.departure_prediction_eta).slice(0, 16)}`);
+  if (item.pilot_event_suppressed) reasons.push("출항 도선 일정으로 점수 억제");
+  if (!reasons.length) reasons.push(compactReasonSummary(record));
+  return reasons.slice(0, 5).join(" · ");
+}
+
+function dedupeHullCleaningAlerts72h(items = [], generatedAt = new Date().toISOString()) {
+  const windowMs = HULL_CLEANING_ALERT_DEDUPE_HOURS * 36e5;
+  const map = new Map();
+  for (const item of items) {
+    const eventTime = parseScheduleTime(item.last_seen_at || item.departure_prediction_eta || generatedAt)?.getTime() || Date.parse(generatedAt) || Date.now();
+    const bucket = Math.floor(eventTime / windowMs);
+    const key = `${hullCleaningIdentityKey(item)}|HULL_CLEANING_OPPORTUNITY|${bucket}`;
+    const current = map.get(key);
+    if (!current || Number(item.hull_cleaning_opportunity_score || 0) > Number(current.hull_cleaning_opportunity_score || 0)) {
+      map.set(key, item);
+    }
+  }
+  return [...map.values()];
+}
+
+function buildHullCleaningPortPayloads(items = [], { generatedAt, dataMode } = {}) {
+  const map = new Map();
+  for (const item of items) {
+    const normalized = normalizePort(item.port || item.port_name || item.current_port || item.vessel_display?.current_port || "UNKNOWN");
+    const key = normalized.port_code || "UNKNOWN";
+    const row = map.get(key) || {
+      port_code: key,
+      port_name: normalized.port_name || "미확인 항만",
+      display_name: normalized.port_name || "미확인 항만",
+      vessel_count: 0,
+      hot_prospect_count: 0,
+      loitering_count: 0,
+      pilot_suppressed_count: 0,
+      opportunity_total: 0,
+      bio_total: 0,
+      congestion_total: 0,
+      items: []
+    };
+    row.vessel_count += 1;
+    row.hot_prospect_count += Number(item.hull_cleaning_opportunity_score || 0) >= 70 ? 1 : 0;
+    row.loitering_count += item.loitering_detected ? 1 : 0;
+    row.pilot_suppressed_count += item.pilot_event_suppressed ? 1 : 0;
+    row.opportunity_total += Number(item.hull_cleaning_opportunity_score || 0);
+    row.bio_total += Number(item.biofouling_risk_score || 0);
+    row.congestion_total += Number(item.port_congestion_index || 0);
+    row.items.push(item);
+    map.set(key, row);
+  }
+  const summaries = [...map.values()].map(row => ({
+    port_code: row.port_code,
+    port_name: row.port_name,
+    display_name: row.display_name,
+    vessel_count: row.vessel_count,
+    hot_prospect_count: row.hot_prospect_count,
+    loitering_count: row.loitering_count,
+    pilot_suppressed_count: row.pilot_suppressed_count,
+    average_hull_cleaning_opportunity_score: row.vessel_count ? Math.round(row.opportunity_total / row.vessel_count) : 0,
+    average_biofouling_risk_score: row.vessel_count ? Math.round(row.bio_total / row.vessel_count) : 0,
+    port_congestion_index: row.vessel_count ? Math.round(row.congestion_total / row.vessel_count) : 0,
+    reason_summary: `${row.display_name}: Hull Cleaning 후보 ${row.hot_prospect_count}척, loitering ${row.loitering_count}척`,
+    recommended_action: row.hot_prospect_count ? "상위 후보 선박의 출항 전 작업 가능 창을 확인" : "항만 체류/혼잡 변화를 모니터링"
+  })).sort((a, b) => b.hot_prospect_count - a.hot_prospect_count || b.average_hull_cleaning_opportunity_score - a.average_hull_cleaning_opportunity_score);
+  const payloads = {};
+  for (const row of map.values()) {
+    payloads[row.port_code] = publicItemsEnvelope({
+      generatedAt,
+      dataMode,
+      sourceTable: "AIS_vessel_tracks,Port-MIS_pilot_events,VTS_operations,NOAA_SST,opportunity_master",
+      items: row.items.sort((a, b) => Number(b.hull_cleaning_opportunity_score || 0) - Number(a.hull_cleaning_opportunity_score || 0)).slice(0, 20),
+      extra: {
+        summary: summaries.find(summary => summary.port_code === row.port_code) || null,
+        status: row.items.length ? "active" : "empty"
+      }
+    });
+  }
+  return { summaries, payloads };
+}
+
+function buildHullCleaningIntelligenceEngine({ records = [], portStatistics = {}, sstContext = {}, generatedAt, dataMode } = {}) {
+  const aisDedup = buildHourlyAisDeduplication(records, generatedAt);
+  const sourceRecords = dedupeCandidateRows(aisDedup.dedupedRecords)
+    .filter(record => !isSyntheticSample(record) && hasUsefulVesselIdentity(record));
+  const zScores = buildSstZScoreContext(sourceRecords, sstContext);
+  const items = sourceRecords
+    .map((record, index) => {
+      const env = biofoulingEnvironmentalInput(record, sstContext);
+      const loitering = detectHullCleaningLoitering(record);
+      const departure = deriveHullDeparturePrediction(record, generatedAt);
+      const pilotSuppression = derivePilotEventSuppression(record, departure);
+      const metrics = deriveScheduleMetrics(record);
+      const portCongestionIndex = boundedScore(firstFiniteNumber(record.port_congestion_index, record.port_congestion_score, record.congestion_score, deriveCongestionScore(record, metrics), 0) || 0);
+      const biofoulingRiskScore = Math.max(env.biofouling_risk_score, recordRiskScore(record));
+      const sstAnomalyZScore = zScores.byIdentity.get(hullCleaningIdentityKey(record)) || 0;
+      const hullCleaningOpportunityScore = deriveHullCleaningOpportunityScore(record, {
+        biofoulingRiskScore,
+        loitering,
+        portCongestionIndex,
+        sstAnomalyZScore,
+        pilotSuppression
+      });
+      return compactVesselInsight(record, index, {
+        hull_cleaning_opportunity_score: hullCleaningOpportunityScore,
+        opportunity_score: hullCleaningOpportunityScore,
+        biofouling_risk_score: boundedScore(biofoulingRiskScore),
+        risk_score: boundedScore(biofoulingRiskScore),
+        departure_prediction_eta: departure.departure_prediction_eta,
+        departure_prediction_confidence: departure.departure_prediction_confidence,
+        departure_prediction_source: departure.departure_prediction_source,
+        port_congestion_index: portCongestionIndex,
+        sst_anomaly: env.sst_anomaly,
+        sst_anomaly_z_score: sstAnomalyZScore,
+        ais_dwell_hours: env.dwell_hours,
+        loitering_detected: loitering.loitering_detected,
+        loitering_hours: loitering.loitering_hours,
+        loitering_reason: loitering.loitering_reason,
+        hourly_ais_bucket: record.hourly_ais_bucket || hullCleaningHourBucket(record, generatedAt),
+        hourly_ais_duplicate_count: Number(record.hourly_ais_duplicate_count || 0),
+        pilot_event_suppressed: pilotSuppression.pilot_event_suppressed,
+        pilot_suppression_reason: pilotSuppression.pilot_suppression_reason,
+        alert_dedupe_window_hours: HULL_CLEANING_ALERT_DEDUPE_HOURS,
+        priority_label: salesPriorityBand(hullCleaningOpportunityScore),
+        model_version: HULL_CLEANING_ENGINE_MODEL_VERSION,
+        formula: "Existing commercial opportunity + biofouling + loitering + congestion + vessel profile - outbound pilot suppression",
+        top_factors: [
+          `Hull ${hullCleaningOpportunityScore}`,
+          `Biofouling ${boundedScore(biofoulingRiskScore)}`,
+          `Congestion ${portCongestionIndex}`,
+          loitering.loitering_detected ? `Loitering ${loitering.loitering_hours}h` : null,
+          sstAnomalyZScore ? `SST z ${sstAnomalyZScore}` : null,
+          pilotSuppression.pilot_event_suppressed ? "Pilot suppressed" : null
+        ].filter(Boolean),
+        reason_summary: hullCleaningReason(record, {
+          hull_cleaning_opportunity_score: hullCleaningOpportunityScore,
+          biofouling_risk_score: boundedScore(biofoulingRiskScore),
+          port_congestion_index: portCongestionIndex,
+          sst_anomaly_z_score: sstAnomalyZScore,
+          departure_prediction_eta: departure.departure_prediction_eta,
+          loitering_detected: loitering.loitering_detected,
+          loitering_hours: loitering.loitering_hours,
+          pilot_event_suppressed: pilotSuppression.pilot_event_suppressed
+        }),
+        recommended_action: hullCleaningOpportunityScore >= 75
+          ? "출항 전 작업 가능 시간과 에이전트/운영사 연락 경로를 즉시 확인"
+          : hullCleaningOpportunityScore >= 55
+            ? "체류·도선 일정 변화를 보며 선저 상태 확인 메시지를 준비"
+            : "다음 AIS/입항 업데이트에서 기회 신호를 재확인",
+        data_sources: [...new Set([...displaySources(record), "AIS vessel tracks", "ETA/ETB/ATB/ATD", "Port-MIS pilot events", "VTS operations", "NOAA SST"])],
+        last_seen_at: hullCleaningObservationTime(record, generatedAt)
+      });
+    })
+    .filter(item => Number(item.hull_cleaning_opportunity_score || 0) >= 35 || Number(item.biofouling_risk_score || 0) >= 40 || item.loitering_detected)
+    .sort((a, b) =>
+      Number(b.hull_cleaning_opportunity_score || 0) - Number(a.hull_cleaning_opportunity_score || 0) ||
+      Number(b.biofouling_risk_score || 0) - Number(a.biofouling_risk_score || 0) ||
+      Number(b.port_congestion_index || 0) - Number(a.port_congestion_index || 0)
+    );
+  const dedupedAlerts = dedupeHullCleaningAlerts72h(items, generatedAt)
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1, hot_prospect_rank: index + 1 }));
+  const portEngine = buildHullCleaningPortPayloads(dedupedAlerts, { generatedAt, dataMode });
+  const summary = {
+    model_version: HULL_CLEANING_ENGINE_MODEL_VERSION,
+    hourly_ais_deduplication: {
+      raw_rows: aisDedup.raw_rows,
+      deduped_rows: aisDedup.deduped_rows,
+      duplicate_rows_removed: aisDedup.duplicate_rows_removed,
+      bucket_count: aisDedup.bucket_count
+    },
+    loitering_vessels_count: dedupedAlerts.filter(item => item.loitering_detected).length,
+    pilot_suppressed_count: dedupedAlerts.filter(item => item.pilot_event_suppressed).length,
+    sst_anomaly_z_score: {
+      mean: zScores.mean,
+      stddev: zScores.stddev
+    },
+    alert_dedupe_window_hours: HULL_CLEANING_ALERT_DEDUPE_HOURS,
+    average_hull_cleaning_opportunity_score: dedupedAlerts.length ? Math.round(dedupedAlerts.reduce((sum, item) => sum + Number(item.hull_cleaning_opportunity_score || 0), 0) / dedupedAlerts.length) : 0,
+    average_biofouling_risk_score: dedupedAlerts.length ? Math.round(dedupedAlerts.reduce((sum, item) => sum + Number(item.biofouling_risk_score || 0), 0) / dedupedAlerts.length) : 0,
+    average_port_congestion_index: dedupedAlerts.length ? Math.round(dedupedAlerts.reduce((sum, item) => sum + Number(item.port_congestion_index || 0), 0) / dedupedAlerts.length) : 0,
+    port_count: portEngine.summaries.length,
+    port_summary: portEngine.summaries.slice(0, 20)
+  };
+  return {
+    summary,
+    portPayloads: portEngine.payloads,
+    payload: publicItemsEnvelope({
+      generatedAt,
+      dataMode,
+      sourceTable: "AIS_vessel_tracks,ETA_ETB_ATB_ATD,Port-MIS_pilot_events,VTS_operations,NOAA_SST,vessel_master,opportunity_master",
+      items: dedupedAlerts,
+      extra: {
+        summary,
+        by_port: portEngine.summaries.slice(0, 20),
+        status: dedupedAlerts.length ? "active" : "empty",
+        reason: dedupedAlerts.length ? null : "Hull Cleaning 엔진 조건을 통과한 후보가 없습니다."
+      }
+    })
   };
 }
 
@@ -10904,8 +11387,18 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  const hullCleaningEngine = buildHullCleaningIntelligenceEngine({
+    records: allCollectedVessels,
+    portStatistics,
+    sstContext: biofoulingSstContext,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
+  });
+  intelligenceSummaries["hull-cleaning-engine"] = hullCleaningEngine.payload;
   report.biofouling_intelligence = biofoulingModule.summary;
   dashboardSummary.biofouling_intelligence = biofoulingModule.summary;
+  report.hull_cleaning_intelligence = hullCleaningEngine.summary;
+  dashboardSummary.hull_cleaning_intelligence = hullCleaningEngine.summary;
   const watchlistPayload = buildWatchlistPayload({
     records: allCollectedVessels,
     portStatistics,
@@ -11084,6 +11577,7 @@ try {
     "dashboard/api/congestion-watchlist.json": congestionWatchlistPayload,
     "dashboard/api/intelligence/risk-summary.json": intelligenceSummaries["risk-summary"],
     "dashboard/api/intelligence/biofouling-risk.json": intelligenceSummaries["biofouling-risk"],
+    "dashboard/api/intelligence/hull-cleaning-engine.json": intelligenceSummaries["hull-cleaning-engine"],
     "dashboard/api/intelligence/explainability.json": intelligenceSummaries.explainability,
     "dashboard/api/intelligence/prediction-summary.json": intelligenceSummaries["prediction-summary"],
     "dashboard/api/intelligence/operator-summary.json": intelligenceSummaries["operator-summary"],
@@ -11282,6 +11776,14 @@ try {
     fs.writeFileSync(`${dir}/berths.json`, JSON.stringify(port.berths, null, 2));
     fs.writeFileSync(`${dir}/congestion.json`, JSON.stringify(portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || null, null, 2));
     fs.writeFileSync(`${dir}/anchorage.json`, JSON.stringify(buildPortAnchorage(allCollectedVessels, port.port_code), null, 2));
+    fs.writeFileSync(`${dir}/hull-cleaning.json`, JSON.stringify(hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
+      generatedAt: completedAt,
+      dataMode: report.data_mode,
+      report,
+      sourceTable: "AIS_vessel_tracks,Port-MIS_pilot_events,VTS_operations,NOAA_SST,opportunity_master",
+      items: [],
+      extra: { status: "empty", reason: "해당 항만 Hull Cleaning 후보가 없습니다." }
+    }), null, 2));
   }
   writeApiJson("dashboard/api/commercial-command-center.json", commercialCommandCenter, report);
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
