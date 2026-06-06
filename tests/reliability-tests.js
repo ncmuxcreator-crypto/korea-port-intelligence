@@ -19,6 +19,7 @@ const REQUIRED_FILES = [
   "dashboard/api/vessels/page-1.json",
   "dashboard/api/intelligence/risk-summary.json",
   "dashboard/api/intelligence/biofouling-risk.json",
+  "dashboard/api/intelligence/hull-cleaning-engine.json",
   "dashboard/api/biofouling/port-risk-map.json",
   "dashboard/api/biofouling/vessel-risk-scores.json",
   "dashboard/api/biofouling/hotspots.json",
@@ -153,6 +154,7 @@ const updateSource = readText("scripts/update.js");
 const intelligencePayloads = {
   risk: readJson("dashboard/api/intelligence/risk-summary.json"),
   biofoulingRisk: readJson("dashboard/api/intelligence/biofouling-risk.json"),
+  hullCleaningEngine: readJson("dashboard/api/intelligence/hull-cleaning-engine.json"),
   explainability: readJson("dashboard/api/intelligence/explainability.json"),
   prediction: readJson("dashboard/api/intelligence/prediction-summary.json"),
   operator: readJson("dashboard/api/intelligence/operator-summary.json"),
@@ -297,6 +299,7 @@ for (const marker of [
 }
 for (const marker of [
   "/api/intelligence/biofouling-risk.json",
+  "/api/intelligence/hull-cleaning-engine.json",
   "/api/intelligence/cleaning-window.json",
   "/api/intelligence/operator-opportunities.json",
   "/api/intelligence/fleet-memory.json",
@@ -353,6 +356,14 @@ for (const [name, payload] of Object.entries({ portRiskMapGeojson: biofoulingPay
 }
 assert(publicSource.includes("biofoulingNav") && dashboardSource.includes("biofoulingNav"), "Dashboard must expose the Biofouling navigation tab.");
 assert(publicSource.includes("/api/biofouling/vessel-risk-scores.json") && dashboardSource.includes("/api/biofouling/vessel-risk-scores.json"), "Dashboard must lazy-load Biofouling vessel risk scores.");
+assert(publicSource.includes("/api/intelligence/hull-cleaning-engine.json") && dashboardSource.includes("/api/intelligence/hull-cleaning-engine.json"), "Dashboard must surface the Hull Cleaning Intelligence Engine endpoint.");
+for (const item of rows(intelligencePayloads.hullCleaningEngine).slice(0, 5)) {
+  for (const field of ["vessel_display", "hull_cleaning_opportunity_score", "biofouling_risk_score", "departure_prediction_eta", "port_congestion_index", "hot_prospect_rank", "loitering_detected", "pilot_event_suppressed", "alert_dedupe_window_hours"]) {
+    assert(field in item, `Hull Cleaning Engine item missing required field: ${field}`);
+  }
+  assert(Number(item.hull_cleaning_opportunity_score || 0) >= 0 && Number(item.hull_cleaning_opportunity_score || 0) <= 100, "Hull Cleaning opportunity score must be 0-100.");
+  assert(Number(item.biofouling_risk_score || 0) >= 0 && Number(item.biofouling_risk_score || 0) <= 100, "Hull Cleaning biofouling risk score must be 0-100.");
+}
 for (const item of rows(intelligencePayloads.explainability)) {
   assert(String(item.reason_summary || "").length > 0, "Explainability item must include reason_summary.");
 }
