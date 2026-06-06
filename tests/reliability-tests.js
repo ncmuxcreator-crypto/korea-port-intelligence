@@ -327,7 +327,8 @@ for (const marker of [
   'pathname.endsWith("/reports/executive-weekly.json")',
   '/^\\/api\\/vessels\\/(?:index|page-\\d+)\\.json$/.test(pathname)',
   '/^\\/api\\/biofouling\\/[^/]+\\.(?:json|geojson)$/.test(pathname)',
-  '/^\\/api\\/intelligence\\/[^/]+\\.json$/.test(pathname)'
+  '/^\\/api\\/intelligence\\/[^/]+\\.json$/.test(pathname)',
+  '"customer-memory": "commercial_leads,operator_contact_history'
 ]) {
   assert(workerSource.includes(marker), `Worker must serve latest static snapshot before DB summary fallback: ${marker}`);
 }

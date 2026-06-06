@@ -3758,6 +3758,22 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "superintendent_probability",
   "contact_confidence",
   "relationship_score",
+  "customer_type",
+  "customer_name",
+  "contact_attempts",
+  "quote_history_count",
+  "quote_value_record_count",
+  "quote_result_count",
+  "won_projects",
+  "lost_projects",
+  "operation_completed_count",
+  "customer_feedback_count",
+  "fleet_history",
+  "customer_memory_score",
+  "sensitive_details_exposed",
+  "latest_contact_at",
+  "latest_quote_at",
+  "latest_feedback_at",
   "vessels_seen",
   "previous_targets",
   "previous_hot_candidates",
@@ -3791,6 +3807,7 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "risk_history",
   "opportunity_history",
   "top_ports",
+  "top_vessels",
   "recommended_sales_angle",
   "estimated_revenue_low",
   "estimated_revenue_high",
@@ -6237,6 +6254,255 @@ function buildFleetSummary(records = [], source = {}, generatedAt = new Date().t
   });
 }
 
+function workerCustomerMemoryIdentityKey(record = {}) {
+  return firstNonEmpty(
+    record.imo,
+    record.imo_no,
+    record.mmsi,
+    record.master_vessel_id,
+    record.vessel_id,
+    record.hybrid_entity_key,
+    `${String(firstNonEmpty(record.normalized_vessel_name, record.vessel_name, record.name, record.ship_name)).toUpperCase()}|${String(firstNonEmpty(record.operator_name, record.operator, record.company, record.port_name, record.port)).toUpperCase()}`
+  );
+}
+
+function workerCustomerName(record = {}) {
+  const operator = firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company);
+  const agent = firstNonEmpty(record.local_agent, record.agent_name, record.agent, record.satmntEntrpsNm, record.entrpsCdNm);
+  if (operator && operator !== "미확인 운영사" && operator !== "-") {
+    return { customer_type: "OPERATOR", customer_name: operator, operator_name: operator, agent_name: agent || null };
+  }
+  if (agent) return { customer_type: "AGENT", customer_name: agent, operator_name: null, agent_name: agent };
+  return { customer_type: "UNKNOWN", customer_name: "미확인 고객", operator_name: null, agent_name: null };
+}
+
+function workerContactHistoryCounts(record = {}) {
+  return {
+    previous_contacts: firstFiniteNumber(record.previous_contacts, record.contact_count, record.outreach_count, record.followup_count, record.sales_action_count, 0) || 0,
+    previous_quotes: firstFiniteNumber(record.previous_quotes, record.quote_count, record.quoted_count, 0) || 0,
+    previous_wins: firstFiniteNumber(record.previous_wins, record.win_count, record.won_count, 0) || 0,
+    last_contacted_at: firstNonEmpty(record.last_contacted_at, record.last_contact_at, record.follow_up_due, record.contacted_at) || null
+  };
+}
+
+function workerPrivateActivitySignal(record = {}, type = "") {
+  const present = value => value !== null && value !== undefined && String(value).trim() !== "" && !["false", "0", "no", "none", "null", "undefined"].includes(String(value).trim().toLowerCase());
+  const leadStatus = String(firstNonEmpty(record.lead_status, record.opportunity_state, record.current_stage, "")).toLowerCase();
+  const quoteStatus = String(record.quote_status || "").toLowerCase();
+  if (type === "contact_attempt") return present(record.contact_attempt) || present(record.contact_attempt_at) || present(record.contacted_at) || present(record.last_contacted_at);
+  if (type === "quote_sent") return present(record.quote_sent) || present(record.quote_sent_at) || ["quote_sent", "quoted", "sent"].includes(quoteStatus) || leadStatus === "quoted";
+  if (type === "quote_value") return present(record.quote_value);
+  if (type === "quote_result") return present(record.quote_result);
+  if (type === "won") return present(record.won) || present(record.won_at) || /won|closed_won|수주/.test(leadStatus);
+  if (type === "lost") return present(record.lost) || present(record.lost_at) || /lost|실주/.test(leadStatus);
+  if (type === "operation_completed") return present(record.operation_completed) || present(record.operation_completed_at);
+  if (type === "customer_feedback") return present(record.customer_feedback) || present(record.customer_feedback_summary);
+  return false;
+}
+
+function workerPrivateActivityCount(record = {}, type = "") {
+  const directKeys = [`${type}_count`, `${type}s_count`, `${type}_total`];
+  if (type === "contact_attempt") directKeys.push("contact_attempts", "contact_attempt_count", "previous_contacts");
+  if (type === "quote_sent") directKeys.push("quotes_sent", "previous_quotes");
+  for (const key of directKeys) {
+    const value = Number(record[key]);
+    if (Number.isFinite(value) && value > 0) return Math.round(value);
+  }
+  return workerPrivateActivitySignal(record, type) ? 1 : 0;
+}
+
+function workerPrivateActivityTimestamp(record = {}, type = "") {
+  return {
+    contact_attempt: firstNonEmpty(record.contact_attempt_at, record.contacted_at, record.last_contacted_at),
+    quote_sent: firstNonEmpty(record.quote_sent_at, record.quoted_at),
+    quote_value: firstNonEmpty(record.quote_value_at, record.quote_sent_at, record.quoted_at),
+    quote_result: firstNonEmpty(record.quote_result_at, record.quote_decided_at),
+    won: firstNonEmpty(record.won_at, record.closed_at),
+    lost: firstNonEmpty(record.lost_at, record.closed_at),
+    operation_completed: record.operation_completed_at,
+    customer_feedback: firstNonEmpty(record.customer_feedback_at, record.feedback_at)
+  }[type] || "";
+}
+
+function workerRecordPortName(record = {}) {
+  return firstNonEmpty(record.port_name, record.port, record.current_port, record.destination_port, record.destination, "미확인 항만");
+}
+
+function buildWorkerCustomerMemorySummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const byCustomer = new Map();
+  for (const record of records) {
+    const customer = workerCustomerName(record);
+    const key = `${customer.customer_type}|${customer.customer_name}`;
+    const current = byCustomer.get(key) || {
+      ...customer,
+      vesselKeys: new Set(),
+      ports: new Map(),
+      contact_attempts: 0,
+      quote_history_count: 0,
+      quote_value_record_count: 0,
+      quote_result_count: 0,
+      won_projects: 0,
+      lost_projects: 0,
+      operation_completed_count: 0,
+      customer_feedback_count: 0,
+      repeat_caller_count: 0,
+      hot_count: 0,
+      warm_count: 0,
+      score_total: 0,
+      risk_total: 0,
+      latest_contact_at: null,
+      latest_quote_at: null,
+      latest_feedback_at: null,
+      last_seen: null,
+      top_record: null,
+      top_vessels: []
+    };
+    const contact = workerContactHistoryCounts(record);
+    const score = salesPriorityScore(record);
+    const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+    const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, salesPriorityBand(score))).toUpperCase();
+    const contactAttemptCount = Math.max(workerPrivateActivityCount(record, "contact_attempt"), contact.previous_contacts);
+    const quoteSentCount = Math.max(workerPrivateActivityCount(record, "quote_sent"), contact.previous_quotes);
+    const quoteValueCount = workerPrivateActivityCount(record, "quote_value");
+    const quoteResultCount = workerPrivateActivityCount(record, "quote_result");
+    const wonCount = Math.max(workerPrivateActivityCount(record, "won"), contact.previous_wins);
+    const lostCount = workerPrivateActivityCount(record, "lost");
+    const operationCompletedCount = workerPrivateActivityCount(record, "operation_completed");
+    const feedbackCount = workerPrivateActivityCount(record, "customer_feedback");
+    current.vesselKeys.add(workerCustomerMemoryIdentityKey(record));
+    current.contact_attempts += contactAttemptCount;
+    current.quote_history_count += quoteSentCount;
+    current.quote_value_record_count += quoteValueCount;
+    current.quote_result_count += quoteResultCount;
+    current.won_projects += wonCount;
+    current.lost_projects += lostCount;
+    current.operation_completed_count += operationCompletedCount;
+    current.customer_feedback_count += feedbackCount;
+    current.repeat_caller_count += repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.hot_count += priority === "HOT" || score >= 75 ? 1 : 0;
+    current.warm_count += priority === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
+    current.score_total += score;
+    current.risk_total += risk;
+    const port = workerRecordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    for (const [activityType, target, count] of [
+      ["contact_attempt", "latest_contact_at", contactAttemptCount],
+      ["quote_sent", "latest_quote_at", quoteSentCount + quoteValueCount + quoteResultCount],
+      ["customer_feedback", "latest_feedback_at", feedbackCount]
+    ]) {
+      if (count <= 0) continue;
+      const timestamp = workerPrivateActivityTimestamp(record, activityType);
+      if (timestamp && (!current[target] || String(timestamp) > String(current[target]))) current[target] = timestamp;
+    }
+    const seen = firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.generated_at, generatedAt);
+    if (seen && (!current.last_seen || String(seen) > String(current.last_seen))) current.last_seen = seen;
+    if (!current.top_record || score > salesPriorityScore(current.top_record)) current.top_record = record;
+    current.top_vessels.push({
+      vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
+      imo: firstNonEmpty(record.imo, record.imo_no, "-"),
+      port,
+      opportunity_score: score,
+      priority_label: priority || salesPriorityBand(score)
+    });
+    byCustomer.set(key, current);
+  }
+  const items = [...byCustomer.values()]
+    .map(row => {
+      const vesselsSeen = row.vesselKeys.size;
+      const averageOpportunity = vesselsSeen ? Math.round(row.score_total / vesselsSeen) : 0;
+      const averageRisk = vesselsSeen ? Math.round(row.risk_total / vesselsSeen) : 0;
+      const relationshipScore = Math.min(100, Math.round(
+        row.contact_attempts * 6 +
+        row.quote_history_count * 10 +
+        row.won_projects * 22 +
+        row.customer_feedback_count * 8 +
+        row.repeat_caller_count * 6 +
+        row.hot_count * 5 +
+        vesselsSeen * 3
+      ));
+      const customerMemoryScore = Math.min(100, Math.round(
+        averageOpportunity * 0.26 +
+        averageRisk * 0.10 +
+        relationshipScore * 0.32 +
+        Math.min(100, row.contact_attempts * 7 + row.quote_history_count * 10 + row.won_projects * 20 + row.customer_feedback_count * 8) * 0.22 +
+        Math.min(100, vesselsSeen * 6 + row.repeat_caller_count * 10) * 0.10
+      ));
+      const portsUsed = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([port_name, count]) => ({ port_name, count }));
+      return withVesselDisplay({
+        customer_type: row.customer_type,
+        customer_name: row.customer_name,
+        operator_name: row.operator_name || row.customer_name,
+        agent_name: row.agent_name,
+        contact_attempts: row.contact_attempts,
+        quote_history_count: row.quote_history_count,
+        quote_value_record_count: row.quote_value_record_count,
+        quote_result_count: row.quote_result_count,
+        won_projects: row.won_projects,
+        lost_projects: row.lost_projects,
+        operation_completed_count: row.operation_completed_count,
+        customer_feedback_count: row.customer_feedback_count,
+        fleet_history: {
+          vessels_seen: vesselsSeen,
+          repeat_callers: row.repeat_caller_count,
+          hot_count: row.hot_count,
+          warm_count: row.warm_count,
+          ports_used: portsUsed.map(port => port.port_name),
+          last_seen: row.last_seen
+        },
+        vessels_seen: vesselsSeen,
+        repeat_caller_count: row.repeat_caller_count,
+        hot_count: row.hot_count,
+        warm_count: row.warm_count,
+        ports_used: portsUsed,
+        top_vessels: row.top_vessels.sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0)).slice(0, 5),
+        latest_contact_at: row.latest_contact_at,
+        latest_quote_at: row.latest_quote_at,
+        latest_feedback_at: row.latest_feedback_at,
+        last_seen: row.last_seen,
+        relationship_score: relationshipScore,
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        customer_memory_score: customerMemoryScore,
+        opportunity_score: Math.max(customerMemoryScore, averageOpportunity),
+        sensitive_details_exposed: false,
+        vessel_display: row.top_record ? vesselDisplay(row.top_record) : undefined,
+        reason_summary: `${row.customer_name}: 선대 ${vesselsSeen}척, 연락 ${row.contact_attempts}건, 견적 ${row.quote_history_count}건, 수주 ${row.won_projects}건, 실주 ${row.lost_projects}건`,
+        recommended_action: row.won_projects > 0
+          ? "기존 수주 이력을 바탕으로 반복 입항/선대 확장 제안을 준비"
+          : row.quote_history_count > 0
+            ? "견적 이력과 현재 HOT/WARM 후보를 묶어 후속 연락"
+            : row.contact_attempts > 0
+              ? "기존 접촉 이력을 확인하고 현재 기회 선박으로 재접촉"
+              : "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+        data_sources: ["commercial_leads", "operator_contact_history", "sales-pipeline", "relationship-intelligence", "fleet-memory"]
+      });
+    })
+    .filter(item => Number(item.customer_memory_score || 0) > 0 || Number(item.vessels_seen || 0) > 0)
+    .sort((a, b) =>
+      Number(b.customer_memory_score || 0) - Number(a.customer_memory_score || 0) ||
+      Number(b.won_projects || 0) - Number(a.won_projects || 0) ||
+      Number(b.quote_history_count || 0) - Number(a.quote_history_count || 0) ||
+      Number(b.vessels_seen || 0) - Number(a.vessels_seen || 0)
+    )
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence,fleet-memory",
+    items,
+    extra: {
+      summary: {
+        proprietary_commercial_memory: true,
+        sensitive_details_exposed: false,
+        public_snapshot: "aggregated customer memory only",
+        tracked_signals: ["contact_attempts", "quote_history", "won_projects", "lost_projects", "customer_feedback", "fleet_history"]
+      }
+    }
+  });
+}
+
 function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, generatedAt = new Date().toISOString()) {
   const buckets = buildVisibilityBuckets(records);
   if (name === "risk-summary") {
@@ -6291,6 +6557,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
   if (name === "fleet-summary") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-intelligence") return buildFleetSummary(records, source, generatedAt);
   if (name === "fleet-memory") return buildFleetSummary(records, source, generatedAt);
+  if (name === "customer-memory") return buildWorkerCustomerMemorySummary(records, source, generatedAt);
   if (name === "fleet-expansion") {
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities", items: workerFleetExpansionItems(records) });
   }
@@ -6705,6 +6972,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "fleet-summary": "operator_snapshot_daily,vessel_snapshots,dashboard_summary_snapshots",
       "fleet-intelligence": "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily,dashboard_summary_snapshots",
       "fleet-memory": "operator_contact_history,commercial_leads,operator_snapshot_daily,dashboard_summary_snapshots",
+      "customer-memory": "commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence,fleet-memory,dashboard_summary_snapshots",
       "fleet-expansion": "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities,dashboard_summary_snapshots",
       "fleet-clusters": "operator-opportunities,fleet-memory,operator_snapshot_daily,dashboard_summary_snapshots",
       "cleaning-window": "vessel_snapshot_daily,opportunity_master,risk_history,dashboard_summary_snapshots",
