@@ -4389,6 +4389,22 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "previous_quotes",
   "previous_wins",
   "last_contacted_at",
+  "customer_type",
+  "customer_name",
+  "contact_attempts",
+  "quote_history_count",
+  "quote_value_record_count",
+  "quote_result_count",
+  "won_projects",
+  "lost_projects",
+  "operation_completed_count",
+  "customer_feedback_count",
+  "fleet_history",
+  "customer_memory_score",
+  "sensitive_details_exposed",
+  "latest_contact_at",
+  "latest_quote_at",
+  "latest_feedback_at",
   "vessels_seen",
   "previous_targets",
   "previous_hot_candidates",
@@ -8187,6 +8203,189 @@ function buildRelationshipIntelligenceSummary({ records = [], generatedAt, dataM
   return intelligenceEnvelope({ generatedAt, dataMode, sourceTable: "operator_contact_history,commercial_leads,sales-pipeline,sales/actions,agent-followup-queue,fleet-memory", items });
 }
 
+function buildCustomerMemoryIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const operatorSignals = new Map(aggregateOperators(records, fleetOpportunities).map(row => [row.operator_name, row]));
+  const byCustomer = new Map();
+  for (const record of records) {
+    const operator = operatorFleetName(record);
+    const agent = firstNonEmpty(record.local_agent, record.agent_name, record.agent, record.satmntEntrpsNm, record.entrpsCdNm);
+    const customerName = operator && operator !== "미확인 운영사" ? operator : firstNonEmpty(agent, "미확인 고객");
+    const customerType = operator && operator !== "미확인 운영사" ? "OPERATOR" : agent ? "AGENT" : "UNKNOWN";
+    const key = `${customerType}|${customerName}`;
+    const current = byCustomer.get(key) || {
+      customer_type: customerType,
+      customer_name: customerName,
+      operator_name: operator && operator !== "미확인 운영사" ? operator : null,
+      agent_name: agent || null,
+      vesselKeys: new Set(),
+      ports: new Map(),
+      contact_attempts: 0,
+      quote_history_count: 0,
+      quote_value_record_count: 0,
+      quote_result_count: 0,
+      won_projects: 0,
+      lost_projects: 0,
+      operation_completed_count: 0,
+      customer_feedback_count: 0,
+      repeat_caller_count: 0,
+      hot_count: 0,
+      warm_count: 0,
+      score_total: 0,
+      risk_total: 0,
+      latest_contact_at: null,
+      latest_quote_at: null,
+      latest_feedback_at: null,
+      last_seen: null,
+      top_record: null,
+      top_vessels: []
+    };
+    const contact = contactHistoryCounts(record);
+    const stage = leadConversionStage(record);
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score))).toUpperCase();
+    const contactAttemptCount = Math.max(privateActivityCount(record, "contact_attempt"), contact.previous_contacts);
+    const quoteSentCount = Math.max(privateActivityCount(record, "quote_sent"), contact.previous_quotes);
+    const quoteValueCount = privateActivityCount(record, "quote_value");
+    const quoteResultCount = privateActivityCount(record, "quote_result");
+    const wonCount = Math.max(privateActivityCount(record, "won"), contact.previous_wins, stage === "WON" ? 1 : 0);
+    const lostCount = Math.max(privateActivityCount(record, "lost"), stage === "LOST" ? 1 : 0);
+    const operationCompletedCount = privateActivityCount(record, "operation_completed");
+    const feedbackCount = privateActivityCount(record, "customer_feedback");
+    current.vesselKeys.add(opportunityMemoryIdentityKey(record));
+    current.contact_attempts += contactAttemptCount;
+    current.quote_history_count += quoteSentCount;
+    current.quote_value_record_count += quoteValueCount;
+    current.quote_result_count += quoteResultCount;
+    current.won_projects += wonCount;
+    current.lost_projects += lostCount;
+    current.operation_completed_count += operationCompletedCount;
+    current.customer_feedback_count += feedbackCount;
+    current.repeat_caller_count += repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
+    current.hot_count += priority === "HOT" || score >= 75 ? 1 : 0;
+    current.warm_count += priority === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
+    current.score_total += score;
+    current.risk_total += risk;
+    const port = recordPortName(record);
+    current.ports.set(port, (current.ports.get(port) || 0) + 1);
+    for (const [field, target, count] of [
+      ["contact_attempt", "latest_contact_at", contactAttemptCount],
+      ["quote_sent", "latest_quote_at", quoteSentCount + quoteValueCount + quoteResultCount],
+      ["customer_feedback", "latest_feedback_at", feedbackCount]
+    ]) {
+      if (count <= 0) continue;
+      const timestamp = privateActivityTimestamp(record, field);
+      if (timestamp && (!current[target] || timestamp > current[target])) current[target] = timestamp;
+    }
+    const seen = firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.generated_at);
+    if (seen && (!current.last_seen || String(seen) > String(current.last_seen))) current.last_seen = seen;
+    if (!current.top_record || score > salesPriorityScore(current.top_record)) current.top_record = record;
+    current.top_vessels.push({
+      vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name, "선명 확인 필요"),
+      imo: firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo, "-"),
+      port,
+      opportunity_score: score,
+      priority_label: priority || salesPriorityBand(score)
+    });
+    byCustomer.set(key, current);
+  }
+  const items = [...byCustomer.values()]
+    .map(row => {
+      const vesselsSeen = row.vesselKeys.size;
+      const averageOpportunity = vesselsSeen ? Math.round(row.score_total / vesselsSeen) : 0;
+      const averageRisk = vesselsSeen ? Math.round(row.risk_total / vesselsSeen) : 0;
+      const existingOperator = row.operator_name ? operatorSignals.get(row.operator_name) : null;
+      const relationshipScore = existingOperator?.relationship_score || Math.min(100, Math.round(
+        row.contact_attempts * 6 +
+        row.quote_history_count * 10 +
+        row.won_projects * 22 +
+        row.customer_feedback_count * 8 +
+        row.repeat_caller_count * 6 +
+        row.hot_count * 5 +
+        vesselsSeen * 3
+      ));
+      const memoryScore = Math.min(100, Math.round(
+        averageOpportunity * 0.26 +
+        averageRisk * 0.10 +
+        relationshipScore * 0.32 +
+        Math.min(100, row.contact_attempts * 7 + row.quote_history_count * 10 + row.won_projects * 20 + row.customer_feedback_count * 8) * 0.22 +
+        Math.min(100, vesselsSeen * 6 + row.repeat_caller_count * 10) * 0.10
+      ));
+      const portsUsed = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([port_name, count]) => ({ port_name, count }));
+      return withVesselDisplay({
+        customer_type: row.customer_type,
+        customer_name: row.customer_name,
+        operator_name: row.operator_name || row.customer_name,
+        agent_name: row.agent_name,
+        contact_attempts: row.contact_attempts,
+        quote_history_count: row.quote_history_count,
+        quote_value_record_count: row.quote_value_record_count,
+        quote_result_count: row.quote_result_count,
+        won_projects: row.won_projects,
+        lost_projects: row.lost_projects,
+        operation_completed_count: row.operation_completed_count,
+        customer_feedback_count: row.customer_feedback_count,
+        fleet_history: {
+          vessels_seen: vesselsSeen,
+          repeat_callers: row.repeat_caller_count,
+          hot_count: row.hot_count,
+          warm_count: row.warm_count,
+          ports_used: portsUsed.map(port => port.port_name),
+          last_seen: row.last_seen
+        },
+        vessels_seen: vesselsSeen,
+        repeat_caller_count: row.repeat_caller_count,
+        hot_count: row.hot_count,
+        warm_count: row.warm_count,
+        ports_used: portsUsed,
+        top_vessels: row.top_vessels
+          .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+          .slice(0, 5),
+        latest_contact_at: row.latest_contact_at,
+        latest_quote_at: row.latest_quote_at,
+        latest_feedback_at: row.latest_feedback_at,
+        last_seen: row.last_seen,
+        relationship_score: relationshipScore,
+        average_opportunity_score: averageOpportunity,
+        average_risk_score: averageRisk,
+        customer_memory_score: memoryScore,
+        opportunity_score: Math.max(memoryScore, averageOpportunity),
+        sensitive_details_exposed: false,
+        vessel_display: row.top_record ? vesselDisplay(row.top_record) : undefined,
+        reason_summary: `${row.customer_name}: 선대 ${vesselsSeen}척, 연락 ${row.contact_attempts}건, 견적 ${row.quote_history_count}건, 수주 ${row.won_projects}건, 실주 ${row.lost_projects}건`,
+        recommended_action: row.won_projects > 0
+          ? "기존 수주 이력을 바탕으로 반복 입항/선대 확장 제안을 준비"
+          : row.quote_history_count > 0
+            ? "견적 이력과 현재 HOT/WARM 후보를 묶어 후속 연락"
+            : row.contact_attempts > 0
+              ? "기존 접촉 이력을 확인하고 현재 기회 선박으로 재접촉"
+              : "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+        data_sources: ["commercial_leads", "operator_contact_history", "sales-pipeline", "relationship-intelligence", "fleet-memory"]
+      });
+    })
+    .filter(item => Number(item.customer_memory_score || 0) > 0 || Number(item.vessels_seen || 0) > 0)
+    .sort((a, b) =>
+      Number(b.customer_memory_score || 0) - Number(a.customer_memory_score || 0) ||
+      Number(b.won_projects || 0) - Number(a.won_projects || 0) ||
+      Number(b.quote_history_count || 0) - Number(a.quote_history_count || 0) ||
+      Number(b.vessels_seen || 0) - Number(a.vessels_seen || 0)
+    )
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence,fleet-memory",
+    items,
+    summary: {
+      proprietary_commercial_memory: true,
+      sensitive_details_exposed: false,
+      public_snapshot: "aggregated customer memory only",
+      tracked_signals: ["contact_attempts", "quote_history", "won_projects", "lost_projects", "customer_feedback", "fleet_history"]
+    }
+  });
+}
+
 function daysSinceValue(value, generatedAt = new Date().toISOString()) {
   const date = parseScheduleTime(value);
   const base = parseScheduleTime(generatedAt) || new Date();
@@ -8606,6 +8805,7 @@ function buildIntelligenceSummaries({
     "service-bundles": buildServiceBundleIntelligenceSummary({ records, generatedAt, dataMode }),
     "compliance-exposure": buildComplianceExposureIntelligenceSummary({ records, generatedAt, dataMode }),
     "relationship-intelligence": buildRelationshipIntelligenceSummary({ records, generatedAt, dataMode }),
+    "customer-memory": buildCustomerMemoryIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "opportunity-decay": buildOpportunityDecayIntelligenceSummary({ records, generatedAt, dataMode }),
     "missed-opportunities": buildMissedOpportunityIntelligenceSummary({ records, generatedAt, dataMode }),
     "lost-opportunity-reasons": buildLostOpportunityReasonIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -11640,6 +11840,7 @@ try {
     "dashboard/api/intelligence/service-bundles.json": intelligenceSummaries["service-bundles"],
     "dashboard/api/intelligence/compliance-exposure.json": intelligenceSummaries["compliance-exposure"],
     "dashboard/api/intelligence/relationship-intelligence.json": intelligenceSummaries["relationship-intelligence"],
+    "dashboard/api/intelligence/customer-memory.json": intelligenceSummaries["customer-memory"],
     "dashboard/api/intelligence/opportunity-decay.json": intelligenceSummaries["opportunity-decay"],
     "dashboard/api/intelligence/missed-opportunities.json": intelligenceSummaries["missed-opportunities"],
     "dashboard/api/intelligence/lost-opportunity-reasons.json": intelligenceSummaries["lost-opportunity-reasons"],
