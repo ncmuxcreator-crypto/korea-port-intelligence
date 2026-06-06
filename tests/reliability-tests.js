@@ -19,6 +19,13 @@ const REQUIRED_FILES = [
   "dashboard/api/vessels/page-1.json",
   "dashboard/api/intelligence/risk-summary.json",
   "dashboard/api/intelligence/biofouling-risk.json",
+  "dashboard/api/biofouling/port-risk-map.json",
+  "dashboard/api/biofouling/vessel-risk-scores.json",
+  "dashboard/api/biofouling/hotspots.json",
+  "dashboard/api/biofouling/top-hull-cleaning-candidates.json",
+  "dashboard/api/biofouling/brazil-compliance-risk.json",
+  "dashboard/api/biofouling/port-risk-map.geojson",
+  "dashboard/api/biofouling/hotspots.geojson",
   "dashboard/api/intelligence/explainability.json",
   "dashboard/api/intelligence/prediction-summary.json",
   "dashboard/api/intelligence/operator-summary.json",
@@ -168,6 +175,15 @@ const intelligencePayloads = {
   commercial: readJson("dashboard/api/intelligence/commercial-summary.json"),
   salesPriority: readJson("dashboard/api/intelligence/sales-priority.json")
 };
+const biofoulingPayloads = {
+  portRiskMap: readJson("dashboard/api/biofouling/port-risk-map.json"),
+  vesselRiskScores: readJson("dashboard/api/biofouling/vessel-risk-scores.json"),
+  hotspots: readJson("dashboard/api/biofouling/hotspots.json"),
+  topHullCleaningCandidates: readJson("dashboard/api/biofouling/top-hull-cleaning-candidates.json"),
+  brazilComplianceRisk: readJson("dashboard/api/biofouling/brazil-compliance-risk.json"),
+  portRiskMapGeojson: readJson("dashboard/api/biofouling/port-risk-map.geojson"),
+  hotspotsGeojson: readJson("dashboard/api/biofouling/hotspots.geojson")
+};
 
 for (const [name, payload] of Object.entries({ summary, status, health, pipelineHealth, continuity })) {
   assert(payload && typeof payload === "object", `${name} payload must be an object.`);
@@ -304,6 +320,7 @@ for (const marker of [
   'pathname.endsWith("/arrival-pipeline.json")',
   'pathname.endsWith("/reports/executive-weekly.json")',
   '/^\\/api\\/vessels\\/(?:index|page-\\d+)\\.json$/.test(pathname)',
+  '/^\\/api\\/biofouling\\/[^/]+\\.(?:json|geojson)$/.test(pathname)',
   '/^\\/api\\/intelligence\\/[^/]+\\.json$/.test(pathname)'
 ]) {
   assert(workerSource.includes(marker), `Worker must serve latest static snapshot before DB summary fallback: ${marker}`);
@@ -316,6 +333,26 @@ for (const [name, payload] of Object.entries(intelligencePayloads)) {
   assert(Array.isArray(payload.items), `Intelligence endpoint ${name} must expose items array.`);
   assert(payload.items.length <= 10, `Intelligence endpoint ${name} must be capped to 10 items.`);
 }
+for (const [name, payload] of Object.entries(biofoulingPayloads).filter(([name]) => !name.endsWith("Geojson"))) {
+  assert(payload && typeof payload === "object", `Biofouling endpoint must be valid JSON: ${name}`);
+  for (const field of ["generated_at", "schema_version", "data_mode", "record_count", "source_table", "items"]) {
+    assert(field in payload, `Biofouling endpoint ${name} missing field: ${field}`);
+  }
+  assert(Array.isArray(payload.items), `Biofouling endpoint ${name} must expose items array.`);
+}
+for (const item of rows(biofoulingPayloads.vesselRiskScores).slice(0, 5)) {
+  for (const field of ["biofouling_risk_score", "norm_sst_anomaly", "norm_dwell_time", "norm_salinity", "formula", "data_sources", "vessel_display"]) {
+    assert(field in item, `Biofouling vessel risk item missing field: ${field}`);
+  }
+  assert(item.formula === "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)", "Biofouling vessel risk formula must remain explicit.");
+  assert(Array.isArray(item.data_sources) && item.data_sources.includes("NOAA SST"), "Biofouling vessel risk item must include NOAA SST as a data source.");
+}
+for (const [name, payload] of Object.entries({ portRiskMapGeojson: biofoulingPayloads.portRiskMapGeojson, hotspotsGeojson: biofoulingPayloads.hotspotsGeojson })) {
+  assert(payload?.type === "FeatureCollection", `Biofouling ${name} must be a GeoJSON FeatureCollection.`);
+  assert(Array.isArray(payload.features), `Biofouling ${name} must expose features array.`);
+}
+assert(publicSource.includes("biofoulingNav") && dashboardSource.includes("biofoulingNav"), "Dashboard must expose the Biofouling navigation tab.");
+assert(publicSource.includes("/api/biofouling/vessel-risk-scores.json") && dashboardSource.includes("/api/biofouling/vessel-risk-scores.json"), "Dashboard must lazy-load Biofouling vessel risk scores.");
 for (const item of rows(intelligencePayloads.explainability)) {
   assert(String(item.reason_summary || "").length > 0, "Explainability item must include reason_summary.");
 }

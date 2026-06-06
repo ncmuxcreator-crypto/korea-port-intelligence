@@ -118,6 +118,7 @@ jobs:
       MOF_AIS_STAT_API_URL: ${{ secrets.MOF_AIS_STAT_API_URL }}
       MOF_AIS_STAT_SERVICE_KEY: ${{ secrets.MOF_AIS_STAT_SERVICE_KEY }}
       MOF_AIS_STAT_PER_PAGE: ${{ secrets.MOF_AIS_STAT_PER_PAGE }}
+      NOAA_SST_URL: ${{ vars.NOAA_SST_URL || secrets.NOAA_SST_URL || '' }}
       GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
       GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       PNC_SOURCE_URLS: ${{ secrets.PNC_SOURCE_URLS }}
@@ -302,6 +303,13 @@ jobs:
               intelligence/drydock-prediction.json \
               intelligence/revenue-forecast.json \
               intelligence/prediction-summary.json \
+              biofouling/port-risk-map.json \
+              biofouling/vessel-risk-scores.json \
+              biofouling/hotspots.json \
+              biofouling/top-hull-cleaning-candidates.json \
+              biofouling/brazil-compliance-risk.json \
+              biofouling/port-risk-map.geojson \
+              biofouling/hotspots.geojson \
               reports/executive-weekly.json; do
               copy_api_asset "$file"
             done

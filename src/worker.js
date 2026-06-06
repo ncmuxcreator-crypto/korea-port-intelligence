@@ -2201,6 +2201,7 @@ function isLatestSnapshotAssetRoute(pathname = "") {
     pathname.endsWith("/sales/actions.json") ||
     pathname.endsWith("/reports/executive-weekly.json") ||
     /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname) ||
+    /^\/api\/biofouling\/[^/]+\.(?:json|geojson)$/.test(pathname) ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
 }
 
@@ -6872,6 +6873,7 @@ async function apiResponse(url, env) {
     pathname.endsWith("/data-continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
+    /^\/api\/biofouling\/[^/]+\.(?:json|geojson)$/.test(pathname) ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
   if (summaryFirstRoute) {
     const pointer = await fetchActivePointer(env);
