@@ -156,6 +156,43 @@ function compareNumber(ui, jsonSource, jsonValue, dbSource, dbValue, { tolerance
   if (!match) addFinding("warning", ui, `JSON ${j ?? "missing"} vs DB ${d ?? "missing"}`);
 }
 
+function compareStaticNumber(ui, leftSource, leftValue, rightSource, rightValue, { tolerance = 0 } = {}) {
+  const left = numberOrNull(leftValue);
+  const right = numberOrNull(rightValue);
+  const match = left !== null && right !== null && Math.abs(left - right) <= tolerance;
+  printLine({
+    ui,
+    json: `${leftSource}=${left ?? "missing"}`,
+    db: `${rightSource}=${right ?? "missing"}`,
+    status: match ? "match" : "mismatch",
+    reason: match ? "" : "visible static dashboard value is not aligned"
+  });
+  if (!match) addFinding("warning", ui, `${leftSource} ${left ?? "missing"} vs ${rightSource} ${right ?? "missing"}`);
+}
+
+function sumCategoryCounts(payload = {}) {
+  return rows(payload.categories || payload).reduce((sum, category) => sum + (numberOrNull(category.count) ?? rows(category).length), 0);
+}
+
+function categoryCountMap(payload = {}) {
+  const map = new Map();
+  for (const category of rows(payload.categories || payload)) {
+    const code = clean(category.code);
+    if (code) map.set(code, numberOrNull(category.count) ?? rows(category).length);
+  }
+  return map;
+}
+
+function revenueValue(payload = {}) {
+  const portfolio = payload.portfolio || payload.summary || {};
+  return numberOrNull(
+    portfolio.expected_revenue ??
+    portfolio.estimated_revenue ??
+    payload.expected_revenue ??
+    payload.estimated_revenue
+  );
+}
+
 function dashboardSalesTargetCount(sourceRows = []) {
   return sourceRows.filter(row => {
     const score = numberOrNull(row.commercial_value_score ?? row.total_sales_priority_score ?? row.cleaning_candidate_score ?? row.opportunity_score);
@@ -195,6 +232,11 @@ function dateValue(value) {
 async function main() {
   const summary = readJson("dashboard/api/dashboard-summary.json", {});
   const status = readJson("dashboard/api/status.json", {});
+  const bootstrap = readJson("dashboard/api/bootstrap.json", {});
+  const targetsCurrent = readJson("dashboard/api/targets/current.json", {});
+  const targetCategories = readJson("dashboard/api/targets/categories.json", {});
+  const vesselsIndex = readJson("dashboard/api/vessels/index.json", {});
+  const revenueForecast = readJson("dashboard/api/intelligence/revenue-forecast.json", {});
   const salesPriority = readJson("dashboard/api/intelligence/sales-priority.json", {});
   const allCollected = readJson("dashboard/api/all-collected-vessels.json", []);
   const targetVessels = readJson("dashboard/api/target-vessels.json", []);
@@ -236,6 +278,60 @@ async function main() {
   console.log("");
 
   console.log("1. Dashboard visible numbers");
+  const bootstrapKpis = bootstrap.kpis || {};
+  compareStaticNumber("보이는 전체 선박", "bootstrap.kpis.total_vessels", bootstrapKpis.total_vessels, "dashboard-summary.total_vessels", summary.total_vessels ?? summary.all_vessels_count ?? summary.record_count);
+  compareStaticNumber("보이는 영업대상", "bootstrap.kpis.sales_target_count", bootstrapKpis.sales_target_count, "targets/current.record_count", targetsCurrent.record_count ?? rows(targetsCurrent).length);
+  compareStaticNumber("보이는 즉시 연락", "bootstrap.kpis.immediate_target_count", bootstrapKpis.immediate_target_count, "dashboard-summary.immediate_target_count", summary.immediate_target_count);
+  compareStaticNumber("보이는 항만 수", "bootstrap.kpis.port_count", bootstrapKpis.port_count, "dashboard-summary.port_count", summary.port_count);
+  compareStaticNumber("보이는 전체 선박 목록 수", "vessels/index.total_count", vesselsIndex.total_count, "bootstrap.kpis.total_vessels", bootstrapKpis.total_vessels);
+  const categoryCounts = categoryCountMap(targetCategories);
+  for (const [label, code, kpiKey] of [
+    ["즉시 연락 카테고리", "CONTACT_NOW", "contact_now_count"],
+    ["입항 전 카테고리", "PRE_ARRIVAL", "pre_arrival_target_count"],
+    ["묘박/정박 카테고리", "ANCHORAGE_OPPORTUNITY", "anchorage_opportunity_count"],
+    ["장기 체류 카테고리", "LONG_STAY_RISK", "long_stay_risk_count"],
+    ["Compliance 카테고리", "BIOFOULING_COMPLIANCE", "compliance_target_count"],
+    ["반복 입항 카테고리", "REPEAT_CALLER", "repeat_caller_count"],
+    ["연락처 확인 카테고리", "VERIFY_CONTACT", "verify_contact_count"],
+    ["모니터링 카테고리", "MONITOR", "monitor_count"]
+  ]) {
+    const categoryValue = categoryCounts.get(code);
+    if (categoryValue !== undefined || numberOrNull(bootstrapKpis[kpiKey]) !== null) {
+      compareStaticNumber(label, `targets/categories.${code}`, categoryValue, `bootstrap.kpis.${kpiKey}`, bootstrapKpis[kpiKey]);
+    }
+  }
+  printLine({
+    ui: "카테고리 중복 허용",
+    json: `targets/categories sum=${sumCategoryCounts(targetCategories)}`,
+    db: `sales_target_count=${bootstrapKpis.sales_target_count ?? "missing"}`,
+    status: "match",
+    reason: "한 선박이 여러 영업 카테고리에 속할 수 있으므로 합계는 영업대상 수와 다를 수 있음"
+  });
+  const forecastRevenue = revenueValue(revenueForecast);
+  if (forecastRevenue !== null) {
+    const summaryRevenue = summary.expected_revenue ?? summary.estimated_revenue;
+    if (numberOrNull(summaryRevenue) !== null) {
+      compareStaticNumber("보이는 예상 매출", "revenue-forecast.expected_revenue", forecastRevenue, "dashboard-summary.expected_revenue", summaryRevenue, { tolerance: 1 });
+    } else {
+      printLine({
+        ui: "보이는 예상 매출",
+        json: `revenue-forecast.expected_revenue=${forecastRevenue}`,
+        db: "dashboard-summary.expected_revenue=missing",
+        status: "match",
+        reason: "예상 매출 섹션은 revenue-forecast.json을 source of truth로 사용"
+      });
+    }
+  } else {
+    printLine({
+      ui: "보이는 예상 매출",
+      json: "revenue-forecast=missing",
+      db: "dashboard-summary=not_checked",
+      status: "not_checked",
+      reason: "revenue forecast snapshot has no expected revenue value"
+    });
+  }
+  console.log("");
+  console.log("1B. DB-backed visible numbers");
   compareNumber("총 선박", "dashboard-summary.all_vessels_count", summary.all_vessels_count, "vessel_snapshots latest run", vesselSnapshots.rows.length);
   compareNumber("영업대상", "dashboard-summary.record_count", summary.record_count, "data_collection_runs.target_vessels_count", run.target_vessels_count ?? staticTargetRows.length);
   compareNumber("영업 후보", "dashboard-summary.sales_target_count", summary.sales_target_count, "sales_candidates_current", salesCurrent.rows.length);

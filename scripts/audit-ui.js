@@ -209,3 +209,59 @@ const hiddenWithData = rowsOut.filter(row => row.status === "HIDDEN");
 console.log("\nHidden intelligence with record_count > 0:");
 if (!hiddenWithData.length) console.log("- none");
 for (const row of hiddenWithData) console.log(`- ${row.feature}: ${row.recordCount} records`);
+
+const effectiveLoadSummary =
+  html.match(/loadSummary=async function\(\)\{([\s\S]*?)\}\s*const renderAllHull/)?.[1] ||
+  html.match(/async function loadSummary\(\)\{([\s\S]*?)\nfunction flattenVesselPageRow/)?.[1] ||
+  "";
+const businessSections = [
+  "executiveSummary",
+  "todaySalesActions",
+  "targetCategoryBlock",
+  "vesselIntelligenceBlock",
+  "portIntelligenceBlock",
+  "fleetOperatorBlock",
+  "riskComplianceBlock",
+  "revenueOpportunityBlock",
+  "fullVesselListBlock",
+  "technicalDiagnostics"
+];
+const businessChecks = [];
+for (const id of businessSections) {
+  businessChecks.push({ id, present: html.includes(id) });
+}
+const startupCalls = [...effectiveLoadSummary.matchAll(/api\("([^"]+)"/g)].map(match => match[1]);
+const startupApiCount = startupCalls.includes("bootstrap")
+  ? 1 + Math.min(startupCalls.filter(name => name !== "bootstrap").length, 2)
+  : startupCalls.length;
+const startupTailStart = html.lastIndexOf("bindInsightGroups();");
+const startupTailEnd = html.lastIndexOf("loadSummary();");
+const startupTail = startupTailStart >= 0 && startupTailEnd >= startupTailStart
+  ? html.slice(startupTailStart, startupTailEnd + "loadSummary();".length)
+  : html;
+const secondaryAutoLoad = /setTimeout\(\(\)=>loadSecondarySnapshotData|setTimeout\(\(\)=>loadInsightGroup|setTimeout\(\(\)=>loadBiofouling/.test(startupTail);
+const fullVesselStartup = /loadRows\(\)|loadAllVesselRows\(|ensureVesselIndex\(/.test(effectiveLoadSummary);
+const diagnosticsRunner = html.includes("runDiagnostics") && html.includes("상세 기술 진단 실행");
+const topTechnicalCards = /<aside class="grid sticky"(?![^>]*hidden)/.test(html);
+
+console.log("\nBusiness-first layout checks:");
+for (const check of businessChecks) console.log(`- ${check.id}: ${check.present ? "present" : "missing"}`);
+console.log(`- startup API count: ${startupApiCount}`);
+console.log(`- bootstrap first-load source: ${startupCalls[0] === "bootstrap" ? "yes" : "no"}`);
+console.log(`- full vessel list loads on startup: ${fullVesselStartup ? "yes" : "no"}`);
+console.log(`- secondary intelligence auto-loads on startup: ${secondaryAutoLoad ? "yes" : "no"}`);
+console.log(`- detailed diagnostics require user click: ${diagnosticsRunner ? "yes" : "no"}`);
+console.log(`- technical diagnostics above business sections: ${topTechnicalCards ? "yes" : "no"}`);
+
+const layoutWarnings = [];
+if (startupApiCount > 3) layoutWarnings.push("startup API count > 3");
+if (startupCalls[0] !== "bootstrap") layoutWarnings.push("bootstrap.json is not the first-load source");
+if (fullVesselStartup) layoutWarnings.push("full vessel list loads on startup");
+if (secondaryAutoLoad) layoutWarnings.push("secondary intelligence loads on startup");
+if (!diagnosticsRunner) layoutWarnings.push("detailed technical diagnostics button missing");
+if (topTechnicalCards) layoutWarnings.push("technical diagnostics appear above business sections");
+if (businessChecks.some(check => !check.present)) layoutWarnings.push("one or more business sections are missing");
+
+console.log("\nUI architecture warnings:");
+if (!layoutWarnings.length) console.log("- none");
+for (const warning of layoutWarnings) console.log(`- ${warning}`);

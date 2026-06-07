@@ -23,7 +23,10 @@ function listJsonFiles(dir) {
 }
 
 const html = fs.existsSync(DASHBOARD_HTML) ? fs.readFileSync(DASHBOARD_HTML, "utf8") : "";
-const loadSummaryBody = html.match(/async function loadSummary\(\)\{([\s\S]*?)\nfunction flattenVesselPageRow/)?.[1] || "";
+const loadSummaryBody =
+  html.match(/loadSummary=async function\(\)\{([\s\S]*?)\}\s*const renderAllHull/)?.[1] ||
+  html.match(/async function loadSummary\(\)\{([\s\S]*?)\nfunction flattenVesselPageRow/)?.[1] ||
+  "";
 const firstPaintSegment = loadSummaryBody.split("renderAll()")[0] || loadSummaryBody;
 const firstPaintApiNames = [...firstPaintSegment.matchAll(/api\("([^"]+)"/g)].map(match => match[1]);
 const fallbackApiNames = firstPaintApiNames.filter(name => name !== "bootstrap");
@@ -57,6 +60,12 @@ const largestVesselPage = vesselPages
   .sort((a, b) => b.size - a.size)[0] || { size: 0 };
 const allVesselsStartup = /all-collected-vessels\.json/.test(html.split("$('refreshBtn'")[0] || html);
 const apiHealthBlocksStartup = /api\("health"|"\/api\/health/.test(firstPaintSegment);
+const startupTailStart = html.lastIndexOf("bindInsightGroups();");
+const startupTailEnd = html.lastIndexOf("loadSummary();");
+const startupTail = startupTailStart >= 0 && startupTailEnd >= startupTailStart
+  ? html.slice(startupTailStart, startupTailEnd + "loadSummary();".length)
+  : html;
+const secondaryAutoLoad = /setTimeout\(\(\)=>loadSecondarySnapshotData|setTimeout\(\(\)=>loadInsightGroup|setTimeout\(\(\)=>loadBiofouling/.test(startupTail);
 
 console.log("Performance audit:");
 console.log(`- startup API count: ${startupApiCount}`);
@@ -67,6 +76,7 @@ console.log(`- largest vessel page size: ${largestVesselPage.size} bytes`);
 console.log(`- estimated first-load payload: ${sizeOf(bootstrapFile) || sizeOf(path.join(API_DIR, "dashboard-summary.json"))} bytes`);
 console.log(`- full vessel list lazy-loaded: ${allVesselsStartup ? "no" : "yes"}`);
 console.log(`- API health panel fetches all endpoints on startup: ${apiHealthBlocksStartup ? "yes" : "no"}`);
+console.log(`- secondary intelligence auto-load on startup: ${secondaryAutoLoad ? "yes" : "no"}`);
 console.log("- slow or missing API list:");
 if (!missingEndpoints.length) console.log("  - none detected from required static endpoints");
 for (const entry of missingEndpoints) console.log(`  - missing: dashboard/api/${entry.name}`);
@@ -85,6 +95,7 @@ if (largestVesselPage.size > 300 * 1024) warnings.push("vessel page > 300 KB");
 if (startupApiCount > 3) warnings.push("startup API count > 3");
 if (allVesselsStartup) warnings.push("full vessel list may be fetched during startup");
 if (apiHealthBlocksStartup) warnings.push("API health panel fetches endpoints during startup");
+if (secondaryAutoLoad) warnings.push("secondary intelligence loads during startup");
 if (missingEndpoints.length) warnings.push("required static API endpoint missing");
 
 if (warnings.length) {
