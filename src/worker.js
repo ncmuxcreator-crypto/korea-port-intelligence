@@ -2199,6 +2199,7 @@ function isLatestSnapshotAssetRoute(pathname = "") {
     pathname.endsWith("/alerts/sales-alerts.json") ||
     pathname.endsWith("/sales/verification-queue.json") ||
     pathname.endsWith("/sales/actions.json") ||
+    pathname.endsWith("/sales/quote-opportunities.json") ||
     pathname.endsWith("/reports/morning-brief.json") ||
     pathname.endsWith("/reports/executive-weekly.json") ||
     /^\/api\/vessels\/(?:index|page-\d+)\.json$/.test(pathname) ||
@@ -3855,6 +3856,13 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "recommended_next_action",
   "reason",
   "recommended_message_angle",
+  "quote_readiness_score",
+  "quote_readiness_label",
+  "recommended_services",
+  "estimated_value_band",
+  "missing_quote_fields",
+  "quote_reason_summary",
+  "message_angle",
   "urgency",
   "next_action",
   "verification_type",
@@ -7191,6 +7199,61 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       }
     });
   }
+  if (pathname.endsWith("/sales/quote-opportunities.json")) {
+    const quoteItems = items
+      .filter(item => item.vessel_name || item.imo || item.mmsi || item.call_sign || item.vessel_display?.vessel_name)
+      .slice(0, 20)
+      .map((item, index) => {
+        const opportunityScore = Number(item.opportunity_score || item.sales_priority_score || item.total_sales_priority_score || 0);
+        const riskScore = Number(item.risk_score || item.biofouling_risk_score || item.biofouling_exposure_score || 0);
+        const readinessScore = Math.min(100, Math.round(
+          (item.imo ? 18 : 0) +
+          (item.call_sign ? 12 : 0) +
+          (item.operator || item.operator_name ? 15 : 0) +
+          (item.manager || item.manager_name ? 10 : 0) +
+          (item.port || item.port_name || item.current_port ? 12 : 0) +
+          (item.eta || item.ata ? 8 : 0) +
+          Math.min(25, opportunityScore * 0.2 + riskScore * 0.12)
+        ));
+        const missing = [];
+        if (!item.imo) missing.push("IMO");
+        if (!item.call_sign) missing.push("Call Sign");
+        if (!(item.operator || item.operator_name)) missing.push("Operator");
+        if (!(item.manager || item.manager_name)) missing.push("Manager");
+        if (!(item.owner || item.owner_name)) missing.push("Owner");
+        if (!(item.agent || item.agent_name || item.local_agent)) missing.push("Local Agent");
+        return withVesselDisplay({
+          ...item,
+          rank: index + 1,
+          quote_readiness_score: readinessScore,
+          quote_readiness_label: readinessScore >= 75 ? "READY" : readinessScore >= 40 ? "NEEDS_INFO" : "MONITOR",
+          recommended_services: opportunityScore >= 60 || riskScore >= 55 ? ["Hull Cleaning", "Biofouling Report"] : ["Hull Cleaning"],
+          estimated_value_band: {
+            currency: "KRW",
+            low: 5000000,
+            mid: 17500000,
+            high: 30000000,
+            method: "rule_based_estimate",
+            disclaimer: "Estimated Opportunity Only"
+          },
+          missing_quote_fields: missing,
+          quote_reason_summary: item.reason_summary || compactReasonSummary(item) || "요약 스냅샷 기반 견적 기회 후보입니다.",
+          recommended_next_action: missing.length ? "견적 전 정보 확인 필요" : "견적 범위 산정 후 제안서 준비",
+          message_angle: "입항 일정과 작업 가능 시간을 기준으로 견적 범위를 확인",
+          data_sources: ["dashboard_summary_snapshots", "quote_opportunity_builder_fallback"]
+        });
+      });
+    return publicItemsEnvelope({
+      ...common,
+      sourceTable: "dashboard_summary_snapshots,sales/actions,service-bundles,cleaning-window,compliance-exposure,biofouling-risk",
+      items: quoteItems,
+      extra: {
+        status: quoteItems.length ? "active" : "empty",
+        reason: quoteItems.length ? null : "견적 기회 후보가 없습니다.",
+        disclaimer: "Estimated Opportunity Only"
+      }
+    });
+  }
   if (pathname.endsWith("/reports/morning-brief.json")) {
     const hot = items.filter(item => item.sales_priority_band === "HOT" || item.priority_label === "HOT" || Number(item.opportunity_score || 0) >= 75);
     const ports = Array.isArray(summary.ports) ? summary.ports.slice(0, 5) : [];
@@ -7429,6 +7492,7 @@ async function apiResponse(url, env) {
     pathname.endsWith("/data-continuity.json") ||
     pathname.endsWith("/alerts/latest.json") ||
     pathname.endsWith("/alerts/sales-alerts.json") ||
+    pathname.endsWith("/sales/quote-opportunities.json") ||
     /^\/api\/biofouling\/[^/]+\.(?:json|geojson)$/.test(pathname) ||
     /^\/api\/intelligence\/[^/]+\.json$/.test(pathname);
   if (summaryFirstRoute) {
@@ -7544,6 +7608,64 @@ async function apiResponse(url, env) {
         record_count: verificationItems.length,
         total_count: verificationItems.length,
         returned_count: Math.min(verificationItems.length, VERIFICATION_QUEUE_OUTPUT_LIMIT)
+      }
+    }), { headers: corsHeaders() });
+  }
+  if (pathname.endsWith("/sales/quote-opportunities.json")) {
+    const quoteItems = topCandidatesPayloadFromRecords(allRecords, endpointSource, generatedAt).opportunities
+      .slice(0, 20)
+      .map((item, index) => {
+        const display = vesselDisplay(item);
+        const opportunityScore = Number(item.opportunity_score || item.sales_priority_score || item.total_sales_priority_score || 0);
+        const riskScore = Number(item.risk_score || item.biofouling_risk_score || item.biofouling_exposure_score || 0);
+        const readinessScore = Math.min(100, Math.round(
+          (display.vessel_name && display.vessel_name !== "-" ? 8 : 0) +
+          (display.imo && display.imo !== "-" ? 18 : 0) +
+          (display.call_sign && display.call_sign !== "-" ? 12 : 0) +
+          (display.operator && display.operator !== "-" ? 15 : 0) +
+          (display.manager && display.manager !== "-" ? 10 : 0) +
+          (display.current_port && display.current_port !== "-" ? 12 : 0) +
+          (display.eta !== "-" || display.ata !== "-" ? 8 : 0) +
+          Math.min(25, opportunityScore * 0.2 + riskScore * 0.12)
+        ));
+        const missing = [];
+        if (display.imo === "-") missing.push("IMO");
+        if (display.call_sign === "-") missing.push("Call Sign");
+        if (display.operator === "-") missing.push("Operator");
+        if (display.manager === "-") missing.push("Manager");
+        if (display.owner === "-") missing.push("Owner");
+        if (!(item.agent || item.agent_name || item.local_agent)) missing.push("Local Agent");
+        return withVesselDisplay({
+          ...item,
+          rank: index + 1,
+          quote_readiness_score: readinessScore,
+          quote_readiness_label: readinessScore >= 75 ? "READY" : readinessScore >= 40 ? "NEEDS_INFO" : "MONITOR",
+          recommended_services: opportunityScore >= 60 || riskScore >= 55 ? ["Hull Cleaning", "Biofouling Report"] : ["Hull Cleaning"],
+          estimated_value_band: {
+            currency: "KRW",
+            low: 5000000,
+            mid: 17500000,
+            high: 30000000,
+            method: "rule_based_estimate",
+            disclaimer: "Estimated Opportunity Only"
+          },
+          missing_quote_fields: missing,
+          quote_reason_summary: item.reason_summary || compactReasonSummary(item) || "활성 데이터 기반 견적 기회 후보입니다.",
+          recommended_next_action: missing.length ? "견적 전 정보 확인 필요" : "견적 범위 산정 후 제안서 준비",
+          message_angle: "입항 일정과 작업 가능 시간을 기준으로 견적 범위를 확인",
+          data_sources: ["opportunity_master", "sales_candidates_current", "quote_opportunity_builder_fallback"]
+        });
+      });
+    return json(publicItemsEnvelope({
+      generatedAt,
+      dataMode: endpointSource.data_source_used,
+      source: endpointSource,
+      sourceTable: "opportunity_master,sales_candidates_current,sales/actions,service-bundles,cleaning-window,compliance-exposure,biofouling-risk",
+      items: quoteItems,
+      extra: {
+        status: quoteItems.length ? "active" : "empty",
+        reason: quoteItems.length ? null : "견적 기회 후보가 없습니다.",
+        disclaimer: "Estimated Opportunity Only"
       }
     }), { headers: corsHeaders() });
   }

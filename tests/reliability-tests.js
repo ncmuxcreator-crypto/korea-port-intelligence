@@ -13,6 +13,7 @@ const REQUIRED_FILES = [
   "dashboard/api/agent-followup-queue.json",
   "dashboard/api/sales/verification-queue.json",
   "dashboard/api/sales/actions.json",
+  "dashboard/api/sales/quote-opportunities.json",
   "dashboard/api/targets/categories.json",
   "dashboard/api/candidates/top.json",
   "dashboard/api/vessels/index.json",
@@ -147,6 +148,7 @@ const followups = rows(readJson("dashboard/api/agent-followup-queue.json"));
 const verificationQueue = rows(readJson("dashboard/api/sales/verification-queue.json"));
 const targetCategoriesPayload = readJson("dashboard/api/targets/categories.json");
 const salesActionsPayload = readJson("dashboard/api/sales/actions.json");
+const quoteOpportunitiesPayload = readJson("dashboard/api/sales/quote-opportunities.json");
 const alerts = readJson("dashboard/api/alerts/latest.json");
 const report = readJson("dashboard/api/reports/daily-summary.json");
 const morningBrief = readJson("dashboard/api/reports/morning-brief.json");
@@ -612,6 +614,27 @@ const anchorageRows = targetRowsForCategories.some(item => item.is_anchorage_wai
 if (anchorageRows) assert((categoryMap.get("ANCHORAGE_OPPORTUNITY")?.count || 0) > 0, "Anchorage signals should produce ANCHORAGE_OPPORTUNITY.");
 if (verificationQueue.length) assert((categoryMap.get("VERIFY_CONTACT")?.count || 0) > 0, "Missing operator/agent info on priority targets should produce VERIFY_CONTACT, not exclusion.");
 assert(Array.isArray(rows(salesActionsPayload)), "sales/actions.json must expose action items.");
+assert(Array.isArray(rows(quoteOpportunitiesPayload)), "sales/quote-opportunities.json must expose quote opportunity items.");
+assert(quoteOpportunitiesPayload.disclaimer === "Estimated Opportunity Only", "Quote opportunities must be labeled as estimated opportunity only.");
+const quoteRows = rows(quoteOpportunitiesPayload);
+const hotTargetRows = rows(readJson("dashboard/api/targets/current.json")).filter(item => String(item.priority_label || item.sales_priority_band || item.vessel_display?.priority_label || "").toUpperCase() === "HOT" || Number(item.opportunity_score || item.vessel_display?.opportunity_score || 0) >= 75);
+if (hotTargetRows.length) assert(quoteRows.length > 0, "HOT targets should produce quote opportunities.");
+for (const item of quoteRows.slice(0, 20)) {
+  for (const field of ["rank", "vessel_display", "quote_readiness_score", "quote_readiness_label", "recommended_services", "estimated_value_band", "missing_quote_fields", "quote_reason_summary", "recommended_next_action", "message_angle", "data_sources"]) {
+    assert(field in item, `Quote opportunity item missing field: ${field}`);
+  }
+  assert(["READY", "NEEDS_INFO", "MONITOR"].includes(item.quote_readiness_label), `Invalid quote_readiness_label: ${item.quote_readiness_label}`);
+  assert(Array.isArray(item.recommended_services), "Quote recommended_services must be an array.");
+  assert(item.recommended_services.length > 0, "Quote recommended_services must not be empty.");
+  assert(Array.isArray(item.missing_quote_fields), "Quote missing_quote_fields must be an array.");
+  const band = item.estimated_value_band || {};
+  for (const field of ["low", "mid", "high"]) {
+    assert(Number.isFinite(Number(band[field])) && Number(band[field]) >= 0, `Quote estimated_value_band.${field} must be finite and non-negative.`);
+  }
+}
+assert(dashboardSource.includes("/api/sales/quote-opportunities.json") && dashboardSource.includes("견적 기회 빌더"), "Dashboard must expose quote opportunity builder endpoint.");
+assert(publicSource.includes("/api/sales/quote-opportunities.json") && publicSource.includes("견적 기회 빌더"), "Public dashboard must expose quote opportunity builder endpoint.");
+assert(dashboardSource.includes("견적 정보 보기"), "Dashboard quote cards must expose expandable quote details.");
 assert(dashboardSource.includes("영업 대상 카테고리") && dashboardSource.includes("/api/targets/categories.json"), "Dashboard must expose lazy-loaded target category UI.");
 assert(publicSource.includes("영업 대상 카테고리") && publicSource.includes("/api/targets/categories.json"), "Public dashboard must expose lazy-loaded target category UI.");
 

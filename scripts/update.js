@@ -4596,6 +4596,13 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "recommended_next_action",
   "reason",
   "recommended_message_angle",
+  "quote_readiness_score",
+  "quote_readiness_label",
+  "recommended_services",
+  "estimated_value_band",
+  "missing_quote_fields",
+  "quote_reason_summary",
+  "message_angle",
   "urgency",
   "next_action",
   "verification_type",
@@ -7361,6 +7368,15 @@ const SERVICE_BUNDLE_SERVICES = [
   "Pre-docking Inspection"
 ];
 
+const QUOTE_SERVICE_VALUE_RANGES_KRW = {
+  "Hull Cleaning": { low: 5000000, high: 30000000 },
+  UWI: { low: 3000000, high: 15000000 },
+  "Propeller Polish": { low: 3000000, high: 12000000 },
+  "Biofouling Report": { low: 1000000, high: 5000000 },
+  "Performance Report": { low: 1000000, high: 6000000 },
+  "Pre-docking Inspection": { low: 2000000, high: 10000000 }
+};
+
 function serviceBundleSignals(record = {}) {
   const text = serviceText(record);
   const demand = serviceDemandFlags(record);
@@ -7484,6 +7500,377 @@ function buildServiceBundleIntelligenceSummary({ records = [], generatedAt, data
       service_catalog: SERVICE_BUNDLE_SERVICES
     },
     extra: { bundle_counts }
+  });
+}
+
+function quoteKnown(value) {
+  if (value === undefined || value === null) return false;
+  const text = String(value).trim();
+  return Boolean(text) && !["-", "0", "선명 확인 필요", "미확인", "확인 필요", "정보 없음"].includes(text);
+}
+
+function quoteRecordValue(record = {}, ...keys) {
+  const display = record.vessel_display || {};
+  for (const key of keys) {
+    const value = record[key] ?? display[key];
+    if (quoteKnown(value)) return value;
+  }
+  return "";
+}
+
+function quoteIdentityKey(record = {}) {
+  const imo = quoteRecordValue(record, "imo", "imo_no");
+  if (imo) return `IMO:${String(imo).toUpperCase()}`;
+  const mmsi = quoteRecordValue(record, "mmsi");
+  if (mmsi) return `MMSI:${String(mmsi).toUpperCase()}`;
+  const name = quoteRecordValue(record, "vessel_name", "name", "ship_name");
+  const callSign = quoteRecordValue(record, "call_sign", "callsign", "clsgn");
+  const port = quoteRecordValue(record, "current_port", "port_name", "port", "destination_port", "destination");
+  if (name || callSign) return `NAME:${String(name || callSign).toUpperCase().replace(/\s+/g, " ").trim()}|PORT:${String(port || "KOREA").toUpperCase()}`;
+  return "";
+}
+
+function quoteHasValidIdentity(record = {}) {
+  return Boolean(
+    quoteRecordValue(record, "vessel_name", "name", "ship_name") ||
+    quoteRecordValue(record, "imo", "imo_no") ||
+    quoteRecordValue(record, "mmsi") ||
+    quoteRecordValue(record, "call_sign", "callsign", "clsgn")
+  );
+}
+
+function quoteCandidateScore(record = {}) {
+  return Math.max(
+    Number(salesPriorityScore(record) || 0),
+    Number(record.quote_readiness_score || 0),
+    Number(record.bundle_score || 0),
+    Number(record.window_score || record.cleaning_window_score || 0),
+    Number(record.compliance_score || 0),
+    Number(record.biofouling_risk_score || record.biofouling_exposure_score || record.risk_score || 0)
+  );
+}
+
+function quoteMergeRecord(current = {}, next = {}, sourceName = "") {
+  const merged = { ...current };
+  for (const [key, value] of Object.entries(next || {})) {
+    if (key === "vessel_display") continue;
+    if (Array.isArray(value)) {
+      const combined = [...(Array.isArray(merged[key]) ? merged[key] : []), ...value].filter(item => item !== null && item !== undefined && String(item).trim() !== "");
+      if (combined.length) merged[key] = [...new Set(combined.map(item => typeof item === "string" ? item : JSON.stringify(item)))].map(item => {
+        try {
+          return item.startsWith("{") || item.startsWith("[") ? JSON.parse(item) : item;
+        } catch {
+          return item;
+        }
+      });
+      continue;
+    }
+    if (Number.isFinite(Number(value)) && /score|count|hours|days|gt|dwt|value|rank/i.test(key)) {
+      if (!Number.isFinite(Number(merged[key])) || Number(value) > Number(merged[key])) merged[key] = value;
+      continue;
+    }
+    if (quoteKnown(value) && !quoteKnown(merged[key])) merged[key] = value;
+  }
+  const sources = [
+    ...(Array.isArray(current.quote_source_names) ? current.quote_source_names : []),
+    ...(Array.isArray(next.quote_source_names) ? next.quote_source_names : []),
+    ...(Array.isArray(next.data_sources) ? next.data_sources : []),
+    sourceName
+  ].filter(Boolean);
+  merged.quote_source_names = [...new Set(sources)];
+  return merged;
+}
+
+function collectQuoteOpportunityCandidates({
+  records = [],
+  salesCandidates = [],
+  immediateTargets = [],
+  topCandidates = {},
+  salesActions = {},
+  verificationQueue = {},
+  serviceBundles = {},
+  cleaningWindow = {},
+  complianceExposure = {},
+  biofoulingRisk = {}
+} = {}) {
+  const sources = [
+    ["HOT/WARM targets", salesCandidates],
+    ["Immediate targets", immediateTargets],
+    ["Top candidates", compactItems(topCandidates)],
+    ["Sales actions", compactItems(salesActions)],
+    ["Verification queue", compactItems(verificationQueue)],
+    ["Service bundles", compactItems(serviceBundles)],
+    ["Cleaning window", compactItems(cleaningWindow)],
+    ["Compliance exposure", compactItems(complianceExposure)],
+    ["Biofouling risk", compactItems(biofoulingRisk)],
+    ["Opportunity master", records.filter(record => salesPriorityScore(record) >= 50 || recordRiskScore(record) >= 55 || String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT")]
+  ];
+  const byIdentity = new Map();
+  for (const [sourceName, rows] of sources) {
+    for (const row of (Array.isArray(rows) ? rows : [])) {
+      if (!row || typeof row !== "object" || !quoteHasValidIdentity(row)) continue;
+      const key = quoteIdentityKey(row);
+      if (!key) continue;
+      const next = quoteMergeRecord(row, { quote_source_names: [sourceName] }, sourceName);
+      const current = byIdentity.get(key);
+      byIdentity.set(key, quoteMergeRecord(current || {}, next, sourceName));
+    }
+  }
+  return [...byIdentity.values()].sort((a, b) => quoteCandidateScore(b) - quoteCandidateScore(a));
+}
+
+function quoteReadinessScore(record = {}) {
+  const display = vesselDisplay(record);
+  let score = 0;
+  if (quoteKnown(display.vessel_name)) score += 6;
+  if (quoteKnown(display.imo)) score += 10;
+  if (quoteKnown(display.call_sign)) score += 9;
+  if (quoteKnown(display.operator)) score += 8;
+  if (quoteKnown(display.owner)) score += 5;
+  if (quoteKnown(display.manager) || quoteKnown(display.technical_manager)) score += 6;
+  if (quoteRecordValue(record, "local_agent", "agent_name", "agent")) score += 6;
+  if (quoteKnown(display.current_port)) score += 8;
+  if (quoteKnown(display.eta) || quoteKnown(display.ata) || quoteKnown(display.etb) || quoteKnown(display.atb)) score += 6;
+  if (Number(display.stay_days || record.stay_days || 0) > 0 || Number(record.stay_hours || record.anchorage_hours || 0) > 0) score += 5;
+  if (hasAnchorageWaitingSignal(record) || Number(record.window_score || record.cleaning_window_score || 0) > 0) score += 6;
+  if (salesPriorityScore(record) >= 70) score += 8;
+  if (recordRiskScore(record) >= 70) score += 5;
+  if (Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length > 0) score += 4;
+  if (Number(record.window_score || record.cleaning_window_score || 0) >= 45) score += 4;
+  if (quoteKnown(record.reason_summary || display.reason_summary)) score += 4;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function quoteReadinessLabel(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 75) return "READY";
+  if (value >= 40) return "NEEDS_INFO";
+  return "MONITOR";
+}
+
+function missingQuoteFields(record = {}) {
+  const display = vesselDisplay(record);
+  const missing = [];
+  if (!quoteKnown(display.imo)) missing.push("IMO");
+  if (!quoteKnown(display.call_sign)) missing.push("Call Sign");
+  if (!quoteKnown(display.operator)) missing.push("Operator");
+  if (!quoteKnown(display.manager) && !quoteKnown(display.technical_manager)) missing.push("Manager");
+  if (!quoteKnown(display.owner)) missing.push("Owner");
+  if (!quoteRecordValue(record, "local_agent", "agent_name", "agent")) missing.push("Local Agent");
+  if (!quoteKnown(display.current_port)) missing.push("Current Port");
+  if (!quoteKnown(display.eta) && !quoteKnown(display.ata) && !quoteKnown(display.etb) && !quoteKnown(display.atb)) missing.push("ETA/ATA");
+  if (!quoteKnown(display.vessel_type)) missing.push("Vessel Type");
+  if (!quoteKnown(display.gt) && !quoteKnown(display.dwt)) missing.push("GT/DWT");
+  if (!quoteRecordValue(record, "contact_person", "superintendent_name", "technical_superintendent", "contact_name")) missing.push("Contact Person");
+  return missing;
+}
+
+function quoteRecommendedServices(record = {}) {
+  const fromRecord = [
+    ...compactItems(record.recommended_services),
+    ...compactItems(record.recommended_bundle),
+    ...compactItems(record.services).map(item => item.service_name || item.name || item)
+  ].filter(Boolean);
+  const inferred = serviceBundleRecommendation(record).services || [];
+  const services = [...fromRecord, ...inferred];
+  const opportunity = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const stay = dwellDays(record);
+  const gt = firstFiniteNumber(record.gt, record.grtg, record.gross_tonnage, record.vessel_display?.gt, 0) || 0;
+  const dwt = firstFiniteNumber(record.dwt, record.deadweight, record.vessel_display?.dwt, 0) || 0;
+  if ((risk >= 55 || opportunity >= 55 || stay >= 3 || hasAnchorageWaitingSignal(record)) && !services.includes("Hull Cleaning")) services.push("Hull Cleaning");
+  if ((risk >= 60 || (quoteKnown(vesselDisplay(record).current_port) && risk >= 50)) && !services.includes("UWI")) services.push("UWI");
+  if ((gt >= 10000 || dwt >= 15000 || opportunity >= 65) && !services.includes("Propeller Polish")) services.push("Propeller Polish");
+  if ((Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length > 0 || regulatedRouteSignal(record)) && !services.includes("Biofouling Report")) services.push("Biofouling Report");
+  if ((Number(record.drydock_probability || 0) >= 45 || Number(record.window_score || record.cleaning_window_score || 0) >= 55) && !services.includes("Pre-docking Inspection")) services.push("Pre-docking Inspection");
+  if (!services.length && (opportunity >= 50 || risk >= 50)) services.push("Hull Cleaning");
+  return [...new Set(services)].filter(service => QUOTE_SERVICE_VALUE_RANGES_KRW[service]).slice(0, 5);
+}
+
+function quoteEstimatedValueBand(services = [], record = {}, readinessScore = 0) {
+  let low = 0;
+  let high = 0;
+  for (const service of services) {
+    const range = QUOTE_SERVICE_VALUE_RANGES_KRW[service];
+    if (!range) continue;
+    low += range.low;
+    high += range.high;
+  }
+  const gt = firstFiniteNumber(record.gt, record.grtg, record.gross_tonnage, record.vessel_display?.gt, 0) || 0;
+  const dwt = firstFiniteNumber(record.dwt, record.deadweight, record.vessel_display?.dwt, 0) || 0;
+  const sizeFactor = gt >= 60000 || dwt >= 100000 ? 1.25 : gt >= 30000 || dwt >= 50000 ? 1.12 : gt >= 10000 || dwt >= 15000 ? 1.05 : 1;
+  const confidenceFactor = 0.85 + Math.min(100, Math.max(0, Number(readinessScore || 0))) / 500;
+  low = Math.round(low * sizeFactor * confidenceFactor);
+  high = Math.round(high * sizeFactor * confidenceFactor);
+  const mid = Math.round((low + high) / 2);
+  return {
+    currency: "KRW",
+    low,
+    mid,
+    high,
+    method: "rule_based_estimate",
+    disclaimer: "Estimated Opportunity Only"
+  };
+}
+
+function quoteReasonSummary(record = {}, services = []) {
+  const reasons = [];
+  const opportunity = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const windowScore = firstFiniteNumber(record.window_score, record.cleaning_window_score, 0) || 0;
+  const complianceScore = firstFiniteNumber(record.compliance_score, 0) || 0;
+  if (opportunity >= 75) reasons.push(`HOT 기회 점수 ${opportunity}점`);
+  else if (opportunity >= 50) reasons.push(`WARM 기회 점수 ${opportunity}점`);
+  if (risk >= 70) reasons.push(`고위험 리스크 ${risk}점`);
+  if (windowScore >= 55) reasons.push(`클리닝 가능 시간 신호 ${windowScore}점`);
+  if (complianceScore >= 45 || complianceExposureRegions(record).length) reasons.push("Compliance 상업 신호");
+  if (hasAnchorageWaitingSignal(record)) reasons.push("묘박/대기 또는 장기 체류 신호");
+  if (services.length) reasons.push(`${services.join(" + ")} 제안 가능`);
+  const base = compactReasonSummary(record);
+  if (base && base !== "추천 사유 확인 필요") reasons.push(base);
+  return [...new Set(reasons)].slice(0, 4).join("; ") || "기존 영업 인텔리전스에서 견적 검토 가능한 후보로 식별되었습니다.";
+}
+
+function quoteNextAction(label = "MONITOR", missing = []) {
+  const importantMissing = missing.some(field => ["IMO", "Operator", "Manager", "Owner", "Local Agent", "Current Port"].includes(field));
+  if (importantMissing || label === "NEEDS_INFO") return "견적 전 정보 확인 필요";
+  if (label === "READY") return "견적 범위 산정 후 제안서 준비";
+  return "영업 담당자 확인 후 견적 가능성 모니터링";
+}
+
+function quoteMessageAngle(record = {}, services = []) {
+  const port = recordPortName(record);
+  const action = services.length ? services.join(" + ") : "Hull Cleaning";
+  if (Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length) return `${port} 입항/출항 전 ${action}와 Biofouling Report 필요성을 상업 기회 관점에서 확인`;
+  if (hasAnchorageWaitingSignal(record)) return `${port} 묘박/대기 시간을 활용한 ${action} 가능성 확인`;
+  if (dwellDays(record) >= 3) return `${port} 장기 체류 중 작업 가능 시간과 ${action} 범위 확인`;
+  return `${port} 기항 일정에 맞춘 ${action} 제안 가능성 확인`;
+}
+
+function buildQuoteOpportunitiesPayload({
+  records = [],
+  salesCandidates = [],
+  immediateTargets = [],
+  topCandidates = {},
+  salesActions = {},
+  verificationQueue = {},
+  serviceBundles = {},
+  cleaningWindow = {},
+  complianceExposure = {},
+  biofoulingRisk = {},
+  generatedAt,
+  dataMode,
+  report = {}
+} = {}) {
+  const runtimeRowsAvailable = [
+    records,
+    salesCandidates,
+    immediateTargets,
+    compactItems(topCandidates),
+    compactItems(salesActions),
+    compactItems(verificationQueue),
+    compactItems(serviceBundles),
+    compactItems(cleaningWindow),
+    compactItems(complianceExposure),
+    compactItems(biofoulingRisk)
+  ].some(rows => Array.isArray(rows) && rows.length > 0);
+  const fallbackTargets = runtimeRowsAvailable ? [] : compactItems(readJsonSafe("dashboard/api/targets/current.json", null));
+  const fallbackTop = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/candidates/top.json", {});
+  const fallbackSalesActions = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/sales/actions.json", {});
+  const fallbackVerification = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/sales/verification-queue.json", {});
+  const fallbackServiceBundles = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/intelligence/service-bundles.json", {});
+  const fallbackCleaningWindow = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/intelligence/cleaning-window.json", {});
+  const fallbackComplianceExposure = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/intelligence/compliance-exposure.json", {});
+  const fallbackBiofoulingRisk = runtimeRowsAvailable ? {} : readJsonSafe("dashboard/api/intelligence/biofouling-risk.json", {});
+  const candidates = collectQuoteOpportunityCandidates({
+    records: runtimeRowsAvailable ? records : fallbackTargets,
+    salesCandidates: runtimeRowsAvailable ? salesCandidates : fallbackTargets,
+    immediateTargets,
+    topCandidates: runtimeRowsAvailable ? topCandidates : fallbackTop,
+    salesActions: runtimeRowsAvailable ? salesActions : fallbackSalesActions,
+    verificationQueue: runtimeRowsAvailable ? verificationQueue : fallbackVerification,
+    serviceBundles: runtimeRowsAvailable ? serviceBundles : fallbackServiceBundles,
+    cleaningWindow: runtimeRowsAvailable ? cleaningWindow : fallbackCleaningWindow,
+    complianceExposure: runtimeRowsAvailable ? complianceExposure : fallbackComplianceExposure,
+    biofoulingRisk: runtimeRowsAvailable ? biofoulingRisk : fallbackBiofoulingRisk
+  });
+  const items = candidates
+    .map((record, index) => {
+      const display = vesselDisplay(record);
+      const readinessScore = quoteReadinessScore(record);
+      const readinessLabel = quoteReadinessLabel(readinessScore);
+      const missing = missingQuoteFields(record);
+      const services = quoteRecommendedServices(record);
+      const valueBand = quoteEstimatedValueBand(services, record, readinessScore);
+      const quoteReason = quoteReasonSummary(record, services);
+      return {
+        rank: index + 1,
+        vessel_display: display,
+        quote_readiness_score: readinessScore,
+        quote_readiness_label: readinessLabel,
+        recommended_services: services,
+        estimated_value_band: valueBand,
+        missing_quote_fields: missing,
+        quote_reason_summary: quoteReason,
+        reason_summary: quoteReason,
+        recommended_next_action: quoteNextAction(readinessLabel, missing),
+        recommended_action: quoteNextAction(readinessLabel, missing),
+        message_angle: quoteMessageAngle(record, services),
+        opportunity_score: firstFiniteNumber(record.opportunity_score, display.opportunity_score, salesPriorityScore(record), 0) || 0,
+        risk_score: firstFiniteNumber(record.risk_score, display.risk_score, recordRiskScore(record), 0) || 0,
+        confidence_score: firstFiniteNumber(record.confidence_score, display.confidence_score, record.data_confidence_score, readinessScore, 0) || 0,
+        priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, display.priority_label, salesPriorityBand(salesPriorityScore(record))),
+        data_sources: [...new Set([...(record.quote_source_names || []), ...displaySources(record), "quote_opportunity_builder"])].filter(Boolean)
+      };
+    })
+    .filter(item => item.recommended_services.length && (item.quote_readiness_score >= 35 || Number(item.opportunity_score || 0) >= 50 || Number(item.risk_score || 0) >= 55))
+    .sort((a, b) =>
+      Number(b.quote_readiness_score || 0) - Number(a.quote_readiness_score || 0) ||
+      Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) ||
+      Number(b.risk_score || 0) - Number(a.risk_score || 0)
+    )
+    .slice(0, 100)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+
+  const readyCount = items.filter(item => item.quote_readiness_label === "READY").length;
+  const needsInfoCount = items.filter(item => item.quote_readiness_label === "NEEDS_INFO").length;
+  const monitorCount = items.filter(item => item.quote_readiness_label === "MONITOR").length;
+  const totalValue = items.reduce((sum, item) => ({
+    low: sum.low + Number(item.estimated_value_band?.low || 0),
+    mid: sum.mid + Number(item.estimated_value_band?.mid || 0),
+    high: sum.high + Number(item.estimated_value_band?.high || 0)
+  }), { low: 0, mid: 0, high: 0 });
+
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode,
+    report,
+    sourceTable: "opportunity_master,sales_candidates_current,immediate_targets_current,sales/actions,service-bundles,cleaning-window,compliance-exposure,biofouling-risk,verification-queue",
+    items,
+    extra: {
+      status: items.length ? "active" : "empty",
+      reason: items.length ? null : "견적 기회 조건을 통과한 HOT/WARM 후보가 없습니다.",
+      disclaimer: "Estimated Opportunity Only",
+      summary: {
+        total_targets: salesCandidates.length,
+        quote_opportunity_count: items.length,
+        ready_count: readyCount,
+        needs_info_count: needsInfoCount,
+        monitor_count: monitorCount,
+        estimated_total_value: {
+          currency: "KRW",
+          ...totalValue,
+          method: "rule_based_estimate",
+          disclaimer: "Estimated Opportunity Only"
+        },
+        assumptions: {
+          "Hull Cleaning": QUOTE_SERVICE_VALUE_RANGES_KRW["Hull Cleaning"],
+          UWI: QUOTE_SERVICE_VALUE_RANGES_KRW.UWI,
+          "Propeller Polish": QUOTE_SERVICE_VALUE_RANGES_KRW["Propeller Polish"],
+          "Biofouling Report": QUOTE_SERVICE_VALUE_RANGES_KRW["Biofouling Report"]
+        }
+      }
+    }
   });
 }
 
@@ -12371,6 +12758,21 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const quoteOpportunitiesPayload = buildQuoteOpportunitiesPayload({
+    records: vessels,
+    salesCandidates,
+    immediateTargets,
+    topCandidates: topCandidatesPayload,
+    salesActions: salesActionsPayload,
+    verificationQueue: verificationQueuePayload,
+    serviceBundles: intelligenceSummaries["service-bundles"],
+    cleaningWindow: intelligenceSummaries["cleaning-window"],
+    complianceExposure: intelligenceSummaries["compliance-exposure"],
+    biofoulingRisk: intelligenceSummaries["biofouling-risk"],
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -12424,6 +12826,7 @@ try {
     "dashboard/api/sales/actions.json": salesActionsPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
+    "dashboard/api/sales/quote-opportunities.json": quoteOpportunitiesPayload,
     "dashboard/api/watchlist/current.json": watchlistPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
@@ -12580,6 +12983,7 @@ try {
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
+  writeApiJson("dashboard/api/sales/quote-opportunities.json", quoteOpportunitiesPayload, report);
   writeApiJson("dashboard/api/watchlist/current.json", watchlistPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);

@@ -9,6 +9,7 @@ const DASHBOARD_HTML = path.join(ROOT, "dashboard", "index.html");
 const EXPECTED_ENDPOINTS = [
   "dashboard/api/bootstrap.json",
   "dashboard/api/sales/actions.json",
+  "dashboard/api/sales/quote-opportunities.json",
   "dashboard/api/targets/categories.json",
   "dashboard/api/candidates/top.json",
   "dashboard/api/intelligence/fleet-intelligence.json",
@@ -103,4 +104,3 @@ if (!problems.length) {
 } else {
   for (const problem of problems) console.log(`- ${problem}`);
 }
-
