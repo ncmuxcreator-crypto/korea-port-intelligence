@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-06T06:07:36.923Z",
+  "generated_at": "2026-06-07T02:14:41.019Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -9,7 +9,7 @@
       "rank": 1,
       "operator_name": "HMM",
       "agent_name": "(주)케이라인마리타임코리아",
-      "repeat_caller_count": 12,
+      "repeat_caller_count": 11,
       "relationship_score": 100,
       "customer_type": "OPERATOR",
       "customer_name": "HMM",
@@ -22,24 +22,24 @@
       "operation_completed_count": 0,
       "customer_feedback_count": 0,
       "fleet_history": {
-        "vessels_seen": 12,
-        "repeat_callers": 12,
-        "hot_count": 7,
-        "warm_count": 4,
+        "vessels_seen": 11,
+        "repeat_callers": 11,
+        "hot_count": 6,
+        "warm_count": 5,
         "ports_used": [
           "부산",
           "평택·당진",
           "미확인 항만"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
       "customer_memory_score": 59,
       "sensitive_details_exposed": false,
-      "vessels_seen": 12,
+      "vessels_seen": 11,
       "ports_used": [
         {
           "port_name": "부산",
-          "count": 10
+          "count": 9
         },
         {
           "port_name": "평택·당진",
@@ -50,24 +50,24 @@
           "count": 1
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 7,
-      "warm_count": 4,
-      "average_opportunity_score": 47,
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 6,
+      "warm_count": 5,
+      "average_opportunity_score": 48,
       "average_risk_score": 45,
       "top_vessels": [
         {
           "vessel_name": "HYUNDAI DANGJIN",
           "imo": "-",
           "port": "평택·당진",
-          "opportunity_score": 82,
+          "opportunity_score": 80,
           "priority_label": "HOT"
         },
         {
           "vessel_name": "HYUNDAI SHANGHAI",
           "imo": "-",
           "port": "부산",
-          "opportunity_score": 57,
+          "opportunity_score": 60,
           "priority_label": "WARM"
         },
         {
@@ -81,19 +81,19 @@
           "vessel_name": "HMM RUBY",
           "imo": "-",
           "port": "부산",
-          "opportunity_score": 49,
+          "opportunity_score": 50,
           "priority_label": "HOT"
         },
         {
           "vessel_name": "HYUNDAI FORCE",
           "imo": "-",
           "port": "부산",
-          "opportunity_score": 45,
+          "opportunity_score": 47,
           "priority_label": "HOT"
         }
       ],
       "opportunity_score": 59,
-      "reason_summary": "HMM: 선대 12척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "reason_summary": "HMM: 선대 11척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
       "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
       "data_sources": [
         "commercial_leads",
@@ -122,14 +122,38 @@
         "ata": "2026-06-04 07:00:00+09:00",
         "atb": "-",
         "stay_days": 8.4,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
         "confidence_score": 66,
-        "opportunity_score": 70,
+        "opportunity_score": 68,
         "risk_score": 45,
+        "biofoulingRiskScore": 20,
+        "hullGrowthIndex": 21,
+        "cleaningOpportunityScore": 41,
+        "anchorageHours": 0,
+        "portStayHours": 202,
+        "sstCelsius": 18.6,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 28.4,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "EXTENDED_IDLE_PERIOD",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "OPERATOR_IDENTIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
         "contact_readiness_score": 90,
         "priority_label": "HOT",
-        "reason_summary": "HMM 선사는 현재 한국 항만에 12척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 30점, 평균 체선노출 4점입니다. Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 8.4일째인 GT 132,587 벌크선으로, 출항 전 약 50시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "HMM 선사는 현재 한국 항만에 11척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 31점, 평균 체선노출 4점입니다. Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 8.4일째인 GT 132,587 벌크선으로, 출항 전 약 30시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "Merged Port Operation port call",
@@ -145,7 +169,7 @@
       "rank": 2,
       "operator_name": "(주)세바해운",
       "agent_name": "(주)세바해운",
-      "repeat_caller_count": 29,
+      "repeat_caller_count": 30,
       "relationship_score": 100,
       "customer_type": "AGENT",
       "customer_name": "(주)세바해운",
@@ -158,24 +182,24 @@
       "operation_completed_count": 0,
       "customer_feedback_count": 0,
       "fleet_history": {
-        "vessels_seen": 29,
-        "repeat_callers": 29,
-        "hot_count": 12,
-        "warm_count": 20,
+        "vessels_seen": 30,
+        "repeat_callers": 30,
+        "hot_count": 10,
+        "warm_count": 19,
         "ports_used": [
           "대산",
           "여수",
           "미확인 항만"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
       "customer_memory_score": 58,
       "sensitive_details_exposed": false,
-      "vessels_seen": 29,
+      "vessels_seen": 30,
       "ports_used": [
         {
           "port_name": "대산",
-          "count": 25
+          "count": 26
         },
         {
           "port_name": "여수",
@@ -186,23 +210,23 @@
           "count": 1
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 12,
-      "warm_count": 20,
-      "average_opportunity_score": 45,
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 10,
+      "warm_count": 19,
+      "average_opportunity_score": 43,
       "average_risk_score": 45,
       "top_vessels": [
-        {
-          "vessel_name": "SHAN CHI",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 61,
-          "priority_label": "HOT"
-        },
         {
           "vessel_name": "NORTH SEA",
           "imo": "-",
           "port": "대산",
+          "opportunity_score": 63,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "NORMA",
+          "imo": "-",
+          "port": "여수",
           "opportunity_score": 61,
           "priority_label": "HOT"
         },
@@ -221,15 +245,15 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "NISSOS KEA",
+          "vessel_name": "ZOURVA",
           "imo": "-",
           "port": "대산",
-          "opportunity_score": 60,
+          "opportunity_score": 59,
           "priority_label": "HOT"
         }
       ],
       "opportunity_score": 58,
-      "reason_summary": "(주)세바해운: 선대 29척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "reason_summary": "(주)세바해운: 선대 30척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
       "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
       "data_sources": [
         "commercial_leads",
@@ -239,13 +263,13 @@
         "fleet-memory"
       ],
       "vessel_display": {
-        "vessel_name": "SHAN CHI",
+        "vessel_name": "NORTH SEA",
         "imo": "-",
         "mmsi": "-",
-        "call_sign": "BPGJ",
+        "call_sign": "D5LG9",
         "flag": "-",
-        "vessel_type": "Tanker",
-        "gt": 30325,
+        "vessel_type": "Crude Tanker",
+        "gt": 57164,
         "dwt": 0,
         "operator": "-",
         "company": "(주)세바해운",
@@ -253,19 +277,43 @@
         "manager": "-",
         "technical_manager": "-",
         "current_port": "Daesan",
-        "eta": "2026-06-14T14:00:00.000Z",
+        "eta": "2026-06-17T16:48:00.000Z",
         "etb": "-",
-        "ata": "2026-06-01 06:00:00+09:00",
+        "ata": "2026-06-01 14:18:00+09:00",
         "atb": "-",
-        "stay_days": 9.7,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "stay_days": 4.9,
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
-        "confidence_score": 66,
+        "confidence_score": 78,
         "opportunity_score": 65,
         "risk_score": 45,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 45,
+        "cleaningOpportunityScore": 55,
+        "anchorageHours": 95.5,
+        "portStayHours": 115.7,
+        "sstCelsius": 18.6,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 28.7,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED"
+        ],
+        "recommendedAction": "관심 후보",
+        "confidence": "high",
         "contact_readiness_score": 35,
         "priority_label": "HOT",
-        "reason_summary": "Daesan W구역에서 체류 9.7일째인 GT 30,325 탱커으로, 출항 전 약 32시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 4일째인 GT 57,164 원유운반선으로, 출항 전 약 196시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · north_america 항로 민감도가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -278,134 +326,9 @@
     },
     {
       "rank": 3,
-      "operator_name": "제이앤씨쉬핑",
-      "agent_name": "제이앤씨쉬핑",
-      "repeat_caller_count": 12,
-      "relationship_score": 100,
-      "customer_type": "AGENT",
-      "customer_name": "제이앤씨쉬핑",
-      "contact_attempts": 0,
-      "quote_history_count": 0,
-      "quote_value_record_count": 0,
-      "quote_result_count": 0,
-      "won_projects": 0,
-      "lost_projects": 0,
-      "operation_completed_count": 0,
-      "customer_feedback_count": 0,
-      "fleet_history": {
-        "vessels_seen": 12,
-        "repeat_callers": 12,
-        "hot_count": 3,
-        "warm_count": 9,
-        "ports_used": [
-          "울산"
-        ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
-      },
-      "customer_memory_score": 58,
-      "sensitive_details_exposed": false,
-      "vessels_seen": 12,
-      "ports_used": [
-        {
-          "port_name": "울산",
-          "count": 12
-        }
-      ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 3,
-      "warm_count": 9,
-      "average_opportunity_score": 43,
-      "average_risk_score": 45,
-      "top_vessels": [
-        {
-          "vessel_name": "POSILLIPO",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 70,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "CSK JUBILEE",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 58,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "DALMA",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 51,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "CL YINGDU",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 50,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "FOREVER CONVIVIALITY",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 43,
-          "priority_label": "LOW"
-        }
-      ],
-      "opportunity_score": 58,
-      "reason_summary": "제이앤씨쉬핑: 선대 12척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
-      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
-      "data_sources": [
-        "commercial_leads",
-        "operator_contact_history",
-        "sales-pipeline",
-        "relationship-intelligence",
-        "fleet-memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "POSILLIPO",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7A6569",
-        "flag": "-",
-        "vessel_type": "Crude Tanker",
-        "gt": 42446,
-        "dwt": 0,
-        "operator": "-",
-        "company": "제이앤씨쉬핑",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Ulsan",
-        "eta": "2026-06-05T15:15:00.000Z",
-        "etb": "-",
-        "ata": "2026-05-25 14:06:00+09:00",
-        "atb": "-",
-        "stay_days": 8.5,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
-        "data_source": "Merged Port Operation port call",
-        "confidence_score": 78,
-        "opportunity_score": 65,
-        "risk_score": 45,
-        "contact_readiness_score": 35,
-        "priority_label": "HOT",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 8.4일째인 GT 42,446 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-        "recommended_action": "운영선사 확인",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_ulsan_o",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 4,
       "operator_name": "MSC",
       "agent_name": "엠에스씨코리아(주)",
-      "repeat_caller_count": 27,
+      "repeat_caller_count": 25,
       "relationship_score": 100,
       "customer_type": "OPERATOR",
       "customer_name": "MSC",
@@ -418,24 +341,24 @@
       "operation_completed_count": 0,
       "customer_feedback_count": 0,
       "fleet_history": {
-        "vessels_seen": 27,
-        "repeat_callers": 27,
-        "hot_count": 12,
-        "warm_count": 12,
+        "vessels_seen": 25,
+        "repeat_callers": 25,
+        "hot_count": 11,
+        "warm_count": 11,
         "ports_used": [
           "부산",
           "여수",
           "미확인 항만"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
-      "customer_memory_score": 57,
+      "customer_memory_score": 58,
       "sensitive_details_exposed": false,
-      "vessels_seen": 27,
+      "vessels_seen": 25,
       "ports_used": [
         {
           "port_name": "부산",
-          "count": 22
+          "count": 20
         },
         {
           "port_name": "여수",
@@ -446,10 +369,10 @@
           "count": 2
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 12,
-      "warm_count": 12,
-      "average_opportunity_score": 42,
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 11,
+      "warm_count": 11,
+      "average_opportunity_score": 43,
       "average_risk_score": 45,
       "top_vessels": [
         {
@@ -460,36 +383,36 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "MSC RUBY",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 50,
-          "priority_label": "WARM"
-        },
-        {
           "vessel_name": "MSC TERESA",
           "imo": "-",
           "port": "여수",
-          "opportunity_score": 49,
+          "opportunity_score": 50,
           "priority_label": "HOT"
         },
         {
           "vessel_name": "MSC DILETTA",
           "imo": "-",
           "port": "여수",
+          "opportunity_score": 49,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "MSC RAVENNA",
+          "imo": "-",
+          "port": "부산",
           "opportunity_score": 48,
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "MSC VICTORIA",
+          "vessel_name": "MSC CARMELITA",
           "imo": "-",
           "port": "부산",
           "opportunity_score": 48,
           "priority_label": "HOT"
         }
       ],
-      "opportunity_score": 57,
-      "reason_summary": "MSC: 선대 27척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "opportunity_score": 58,
+      "reason_summary": "MSC: 선대 25척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
       "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
       "data_sources": [
         "commercial_leads",
@@ -518,15 +441,39 @@
         "ata": "2026-05-30 12:20:00+09:00",
         "atb": "-",
         "stay_days": 6.3,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
         "confidence_score": 66,
         "opportunity_score": 46,
         "risk_score": 45,
+        "biofoulingRiskScore": 35,
+        "hullGrowthIndex": 29,
+        "cleaningOpportunityScore": 47,
+        "anchorageHours": 0,
+        "portStayHours": 151.7,
+        "sstCelsius": 18.8,
+        "sstAnomalyCelsius": 0.8,
+        "salinityPsu": 31.5,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "OPERATOR_IDENTIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY",
+          "ETA_24_72H_WINDOW",
+          "LONG_PORT_STAY"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
         "contact_readiness_score": 90,
         "priority_label": "HOT",
         "reason_summary": "Busan 신항 1부두 3선석에서 체류 6.3일째인 GT 155,104 컨테이너선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-        "recommended_action": "선박 스케줄 확인",
+        "recommended_action": "ETA 48h 전 연락",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_busan_o",
@@ -538,275 +485,10 @@
       }
     },
     {
-      "rank": 5,
-      "operator_name": "(주)신성해운",
-      "agent_name": "(주)신성해운",
-      "repeat_caller_count": 22,
-      "relationship_score": 100,
-      "customer_type": "AGENT",
-      "customer_name": "(주)신성해운",
-      "contact_attempts": 0,
-      "quote_history_count": 0,
-      "quote_value_record_count": 0,
-      "quote_result_count": 0,
-      "won_projects": 0,
-      "lost_projects": 0,
-      "operation_completed_count": 0,
-      "customer_feedback_count": 0,
-      "fleet_history": {
-        "vessels_seen": 22,
-        "repeat_callers": 22,
-        "hot_count": 4,
-        "warm_count": 16,
-        "ports_used": [
-          "대산",
-          "여수"
-        ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
-      },
-      "customer_memory_score": 57,
-      "sensitive_details_exposed": false,
-      "vessels_seen": 22,
-      "ports_used": [
-        {
-          "port_name": "대산",
-          "count": 15
-        },
-        {
-          "port_name": "여수",
-          "count": 7
-        }
-      ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 4,
-      "warm_count": 16,
-      "average_opportunity_score": 40,
-      "average_risk_score": 45,
-      "top_vessels": [
-        {
-          "vessel_name": "SANMAR SAROD",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 70,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "NAVE HINA",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 61,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "LONE STAR MARINER",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 53,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "HIGH TRADER",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 47,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "ANDEAN SUN",
-          "imo": "-",
-          "port": "대산",
-          "opportunity_score": 46,
-          "priority_label": "HOT"
-        }
-      ],
-      "opportunity_score": 57,
-      "reason_summary": "(주)신성해운: 선대 22척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
-      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
-      "data_sources": [
-        "commercial_leads",
-        "operator_contact_history",
-        "sales-pipeline",
-        "relationship-intelligence",
-        "fleet-memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "SANMAR SAROD",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "VTPZ",
-        "flag": "-",
-        "vessel_type": "Tanker",
-        "gt": 40953,
-        "dwt": 0,
-        "operator": "-",
-        "company": "(주)신성해운",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Daesan",
-        "eta": "2026-06-08T23:30:00.000Z",
-        "etb": "-",
-        "ata": "2026-05-21 16:12:00+09:00",
-        "atb": "-",
-        "stay_days": 15.7,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
-        "data_source": "Merged Port Operation port call",
-        "confidence_score": 78,
-        "opportunity_score": 65,
-        "risk_score": 45,
-        "contact_readiness_score": 35,
-        "priority_label": "HOT",
-        "reason_summary": "Daesan D-1정박지에서 묘박/대기 15.7일째인 GT 40,953 탱커으로, 출항 전 약 224시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-        "recommended_action": "운영선사 확인",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_daesan_o",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 6,
-      "operator_name": "유코카캐리어스(주)",
-      "agent_name": "유코카캐리어스(주)",
-      "repeat_caller_count": 13,
-      "relationship_score": 100,
-      "customer_type": "AGENT",
-      "customer_name": "유코카캐리어스(주)",
-      "contact_attempts": 0,
-      "quote_history_count": 0,
-      "quote_value_record_count": 0,
-      "quote_result_count": 0,
-      "won_projects": 0,
-      "lost_projects": 0,
-      "operation_completed_count": 0,
-      "customer_feedback_count": 0,
-      "fleet_history": {
-        "vessels_seen": 13,
-        "repeat_callers": 13,
-        "hot_count": 3,
-        "warm_count": 9,
-        "ports_used": [
-          "울산",
-          "평택·당진",
-          "포항"
-        ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
-      },
-      "customer_memory_score": 57,
-      "sensitive_details_exposed": false,
-      "vessels_seen": 13,
-      "ports_used": [
-        {
-          "port_name": "울산",
-          "count": 6
-        },
-        {
-          "port_name": "평택·당진",
-          "count": 6
-        },
-        {
-          "port_name": "포항",
-          "count": 1
-        }
-      ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 3,
-      "warm_count": 9,
-      "average_opportunity_score": 39,
-      "average_risk_score": 45,
-      "top_vessels": [
-        {
-          "vessel_name": "MORNING CLARA",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 56,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "TOMBARRA",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 44,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "돈카를로스",
-          "imo": "-",
-          "port": "평택·당진",
-          "opportunity_score": 43,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ASIAN DYNASTY",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 43,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "TOREADOR",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 41,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 57,
-      "reason_summary": "유코카캐리어스(주): 선대 13척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
-      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
-      "data_sources": [
-        "commercial_leads",
-        "operator_contact_history",
-        "sales-pipeline",
-        "relationship-intelligence",
-        "fleet-memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "MORNING CLARA",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "9V7564",
-        "flag": "-",
-        "vessel_type": "PCTC",
-        "gt": 60213,
-        "dwt": 0,
-        "operator": "-",
-        "company": "유코카캐리어스(주)",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Ulsan",
-        "eta": "2026-06-11T13:00:00.000Z",
-        "etb": "-",
-        "ata": "2026-06-07 22:00:00+09:00",
-        "atb": "-",
-        "stay_days": 2.1,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
-        "data_source": "Merged Port Operation port call",
-        "confidence_score": 66,
-        "opportunity_score": 51,
-        "risk_score": 45,
-        "contact_readiness_score": 35,
-        "priority_label": "HOT",
-        "reason_summary": "Ulsan 자동차부두 01에서 체류 1일째인 GT 60,213 자동차운반선으로, 출항 전 약 271시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
-        "recommended_action": "운영선사 확인",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 7,
+      "rank": 4,
       "operator_name": "세화해운 주식회사",
       "agent_name": "세화해운 주식회사",
-      "repeat_caller_count": 12,
+      "repeat_caller_count": 11,
       "relationship_score": 100,
       "customer_type": "AGENT",
       "customer_name": "세화해운 주식회사",
@@ -819,33 +501,33 @@
       "operation_completed_count": 0,
       "customer_feedback_count": 0,
       "fleet_history": {
-        "vessels_seen": 12,
-        "repeat_callers": 12,
+        "vessels_seen": 11,
+        "repeat_callers": 11,
         "hot_count": 1,
         "warm_count": 6,
         "ports_used": [
           "부산",
           "울산"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
-      "customer_memory_score": 57,
+      "customer_memory_score": 58,
       "sensitive_details_exposed": false,
-      "vessels_seen": 12,
+      "vessels_seen": 11,
       "ports_used": [
         {
           "port_name": "부산",
-          "count": 7
+          "count": 6
         },
         {
           "port_name": "울산",
           "count": 5
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
+      "last_seen": "2026-06-07T02:11:40.638Z",
       "hot_count": 1,
       "warm_count": 6,
-      "average_opportunity_score": 40,
+      "average_opportunity_score": 43,
       "average_risk_score": 45,
       "top_vessels": [
         {
@@ -866,26 +548,26 @@
           "vessel_name": "PARNASSOS",
           "imo": "-",
           "port": "부산",
-          "opportunity_score": 45,
+          "opportunity_score": 47,
           "priority_label": "WARM"
         },
         {
           "vessel_name": "CORAL ALICIA",
           "imo": "-",
           "port": "울산",
-          "opportunity_score": 43,
+          "opportunity_score": 47,
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "PROSPERITY 12",
+          "vessel_name": "GELBRAY EXPRESS",
           "imo": "-",
-          "port": "울산",
-          "opportunity_score": 40,
-          "priority_label": "WARM"
+          "port": "부산",
+          "opportunity_score": 45,
+          "priority_label": "LOW"
         }
       ],
-      "opportunity_score": 57,
-      "reason_summary": "세화해운 주식회사: 선대 12척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "opportunity_score": 58,
+      "reason_summary": "세화해운 주식회사: 선대 11척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
       "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
       "data_sources": [
         "commercial_leads",
@@ -914,14 +596,38 @@
         "ata": "2026-05-28 02:00:00+09:00",
         "atb": "-",
         "stay_days": 10.7,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
         "confidence_score": 78,
         "opportunity_score": 65,
         "risk_score": 45,
+        "biofoulingRiskScore": 55,
+        "hullGrowthIndex": 59,
+        "cleaningOpportunityScore": 70,
+        "anchorageHours": 256,
+        "portStayHours": 256,
+        "sstCelsius": 18.7,
+        "sstAnomalyCelsius": 0.7,
+        "salinityPsu": 31.9,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED"
+        ],
+        "recommendedAction": "우선 모니터링 / 접촉 준비",
+        "confidence": "high",
         "contact_readiness_score": 35,
         "priority_label": "HOT",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 10.7일째인 GT 34,764 벌크선으로, 출항 전 약 221시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 10.7일째인 GT 34,764 벌크선으로, 출항 전 약 201시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -933,7 +639,629 @@
       }
     },
     {
+      "rank": 5,
+      "operator_name": "(주)신성해운",
+      "agent_name": "(주)신성해운",
+      "repeat_caller_count": 19,
+      "relationship_score": 100,
+      "customer_type": "AGENT",
+      "customer_name": "(주)신성해운",
+      "contact_attempts": 0,
+      "quote_history_count": 0,
+      "quote_value_record_count": 0,
+      "quote_result_count": 0,
+      "won_projects": 0,
+      "lost_projects": 0,
+      "operation_completed_count": 0,
+      "customer_feedback_count": 0,
+      "fleet_history": {
+        "vessels_seen": 19,
+        "repeat_callers": 19,
+        "hot_count": 4,
+        "warm_count": 15,
+        "ports_used": [
+          "대산",
+          "여수"
+        ],
+        "last_seen": "2026-06-07T02:11:40.638Z"
+      },
+      "customer_memory_score": 57,
+      "sensitive_details_exposed": false,
+      "vessels_seen": 19,
+      "ports_used": [
+        {
+          "port_name": "대산",
+          "count": 13
+        },
+        {
+          "port_name": "여수",
+          "count": 6
+        }
+      ],
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 4,
+      "warm_count": 15,
+      "average_opportunity_score": 42,
+      "average_risk_score": 45,
+      "top_vessels": [
+        {
+          "vessel_name": "SANMAR SAROD",
+          "imo": "-",
+          "port": "대산",
+          "opportunity_score": 70,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "NAVE HINA",
+          "imo": "-",
+          "port": "대산",
+          "opportunity_score": 62,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "LONE STAR MARINER",
+          "imo": "-",
+          "port": "대산",
+          "opportunity_score": 53,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "YUAN JU WAN",
+          "imo": "-",
+          "port": "대산",
+          "opportunity_score": 50,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "ANDEAN SUN",
+          "imo": "-",
+          "port": "대산",
+          "opportunity_score": 46,
+          "priority_label": "HOT"
+        }
+      ],
+      "opportunity_score": 57,
+      "reason_summary": "(주)신성해운: 선대 19척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+      "data_sources": [
+        "commercial_leads",
+        "operator_contact_history",
+        "sales-pipeline",
+        "relationship-intelligence",
+        "fleet-memory"
+      ],
+      "vessel_display": {
+        "vessel_name": "SANMAR SAROD",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "VTPZ",
+        "flag": "-",
+        "vessel_type": "Tanker",
+        "gt": 40953,
+        "dwt": 0,
+        "operator": "-",
+        "company": "(주)신성해운",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Daesan",
+        "eta": "2026-06-08T23:30:00.000Z",
+        "etb": "-",
+        "ata": "2026-05-21 16:12:00+09:00",
+        "atb": "-",
+        "stay_days": 15.7,
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "biofoulingRiskScore": 55,
+        "hullGrowthIndex": 59,
+        "cleaningOpportunityScore": 70,
+        "anchorageHours": 376.3,
+        "portStayHours": 376.3,
+        "sstCelsius": 18.6,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 28.7,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED"
+        ],
+        "recommendedAction": "우선 모니터링 / 접촉 준비",
+        "confidence": "high",
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 15.7일째인 GT 40,953 탱커으로, 출항 전 약 204시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "recommended_action": "ETA 48h 전 연락",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_daesan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 6,
+      "operator_name": "신양상선(주)",
+      "agent_name": "신양상선(주)",
+      "repeat_caller_count": 15,
+      "relationship_score": 100,
+      "customer_type": "AGENT",
+      "customer_name": "신양상선(주)",
+      "contact_attempts": 0,
+      "quote_history_count": 0,
+      "quote_value_record_count": 0,
+      "quote_result_count": 0,
+      "won_projects": 0,
+      "lost_projects": 0,
+      "operation_completed_count": 0,
+      "customer_feedback_count": 0,
+      "fleet_history": {
+        "vessels_seen": 15,
+        "repeat_callers": 15,
+        "hot_count": 2,
+        "warm_count": 7,
+        "ports_used": [
+          "울산"
+        ],
+        "last_seen": "2026-06-07T02:11:40.638Z"
+      },
+      "customer_memory_score": 57,
+      "sensitive_details_exposed": false,
+      "vessels_seen": 15,
+      "ports_used": [
+        {
+          "port_name": "울산",
+          "count": 15
+        }
+      ],
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 2,
+      "warm_count": 7,
+      "average_opportunity_score": 40,
+      "average_risk_score": 45,
+      "top_vessels": [
+        {
+          "vessel_name": "JOSCO DEZHOU",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 52,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "JIN HANG 89",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 50,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "SUN VENUS",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 47,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "RICH LAND",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 47,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "AQUALEO",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 45,
+          "priority_label": "HOT"
+        }
+      ],
+      "opportunity_score": 57,
+      "reason_summary": "신양상선(주): 선대 15척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+      "data_sources": [
+        "commercial_leads",
+        "operator_contact_history",
+        "sales-pipeline",
+        "relationship-intelligence",
+        "fleet-memory"
+      ],
+      "vessel_display": {
+        "vessel_name": "JOSCO DEZHOU",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "VRMU6",
+        "flag": "-",
+        "vessel_type": "Bulk Carrier",
+        "gt": 34558,
+        "dwt": 0,
+        "operator": "-",
+        "company": "신양상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Ulsan",
+        "eta": "2026-06-07T21:20:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-02 22:48:00+09:00",
+        "atb": "-",
+        "stay_days": 4.9,
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 78,
+        "opportunity_score": 46,
+        "risk_score": 45,
+        "biofoulingRiskScore": 20,
+        "hullGrowthIndex": 28,
+        "cleaningOpportunityScore": 40,
+        "anchorageHours": 55.5,
+        "portStayHours": 115.7,
+        "sstCelsius": 18.7,
+        "sstAnomalyCelsius": 0.7,
+        "salinityPsu": 31.9,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "high",
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 2.3일째인 GT 34,558 벌크선으로, 출항 전 약 293시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "ETA 48h 전 연락",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_ulsan_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 7,
+      "operator_name": "유코카캐리어스(주)",
+      "agent_name": "유코카캐리어스(주)",
+      "repeat_caller_count": 11,
+      "relationship_score": 100,
+      "customer_type": "AGENT",
+      "customer_name": "유코카캐리어스(주)",
+      "contact_attempts": 0,
+      "quote_history_count": 0,
+      "quote_value_record_count": 0,
+      "quote_result_count": 0,
+      "won_projects": 0,
+      "lost_projects": 0,
+      "operation_completed_count": 0,
+      "customer_feedback_count": 0,
+      "fleet_history": {
+        "vessels_seen": 11,
+        "repeat_callers": 11,
+        "hot_count": 1,
+        "warm_count": 8,
+        "ports_used": [
+          "울산",
+          "평택·당진",
+          "포항"
+        ],
+        "last_seen": "2026-06-07T02:11:40.638Z"
+      },
+      "customer_memory_score": 57,
+      "sensitive_details_exposed": false,
+      "vessels_seen": 11,
+      "ports_used": [
+        {
+          "port_name": "울산",
+          "count": 5
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 5
+        },
+        {
+          "port_name": "포항",
+          "count": 1
+        }
+      ],
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 1,
+      "warm_count": 8,
+      "average_opportunity_score": 39,
+      "average_risk_score": 45,
+      "top_vessels": [
+        {
+          "vessel_name": "MORNING CLARA",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 57,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "ASIAN DYNASTY",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 44,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "TOREADOR",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 43,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "PORGY",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 43,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "돈카를로스",
+          "imo": "-",
+          "port": "평택·당진",
+          "opportunity_score": 41,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 57,
+      "reason_summary": "유코카캐리어스(주): 선대 11척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+      "data_sources": [
+        "commercial_leads",
+        "operator_contact_history",
+        "sales-pipeline",
+        "relationship-intelligence",
+        "fleet-memory"
+      ],
+      "vessel_display": {
+        "vessel_name": "MORNING CLARA",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "9V7564",
+        "flag": "-",
+        "vessel_type": "PCTC",
+        "gt": 60213,
+        "dwt": 0,
+        "operator": "-",
+        "company": "유코카캐리어스(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Ulsan",
+        "eta": "2026-06-11T13:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-07 22:00:00+09:00",
+        "atb": "-",
+        "stay_days": 2.9,
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 66,
+        "opportunity_score": 51,
+        "risk_score": 45,
+        "biofoulingRiskScore": 20,
+        "hullGrowthIndex": 21,
+        "cleaningOpportunityScore": 29,
+        "anchorageHours": 0,
+        "portStayHours": 68.2,
+        "sstCelsius": 18.7,
+        "sstAnomalyCelsius": 0.7,
+        "salinityPsu": 31.9,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "PCTC_HIGH_VALUE_TYPE",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "AUSTRALIA_ROUTE",
+          "HIGH_GT_EXPOSURE",
+          "HIGH_BIOSECURITY_PRESSURE"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
+        "contact_readiness_score": 35,
+        "priority_label": "HOT",
+        "reason_summary": "Ulsan 자동차부두 01에서 체류 1일째인 GT 60,213 자동차운반선으로, 출항 전 약 251시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+        "recommended_action": "운영선사 확인",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ]
+      }
+    },
+    {
       "rank": 8,
+      "operator_name": "CMA CGM",
+      "agent_name": "씨엠에이씨지엠코리아(주)",
+      "repeat_caller_count": 11,
+      "relationship_score": 100,
+      "customer_type": "OPERATOR",
+      "customer_name": "CMA CGM",
+      "contact_attempts": 0,
+      "quote_history_count": 0,
+      "quote_value_record_count": 0,
+      "quote_result_count": 0,
+      "won_projects": 0,
+      "lost_projects": 0,
+      "operation_completed_count": 0,
+      "customer_feedback_count": 0,
+      "fleet_history": {
+        "vessels_seen": 11,
+        "repeat_callers": 11,
+        "hot_count": 2,
+        "warm_count": 8,
+        "ports_used": [
+          "부산",
+          "미확인 항만",
+          "울산"
+        ],
+        "last_seen": "2026-06-07T02:11:40.638Z"
+      },
+      "customer_memory_score": 57,
+      "sensitive_details_exposed": false,
+      "vessels_seen": 11,
+      "ports_used": [
+        {
+          "port_name": "부산",
+          "count": 8
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 2
+        },
+        {
+          "port_name": "울산",
+          "count": 1
+        }
+      ],
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 2,
+      "warm_count": 8,
+      "average_opportunity_score": 39,
+      "average_risk_score": 45,
+      "top_vessels": [
+        {
+          "vessel_name": "CMA CGM HERMES",
+          "imo": "-",
+          "port": "부산",
+          "opportunity_score": 44,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "CMA CGM TAGE",
+          "imo": "-",
+          "port": "부산",
+          "opportunity_score": 43,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "APL RAFFLES",
+          "imo": "-",
+          "port": "부산",
+          "opportunity_score": 42,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "CMA CGM PLATINUM",
+          "imo": "-",
+          "port": "부산",
+          "opportunity_score": 40,
+          "priority_label": "HOT"
+        },
+        {
+          "vessel_name": "APL QINGDAO",
+          "imo": "-",
+          "port": "미확인 항만",
+          "opportunity_score": 40,
+          "priority_label": "HOT"
+        }
+      ],
+      "opportunity_score": 57,
+      "reason_summary": "CMA CGM: 선대 11척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
+      "data_sources": [
+        "commercial_leads",
+        "operator_contact_history",
+        "sales-pipeline",
+        "relationship-intelligence",
+        "fleet-memory"
+      ],
+      "vessel_display": {
+        "vessel_name": "CMA CGM HERMES",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "9HA5498",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 154995,
+        "dwt": 0,
+        "operator": "CMA CGM",
+        "company": "CMA CGM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "current_port": "Busan",
+        "eta": "2026-06-07T03:01:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-04 01:05:00+09:00",
+        "atb": "-",
+        "stay_days": 5.1,
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
+        "data_source": "Merged Port Operation port call",
+        "confidence_score": 74,
+        "opportunity_score": 38,
+        "risk_score": 45,
+        "biofoulingRiskScore": 35,
+        "hullGrowthIndex": 29,
+        "cleaningOpportunityScore": 44,
+        "anchorageHours": 0,
+        "portStayHours": 121.4,
+        "sstCelsius": 18.8,
+        "sstAnomalyCelsius": 0.8,
+        "salinityPsu": 31.5,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "BERTH_ENRICHMENT_MATCHED",
+          "OPERATOR_IDENTIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY",
+          "ETA_24_72H_WINDOW"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
+        "contact_readiness_score": 90,
+        "priority_label": "WARM",
+        "reason_summary": "Busan 신항 5부두 2선석에서 체류 2일째인 GT 154,995 컨테이너선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "ETA 48h 전 연락",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "vessel_master",
+          "grtg"
+        ]
+      }
+    },
+    {
+      "rank": 9,
       "operator_name": "PAN OCEAN",
       "agent_name": "팬오션 주식회사",
       "repeat_caller_count": 9,
@@ -951,16 +1279,16 @@
       "fleet_history": {
         "vessels_seen": 9,
         "repeat_callers": 9,
-        "hot_count": 4,
+        "hot_count": 3,
         "warm_count": 6,
         "ports_used": [
           "미확인 항만",
           "부산",
-          "여수",
           "평택·당진",
+          "여수",
           "인천"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
       "customer_memory_score": 57,
       "sensitive_details_exposed": false,
@@ -968,18 +1296,18 @@
       "ports_used": [
         {
           "port_name": "미확인 항만",
-          "count": 3
+          "count": 4
         },
         {
           "port_name": "부산",
-          "count": 3
-        },
-        {
-          "port_name": "여수",
-          "count": 1
+          "count": 2
         },
         {
           "port_name": "평택·당진",
+          "count": 1
+        },
+        {
+          "port_name": "여수",
           "count": 1
         },
         {
@@ -987,10 +1315,10 @@
           "count": 1
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 4,
+      "last_seen": "2026-06-07T02:11:40.638Z",
+      "hot_count": 3,
       "warm_count": 6,
-      "average_opportunity_score": 42,
+      "average_opportunity_score": 41,
       "average_risk_score": 45,
       "top_vessels": [
         {
@@ -1001,17 +1329,17 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "PAN SKY",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 55,
-          "priority_label": "HOT"
-        },
-        {
           "vessel_name": "PAN UNIVERSAL",
           "imo": "-",
           "port": "여수",
-          "opportunity_score": 49,
+          "opportunity_score": 45,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "PAN HOPE",
+          "imo": "-",
+          "port": "평택·당진",
+          "opportunity_score": 43,
           "priority_label": "HOT"
         },
         {
@@ -1022,11 +1350,11 @@
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "PAN HOPE",
+          "vessel_name": "PAN REGINA",
           "imo": "-",
-          "port": "평택·당진",
+          "port": "미확인 항만",
           "opportunity_score": 41,
-          "priority_label": "HOT"
+          "priority_label": "WARM"
         }
       ],
       "opportunity_score": 57,
@@ -1059,14 +1387,38 @@
         "ata": "2026-06-05 12:00:00+09:00",
         "atb": "-",
         "stay_days": 3.8,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
         "confidence_score": 66,
         "opportunity_score": 68,
         "risk_score": 45,
+        "biofoulingRiskScore": 35,
+        "hullGrowthIndex": 29,
+        "cleaningOpportunityScore": 40,
+        "anchorageHours": 0,
+        "portStayHours": 91,
+        "sstCelsius": 18.8,
+        "sstAnomalyCelsius": 0.8,
+        "salinityPsu": 30.1,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "OPERATOR_IDENTIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY",
+          "LOW_SPEED_EXPOSURE"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
         "contact_readiness_score": 90,
         "priority_label": "HOT",
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 42점이며 평균 바이오파울링 노출 30점, 평균 체선노출 5점입니다. South Gyeongsang 원료부두 2선석에서 체류 3.8일째인 GT 92,353 벌크선으로, 출항 전 약 336시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 25점, 평균 체선노출 5점입니다. South Gyeongsang 원료부두 2선석에서 체류 3.8일째인 GT 92,353 벌크선으로, 출항 전 약 316시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "Merged Port Operation port call",
@@ -1079,10 +1431,10 @@
       }
     },
     {
-      "rank": 9,
+      "rank": 10,
       "operator_name": "그레이트해운(주)",
       "agent_name": "그레이트해운(주)",
-      "repeat_caller_count": 28,
+      "repeat_caller_count": 27,
       "relationship_score": 100,
       "customer_type": "AGENT",
       "customer_name": "그레이트해운(주)",
@@ -1095,25 +1447,25 @@
       "operation_completed_count": 0,
       "customer_feedback_count": 0,
       "fleet_history": {
-        "vessels_seen": 28,
-        "repeat_callers": 28,
+        "vessels_seen": 27,
+        "repeat_callers": 27,
         "hot_count": 1,
         "warm_count": 10,
         "ports_used": [
           "울산"
         ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
+        "last_seen": "2026-06-07T02:11:40.638Z"
       },
       "customer_memory_score": 56,
       "sensitive_details_exposed": false,
-      "vessels_seen": 28,
+      "vessels_seen": 27,
       "ports_used": [
         {
           "port_name": "울산",
-          "count": 28
+          "count": 27
         }
       ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
+      "last_seen": "2026-06-07T02:11:40.638Z",
       "hot_count": 1,
       "warm_count": 10,
       "average_opportunity_score": 36,
@@ -1127,36 +1479,36 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "DS ACHIEVE",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 44,
-          "priority_label": "LOW"
-        },
-        {
           "vessel_name": "JN JUPITER",
           "imo": "-",
           "port": "울산",
-          "opportunity_score": 43,
+          "opportunity_score": 45,
+          "priority_label": "LOW"
+        },
+        {
+          "vessel_name": "DS ACHIEVE",
+          "imo": "-",
+          "port": "울산",
+          "opportunity_score": 45,
           "priority_label": "LOW"
         },
         {
           "vessel_name": "거영썬3",
           "imo": "-",
           "port": "울산",
-          "opportunity_score": 42,
+          "opportunity_score": 44,
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "EMC FAMILY",
+          "vessel_name": "BS DAESAN",
           "imo": "-",
           "port": "울산",
-          "opportunity_score": 42,
+          "opportunity_score": 44,
           "priority_label": "LOW"
         }
       ],
       "opportunity_score": 56,
-      "reason_summary": "그레이트해운(주): 선대 28척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
+      "reason_summary": "그레이트해운(주): 선대 27척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
       "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
       "data_sources": [
         "commercial_leads",
@@ -1185,11 +1537,35 @@
         "ata": "2026-05-30 12:00:00+09:00",
         "atb": "-",
         "stay_days": 8.3,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
+        "last_seen_at": "2026-06-07T02:11:40.638Z",
         "data_source": "Merged Port Operation port call",
         "confidence_score": 78,
         "opportunity_score": 45,
         "risk_score": 45,
+        "biofoulingRiskScore": 70,
+        "hullGrowthIndex": 66,
+        "cleaningOpportunityScore": 78,
+        "anchorageHours": 200,
+        "portStayHours": 200,
+        "sstCelsius": 18.7,
+        "sstAnomalyCelsius": 0.7,
+        "salinityPsu": 31.9,
+        "tropicalExposureDays": 7,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE"
+        ],
+        "recommendedAction": "우선 모니터링 / 접촉 준비",
+        "confidence": "high",
         "contact_readiness_score": 35,
         "priority_label": "HOT",
         "reason_summary": "Ulsan 정박지-E1에서 묘박/대기 8.3일째인 GT 8,686 탱커으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
@@ -1197,151 +1573,6 @@
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_ulsan_o",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ]
-      }
-    },
-    {
-      "rank": 10,
-      "operator_name": "팬오션 주식회사",
-      "agent_name": "팬오션 주식회사",
-      "repeat_caller_count": 23,
-      "relationship_score": 100,
-      "customer_type": "AGENT",
-      "customer_name": "팬오션 주식회사",
-      "contact_attempts": 0,
-      "quote_history_count": 0,
-      "quote_value_record_count": 0,
-      "quote_result_count": 0,
-      "won_projects": 0,
-      "lost_projects": 0,
-      "operation_completed_count": 0,
-      "customer_feedback_count": 0,
-      "fleet_history": {
-        "vessels_seen": 23,
-        "repeat_callers": 23,
-        "hot_count": 4,
-        "warm_count": 10,
-        "ports_used": [
-          "부산",
-          "미확인 항만",
-          "인천",
-          "평택·당진",
-          "울산"
-        ],
-        "last_seen": "2026-06-06T06:03:16.196Z"
-      },
-      "customer_memory_score": 56,
-      "sensitive_details_exposed": false,
-      "vessels_seen": 23,
-      "ports_used": [
-        {
-          "port_name": "부산",
-          "count": 7
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 6
-        },
-        {
-          "port_name": "인천",
-          "count": 5
-        },
-        {
-          "port_name": "평택·당진",
-          "count": 3
-        },
-        {
-          "port_name": "울산",
-          "count": 2
-        }
-      ],
-      "last_seen": "2026-06-06T06:03:16.196Z",
-      "hot_count": 4,
-      "warm_count": 10,
-      "average_opportunity_score": 37,
-      "average_risk_score": 45,
-      "top_vessels": [
-        {
-          "vessel_name": "NEW DEDICATION",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 70,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "TYMFI",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 62,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "NEW JOURNEY",
-          "imo": "-",
-          "port": "인천",
-          "opportunity_score": 48,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "ALPHA LEGEND",
-          "imo": "-",
-          "port": "인천",
-          "opportunity_score": 47,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ABRACADABRA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 46,
-          "priority_label": "HOT"
-        }
-      ],
-      "opportunity_score": 56,
-      "reason_summary": "팬오션 주식회사: 선대 23척, 연락 0건, 견적 0건, 수주 0건, 실주 0건",
-      "recommended_action": "현재 기회 신호를 기반으로 최초 고객 접점과 담당 창구를 확인",
-      "data_sources": [
-        "commercial_leads",
-        "operator_contact_history",
-        "sales-pipeline",
-        "relationship-intelligence",
-        "fleet-memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "NEW DEDICATION",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "3EPP8",
-        "flag": "-",
-        "vessel_type": "Bulk Carrier",
-        "gt": 35832,
-        "dwt": 0,
-        "operator": "-",
-        "company": "팬오션 주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Busan",
-        "eta": "2026-06-06T04:51:00.000Z",
-        "etb": "-",
-        "ata": "2026-05-13 04:30:00+09:00",
-        "atb": "-",
-        "stay_days": 21.4,
-        "last_seen_at": "2026-06-06T06:03:16.196Z",
-        "data_source": "Merged Port Operation port call",
-        "confidence_score": 78,
-        "opportunity_score": 65,
-        "risk_score": 45,
-        "contact_readiness_score": 35,
-        "priority_label": "HOT",
-        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 21.4일째인 GT 35,832 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
-        "recommended_action": "운영선사 확인",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_busan_o",
           "real_public_api_snapshot",
           "port_operation",
           "grtg"

@@ -1,0 +1,49 @@
+{
+  "run_id": "daily_enrich_20260605230913580_8a23ce94",
+  "active_run_id": "run_20260605183117726_ffb9ae00",
+  "status": "success",
+  "scheduled_role": "daily_midnight_critical_info_enrichment",
+  "generated_at": "2026-06-05T23:09:13.581Z",
+  "input_rows": 300,
+  "enriched_rows": 300,
+  "vessel_master_cache": {
+    "enabled": true,
+    "status": "loaded",
+    "input_rows": 300,
+    "master_rows_loaded": 307,
+    "alias_rows_loaded": 523,
+    "matched_rows": 300,
+    "imo_recovered_count": 0,
+    "strategies": {
+      "call_sign_exact_cache": 300
+    }
+  },
+  "snapshot_rows_updated": 120,
+  "enrichment_match_candidates_saved": 300,
+  "imo_recovery_queue_saved": 300,
+  "identity_candidates_saved": 300,
+  "vessel_aliases_saved": 300,
+  "diagnostics": {
+    "daily_enrichment_limit": 300,
+    "match_time_window_hours": 48,
+    "strong_time_match_hours": 6,
+    "schema_compatibility": {
+      "vessel_snapshots_select": {
+        "table": "vessel_snapshots",
+        "stripped_optional_columns": [
+          "vessel_type_group"
+        ],
+        "retry_count": 1,
+        "status": "optional_columns_stripped"
+      }
+    },
+    "missing_imo_count": 300,
+    "operator_missing_count": 262,
+    "historical_match_reused_count": 0,
+    "high_confidence_match_count": 300,
+    "medium_confidence_match_count": 0,
+    "low_confidence_match_count": 0,
+    "critical_imo_recovery_count": 0,
+    "high_imo_recovery_count": 268
+  }
+}
