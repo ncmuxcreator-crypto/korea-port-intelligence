@@ -125,6 +125,7 @@ const required = [
   "dashboard/api/congestion-watchlist.json",
   "dashboard/api/agent-followup-queue.json",
   "dashboard/api/watchlist/current.json",
+  "dashboard/api/sales/actions.json",
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/quality/basic-info-coverage.json",
   "dashboard/api/quality/dataset-generation-audit.json",
