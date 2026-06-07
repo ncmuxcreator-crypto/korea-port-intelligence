@@ -17,6 +17,9 @@ import {
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
+import { buildHullCleaningScores } from "../src/lib/scoring.js";
+import { PORT_ENVIRONMENT_MOCKS } from "../src/lib/environment.js";
+import { validateVesselRecords } from "../src/lib/dataHealth.js";
 
 const VERSION = "17.7.0";
 const BUILD_NAME = "Backend Stability Batch";
@@ -38,6 +41,7 @@ const CANDIDATE_RULE_VERSION = process.env.CANDIDATE_RULE_VERSION || "candidate_
 const EXPLAINABILITY_RULE_VERSION = process.env.EXPLAINABILITY_RULE_VERSION || "explainability_ko_v2026_05_31";
 const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
+const DEFAULT_CLEANING_REVENUE_USD = Number(process.env.DEFAULT_CLEANING_REVENUE_USD || 15000);
 const VALIDATION_MODE = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
 const DEBUG_API_DIR = "dashboard/api/debug";
 const SUCCESSFUL_DATASET_DIR = "data/successful";
@@ -4230,6 +4234,10 @@ function vesselDisplay(record = {}) {
     record.operational_risk_score
   );
   const confidenceScore = firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.identity_confidence, record.match_score);
+  const biofoulingRiskScore = firstFiniteNumber(record.biofoulingRiskScore, record.biofouling_risk_score, record.biofouling_exposure_score, record.biofouling_score, record.risk_score);
+  const hullGrowthIndex = firstFiniteNumber(record.hullGrowthIndex, record.hull_growth_index);
+  const cleaningOpportunityScore = firstFiniteNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score, record.predicted_cleaning_opportunity_score, record.hull_cleaning_candidate_score);
+  const riskReasons = mergeHullRiskReasons(record, { riskReasons: record.riskReasons || record.risk_reasons });
   return {
     vessel_name: displayText(firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요")),
     imo: displayText(firstNonEmpty(record.imo, record.imo_no)),
@@ -4255,6 +4263,19 @@ function vesselDisplay(record = {}) {
     confidence_score: displayNumber(confidenceScore),
     opportunity_score: displayNumber(opportunityScore),
     risk_score: displayNumber(riskScore),
+    biofoulingRiskScore: displayNumber(biofoulingRiskScore),
+    hullGrowthIndex: displayNumber(hullGrowthIndex),
+    cleaningOpportunityScore: displayNumber(cleaningOpportunityScore),
+    anchorageHours: displayNumber(firstFiniteNumber(record.anchorageHours, record.anchorage_hours, record.waiting_hours)),
+    portStayHours: displayNumber(firstFiniteNumber(record.portStayHours, record.port_stay_hours, record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours)),
+    sstCelsius: displayNumber(firstFiniteNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg)),
+    sstAnomalyCelsius: displayNumber(firstFiniteNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly, record.noaa_sst_anomaly)),
+    salinityPsu: displayNumber(firstFiniteNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy)),
+    tropicalExposureDays: displayNumber(firstFiniteNumber(record.tropicalExposureDays, record.tropical_exposure_days)),
+    slowSteamingHours: displayNumber(firstFiniteNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours)),
+    riskReasons,
+    recommendedAction: displayText(firstNonEmpty(record.recommendedAction, record.recommended_action, record.recommended_next_action, record.candidate_next_action)),
+    confidence: displayText(firstNonEmpty(record.confidence, record.confidence_label)),
     contact_readiness_score: displayNumber(firstFiniteNumber(record.contact_readiness_score, record.sales_accessibility_score)),
     priority_label: displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0))),
     reason_summary: compactReasonSummary(record),
@@ -4341,7 +4362,31 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "window_type",
   "waiting_hours",
   "risk_level",
+  "biofoulingRiskScore",
+  "hullGrowthIndex",
+  "cleaningOpportunityScore",
+  "anchorageHours",
+  "portStayHours",
+  "sstCelsius",
+  "sstAnomalyCelsius",
+  "salinityPsu",
+  "tropicalExposureDays",
+  "slowSteamingHours",
+  "riskReasons",
+  "recommendedAction",
+  "confidence",
   "biofouling_risk_score",
+  "hull_growth_index",
+  "cleaning_opportunity_score",
+  "port_stay_hours",
+  "sst_celsius",
+  "sst_anomaly_celsius",
+  "salinity_psu",
+  "tropical_exposure_days",
+  "slow_steaming_hours",
+  "risk_reasons",
+  "environmental_source",
+  "environmental_quality",
   "hull_cleaning_opportunity_score",
   "departure_prediction_eta",
   "departure_prediction_confidence",
@@ -4422,6 +4467,8 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "ports_used",
   "last_seen",
   "demand_score",
+  "high_risk_vessels",
+  "cleaning_high_risk_count",
   "fleet_size_korea",
   "vessel_count",
   "hot_count",
@@ -4447,12 +4494,15 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "commercial_tendency",
   "recommended_sales_strategy",
   "estimated_revenue",
+  "estimated_monthly_revenue_usd",
+  "default_cleaning_revenue_usd",
   "revenue_opportunity",
   "portfolio",
   "conservative_revenue",
   "expected_revenue",
   "aggressive_revenue",
   "average_opportunity_score",
+  "average_cleaning_opportunity_score",
   "average_risk_score",
   "average_congestion_score",
   "average_waiting_hours",
@@ -4599,6 +4649,24 @@ function publicItemsEnvelope({ generatedAt, dataMode, report = {}, sourceTable =
   };
 }
 
+function hullCleaningPublicFields(record = {}) {
+  return {
+    biofoulingRiskScore: firstFiniteNumber(record.biofoulingRiskScore, record.biofouling_risk_score),
+    hullGrowthIndex: firstFiniteNumber(record.hullGrowthIndex, record.hull_growth_index),
+    cleaningOpportunityScore: firstFiniteNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score),
+    anchorageHours: firstFiniteNumber(record.anchorageHours, record.anchorage_hours, record.waiting_hours),
+    portStayHours: firstFiniteNumber(record.portStayHours, record.port_stay_hours, record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours),
+    sstCelsius: firstFiniteNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg),
+    sstAnomalyCelsius: firstFiniteNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly),
+    salinityPsu: firstFiniteNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy),
+    tropicalExposureDays: firstFiniteNumber(record.tropicalExposureDays, record.tropical_exposure_days),
+    slowSteamingHours: firstFiniteNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours),
+    riskReasons: mergeHullRiskReasons(record, {}),
+    recommendedAction: firstNonEmpty(record.recommendedAction, record.recommended_action, record.recommended_next_action),
+    confidence: firstNonEmpty(record.confidence, record.confidence_label)
+  };
+}
+
 function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().toISOString(), dataMode = "live", pageSize = 30 } = {}) {
   const rows = Array.isArray(records) ? records.map(row => ({
     vessel_id: firstNonEmpty(row.vessel_id, row.master_vessel_id, row.hybrid_entity_key, row.port_call_id),
@@ -4610,6 +4678,7 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     call_sign: row.call_sign || row.callsign || row.clsgn || "",
     port_code: row.port_code || "",
     port_name: row.port_name || row.port || "",
+    ...hullCleaningPublicFields(row),
     vessel_display: vesselDisplay(row)
   })) : [];
   const safePageSize = Math.max(1, Number(pageSize || 30));
@@ -4671,6 +4740,7 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
   const display = item.vessel_display || vesselDisplay(item);
   return {
     rank: Number(item.rank || index + 1),
+    vessel_display: display,
     vessel_name: display.vessel_name || item.vessel_name || "선명 확인 필요",
     imo: display.imo || item.imo || "-",
     mmsi: display.mmsi || item.mmsi || "-",
@@ -4678,6 +4748,14 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
     opportunity_score: firstFiniteNumber(item.opportunity_score, item.sales_priority_score, item.commercial_value_score, display.opportunity_score, 0),
     risk_score: firstFiniteNumber(item.risk_score, item.biofouling_exposure_score, item.biofouling_score, display.risk_score, 0),
     confidence_score: firstFiniteNumber(item.confidence_score, item.data_confidence_score, display.confidence_score, 0),
+    biofoulingRiskScore: firstFiniteNumber(item.biofoulingRiskScore, item.biofouling_risk_score, display.biofoulingRiskScore, 0),
+    hullGrowthIndex: firstFiniteNumber(item.hullGrowthIndex, item.hull_growth_index, display.hullGrowthIndex, 0),
+    cleaningOpportunityScore: firstFiniteNumber(item.cleaningOpportunityScore, item.cleaning_opportunity_score, item.hull_cleaning_opportunity_score, display.cleaningOpportunityScore, 0),
+    anchorageHours: firstFiniteNumber(item.anchorageHours, item.anchorage_hours, display.anchorageHours, 0),
+    portStayHours: firstFiniteNumber(item.portStayHours, item.port_stay_hours, item.stay_hours, display.portStayHours, 0),
+    riskReasons: Array.isArray(display.riskReasons) ? display.riskReasons.slice(0, 4) : mergeHullRiskReasons(item, {}).slice(0, 4),
+    recommendedAction: display.recommendedAction || item.recommendedAction || item.recommended_action || null,
+    confidence: display.confidence || item.confidence || null,
     priority_label: item.priority_label || item.sales_priority_band || display.priority_label || "LOW",
     reason_summary: item.reason_summary || display.reason_summary || compactReasonSummary(item),
     recommended_action: item.recommended_action || display.recommended_action || compactRecommendedAction(item),
@@ -4693,6 +4771,7 @@ function buildBootstrapSnapshot({
   topCandidates = {},
   salesPriority = {},
   alerts = {},
+  portRevenueRadar = {},
   previousKpiReference = {},
   generatedAt = new Date().toISOString(),
   dataMode = "live"
@@ -4708,6 +4787,13 @@ function buildBootstrapSnapshot({
     target_count: Number(port.target_count || port.sales_target_count || port.candidate_count || port.target_vessels || port.sales_candidates || port.sales_targets || 0),
     hot_count: Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || port.immediate_targets || 0),
     avg_opportunity_score: firstFiniteNumber(port.avg_opportunity_score, port.average_opportunity_score, port.port_opportunity_score, port.opportunity_index) ?? null
+  }));
+  const revenueRadar = compactItems(portRevenueRadar.items || portRevenueRadar).slice(0, 20).map(port => ({
+    port_name: port.port_name || port.display_name || port.port || "미확인 항만",
+    high_risk_vessels: Number(port.high_risk_vessels || port.cleaning_high_risk_count || port.hot_count || 0),
+    estimated_revenue: Number(port.estimated_revenue || port.estimated_monthly_revenue_usd || 0),
+    average_opportunity_score: firstFiniteNumber(port.average_cleaning_opportunity_score, port.average_opportunity_score, port.opportunity_score, 0) || 0,
+    demand_score: firstFiniteNumber(port.demand_score, port.opportunity_score, 0) || 0
   }));
   const kpis = {
     total_vessels: Number(dashboardSummary.total_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
@@ -4729,7 +4815,10 @@ function buildBootstrapSnapshot({
     fleet_expansion_count: Number(dashboardSummary.fleet_expansion_count || 0),
     verify_contact_count: Number(dashboardSummary.verify_contact_count || 0),
     monitor_count: Number(dashboardSummary.monitor_count || 0),
-    hold_count: Number(dashboardSummary.hold_count || 0)
+    hold_count: Number(dashboardSummary.hold_count || 0),
+    biofouling_high_risk_count: Number(dashboardSummary.biofouling_high_risk_count || report.hull_cleaning_prediction_kpis?.biofouling_high_risk_count || 0),
+    cleaning_immediate_candidate_count: Number(dashboardSummary.cleaning_immediate_candidate_count || report.hull_cleaning_prediction_kpis?.cleaning_immediate_candidate_count || 0),
+    average_hull_growth_index: Number(dashboardSummary.average_hull_growth_index || report.hull_cleaning_prediction_kpis?.average_hull_growth_index || 0)
   };
   const kpiTrends = buildKpiTrends(kpis, previousKpiReference);
   return {
@@ -4742,6 +4831,7 @@ function buildBootstrapSnapshot({
     kpi_trends: kpiTrends,
     trend_metrics: buildGrowthMetrics(kpiTrends),
     ports,
+    port_revenue_radar: revenueRadar,
     top_candidates: topItems,
     sales_priority: priorityItems,
     alerts: alertItems,
@@ -4752,7 +4842,8 @@ function buildBootstrapSnapshot({
       source_status: {
         source_rows_collected: Number(report.source_rows_collected || report.raw_collected_vessel_count || 0),
         normalized_rows: Number(report.normalized_rows || report.all_collected_vessel_count || 0),
-        ports_attempted_count: Number(report.ports_attempted_count || 0)
+        ports_attempted_count: Number(report.ports_attempted_count || 0),
+        environmental_source_status: report.hull_cleaning_prediction_kpis?.environmental_source_status || report.biofouling_environmental_source || {}
       },
       db_status: {
         supabase_write_status: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
@@ -4765,6 +4856,13 @@ function buildBootstrapSnapshot({
       },
       json_status: {
         output_mode: report.output_mode || "static_json"
+      },
+      technical_diagnostics: {
+        total_rows: Number(report.hull_cleaning_prediction_kpis?.total_rows || report.all_collected_vessel_count || 0),
+        fallback_rows: Number(report.hull_cleaning_prediction_kpis?.fallback_rows || 0),
+        mock_rows: Number(report.hull_cleaning_prediction_kpis?.mock_rows || 0),
+        scoring_errors: Number(report.hull_cleaning_prediction_kpis?.scoring_errors || report.data_health_validation?.score_nan_count || 0),
+        data_health_validation: report.data_health_validation || {}
       }
     }
   };
@@ -4903,7 +5001,10 @@ const KPI_TREND_ALIASES = {
   fleet_expansion_count: ["fleet_expansion_count"],
   verify_contact_count: ["verify_contact_count"],
   monitor_count: ["monitor_count"],
-  hold_count: ["hold_count"]
+  hold_count: ["hold_count"],
+  biofouling_high_risk_count: ["biofouling_high_risk_count"],
+  cleaning_immediate_candidate_count: ["cleaning_immediate_candidate_count"],
+  average_hull_growth_index: ["average_hull_growth_index"]
 };
 
 function trendNumber(value) {
@@ -6170,6 +6271,123 @@ function biofoulingEnvironmentalInput(record = {}, sstContext = {}) {
   };
 }
 
+function hullCleaningEnvironmentalSnapshot(record = {}, sstContext = {}) {
+  const env = biofoulingEnvironmentalInput(record, sstContext);
+  const mock = PORT_ENVIRONMENT_MOCKS[env.port?.port_code] ||
+    PORT_ENVIRONMENT_MOCKS[String(env.port?.port_name || "").normalize("NFKC").toUpperCase()] ||
+    PORT_ENVIRONMENT_MOCKS.UNKNOWN ||
+    {};
+  const sstCelsius = firstFiniteNumber(
+    record.sstCelsius,
+    record.sst_celsius,
+    record.sst_72h_c_avg,
+    record.sst_7d_c_avg,
+    mock.sstCelsius,
+    18 + Number(env.sst_anomaly || 0),
+    18
+  ) || 18;
+  const salinityPsu = firstFiniteNumber(
+    record.salinityPsu,
+    record.salinity_psu,
+    record.salinity,
+    mock.salinityPsu,
+    Number(env.salinity_proxy || 0.86) * 35,
+    34
+  ) || 34;
+  const source = /noaa/i.test(String(env.source_label || sstContext.source_name || ""))
+    ? "CMEMS"
+    : /proxy|mock|climate/i.test(String(env.source_label || ""))
+      ? "MOCK"
+      : "FALLBACK";
+  return {
+    sstCelsius,
+    sstAnomalyCelsius: env.sst_anomaly,
+    salinityPsu,
+    source,
+    updatedAt: sstContext.generated_at || new Date().toISOString(),
+    quality: source === "FALLBACK" ? "missing" : source === "MOCK" ? "estimated" : "good"
+  };
+}
+
+function mergeHullRiskReasons(record = {}, scoreFields = {}) {
+  const sources = [
+    record.riskReasons,
+    record.risk_reasons,
+    record.reason_codes,
+    record.top_factors,
+    scoreFields.riskReasons
+  ].flatMap(value => Array.isArray(value) ? value : value ? [value] : []);
+  return [...new Set(sources.map(value => String(value).trim()).filter(Boolean))].slice(0, 10);
+}
+
+function enrichHullCleaningPredictionFields(record = {}, sstContext = {}) {
+  if (!record || typeof record !== "object") return record;
+  const scoreFields = buildHullCleaningScores(record, hullCleaningEnvironmentalSnapshot(record, sstContext));
+  const riskReasons = mergeHullRiskReasons(record, scoreFields);
+  Object.assign(record, {
+    ...scoreFields,
+    riskReasons,
+    risk_reasons: riskReasons,
+    recommendedAction: scoreFields.recommendedAction,
+    recommended_action: record.recommended_action || record.recommended_next_action || scoreFields.recommendedAction,
+    confidence: scoreFields.confidence,
+    hull_cleaning_opportunity_score: firstFiniteNumber(record.hull_cleaning_opportunity_score, record.predicted_cleaning_opportunity_score, scoreFields.cleaningOpportunityScore, 0) || scoreFields.cleaningOpportunityScore,
+    biofouling_score: firstFiniteNumber(record.biofouling_score, scoreFields.biofoulingRiskScore, 0) || scoreFields.biofoulingRiskScore
+  });
+  return record;
+}
+
+function applyHullCleaningPredictionFields(recordGroups = [], sstContext = {}) {
+  const seen = new Set();
+  let total = 0;
+  let fallbackRows = 0;
+  let mockRows = 0;
+  let scoringErrors = 0;
+  for (const group of recordGroups) {
+    for (const record of Array.isArray(group) ? group : []) {
+      if (!record || typeof record !== "object" || seen.has(record)) continue;
+      seen.add(record);
+      total += 1;
+      try {
+        enrichHullCleaningPredictionFields(record, sstContext);
+        if (record.environmental_source === "FALLBACK") fallbackRows += 1;
+        if (record.environmental_source === "MOCK") mockRows += 1;
+      } catch (error) {
+        scoringErrors += 1;
+        record.hull_cleaning_scoring_error = error?.message || String(error);
+      }
+    }
+  }
+  return {
+    total_rows: total,
+    fallback_rows: fallbackRows,
+    mock_rows: mockRows,
+    scoring_errors: scoringErrors,
+    environmental_source_status: {
+      status: sstContext.status || "proxy",
+      source_url: sstContext.source_url || null,
+      cache_date: sstContext.cache_date || null
+    }
+  };
+}
+
+function buildHullCleaningPredictionKpis(records = [], diagnostics = {}) {
+  const rows = Array.isArray(records) ? records : [];
+  const hgiValues = rows
+    .map(record => firstFiniteNumber(record.hullGrowthIndex, record.hull_growth_index))
+    .filter(value => value !== null);
+  return {
+    biofouling_high_risk_count: rows.filter(record => Number(record.biofoulingRiskScore || record.biofouling_risk_score || 0) >= 80).length,
+    cleaning_immediate_candidate_count: rows.filter(record => Number(record.cleaningOpportunityScore || record.cleaning_opportunity_score || 0) >= 85).length,
+    average_hull_growth_index: hgiValues.length ? Math.round(hgiValues.reduce((sum, value) => sum + Number(value || 0), 0) / hgiValues.length) : 0,
+    total_rows: diagnostics.total_rows || rows.length,
+    fallback_rows: diagnostics.fallback_rows || 0,
+    mock_rows: diagnostics.mock_rows || 0,
+    scoring_errors: diagnostics.scoring_errors || 0,
+    environmental_source_status: diagnostics.environmental_source_status || {}
+  };
+}
+
 function biofoulingRiskLevel(score = 0) {
   const value = Number(score || 0);
   if (value >= 70) return "HIGH";
@@ -7301,8 +7519,10 @@ function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics 
         vessel_count: 0,
         sales_target_count: 0,
         hot_count: 0,
+        cleaning_high_risk_count: 0,
         risk_total: 0,
         score_total: 0,
+        cleaning_score_total: 0,
         congestion_total: 0,
         service_opportunity_counts: emptyServiceCounts()
       });
@@ -7313,11 +7533,14 @@ function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics 
     const row = ensurePort(recordPortName(record));
     const score = salesPriorityScore(record);
     const risk = recordRiskScore(record);
+    const cleaningScore = firstFiniteNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score, score, 0) || 0;
     row.vessel_count += 1;
     row.sales_target_count += score >= 50 ? 1 : 0;
     row.hot_count += score >= 75 ? 1 : 0;
+    row.cleaning_high_risk_count += cleaningScore >= 80 ? 1 : 0;
     row.risk_total += risk;
     row.score_total += score;
+    row.cleaning_score_total += cleaningScore;
     row.congestion_total += Number(record.port_congestion_score || record.congestion_score || record.congestion_exposure_score || 0);
     const flags = serviceDemandFlags(record);
     for (const service of PORT_DEMAND_SERVICES) {
@@ -7335,6 +7558,7 @@ function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics 
     .map(row => {
       const serviceTotal = Object.values(row.service_opportunity_counts).reduce((sum, value) => sum + Number(value || 0), 0);
       const averageOpportunity = row.vessel_count ? Math.round(row.score_total / row.vessel_count) : 0;
+      const averageCleaningOpportunity = row.vessel_count ? Math.round(row.cleaning_score_total / row.vessel_count) : averageOpportunity;
       const averageRisk = row.vessel_count ? Math.round(row.risk_total / row.vessel_count) : 0;
       const averageCongestion = row.vessel_count ? Math.round(row.congestion_total / row.vessel_count) : 0;
       const demandScore = Math.min(100, Math.round(
@@ -7359,11 +7583,16 @@ function buildPortDemandRadarIntelligenceSummary({ records = [], portStatistics 
         demand_score: demandScore,
         opportunity_score: demandScore,
         vessel_count: row.vessel_count,
+        high_risk_vessels: row.cleaning_high_risk_count,
+        estimated_revenue: row.cleaning_high_risk_count * DEFAULT_CLEANING_REVENUE_USD,
+        estimated_monthly_revenue_usd: row.cleaning_high_risk_count * DEFAULT_CLEANING_REVENUE_USD,
+        default_cleaning_revenue_usd: DEFAULT_CLEANING_REVENUE_USD,
         service_opportunity_counts: row.service_opportunity_counts,
         services,
         growth_trend: growthTrend,
         top_factors: [...services.slice(0, 3).map(service => `${service.service_name} ${service.count}`), trendFactor].filter(Boolean),
         average_opportunity_score: averageOpportunity,
+        average_cleaning_opportunity_score: averageCleaningOpportunity,
         average_risk_score: averageRisk,
         average_congestion_score: averageCongestion,
         reason_summary: `${row.port_name}: 선박 ${row.vessel_count}척, 서비스 신호 ${serviceTotal}건, HOT ${row.hot_count}척`,
@@ -11540,6 +11769,15 @@ try {
   const portIntelligence = buildPortIntelligence(allCollectedVessels);
   const portStatistics = buildPortStatistics(allCollectedVessels, completedAt);
   const biofoulingSstContext = await loadDailyNoaaSstContext(completedAt);
+  const hullCleaningPredictionDiagnostics = applyHullCleaningPredictionFields([
+    allCollectedVessels,
+    targetVessels,
+    anchorageWaiting,
+    stayingVessels,
+    arrivalPipeline
+  ], biofoulingSstContext);
+  const hullCleaningPredictionKpis = buildHullCleaningPredictionKpis(allCollectedVessels, hullCleaningPredictionDiagnostics);
+  const dataHealthValidation = validateVesselRecords(allCollectedVessels);
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -11639,6 +11877,7 @@ try {
     matching_diagnostics: matchingDiagnostics,
     prediction_diagnostics: predictionDiagnostics,
     data_quality_layer: dataQualityLayer,
+    data_health_validation: dataHealthValidation,
     dataset_generation_audit: datasetGenerationAudit,
     count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
@@ -11668,6 +11907,8 @@ try {
     contact_ready_vessels: contactReadyVessels.slice(0, 10),
     fleet_opportunities: fleetOpportunities.slice(0, 20),
     predicted_cleaning_opportunities: predictedCleaningOpportunities.slice(0, 10),
+    hull_cleaning_prediction_kpis: hullCleaningPredictionKpis,
+    hull_cleaning_prediction_diagnostics: hullCleaningPredictionDiagnostics,
     predicted_arrivals: arrivalPipeline.slice(0, 10),
     hot_vessel_count: hotVessels.length,
     port_opportunities: portOpportunities.slice(0, 10),
@@ -11839,6 +12080,9 @@ try {
     arrival_pipeline_count: arrivalPipeline.length,
     staying_vessels_count: stayingVessels.length,
     high_risk_count: vessels.filter(v => operationalBiofoulingRiskScore(v) >= 70).length,
+    biofouling_high_risk_count: hullCleaningPredictionKpis.biofouling_high_risk_count,
+    cleaning_immediate_candidate_count: hullCleaningPredictionKpis.cleaning_immediate_candidate_count,
+    average_hull_growth_index: hullCleaningPredictionKpis.average_hull_growth_index,
     opportunity_count: candidateList.length,
     watchlist_count: report?.scoring_diagnostics?.watchlist_count || 0,
     port_count: portStatistics.port_count,
@@ -11885,6 +12129,8 @@ try {
     candidate_summary: buildCandidateSummary(vessels),
     congestion_summary: portCongestionHeatmap,
     data_quality_summary: dataQualityLayer,
+    data_health_validation: dataHealthValidation,
+    hull_cleaning_prediction_kpis: hullCleaningPredictionKpis,
     source_health_summary: collectorDiagnosticsAfterCollection
   };
   const staticOutputManifest = {};
@@ -11984,6 +12230,12 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  intelligenceSummaries["port-demand-radar"] = buildPortDemandRadarIntelligenceSummary({
+    records: allCollectedVessels,
+    portStatistics,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
+  });
   const biofoulingModule = buildBiofoulingModuleOutputs({
     records: allCollectedVessels,
     portStatistics,
@@ -12017,6 +12269,7 @@ try {
     portStatistics,
     topCandidates: topCandidatesPayload,
     salesPriority: intelligenceSummaries["sales-priority"],
+    portRevenueRadar: intelligenceSummaries["port-demand-radar"],
     previousKpiReference,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
@@ -12024,6 +12277,7 @@ try {
   dashboardSummary.kpis = bootstrapPayload.kpis;
   dashboardSummary.kpi_trends = bootstrapPayload.kpi_trends;
   dashboardSummary.trend_metrics = bootstrapPayload.trend_metrics;
+  dashboardSummary.port_revenue_radar = bootstrapPayload.port_revenue_radar;
   const paginatedVesselOutputs = buildPaginatedVesselOutputs({
     records: allCollectedVessels,
     generatedAt: completedAt,

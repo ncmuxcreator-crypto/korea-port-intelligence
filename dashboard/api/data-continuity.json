@@ -5,19 +5,19 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260605122355603_229dfefe",
+  "run_id": "run_20260607021140622_baa58c90",
   "schema_version": "1.0",
-  "generated_at": "2026-06-05T12:26:29.623Z",
+  "generated_at": "2026-06-07T02:14:41.019Z",
   "status": "healthy",
-  "record_count": 1590,
+  "record_count": 1407,
   "source_table": "active_dataset_pointer,latest_successful_dataset_bundle,static_dashboard_snapshot",
   "objective": "Dashboard must never become empty when collection or storage fails.",
   "current_run": {
-    "run_id": "run_20260605122355603_229dfefe",
+    "run_id": "run_20260607021140622_baa58c90",
     "data_mode": "static_snapshot",
     "data_status": "ready",
-    "rows": 1590,
-    "target_vessels_count": 1484,
+    "rows": 1407,
+    "target_vessels_count": 1311,
     "fallback_used": false,
     "fallback_reason": null
   },
@@ -26,43 +26,43 @@
     "post_write_verification_status": "completed",
     "promotion_status": "promoted",
     "rows_written_by_table": {
-      "vessel_snapshots": 1590,
+      "vessel_snapshots": 1407,
       "source_collection_logs": 34,
-      "vessel_entities": 1590,
-      "vessel_master": 1590,
-      "port_call_master": 1590,
-      "opportunity_master": 1590,
-      "risk_history": 1500,
-      "vessel_events": 8626,
+      "vessel_entities": 1407,
+      "vessel_master": 1407,
+      "port_call_master": 1407,
+      "opportunity_master": 1407,
+      "risk_history": 1328,
+      "vessel_events": 7528,
       "pilot_schedule_events": 0,
       "port_congestion_snapshots": 8,
       "enrichment_match_candidates": 0,
       "commercial_leads": 2,
       "private_sales_activity": 0,
       "dashboard_summary_snapshots": 1,
-      "sales_candidates_current": 1484,
-      "immediate_targets_current": 786,
+      "sales_candidates_current": 1311,
+      "immediate_targets_current": 603,
       "port_summary_current": 8,
-      "feature_store": 1500,
-      "feature_snapshots": 1500,
-      "rule_evaluations": 2394,
-      "explainability_snapshots": 1500,
-      "model_training_rows": 890,
-      "vessel_snapshot_daily": 1590,
+      "feature_store": 1328,
+      "feature_snapshots": 1328,
+      "rule_evaluations": 1967,
+      "explainability_snapshots": 1328,
+      "model_training_rows": 703,
+      "vessel_snapshot_daily": 1407,
       "port_snapshot_daily": 8,
       "operator_snapshot_daily": 11,
-      "route_snapshot_daily": 506,
-      "commercial_opportunity_daily": 55,
+      "route_snapshot_daily": 464,
+      "commercial_opportunity_daily": 39,
       "vessel_universe_audit": 1
     },
     "successful_dataset_bundle_status": "saved",
-    "successful_dataset_rows": 1590,
+    "successful_dataset_rows": 1407,
     "restore_status": "not_needed"
   },
   "health": {
     "api_health_status": "success",
-    "summary_generated_at": "2026-06-05T12:26:29.623Z",
-    "last_success_at": "2026-06-05T12:26:29.623Z",
+    "summary_generated_at": "2026-06-07T02:14:41.019Z",
+    "last_success_at": "2026-06-07T02:14:41.019Z",
     "production_ready": true
   },
   "fallback_order": [
@@ -70,32 +70,32 @@
       "step": 1,
       "source": "active_dataset_pointer",
       "status": "available",
-      "rows": 1590
+      "rows": 1407
     },
     {
       "step": 2,
       "source": "latest_successful_dataset_bundle",
       "status": "available",
-      "rows": 1590,
-      "run_id": "run_20260605122355603_229dfefe"
+      "rows": 1407,
+      "run_id": "run_20260607021140622_baa58c90"
     },
     {
       "step": 3,
       "source": "latest_successful_dataset",
       "status": "available",
-      "rows": 1590
+      "rows": 1404
     },
     {
       "step": 4,
       "source": "latest_snapshot",
       "status": "available",
-      "rows": 1590
+      "rows": 1404
     },
     {
       "step": 5,
       "source": "static_backup",
       "status": "available",
-      "rows": 1484
+      "rows": 1308
     },
     {
       "step": 6,
@@ -105,8 +105,8 @@
     }
   ],
   "operator_message_ko": "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다.",
-  "status_run_id": "run_20260605122355603_229dfefe",
-  "active_run_id": "run_20260605122355603_229dfefe",
+  "status_run_id": "run_20260607021140622_baa58c90",
+  "active_run_id": "run_20260607021140622_baa58c90",
   "stale_diagnostic": false,
   "placeholder": false
 }
