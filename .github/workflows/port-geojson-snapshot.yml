@@ -1,0 +1,108 @@
+name: Port Risk GeoJSON Snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 00:10, 06:10, 12:10, 18:10 KST
+    - cron: "10 3,9,15,21 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    env:
+      CI: true
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+      MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
+      SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
+      MOF_AIS_DYNAMIC_API_URL: ${{ secrets.MOF_AIS_DYNAMIC_API_URL }}
+      MOF_AIS_DYNAMIC_SERVICE_KEY: ${{ secrets.MOF_AIS_DYNAMIC_SERVICE_KEY }}
+      MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}
+      MOF_AIS_INFO_SERVICE_KEY: ${{ secrets.MOF_AIS_INFO_SERVICE_KEY }}
+      PORT_OPERATION_API_URL: ${{ vars.PORT_OPERATION_API_URL || secrets.PORT_OPERATION_API_URL || 'http://apis.data.go.kr/1192000/VsslEtrynd5/Info5' }}
+      PORT_OPERATION_SERVICE_KEY: ${{ secrets.PORT_OPERATION_SERVICE_KEY || secrets.PORT_OPERATION_API_KEY || secrets.DATA_GO_KR_API_KEY || secrets.SERVICE_KEY || secrets.SERVICEKEY || secrets.YGPA_SERVICE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        timeout-minutes: 4
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false --registry=https://registry.npmjs.org/
+
+      - name: Apply port GeoJSON schema
+        timeout-minutes: 3
+        continue-on-error: true
+        run: npm run db:migrate -- --only 20260607_001_port_geojson_snapshots.sql
+
+      - name: Build port risk GeoJSON snapshot
+        timeout-minutes: 6
+        run: npm run build:port-geojson
+
+      - name: Deploy Cloudflare Worker
+        timeout-minutes: 5
+        run: |
+          echo "Preparing Cloudflare asset upload for /ports and /data/ports"
+          if [ -d dashboard/api ]; then
+            mv dashboard/api ./api.cloudflare-upload-full
+            mkdir -p dashboard/api
+            copy_api_asset() {
+              src="./api.cloudflare-upload-full/$1"
+              dest="dashboard/api/$1"
+              if [ -f "$src" ]; then
+                mkdir -p "$(dirname "$dest")"
+                cp "$src" "$dest"
+              fi
+            }
+            for file in \
+              bootstrap.json \
+              dashboard-summary.json \
+              status.json \
+              health.json \
+              data-continuity.json \
+              candidates/top.json \
+              biofouling/port-risk-map.geojson \
+              biofouling/hotspots.geojson \
+              biofouling/vessel-risk-scores.json
+            do
+              copy_api_asset "$file"
+            done
+            trap 'rm -rf dashboard/api; mv ./api.cloudflare-upload-full dashboard/api' EXIT
+          fi
+          npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Upload port snapshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: port-risk-geojson-snapshot
+          retention-days: 14
+          path: |
+            dashboard/data/ports/**
+            dashboard/ports/**

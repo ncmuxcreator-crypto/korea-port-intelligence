@@ -6,6 +6,7 @@
     "update": "node scripts/with-env.js scripts/update.js",
     "reprocess": "node scripts/reprocess.js",
     "daily:enrich": "node scripts/daily-enrichment.js",
+    "build:port-geojson": "node scripts/build-port-geojson-snapshot.js",
     "validate": "node scripts/validate.js",
     "test": "npm run test:regression && npm run test:reliability",
     "test:regression": "node tests/regression-tests.js",
