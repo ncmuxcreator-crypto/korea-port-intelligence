@@ -1,14 +1,14 @@
 {
   "type": "FeatureCollection",
   "schema_version": "1.0",
-  "generated_at": "2026-06-07T00:07:34.983Z",
+  "generated_at": "2026-06-07T00:20:18.067Z",
   "properties": {
     "port_code": "MOKPO",
     "port_name_kr": "목포항",
     "port_name_en": "Mokpo",
     "snapshot_type": "72h",
-    "window_start": "2026-06-04T00:07:34.983Z",
-    "window_end": "2026-06-07T00:07:34.983Z",
+    "window_start": "2026-06-04T00:20:18.068Z",
+    "window_end": "2026-06-07T00:20:18.067Z",
     "bbox": [
       126.25,
       34.65,
@@ -18,14 +18,19 @@
     "feature_count": 1,
     "data_health": {
       "status": "healthy",
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "source_status": {
         "dashboard_vessels": "available",
         "biofouling_scores": "available",
         "source_csv": "not_configured",
         "mof_ais_dynamic": "not_configured",
         "mof_ais_info": "not_configured",
-        "port_operation": "not_configured"
+        "port_operation": "not_configured",
+        "supabase_vessel_snapshots": {
+          "status": "available",
+          "run_id": "run_20260607000230891_c46deee5",
+          "row_count": 1395
+        }
       },
       "missing_sources": [
         "mof_ais_dynamic"
@@ -65,13 +70,13 @@
         "vessel_name": "거제유비아",
         "vessel_type": "Tanker",
         "residence_hours_72h": 65.3,
-        "residence_change_pct_72_vs_30d": 0.5,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 65.8,
+        "combined_score": 65.7,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"

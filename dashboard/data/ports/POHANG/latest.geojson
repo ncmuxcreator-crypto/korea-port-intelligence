@@ -1,14 +1,14 @@
 {
   "type": "FeatureCollection",
   "schema_version": "1.0",
-  "generated_at": "2026-06-07T00:07:34.983Z",
+  "generated_at": "2026-06-07T00:20:18.067Z",
   "properties": {
     "port_code": "POHANG",
     "port_name_kr": "포항항",
     "port_name_en": "Pohang",
     "snapshot_type": "72h",
-    "window_start": "2026-06-04T00:07:34.983Z",
-    "window_end": "2026-06-07T00:07:34.983Z",
+    "window_start": "2026-06-04T00:20:18.068Z",
+    "window_end": "2026-06-07T00:20:18.067Z",
     "bbox": [
       129.25,
       35.9,
@@ -18,14 +18,19 @@
     "feature_count": 59,
     "data_health": {
       "status": "healthy",
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "source_status": {
         "dashboard_vessels": "available",
         "biofouling_scores": "available",
         "source_csv": "not_configured",
         "mof_ais_dynamic": "not_configured",
         "mof_ais_info": "not_configured",
-        "port_operation": "not_configured"
+        "port_operation": "not_configured",
+        "supabase_vessel_snapshots": {
+          "status": "available",
+          "run_id": "run_20260607000230891_c46deee5",
+          "row_count": 1395
+        }
       },
       "missing_sources": [
         "mof_ais_dynamic"
@@ -54,474 +59,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.47854,
-          36.06104
+          129.47566,
+          36.02502
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "일신프린세스 로얄",
-        "vessel_type": "철강재 운반선",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 113.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 87.8,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.3754,
-          35.98983
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "5001 혜민호",
+        "vessel_name": "강남6001호",
         "vessel_type": "기타 부선",
-        "residence_hours_72h": 96,
-        "residence_change_pct_72_vs_30d": 118.2,
-        "sst_72h_c_avg": 18,
+        "residence_hours_72h": 322,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18.7,
         "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
+        "sst_anomaly_c": 0.7,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 87.8,
-        "suggested_action": "즉시 영업 후보",
+        "combined_score": 74.6,
+        "suggested_action": "관심 후보",
         "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.47303,
-          36.02904
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "POINT FORTIN",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 453.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.39132,
-          36.10973
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "TOKIHIME",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 180.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.45382,
-          35.96804
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "CHIPOL DONGHAI",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 138,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.34888,
-          35.98769
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ALLIANCE NO.2",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 5385.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.35526,
-          36.02721
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "XIANG HAN 8",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 286.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.46172,
-          36.01925
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "JING RUN",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 506.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.38505,
-          35.9686
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "BRITISH MENTOR",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 206.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.43771,
-          36.07837
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "K. FREESIA",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 221,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.33625,
-          36.10107
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "팬스타 지니",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 1248,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.34657,
-          36.07791
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SM JEJU LNG2",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 195.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.3559,
-          36.03456
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "MPV THALIA",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 66.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 81.1,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.48041,
-          35.95844
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "AL YASAT II",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 41.9,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 76.9,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.35689,
-          35.97646
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "BBC RUSHMORE",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 42,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 76.9,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.36516,
-          35.96971
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "CERULEAN",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 40.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 76.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.36351,
-          36.08971
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "KAMNIK",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 34,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 75.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -558,34 +115,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.47566,
-          36.02502
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "강남6001호",
-        "vessel_type": "기타 부선",
-        "residence_hours_72h": 322,
-        "residence_change_pct_72_vs_30d": 0,
-        "sst_72h_c_avg": 18.7,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0.7,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 74.6,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           129.45431,
           36.0862
         ]
@@ -597,13 +126,13 @@
         "vessel_name": "JONATHAN ACE",
         "vessel_type": "냉동.냉장선",
         "residence_hours_72h": 895.5,
-        "residence_change_pct_72_vs_30d": 1.3,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18.7,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0.7,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 73.6,
+        "combined_score": 73.4,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -624,14 +153,14 @@
         "imo": "",
         "vessel_name": "CHIPOL ANKANG",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 256.8,
-        "residence_change_pct_72_vs_30d": 0.5,
+        "residence_hours_72h": 255.6,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18.7,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0.7,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 73.5,
+        "combined_score": 73.4,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -642,26 +171,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.49063,
-          35.99044
+          129.47854,
+          36.06104
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "근양",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 32.2,
+        "vessel_name": "일신프린세스 로얄",
+        "vessel_type": "철강재 운반선",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 72.4,
+        "combined_score": 71.1,
         "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -670,54 +199,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.45765,
-          36.03469
+          129.30233,
+          35.95541
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "MPV CLIO",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 12.9,
+        "vessel_name": "영빈7001",
+        "vessel_type": "기타 부선",
+        "residence_hours_72h": 112.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 72.1,
+        "combined_score": 71.1,
         "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.35774,
-          36.0991
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "글로비스 코스모스",
-        "vessel_type": "PCTC",
-        "residence_hours_72h": 48,
-        "residence_change_pct_72_vs_30d": 275,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 71.6,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -782,17 +283,17 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.30233,
-          35.95541
+          129.3754,
+          35.98983
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "영빈7001",
+        "vessel_name": "5001 혜민호",
         "vessel_type": "기타 부선",
-        "residence_hours_72h": 112.9,
+        "residence_hours_72h": 95.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
@@ -810,24 +311,80 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.49809,
-          36.08783
+          129.39132,
+          36.10973
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "ZENITH VEGA",
+        "vessel_name": "TOKIHIME",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 124.8,
-        "residence_change_pct_72_vs_30d": 0.7,
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70.1,
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.45765,
+          36.03469
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "MPV CLIO",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.48041,
+          35.95844
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "AL YASAT II",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -848,70 +405,14 @@
         "imo": "",
         "vessel_name": "비비씨 도쿄",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 146.4,
-        "residence_change_pct_72_vs_30d": 0.4,
+        "residence_hours_72h": 146,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.416,
-          36.07378
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "모닝 누리",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 112.8,
-        "residence_change_pct_72_vs_30d": 0.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.40503,
-          36.0555
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "본아미",
-        "vessel_type": "원양 어선",
-        "residence_hours_72h": 105.6,
-        "residence_change_pct_72_vs_30d": 0.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -932,7 +433,7 @@
         "imo": "",
         "vessel_name": "HAO XIN",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
+        "residence_hours_72h": 114.9,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
@@ -961,6 +462,342 @@
         "vessel_name": "NEWZENBERG",
         "vessel_type": "General Cargo",
         "residence_hours_72h": 74.6,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.36351,
+          36.08971
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "KAMNIK",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.416,
+          36.07378
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "모닝 누리",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 112.6,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.40503,
+          36.0555
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "본아미",
+        "vessel_type": "원양 어선",
+        "residence_hours_72h": 105.5,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.36516,
+          35.96971
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "CERULEAN",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.35689,
+          35.97646
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "BBC RUSHMORE",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.49809,
+          36.08783
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ZENITH VEGA",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 123.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.45382,
+          35.96804
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "CHIPOL DONGHAI",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.34888,
+          35.98769
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ALLIANCE NO.2",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.35526,
+          36.02721
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "XIANG HAN 8",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.46172,
+          36.01925
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "JING RUN",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.3559,
+          36.03456
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "MPV THALIA",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.47303,
+          36.02904
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "POINT FORTIN",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 114.9,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
@@ -1062,90 +899,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.42517,
-          36.0267
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HN GLORY",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 67.2,
-        "residence_change_pct_72_vs_30d": 7.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 68.2,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.43165,
-          36.08501
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "썬 포츈호",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 67.2,
-        "residence_change_pct_72_vs_30d": 2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.3,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.38728,
-          36.06922
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "MORNING CARA",
-        "vessel_type": "PCTC",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 0,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           129.37181,
           36.03292
         ]
@@ -1202,6 +955,202 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          129.33625,
+          36.10107
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "팬스타 지니",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.43771,
+          36.07837
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "K. FREESIA",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.38728,
+          36.06922
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "MORNING CARA",
+        "vessel_type": "PCTC",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.34657,
+          36.07791
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SM JEJU LNG2",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.38505,
+          35.9686
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "BRITISH MENTOR",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.49063,
+          35.99044
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "근양",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.42517,
+          36.0267
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "HN GLORY",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 66.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.7,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           129.41576,
           35.99052
         ]
@@ -1212,14 +1161,42 @@
         "imo": "",
         "vessel_name": "에스제이 엔젤",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 67.2,
+        "residence_hours_72h": 66.7,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 66.9,
+        "combined_score": 66.6,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.43165,
+          36.08501
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "썬 포츈호",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 66.5,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.5,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1258,34 +1235,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.35221,
-          36.07182
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "광양리더호",
-        "vessel_type": "코일전용선",
-        "residence_hours_72h": 36,
-        "residence_change_pct_72_vs_30d": 800,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 64.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           129.40404,
           36.10212
         ]
@@ -1296,14 +1245,14 @@
         "imo": "",
         "vessel_name": "대성202호",
         "vessel_type": "견인용예선",
-        "residence_hours_72h": 55.2,
-        "residence_change_pct_72_vs_30d": 2.2,
+        "residence_hours_72h": 54,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 61,
+        "combined_score": 59.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
@@ -1314,80 +1263,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.30695,
-          36.07894
+          129.35774,
+          36.0991
         ]
       },
       "properties": {
         "port_code": "POHANG",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "ZHEN XIN",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 24.1,
-        "residence_change_pct_72_vs_30d": 435.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 56.7,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.44396,
-          35.94108
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HOEGH SEOUL",
+        "vessel_name": "글로비스 코스모스",
         "vessel_type": "PCTC",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 48,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          129.36599,
-          36.10771
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SLOMAN DISCOVERER",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 0,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 54.9,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1408,14 +1301,14 @@
         "imo": "",
         "vessel_name": "WB JOURNEY",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1436,14 +1329,42 @@
         "imo": "",
         "vessel_name": "YORK 27",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.36599,
+          36.10771
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SLOMAN DISCOVERER",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1464,14 +1385,42 @@
         "imo": "",
         "vessel_name": "골든 레인보우",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.44396,
+          35.94108
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "HOEGH SEOUL",
+        "vessel_type": "PCTC",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1538,6 +1487,34 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          129.35221,
+          36.07182
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "광양리더호",
+        "vessel_type": "코일전용선",
+        "residence_hours_72h": 35.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 47.3,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           129.42376,
           36.03207
         ]
@@ -1548,16 +1525,44 @@
         "imo": "",
         "vessel_name": "강남티-9호",
         "vessel_type": "견인용예선",
-        "residence_hours_72h": 28.8,
-        "residence_change_pct_72_vs_30d": 2.5,
+        "residence_hours_72h": 28.1,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 44.6,
+        "combined_score": 43.7,
         "suggested_action": "관찰",
         "data_confidence_score": 78,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.30695,
+          36.07894
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ZHEN XIN",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 24.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 40,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -1576,14 +1581,14 @@
         "imo": "",
         "vessel_name": "103 성신호",
         "vessel_type": "기타 예선",
-        "residence_hours_72h": 19.2,
-        "residence_change_pct_72_vs_30d": 0.5,
+        "residence_hours_72h": 19.1,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 38.2,
+        "combined_score": 38.1,
         "suggested_action": "관찰",
         "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
@@ -1622,34 +1627,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          129.30855,
-          35.94491
-        ]
-      },
-      "properties": {
-        "port_code": "POHANG",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "수경호",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 2.4,
-        "residence_change_pct_72_vs_30d": 20,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 29.8,
-        "suggested_action": "낮음",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           129.33676,
           36.04257
         ]
@@ -1668,6 +1645,34 @@
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
         "combined_score": 26.7,
+        "suggested_action": "낮음",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.30855,
+          35.94491
+        ]
+      },
+      "properties": {
+        "port_code": "POHANG",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "수경호",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 2,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 26.2,
         "suggested_action": "낮음",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"

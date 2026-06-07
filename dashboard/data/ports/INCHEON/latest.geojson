@@ -1,14 +1,14 @@
 {
   "type": "FeatureCollection",
   "schema_version": "1.0",
-  "generated_at": "2026-06-07T00:07:34.983Z",
+  "generated_at": "2026-06-07T00:20:18.067Z",
   "properties": {
     "port_code": "INCHEON",
     "port_name_kr": "인천항",
     "port_name_en": "Incheon",
     "snapshot_type": "72h",
-    "window_start": "2026-06-04T00:07:34.983Z",
-    "window_end": "2026-06-07T00:07:34.983Z",
+    "window_start": "2026-06-04T00:20:18.068Z",
+    "window_end": "2026-06-07T00:20:18.067Z",
     "bbox": [
       126.45,
       37.25,
@@ -18,14 +18,19 @@
     "feature_count": 141,
     "data_health": {
       "status": "healthy",
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "source_status": {
         "dashboard_vessels": "available",
         "biofouling_scores": "available",
         "source_csv": "not_configured",
         "mof_ais_dynamic": "not_configured",
         "mof_ais_info": "not_configured",
-        "port_operation": "not_configured"
+        "port_operation": "not_configured",
+        "supabase_vessel_snapshots": {
+          "status": "available",
+          "run_id": "run_20260607000230891_c46deee5",
+          "row_count": 1395
+        }
       },
       "missing_sources": [
         "mof_ais_dynamic"
@@ -49,986 +54,6 @@
     }
   },
   "features": [
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.5786,
-          37.33639
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "우림 5",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 112.9,
-        "residence_change_pct_72_vs_30d": 386.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 87.8,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.52946,
-          37.35814
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "GREBE ARROW",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 130.9,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.67165,
-          37.53628
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "XIN MING ZHOU 20",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 540,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.51553,
-          37.38255
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ADORA MEDITERRANEA",
-        "vessel_type": "Cruise Ship",
-        "residence_hours_72h": 74.6,
-        "residence_change_pct_72_vs_30d": 390.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.66112,
-          37.37295
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "K.JASMINE",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 98.4,
-        "residence_change_pct_72_vs_30d": 310,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.64345,
-          37.4754
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "VW PEACE",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 577.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.66006,
-          37.3664
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ORIENTAL SUNSTONE",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 96,
-        "residence_change_pct_72_vs_30d": 267.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.52776,
-          37.39045
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "CONSISTENCE",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 400.9,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.67172,
-          37.51084
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SITC LIDE",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 451.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.65388,
-          37.47763
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HONOR PROSPER",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 629.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.65761,
-          37.43608
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ZHONG SHENG TUO HAI",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 562.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.52712,
-          37.47066
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SUNNY KALMIA",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 852.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.54634,
-          37.31005
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "RICH FLOWER",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 143,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.69231,
-          37.53053
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "GAIN OCEAN",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 268.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.64776,
-          37.4434
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "FUKUKAWA",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 146.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.69496,
-          37.52379
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "수성1",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 220,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.57125,
-          37.30349
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "GUO YANG ZHI XING",
-        "vessel_type": "케미칼 운반선",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 240.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.66907,
-          37.41188
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "단양",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 320.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 86.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53055,
-          37.49973
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "STI SOLACE",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 87.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 85.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.58505,
-          37.38914
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "우림 7",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 228.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 84.9,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.60947,
-          37.39347
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HONG TAI 659",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 5516.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 84.9,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.52148,
-          37.4632
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SITC QIUMING",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 321.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.67401,
-          37.32552
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "글로벌3호",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 296.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.687,
-          37.52714
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HARMONY YUNGANG",
-        "vessel_type": "국제카페리",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 221,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.58033,
-          37.31045
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "수성2",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 180.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.7,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.65657,
-          37.45558
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "XIN HE DA",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 67.2,
-        "residence_change_pct_72_vs_30d": 220,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.69733,
-          37.38495
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "MAERSK BERMUDA",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 67.2,
-        "residence_change_pct_72_vs_30d": 413,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.57929,
-          37.39109
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "GAS AQUARIUS",
-        "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 96.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 83.1,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.60709,
-          37.43464
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "NIMTOFTE MAERSK",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 65.9,
-        "residence_change_pct_72_vs_30d": 266.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 82.8,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.50127,
-          37.47691
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "백령 153호",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 64.8,
-        "residence_change_pct_72_vs_30d": 130.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 82.1,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53314,
-          37.34988
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HANSUNG INCHEON",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 64.8,
-        "residence_change_pct_72_vs_30d": 112.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 82.1,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.62687,
-          37.54558
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ALPHA LEGEND",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 71.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 81.8,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.59564,
-          37.37934
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "모닝 빅토리호",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 59.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 79.9,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.58582,
-          37.40626
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "리나호",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 57.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 79.6,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.6806,
-          37.50965
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "GRAND MUSE",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 115.2,
-        "residence_change_pct_72_vs_30d": 53.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 78.8,
-        "suggested_action": "즉시 영업 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
     {
       "type": "Feature",
       "geometry": {
@@ -1072,42 +97,14 @@
         "imo": "",
         "vessel_name": "HL SAMCHEONPO",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 333.6,
-        "residence_change_pct_72_vs_30d": 0.2,
+        "residence_hours_72h": 332.8,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18.6,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0.6,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 73,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.5905,
-          37.44407
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "제23금진",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 208.8,
-        "residence_change_pct_72_vs_30d": 0.4,
-        "sst_72h_c_avg": 18.6,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0.6,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 73,
+        "combined_score": 72.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1128,8 +125,8 @@
         "imo": "",
         "vessel_name": "미래3호",
         "vessel_type": "PCTC",
-        "residence_hours_72h": 417.6,
-        "residence_change_pct_72_vs_30d": 0.1,
+        "residence_hours_72h": 417.1,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18.6,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0.6,
@@ -1146,26 +143,82 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.51881,
-          37.35436
+          126.5905,
+          37.44407
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "웨스트 카페리",
+        "vessel_name": "제23금진",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 74.6,
-        "residence_change_pct_72_vs_30d": 15.1,
+        "residence_hours_72h": 208,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18.6,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0.6,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 72.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.53055,
+          37.49973
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "STI SOLACE",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 72.4,
+        "combined_score": 71.1,
         "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.5786,
+          37.33639
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "우림 5",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 112.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 71.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -1184,42 +237,14 @@
         "imo": "",
         "vessel_name": "한강5호",
         "vessel_type": "모래운반선",
-        "residence_hours_72h": 76.8,
-        "residence_change_pct_72_vs_30d": 1.6,
+        "residence_hours_72h": 75.6,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 71.4,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.55614,
-          37.45906
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "한아티101호",
-        "vessel_type": "기타 예선",
-        "residence_hours_72h": 110.4,
-        "residence_change_pct_72_vs_30d": 0.9,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 71.3,
+        "combined_score": 71.1,
         "suggested_action": "관심 후보",
         "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
@@ -1241,6 +266,34 @@
         "vessel_name": "마린301호",
         "vessel_type": "기타 예선",
         "residence_hours_72h": 72,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 71.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 78,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.55614,
+          37.45906
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "한아티101호",
+        "vessel_type": "기타 예선",
+        "residence_hours_72h": 109.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
@@ -1314,80 +367,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.70011,
-          37.5448
+          126.62687,
+          37.54558
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "MORNING STAR",
-        "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 64.8,
-        "residence_change_pct_72_vs_30d": 28.8,
+        "vessel_name": "ALPHA LEGEND",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70.2,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.5768,
-          37.34104
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "하모니 케미스트",
-        "vessel_type": "케미칼 운반선",
-        "residence_hours_72h": 120,
-        "residence_change_pct_72_vs_30d": 0.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.50336,
-          37.40413
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "펑호우 89",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 168,
-        "residence_change_pct_72_vs_30d": 0.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70.1,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1408,14 +405,14 @@
         "imo": "",
         "vessel_name": "NEW JOURNEY",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 213.6,
-        "residence_change_pct_72_vs_30d": 0.5,
+        "residence_hours_72h": 212.6,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1426,24 +423,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.52929,
-          37.41677
+          126.52946,
+          37.35814
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "ELEGANT SW",
+        "vessel_name": "GREBE ARROW",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 127.2,
-        "residence_change_pct_72_vs_30d": 0.3,
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1454,24 +451,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.62047,
-          37.4807
+          126.67165,
+          37.53628
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "비룡호",
-        "vessel_type": "급유선",
-        "residence_hours_72h": 242.4,
-        "residence_change_pct_72_vs_30d": 0.4,
+        "vessel_name": "XIN MING ZHOU 20",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1482,24 +479,52 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.59868,
-          37.35382
+          126.51553,
+          37.38255
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "제물포2호",
-        "vessel_type": "견인용예선",
-        "residence_hours_72h": 194.4,
-        "residence_change_pct_72_vs_30d": 0.3,
+        "vessel_name": "ADORA MEDITERRANEA",
+        "vessel_type": "Cruise Ship",
+        "residence_hours_72h": 74.6,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 70,
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.66112,
+          37.37295
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "K.JASMINE",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 98.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1566,6 +591,146 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.64345,
+          37.4754
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "VW PEACE",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.66006,
+          37.3664
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ORIENTAL SUNSTONE",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 95.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.58582,
+          37.40626
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "리나호",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.52776,
+          37.39045
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "CONSISTENCE",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.52929,
+          37.41677
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ELEGANT SW",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 126.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           126.63018,
           37.30742
         ]
@@ -1577,6 +742,202 @@
         "vessel_name": "가연",
         "vessel_type": "Tanker",
         "residence_hours_72h": 94.5,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.51881,
+          37.35436
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "웨스트 카페리",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 74.6,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.50336,
+          37.40413
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "펑호우 89",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 166.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.67172,
+          37.51084
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SITC LIDE",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.65388,
+          37.47763
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "HONOR PROSPER",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.65761,
+          37.43608
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ZHONG SHENG TUO HAI",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.52712,
+          37.47066
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SUNNY KALMIA",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.62047,
+          37.4807
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "비룡호",
+        "vessel_type": "급유선",
+        "residence_hours_72h": 241.5,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
@@ -1622,6 +983,258 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.6806,
+          37.50965
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "GRAND MUSE",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.59868,
+          37.35382
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "제물포2호",
+        "vessel_type": "견인용예선",
+        "residence_hours_72h": 193.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.54634,
+          37.31005
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "RICH FLOWER",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.59564,
+          37.37934
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "모닝 빅토리호",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.69231,
+          37.53053
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "GAIN OCEAN",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.64776,
+          37.4434
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "FUKUKAWA",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.69496,
+          37.52379
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "수성1",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.57125,
+          37.30349
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "GUO YANG ZHI XING",
+        "vessel_type": "케미칼 운반선",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.66907,
+          37.41188
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "단양",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 114.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 69.9,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           126.60819,
           37.44942
         ]
@@ -1650,24 +1263,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.49759,
-          37.4519
+          126.5768,
+          37.34104
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "강남호",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 13.7,
+        "vessel_name": "하모니 케미스트",
+        "vessel_type": "케미칼 운반선",
+        "residence_hours_72h": 120,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 69.3,
+        "combined_score": 69.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -1678,18 +1291,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.52623,
-          37.32625
+          126.58505,
+          37.38914
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "우혁",
+        "vessel_name": "우림 7",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 120.5,
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -1706,18 +1319,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.70005,
-          37.50589
+          126.60947,
+          37.39347
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "진양",
-        "vessel_type": "시멘트운반선",
+        "vessel_name": "HONG TAI 659",
+        "vessel_type": "Container Ship",
         "residence_hours_72h": 67.4,
-        "residence_change_pct_72_vs_30d": 7.7,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -1725,35 +1338,7 @@
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
         "combined_score": 68.3,
         "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53946,
-          37.53948
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "상아호",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 67.2,
-        "residence_change_pct_72_vs_30d": 1.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.2,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -1774,62 +1359,6 @@
         "vessel_type": "Bulk Carrier",
         "residence_hours_72h": 67.4,
         "residence_change_pct_72_vs_30d": 0,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.5761,
-          37.52875
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "VISIO",
-        "vessel_type": "Cruise Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 240,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.56379,
-          37.41132
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "XIN CHI WAN",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 104,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -1874,18 +1403,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.56111,
-          37.4423
+          126.57929,
+          37.39109
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "GUO YUN HAI",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 410,
+        "vessel_name": "GAS AQUARIUS",
+        "vessel_type": "Gas Carrier",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -1902,186 +1431,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.64359,
-          37.47322
+          126.49759,
+          37.4519
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "XING PING",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 191.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.63323,
-          37.53406
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "KAI PING",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 191.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.65546,
-          37.45705
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "스카이 티아라",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 213.8,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53021,
-          37.52828
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "스카이 레인보우",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 126.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.59975,
-          37.30429
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "CONCERTO",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 140,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.51344,
-          37.33518
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "YA LU JIANG",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 380,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 67.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.64979,
-          37.36396
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "SAWASDEE MIMOSA",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 172,
+        "vessel_name": "강남호",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -2126,18 +1487,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.53727,
-          37.48866
+          126.52148,
+          37.4632
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "AN DONG 68",
+        "vessel_name": "SITC QIUMING",
         "vessel_type": "Container Ship",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 308,
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -2154,18 +1515,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.65416,
-          37.49311
+          126.67401,
+          37.32552
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "미래9호",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 1216.1,
+        "vessel_name": "글로벌3호",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -2182,18 +1543,18 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.58812,
-          37.4376
+          126.687,
+          37.52714
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "ORIENTAL PEARL VIII",
+        "vessel_name": "HARMONY YUNGANG",
         "vessel_type": "국제카페리",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 410,
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -2210,18 +1571,46 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.62739,
-          37.53284
+          126.70005,
+          37.50589
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "덕산훼리호",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 213.8,
+        "vessel_name": "진양",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 67.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.58033,
+          37.31045
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "수성2",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 67.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
@@ -2248,14 +1637,42 @@
         "imo": "",
         "vessel_name": "AMERICA GRAECA",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 67.2,
+        "residence_hours_72h": 66.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 66.9,
+        "combined_score": 66.7,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.69733,
+          37.38495
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "MAERSK BERMUDA",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 66.8,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.7,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2286,6 +1703,90 @@
         "combined_score": 66.6,
         "suggested_action": "관심 후보",
         "data_confidence_score": 78,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.53946,
+          37.53948
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "상아호",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 66.2,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.3,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.65657,
+          37.45558
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "XIN HE DA",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 66.2,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.3,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.60709,
+          37.43464
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "NIMTOFTE MAERSK",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 65.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 66.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -2350,24 +1851,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.66402,
-          37.53347
+          126.50127,
+          37.47691
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "ANGELIC ANNA",
-        "vessel_type": "기타선",
-        "residence_hours_72h": 64.8,
+        "vessel_name": "백령 153호",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 64.2,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 65.4,
+        "combined_score": 65.1,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2378,24 +1879,80 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.52084,
-          37.39786
+          126.53314,
+          37.34988
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "POLARIS",
-        "vessel_type": "Crude Tanker",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 81.3,
+        "vessel_name": "HANSUNG INCHEON",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 64.2,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 64,
+        "combined_score": 65.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.70011,
+          37.5448
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "MORNING STAR",
+        "vessel_type": "시멘트운반선",
+        "residence_hours_72h": 64.2,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 65.1,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.66402,
+          37.53347
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ANGELIC ANNA",
+        "vessel_type": "기타선",
+        "residence_hours_72h": 63.9,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 64.9,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2444,126 +2001,14 @@
         "imo": "",
         "vessel_name": "해령호",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 57.6,
-        "residence_change_pct_72_vs_30d": 1.2,
+        "residence_hours_72h": 56.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 61.1,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.64978,
-          37.35542
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "HONG DA XIN 778",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 24.1,
-        "residence_change_pct_72_vs_30d": 864,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 57.9,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.63082,
-          37.51536
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "광양 프론티어",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 24.1,
-        "residence_change_pct_72_vs_30d": 3916.7,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 56.7,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53065,
-          37.41613
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "ORION TRADER",
-        "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 24,
-        "residence_change_pct_72_vs_30d": 293.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 56.6,
-        "suggested_action": "관심 후보",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.57333,
-          37.38924
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "A ROKKO",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 24,
-        "residence_change_pct_72_vs_30d": 200,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 56.6,
+        "combined_score": 60.5,
         "suggested_action": "관심 후보",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2612,15 +2057,43 @@
         "imo": "",
         "vessel_name": "NEW DEDICATION",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 48,
-        "residence_change_pct_72_vs_30d": 0.4,
+        "residence_hours_72h": 47.8,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 55,
-        "suggested_action": "관심 후보",
+        "combined_score": 54.8,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.56646,
+          37.40815
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "유진1호",
+        "vessel_type": "견인용예선",
+        "residence_hours_72h": 45.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 53.1,
+        "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
@@ -2640,14 +2113,14 @@
         "imo": "",
         "vessel_name": "두라 스타",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 11.8,
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 53.6,
+        "combined_score": 51.4,
         "suggested_action": "관찰",
         "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
@@ -2658,54 +2131,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.56646,
-          37.40815
+          126.52623,
+          37.32625
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "유진1호",
-        "vessel_type": "견인용예선",
-        "residence_hours_72h": 45.6,
-        "residence_change_pct_72_vs_30d": 1.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 53.6,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.6482,
-          37.53118
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "한성9호",
+        "vessel_name": "우혁",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 19.6,
-        "residence_change_pct_72_vs_30d": 94.1,
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 52.9,
+        "combined_score": 51.4,
         "suggested_action": "관찰",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -2714,52 +2159,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.68447,
-          37.34084
+          126.5761,
+          37.52875
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "GREEN FAIRY",
-        "vessel_type": "General Cargo",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 4.3,
+        "vessel_name": "VISIO",
+        "vessel_type": "Cruise Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 51.2,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.54867,
-          37.37275
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "해원호",
-        "vessel_type": "급유선",
-        "residence_hours_72h": 40.8,
-        "residence_change_pct_72_vs_30d": 4.3,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 51.2,
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2780,14 +2197,14 @@
         "imo": "",
         "vessel_name": "PAN PEGASUS",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2808,14 +2225,14 @@
         "imo": "",
         "vessel_name": "DANAE R",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2836,14 +2253,70 @@
         "imo": "",
         "vessel_name": "WOOYANG BANDERS",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.56379,
+          37.41132
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "XIN CHI WAN",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.52084,
+          37.39786
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "POLARIS",
+        "vessel_type": "Crude Tanker",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2864,14 +2337,182 @@
         "imo": "",
         "vessel_name": "HUA YUN 1",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.56111,
+          37.4423
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "GUO YUN HAI",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.64359,
+          37.47322
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "XING PING",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.63323,
+          37.53406
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "KAI PING",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.65546,
+          37.45705
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "스카이 티아라",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.53021,
+          37.52828
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "스카이 레인보우",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.59975,
+          37.30429
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "CONCERTO",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2892,14 +2533,182 @@
         "imo": "",
         "vessel_name": "에스티 오션",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.68447,
+          37.34084
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "GREEN FAIRY",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.54867,
+          37.37275
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "해원호",
+        "vessel_type": "급유선",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.51344,
+          37.33518
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "YA LU JIANG",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.64979,
+          37.36396
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SAWASDEE MIMOSA",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.53727,
+          37.48866
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "AN DONG 68",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.65416,
+          37.49311
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "미래9호",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2920,14 +2729,70 @@
         "imo": "",
         "vessel_name": "드래곤스타",
         "vessel_type": "시멘트운반선",
-        "residence_hours_72h": 40.8,
+        "residence_hours_72h": 40.4,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 50.4,
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.58812,
+          37.4376
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ORIENTAL PEARL VIII",
+        "vessel_type": "국제카페리",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.62739,
+          37.53284
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "덕산훼리호",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 40.4,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 50.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -2948,44 +2813,16 @@
         "imo": "",
         "vessel_name": "17유성호",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 36,
+        "residence_hours_72h": 35.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 48.6,
+        "combined_score": 48.5,
         "suggested_action": "관찰",
         "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.54248,
-          37.45034
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "EASTERN HIGHWAY",
-        "vessel_type": "PCTC",
-        "residence_hours_72h": 19.2,
-        "residence_change_pct_72_vs_30d": 69.9,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 48.6,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -3106,62 +2943,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.51492,
-          37.53829
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "신향설란",
-        "vessel_type": "국제카페리",
-        "residence_hours_72h": 16.9,
-        "residence_change_pct_72_vs_30d": 74.2,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.9,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.53889,
-          37.4351
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "승진",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 33.6,
-        "residence_change_pct_72_vs_30d": 3.1,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.7,
-        "suggested_action": "관찰",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           126.63233,
           37.43959
         ]
@@ -3172,14 +2953,14 @@
         "imo": "",
         "vessel_name": "현대 유토피아호",
         "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 36,
+        "residence_hours_72h": 35.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.4,
+        "combined_score": 47.3,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3200,14 +2981,14 @@
         "imo": "",
         "vessel_name": "AURORA GUARDIAN",
         "vessel_type": "Gas Carrier",
-        "residence_hours_72h": 36,
+        "residence_hours_72h": 35.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.4,
+        "combined_score": 47.3,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3228,14 +3009,14 @@
         "imo": "",
         "vessel_name": "HE YUAN 1",
         "vessel_type": "Container Ship",
-        "residence_hours_72h": 36,
+        "residence_hours_72h": 35.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.4,
+        "combined_score": 47.3,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3256,16 +3037,44 @@
         "imo": "",
         "vessel_name": "에스 머큐리",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 36,
+        "residence_hours_72h": 35.8,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 47.4,
+        "combined_score": 47.3,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.53889,
+          37.4351
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "승진",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 32.6,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 46.5,
+        "suggested_action": "관찰",
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -3312,42 +3121,14 @@
         "imo": "",
         "vessel_name": "태창골드",
         "vessel_type": "Tanker",
-        "residence_hours_72h": 31.2,
-        "residence_change_pct_72_vs_30d": 2.3,
+        "residence_hours_72h": 30.5,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 44.8,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.61693,
-          37.40029
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "포천 카렌",
-        "vessel_type": "케미칼 운반선",
-        "residence_hours_72h": 22.3,
-        "residence_change_pct_72_vs_30d": 33.5,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 44.5,
+        "combined_score": 44,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3386,34 +3167,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.54379,
-          37.49515
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "두라7",
-        "vessel_type": "Tanker",
-        "residence_hours_72h": 24,
-        "residence_change_pct_72_vs_30d": 8.6,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 42.6,
-        "suggested_action": "관찰",
-        "data_confidence_score": 78,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           126.6544,
           37.49402
         ]
@@ -3442,26 +3195,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.67725,
-          37.37593
+          126.64978,
+          37.35542
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "광성호",
-        "vessel_type": "급유선",
-        "residence_hours_72h": 19.2,
-        "residence_change_pct_72_vs_30d": 27.2,
+        "vessel_name": "HONG DA XIN 778",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 24.1,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 41.5,
+        "combined_score": 41.2,
         "suggested_action": "관찰",
-        "data_confidence_score": 66,
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -3470,24 +3223,52 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.57844,
-          37.30255
+          126.54379,
+          37.49515
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "SITC MINGDE",
-        "vessel_type": "Container Ship",
-        "residence_hours_72h": 24,
-        "residence_change_pct_72_vs_30d": 4.3,
+        "vessel_name": "두라7",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 23,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 40.7,
+        "combined_score": 40.5,
+        "suggested_action": "관찰",
+        "data_confidence_score": 78,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.66332,
+          37.51385
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "AS CASPRIA",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 24.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 40,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3508,34 +3289,6 @@
         "imo": "",
         "vessel_name": "정진",
         "vessel_type": "Bulk Carrier",
-        "residence_hours_72h": 24.1,
-        "residence_change_pct_72_vs_30d": 0.4,
-        "sst_72h_c_avg": 18,
-        "sst_7d_c_avg": 18,
-        "sst_anomaly_c": 0,
-        "bias_offset_c": 0,
-        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 40.1,
-        "suggested_action": "관찰",
-        "data_confidence_score": 66,
-        "coordinate_source": "port_bbox_distribution"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.66332,
-          37.51385
-        ]
-      },
-      "properties": {
-        "port_code": "INCHEON",
-        "mmsi": "",
-        "imo": "",
-        "vessel_name": "AS CASPRIA",
-        "vessel_type": "Container Ship",
         "residence_hours_72h": 24.1,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
@@ -3582,6 +3335,34 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.63082,
+          37.51536
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "광양 프론티어",
+        "vessel_type": "General Cargo",
+        "residence_hours_72h": 24.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 40,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           126.50529,
           37.38666
         ]
@@ -3610,6 +3391,90 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.53065,
+          37.41613
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "ORION TRADER",
+        "vessel_type": "Bulk Carrier",
+        "residence_hours_72h": 23,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 39.3,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.57844,
+          37.30255
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "SITC MINGDE",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 23,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 39.3,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.57333,
+          37.38924
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "A ROKKO",
+        "vessel_type": "Container Ship",
+        "residence_hours_72h": 23,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 39.3,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           126.67131,
           37.31876
         ]
@@ -3620,14 +3485,42 @@
         "imo": "",
         "vessel_name": "TEMIT",
         "vessel_type": "General Cargo",
-        "residence_hours_72h": 24,
+        "residence_hours_72h": 23,
         "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 39.9,
+        "combined_score": 39.3,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.61693,
+          37.40029
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "포천 카렌",
+        "vessel_type": "케미칼 운반선",
+        "residence_hours_72h": 22.3,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 38.9,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3656,6 +3549,34 @@
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
         "combined_score": 37.5,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.6482,
+          37.53118
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "한성9호",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 19.6,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 37.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3722,26 +3643,26 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.51546,
-          37.40808
+          126.54248,
+          37.45034
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "16서해호",
-        "vessel_type": "견인용예선",
-        "residence_hours_72h": 14.4,
-        "residence_change_pct_72_vs_30d": 8.3,
+        "vessel_name": "EASTERN HIGHWAY",
+        "vessel_type": "PCTC",
+        "residence_hours_72h": 18,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 36.5,
+        "combined_score": 36.2,
         "suggested_action": "관찰",
-        "data_confidence_score": 78,
+        "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
       }
     },
@@ -3750,24 +3671,24 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.51976,
-          37.44489
+          126.67725,
+          37.37593
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "성진201호",
-        "vessel_type": "견인용예선",
-        "residence_hours_72h": 16.8,
-        "residence_change_pct_72_vs_30d": 3.1,
+        "vessel_name": "광성호",
+        "vessel_type": "급유선",
+        "residence_hours_72h": 18,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 36,
+        "combined_score": 36.2,
         "suggested_action": "관찰",
         "data_confidence_score": 66,
         "coordinate_source": "port_bbox_distribution"
@@ -3806,24 +3727,80 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          126.69847,
-          37.48763
+          126.51492,
+          37.53829
         ]
       },
       "properties": {
         "port_code": "INCHEON",
         "mmsi": "",
         "imo": "",
-        "vessel_name": "성진3호",
-        "vessel_type": "기타 예선",
-        "residence_hours_72h": 4.8,
-        "residence_change_pct_72_vs_30d": 17.1,
+        "vessel_name": "신향설란",
+        "vessel_type": "국제카페리",
+        "residence_hours_72h": 16.9,
+        "residence_change_pct_72_vs_30d": 0,
         "sst_72h_c_avg": 18,
         "sst_7d_c_avg": 18,
         "sst_anomaly_c": 0,
         "bias_offset_c": 0,
         "portmis_last_ts": "2026-06-07T00:02:30.907Z",
-        "combined_score": 32,
+        "combined_score": 35.5,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.51976,
+          37.44489
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "성진201호",
+        "vessel_type": "견인용예선",
+        "residence_hours_72h": 16.3,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 35.1,
+        "suggested_action": "관찰",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.51546,
+          37.40808
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "16서해호",
+        "vessel_type": "견인용예선",
+        "residence_hours_72h": 13.3,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 34.4,
         "suggested_action": "낮음",
         "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
@@ -3882,6 +3859,34 @@
         "combined_score": 30.1,
         "suggested_action": "낮음",
         "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.69847,
+          37.48763
+        ]
+      },
+      "properties": {
+        "port_code": "INCHEON",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "성진3호",
+        "vessel_type": "기타 예선",
+        "residence_hours_72h": 4.1,
+        "residence_change_pct_72_vs_30d": 0,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 28.7,
+        "suggested_action": "낮음",
+        "data_confidence_score": 78,
         "coordinate_source": "port_bbox_distribution"
       }
     },

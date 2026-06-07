@@ -502,6 +502,55 @@ function supabaseClient() {
   });
 }
 
+async function fetchSupabaseRows(client, table, queryBuilder, pageSize = 1000, maxRows = 10000) {
+  const allRows = [];
+  for (let from = 0; from < maxRows; from += pageSize) {
+    const to = Math.min(from + pageSize - 1, maxRows - 1);
+    const { data, error } = await queryBuilder(client.from(table).select("*")).range(from, to);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    allRows.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+  return allRows;
+}
+
+async function loadSupabaseSourceRecords() {
+  const supabase = supabaseClient();
+  if (!supabase) return { records: [], status: "skipped", reason: "missing_supabase_env" };
+  try {
+    const { data: pointerRows, error: pointerError } = await supabase
+      .from("active_dataset_pointer")
+      .select("active_run_id,promoted_at,active_collected_at")
+      .order("promoted_at", { ascending: false, nullsFirst: false })
+      .limit(1);
+    if (pointerError) throw new Error(`active_dataset_pointer: ${pointerError.message}`);
+    let runId = pointerRows?.[0]?.active_run_id || "";
+    if (!runId) {
+      const { data: latestRows, error: latestError } = await supabase
+        .from("vessel_snapshots")
+        .select("run_id")
+        .order("collected_at", { ascending: false, nullsFirst: false })
+        .limit(1);
+      if (latestError) throw new Error(`vessel_snapshots latest: ${latestError.message}`);
+      runId = latestRows?.[0]?.run_id || "";
+    }
+    if (!runId) return { records: [], status: "empty", reason: "no_active_run_id" };
+    const records = await fetchSupabaseRows(
+      supabase,
+      "vessel_snapshots",
+      query => query.eq("run_id", runId).order("port_code", { ascending: true })
+    );
+    return {
+      records: records.map(record => ({ ...record, _snapshot_source_path: "supabase:vessel_snapshots" })),
+      status: records.length ? "available" : "empty",
+      run_id: runId,
+      row_count: records.length
+    };
+  } catch (error) {
+    return { records: [], status: "failed", error: error.message };
+  }
+}
+
 async function writeSupabase(snapshots) {
   const supabase = supabaseClient();
   if (!supabase) return { status: "skipped", reason: "missing_supabase_env" };
@@ -666,10 +715,20 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const windowEnd = generatedAt;
   const windowStart = new Date(Date.now() - WINDOW_HOURS * 60 * 60 * 1000).toISOString();
-  const sourceRecords = loadSourceRecords();
+  const supabaseSource = await loadSupabaseSourceRecords();
+  const staticRecords = loadSourceRecords();
+  const sourceRecords = supabaseSource.records.length ? supabaseSource.records : staticRecords;
   const records = sourceRecords.length ? sourceRecords : buildMockRecords();
+  const sourceMode = supabaseSource.records.length ? "supabase_latest_run" : staticRecords.length ? "static_dashboard_json" : records.length ? "mock" : "empty";
   const bioLookup = buildBiofoulingLookup();
   const status = sourceStatus(records, bioLookup);
+  status.supabase_vessel_snapshots = {
+    status: supabaseSource.status,
+    reason: supabaseSource.reason,
+    error: supabaseSource.error,
+    run_id: supabaseSource.run_id,
+    row_count: supabaseSource.row_count || supabaseSource.records.length || 0
+  };
   const snapshots = [];
 
   for (const port of PORT_CONFIG) {
@@ -739,6 +798,7 @@ async function main() {
       source_status: status,
       missing_sources: records.length ? [] : ["dashboard_vessels"],
       db_status: dbStatus,
+      data_source_mode: sourceMode,
       mapbox_token_available: Boolean(publicMapboxToken())
     }
   };

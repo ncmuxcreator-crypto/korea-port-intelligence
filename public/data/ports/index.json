@@ -1,9 +1,63 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-07T00:07:34.983Z",
+  "generated_at": "2026-06-07T00:20:18.067Z",
   "snapshot_type": "72h",
   "record_count": 9,
   "ports": [
+    {
+      "port_code": "MOKPO",
+      "port_name_kr": "목포항",
+      "port_name_en": "Mokpo",
+      "latest_geojson_url": "/data/ports/MOKPO/latest.geojson",
+      "detail_url": "/ports/MOKPO/",
+      "bbox": [
+        126.25,
+        34.65,
+        126.55,
+        34.9
+      ],
+      "vessel_count": 1,
+      "avg_residence_hours": 65.3,
+      "avg_combined_score": 65.7,
+      "max_combined_score": 65.7,
+      "last_updated": "2026-06-07T00:20:18.067Z",
+      "data_health": {
+        "status": "healthy",
+        "last_updated": "2026-06-07T00:20:18.067Z",
+        "source_status": {
+          "dashboard_vessels": "available",
+          "biofouling_scores": "available",
+          "source_csv": "not_configured",
+          "mof_ais_dynamic": "not_configured",
+          "mof_ais_info": "not_configured",
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
+        },
+        "missing_sources": [
+          "mof_ais_dynamic"
+        ],
+        "stale_records_count": 0,
+        "bbox": [
+          126.25,
+          34.65,
+          126.55,
+          34.9
+        ],
+        "feature_count": 1,
+        "warnings": [],
+        "mapbox_token_available": false,
+        "position_note": "실좌표가 없는 Port-MIS 기반 선박은 항만 bbox 안에 안정적으로 배치됩니다.",
+        "db_status": {
+          "status": "completed",
+          "inserted_snapshots": 9,
+          "inserted_features": 1291
+        }
+      }
+    },
     {
       "port_code": "GWANGYANG_YEOSU",
       "port_name_kr": "광양·여수항",
@@ -17,20 +71,25 @@
         35.05
       ],
       "vessel_count": 87,
-      "avg_residence_hours": 80.6,
-      "avg_combined_score": 73.2,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 80.3,
+      "avg_combined_score": 62.9,
+      "max_combined_score": 74.4,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -66,20 +125,25 @@
         35.65
       ],
       "vessel_count": 229,
-      "avg_residence_hours": 87.9,
-      "avg_combined_score": 70.5,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 87.6,
+      "avg_combined_score": 62.3,
+      "max_combined_score": 74.6,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -103,55 +167,6 @@
       }
     },
     {
-      "port_code": "BUSAN",
-      "port_name_kr": "부산항",
-      "port_name_en": "Busan",
-      "latest_geojson_url": "/data/ports/BUSAN/latest.geojson",
-      "detail_url": "/ports/BUSAN/",
-      "bbox": [
-        128.85,
-        34.95,
-        129.25,
-        35.25
-      ],
-      "vessel_count": 552,
-      "avg_residence_hours": 266.1,
-      "avg_combined_score": 69,
-      "max_combined_score": 90.6,
-      "last_updated": "2026-06-07T00:07:34.983Z",
-      "data_health": {
-        "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
-        "source_status": {
-          "dashboard_vessels": "available",
-          "biofouling_scores": "available",
-          "source_csv": "not_configured",
-          "mof_ais_dynamic": "not_configured",
-          "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
-        },
-        "missing_sources": [
-          "mof_ais_dynamic"
-        ],
-        "stale_records_count": 0,
-        "bbox": [
-          128.85,
-          34.95,
-          129.25,
-          35.25
-        ],
-        "feature_count": 552,
-        "warnings": [],
-        "mapbox_token_available": false,
-        "position_note": "실좌표가 없는 Port-MIS 기반 선박은 항만 bbox 안에 안정적으로 배치됩니다.",
-        "db_status": {
-          "status": "completed",
-          "inserted_snapshots": 9,
-          "inserted_features": 1291
-        }
-      }
-    },
-    {
       "port_code": "POHANG",
       "port_name_kr": "포항항",
       "port_name_en": "Pohang",
@@ -164,20 +179,25 @@
         36.15
       ],
       "vessel_count": 59,
-      "avg_residence_hours": 109.6,
-      "avg_combined_score": 67.2,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 109.3,
+      "avg_combined_score": 62,
+      "max_combined_score": 74.6,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -201,6 +221,60 @@
       }
     },
     {
+      "port_code": "BUSAN",
+      "port_name_kr": "부산항",
+      "port_name_en": "Busan",
+      "latest_geojson_url": "/data/ports/BUSAN/latest.geojson",
+      "detail_url": "/ports/BUSAN/",
+      "bbox": [
+        128.85,
+        34.95,
+        129.25,
+        35.25
+      ],
+      "vessel_count": 552,
+      "avg_residence_hours": 265.8,
+      "avg_combined_score": 60.9,
+      "max_combined_score": 75.1,
+      "last_updated": "2026-06-07T00:20:18.067Z",
+      "data_health": {
+        "status": "healthy",
+        "last_updated": "2026-06-07T00:20:18.067Z",
+        "source_status": {
+          "dashboard_vessels": "available",
+          "biofouling_scores": "available",
+          "source_csv": "not_configured",
+          "mof_ais_dynamic": "not_configured",
+          "mof_ais_info": "not_configured",
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
+        },
+        "missing_sources": [
+          "mof_ais_dynamic"
+        ],
+        "stale_records_count": 0,
+        "bbox": [
+          128.85,
+          34.95,
+          129.25,
+          35.25
+        ],
+        "feature_count": 552,
+        "warnings": [],
+        "mapbox_token_available": false,
+        "position_note": "실좌표가 없는 Port-MIS 기반 선박은 항만 bbox 안에 안정적으로 배치됩니다.",
+        "db_status": {
+          "status": "completed",
+          "inserted_snapshots": 9,
+          "inserted_features": 1291
+        }
+      }
+    },
+    {
       "port_code": "MASAN_JINHAE",
       "port_name_kr": "마산·진해항",
       "port_name_en": "Masan / Jinhae",
@@ -213,20 +287,25 @@
         35.25
       ],
       "vessel_count": 112,
-      "avg_residence_hours": 89.7,
-      "avg_combined_score": 66.5,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 89.4,
+      "avg_combined_score": 60.5,
+      "max_combined_score": 75.1,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -250,55 +329,6 @@
       }
     },
     {
-      "port_code": "MOKPO",
-      "port_name_kr": "목포항",
-      "port_name_en": "Mokpo",
-      "latest_geojson_url": "/data/ports/MOKPO/latest.geojson",
-      "detail_url": "/ports/MOKPO/",
-      "bbox": [
-        126.25,
-        34.65,
-        126.55,
-        34.9
-      ],
-      "vessel_count": 1,
-      "avg_residence_hours": 65.3,
-      "avg_combined_score": 65.8,
-      "max_combined_score": 65.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
-      "data_health": {
-        "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
-        "source_status": {
-          "dashboard_vessels": "available",
-          "biofouling_scores": "available",
-          "source_csv": "not_configured",
-          "mof_ais_dynamic": "not_configured",
-          "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
-        },
-        "missing_sources": [
-          "mof_ais_dynamic"
-        ],
-        "stale_records_count": 0,
-        "bbox": [
-          126.25,
-          34.65,
-          126.55,
-          34.9
-        ],
-        "feature_count": 1,
-        "warnings": [],
-        "mapbox_token_available": false,
-        "position_note": "실좌표가 없는 Port-MIS 기반 선박은 항만 bbox 안에 안정적으로 배치됩니다.",
-        "db_status": {
-          "status": "completed",
-          "inserted_snapshots": 9,
-          "inserted_features": 1291
-        }
-      }
-    },
-    {
       "port_code": "PYEONGTAEK_DANGJIN",
       "port_name_kr": "평택·당진항",
       "port_name_en": "Pyeongtaek-Dangjin",
@@ -311,20 +341,25 @@
         37.15
       ],
       "vessel_count": 110,
-      "avg_residence_hours": 78.3,
-      "avg_combined_score": 65.6,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 78,
+      "avg_combined_score": 59.6,
+      "max_combined_score": 72.9,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -360,20 +395,25 @@
         37.6
       ],
       "vessel_count": 141,
-      "avg_residence_hours": 75.3,
-      "avg_combined_score": 63.1,
-      "max_combined_score": 87.8,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "avg_residence_hours": 74.9,
+      "avg_combined_score": 56.2,
+      "max_combined_score": 74.1,
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "healthy",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic"
@@ -412,17 +452,22 @@
       "avg_residence_hours": 0,
       "avg_combined_score": 0,
       "max_combined_score": 0,
-      "last_updated": "2026-06-07T00:07:34.983Z",
+      "last_updated": "2026-06-07T00:20:18.067Z",
       "data_health": {
         "status": "empty",
-        "last_updated": "2026-06-07T00:07:34.983Z",
+        "last_updated": "2026-06-07T00:20:18.067Z",
         "source_status": {
           "dashboard_vessels": "available",
           "biofouling_scores": "available",
           "source_csv": "not_configured",
           "mof_ais_dynamic": "not_configured",
           "mof_ais_info": "not_configured",
-          "port_operation": "not_configured"
+          "port_operation": "not_configured",
+          "supabase_vessel_snapshots": {
+            "status": "available",
+            "run_id": "run_20260607000230891_c46deee5",
+            "row_count": 1395
+          }
         },
         "missing_sources": [
           "mof_ais_dynamic",
@@ -457,7 +502,12 @@
       "source_csv": "not_configured",
       "mof_ais_dynamic": "not_configured",
       "mof_ais_info": "not_configured",
-      "port_operation": "not_configured"
+      "port_operation": "not_configured",
+      "supabase_vessel_snapshots": {
+        "status": "available",
+        "run_id": "run_20260607000230891_c46deee5",
+        "row_count": 1395
+      }
     },
     "missing_sources": [],
     "db_status": {
@@ -465,6 +515,7 @@
       "inserted_snapshots": 9,
       "inserted_features": 1291
     },
+    "data_source_mode": "supabase_latest_run",
     "mapbox_token_available": false
   }
 }
