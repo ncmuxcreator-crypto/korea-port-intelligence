@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "schema_version": "1.0",
+  "generated_at": "2026-06-07T00:07:34.983Z",
+  "properties": {
+    "port_code": "MOKPO",
+    "port_name_kr": "목포항",
+    "port_name_en": "Mokpo",
+    "snapshot_type": "72h",
+    "window_start": "2026-06-04T00:07:34.983Z",
+    "window_end": "2026-06-07T00:07:34.983Z",
+    "bbox": [
+      126.25,
+      34.65,
+      126.55,
+      34.9
+    ],
+    "feature_count": 1,
+    "data_health": {
+      "status": "healthy",
+      "last_updated": "2026-06-07T00:07:34.983Z",
+      "source_status": {
+        "dashboard_vessels": "available",
+        "biofouling_scores": "available",
+        "source_csv": "not_configured",
+        "mof_ais_dynamic": "not_configured",
+        "mof_ais_info": "not_configured",
+        "port_operation": "not_configured"
+      },
+      "missing_sources": [
+        "mof_ais_dynamic"
+      ],
+      "stale_records_count": 0,
+      "bbox": [
+        126.25,
+        34.65,
+        126.55,
+        34.9
+      ],
+      "feature_count": 1,
+      "warnings": [],
+      "mapbox_token_available": false,
+      "position_note": "실좌표가 없는 Port-MIS 기반 선박은 항만 bbox 안에 안정적으로 배치됩니다.",
+      "db_status": {
+        "status": "completed",
+        "inserted_snapshots": 9,
+        "inserted_features": 1291
+      }
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.45998,
+          34.71304
+        ]
+      },
+      "properties": {
+        "port_code": "MOKPO",
+        "mmsi": "",
+        "imo": "",
+        "vessel_name": "거제유비아",
+        "vessel_type": "Tanker",
+        "residence_hours_72h": 65.3,
+        "residence_change_pct_72_vs_30d": 0.5,
+        "sst_72h_c_avg": 18,
+        "sst_7d_c_avg": 18,
+        "sst_anomaly_c": 0,
+        "bias_offset_c": 0,
+        "portmis_last_ts": "2026-06-07T00:02:30.907Z",
+        "combined_score": 65.8,
+        "suggested_action": "관심 후보",
+        "data_confidence_score": 66,
+        "coordinate_source": "port_bbox_distribution"
+      }
+    }
+  ]
+}
