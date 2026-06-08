@@ -428,10 +428,15 @@ for (const item of rows(intelligencePayloads.customerMemory)) {
   assert(item.fleet_history && typeof item.fleet_history === "object", "Customer memory item must include fleet history summary.");
 }
 for (const item of rows(intelligencePayloads.fleetPenetration)) {
-  for (const field of ["operator_name", "fleet_size_korea", "targeted_vessels", "won_vessels", "penetration_rate", "opportunity_gap", "estimated_remaining_revenue", "reason_summary", "recommended_action"]) {
+  for (const field of ["operator_name", "fleet_size_korea", "targeted_vessels", "contacted_vessels", "quoted_vessels", "won_vessels", "lost_vessels", "penetration_rate", "quote_rate", "win_rate", "opportunity_gap", "estimated_remaining_revenue", "reason_summary", "recommended_action", "recommended_next_action"]) {
     assert(field in item, `Fleet penetration item missing required field: ${field}`);
   }
+  for (const field of ["fleet_size_korea", "targeted_vessels", "contacted_vessels", "quoted_vessels", "won_vessels", "lost_vessels", "opportunity_gap", "estimated_remaining_revenue"]) {
+    assert(Number.isFinite(Number(item[field])) && Number(item[field]) >= 0, `Fleet penetration numeric field must be non-negative: ${field}`);
+  }
   assert(Number(item.penetration_rate || 0) >= 0 && Number(item.penetration_rate || 0) <= 100, "Fleet penetration rate must be a 0-100 percentage.");
+  assert(Number(item.quote_rate || 0) >= 0 && Number(item.quote_rate || 0) <= 100, "Fleet quote rate must be a 0-100 percentage.");
+  assert(Number(item.win_rate || 0) >= 0 && Number(item.win_rate || 0) <= 100, "Fleet win rate must be a 0-100 percentage.");
 }
 for (const item of rows(intelligencePayloads.fleetExpansion)) {
   for (const field of ["operator_name", "known_korea_vessels", "total_operator_vessels", "high_opportunity_vessels", "unseen_vessels", "fleet_expansion_score", "recommended_action"]) {
