@@ -1,310 +1,249 @@
-# Supabase RLS Security Audit
+# Supabase RLS Security Hardening Audit
 
-Generated: 2026-06-03 KST
+Generated: 2026-06-10 KST
 
-Applied to production Supabase: 2026-06-03 KST
+Scope: all base and partitioned tables in the `public` schema
 
-Scope: public schema tables used by the port intelligence pipeline and dashboard serving path.
+Mode: read-only audit. No migration was applied by this audit.
 
-The initial audit was read-only. After operator approval, the RLS migration in this document was applied to the production Supabase database.
+## Executive Summary
 
-## Summary
+The production Supabase project still has a public-schema RLS exposure.
 
-The audited Supabase database has a critical RLS exposure.
+- Public tables audited: 63
+- RLS disabled: 48
+- SAFE: 15
+- WARNING: 0
+- CRITICAL: 48
+- Critical business tables still exposed: 4
 
-- 12 of 12 audited public tables have Row Level Security disabled.
-- 12 of 12 audited tables grant broad privileges to `anon` and `authenticated`.
-- Broad grants include `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `REFERENCES`, and `TRIGGER`.
-- Deny-all policies now exist for `anon` and `authenticated` on the audited tables.
+The original core dashboard tables have already been hardened, but many newer intelligence, enrichment, route, operator, event, and audit tables still have RLS disabled while broad `anon` and `authenticated` grants exist. This matches the Supabase warning `rls_disabled_in_public` / `Table publicly accessible`.
 
-Because these tables contain vessel identity, operational snapshots, commercial opportunity scores, risk signals, lead data, and active dataset pointers, the pre-migration state was treated as `CRITICAL`. The production database has now been moved to a restricted service-role access model for the audited tables.
+## Static JSON Architecture Review
 
-## Method
+Expected serving path:
 
-Queried PostgreSQL catalog tables through the Supabase pooler using the local DB connection string:
+```text
+GitHub Actions / Longterm Update
+-> Supabase long-term storage
+-> latest successful static JSON snapshot
+-> frontend dashboard
+```
 
-- `pg_class.relrowsecurity`
-- `pg_class.relforcerowsecurity`
-- `pg_policies`
-- `information_schema.role_table_grants`
+The frontend should not need direct table reads from Supabase. Based on this architecture:
 
-Values below are estimated row counts from `pg_stat_user_tables`.
+- Enable RLS on all public intelligence tables.
+- Revoke direct `anon` and `authenticated` table grants.
+- Use service-role credentials only from scheduled update jobs, backend scripts, and trusted server-side workers.
+- Keep browser-facing data in generated static JSON snapshots.
+- If a future authenticated customer product needs DB access, expose narrow views/RPCs with explicit tenant-aware policies instead of opening raw tables.
 
-## Findings
+## Critical Business Table Review
 
-| Table | Rows | RLS Enabled? | Public Exposure Risk | Recommended Policy | Status |
+| Table | Status | Notes |
+|---|---|---|
+| `vessel_master` | SAFE | RLS enabled; no anon access detected. |
+| `vessel_snapshots` | SAFE | RLS enabled; no anon access detected. |
+| `vessel_entities` | SAFE | RLS enabled; no anon access detected. |
+| `port_call_master` | SAFE | RLS enabled; no anon access detected. |
+| `opportunity_master` | SAFE | RLS enabled; no anon access detected. |
+| `risk_history` | SAFE | RLS enabled; no anon access detected. |
+| `commercial_leads` | SAFE | RLS enabled; no anon access detected. |
+| `operator_contact_history` | SAFE | RLS enabled; no anon access detected. |
+| `sales_candidates_current` | SAFE | RLS enabled; no anon access detected. |
+| `immediate_targets_current` | SAFE | RLS enabled; no anon access detected. |
+| `dashboard_summary_snapshots` | SAFE | RLS enabled; no anon access detected. |
+| `active_dataset_pointer` | SAFE | RLS enabled; no anon access detected. |
+| `vessel_visits` | NOT FOUND | Not present in the audited public schema. |
+| `feature_store` | CRITICAL | RLS disabled; public read/write grants detected. |
+| `feature_snapshots` | CRITICAL | RLS disabled; public read/write grants detected. |
+| `explainability_snapshots` | CRITICAL | RLS disabled; public read/write grants detected. |
+| `rule_evaluations` | CRITICAL | RLS disabled; public read/write grants detected. |
+
+## Full Public Table Audit
+
+`anon_access_possible` means public grants exist and either RLS is disabled or a public policy exists.
+
+| Table | Row Count | RLS Enabled | Anon Access Possible | Service Role Access | Risk |
 |---|---:|---|---|---|---|
-| `vessel_master` | 1,831 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Vessel identity and enrichment cache can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `vessel_snapshots` | 1,530 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Full vessel snapshot payloads can be exposed or modified. | Enable RLS, revoke public grants, service-role only. Dashboard should use Worker/static JSON, not direct public DB access. | CRITICAL |
-| `vessel_entities` | 1,854 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Identity graph can be exposed or corrupted. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `port_call_master` | 1,530 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Port-call intelligence and commercial signals can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `opportunity_master` | 2,210 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Sales scoring and opportunity history can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `risk_history` | 1,427 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Risk scoring history can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `commercial_leads` | 1 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Commercial lead data is directly exposed. | Enable RLS, revoke public grants, deny public access. | CRITICAL |
-| `operator_contact_history` | 1,524 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Operator/contact intelligence can be exposed or modified. | Enable RLS, revoke public grants, deny public access. | CRITICAL |
-| `sales_candidates_current` | 29 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Current sales targets can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `immediate_targets_current` | 29 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Immediate sales targets can be exposed or modified. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `dashboard_summary_snapshots` | 97 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Dashboard snapshot source of truth can be exposed or overwritten. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
-| `active_dataset_pointer` | 1 | No | `anon` and `authenticated` have read/write/delete/truncate grants. Active run pointer can be exposed or changed, affecting fallback and snapshot selection. | Enable RLS, revoke public grants, service-role only. | CRITICAL |
+| `active_dataset_pointer` | 1 | yes | no | yes | SAFE |
+| `agent_master` | 658 | no | yes | yes | CRITICAL |
+| `agent_operator_links` | 58 | no | yes | yes | CRITICAL |
+| `agent_operator_mapping` | 58 | no | yes | yes | CRITICAL |
+| `anchorage_clusters` | 0 | no | yes | yes | CRITICAL |
+| `berth_aliases` | 0 | no | yes | yes | CRITICAL |
+| `berth_occupancy_history` | 0 | no | yes | yes | CRITICAL |
+| `commercial_leads` | 5 | yes | no | yes | SAFE |
+| `commercial_opportunity_daily` | 48 | no | yes | yes | CRITICAL |
+| `contact_master` | 680 | no | yes | yes | CRITICAL |
+| `dashboard_summary_snapshots` | 225 | yes | no | yes | SAFE |
+| `data_collection_runs` | 251 | no | yes | yes | CRITICAL |
+| `duplicate_cleanup_quarantine` | 3542 | no | yes | yes | CRITICAL |
+| `enrichment_match_candidates` | 600 | no | yes | yes | CRITICAL |
+| `explainability_snapshots` | 1440 | no | yes | yes | CRITICAL |
+| `feature_snapshots` | 1440 | no | yes | yes | CRITICAL |
+| `feature_store` | 1440 | no | yes | yes | CRITICAL |
+| `immediate_targets_current` | 862 | yes | no | yes | SAFE |
+| `imo_recovery_queue` | 3944 | no | yes | yes | CRITICAL |
+| `model_training_rows` | 943 | no | yes | yes | CRITICAL |
+| `operator_contact_history` | 1509 | yes | no | yes | SAFE |
+| `operator_fleet_opportunities` | 396 | no | yes | yes | CRITICAL |
+| `operator_graph_edges` | 274 | no | yes | yes | CRITICAL |
+| `operator_history` | 1509 | no | yes | yes | CRITICAL |
+| `operator_master` | 11 | no | yes | yes | CRITICAL |
+| `operator_snapshot_daily` | 99 | no | yes | yes | CRITICAL |
+| `opportunity_master` | 5774 | yes | no | yes | SAFE |
+| `pilot_schedule_events` | 180 | no | yes | yes | CRITICAL |
+| `pipeline_runs` | 0 | no | yes | yes | CRITICAL |
+| `port_call_master` | 1515 | yes | no | yes | SAFE |
+| `port_calls` | 0 | no | yes | yes | CRITICAL |
+| `port_congestion_snapshots` | 310 | no | yes | yes | CRITICAL |
+| `port_daily_summary` | 18 | no | yes | yes | CRITICAL |
+| `port_geojson_snapshots` | 36 | yes | no | yes | SAFE |
+| `port_monthly_summary` | 18 | no | yes | yes | CRITICAL |
+| `port_snapshot_daily` | 81 | no | yes | yes | CRITICAL |
+| `port_summary_current` | 9 | no | yes | yes | CRITICAL |
+| `port_vessel_features` | 5376 | yes | no | yes | SAFE |
+| `port_weekly_summary` | 18 | no | yes | yes | CRITICAL |
+| `predicted_arrivals` | 1266 | no | yes | yes | CRITICAL |
+| `private_sales_activity` | 0 | yes | no | yes | SAFE |
+| `raw_archive_index` | 0 | no | yes | yes | CRITICAL |
+| `risk_history` | 1440 | yes | no | yes | SAFE |
+| `route_graph_edges` | 0 | no | yes | yes | CRITICAL |
+| `route_patterns` | 1388 | no | yes | yes | CRITICAL |
+| `route_snapshot_daily` | 4875 | no | yes | yes | CRITICAL |
+| `rule_evaluations` | 2291 | no | yes | yes | CRITICAL |
+| `sales_candidates_current` | 1419 | yes | no | yes | SAFE |
+| `schema_migrations` | 9 | no | yes | yes | CRITICAL |
+| `source_collection_logs` | 47 | no | yes | yes | CRITICAL |
+| `terminal_aliases` | 0 | no | yes | yes | CRITICAL |
+| `vessel_aliases` | 5955 | no | yes | yes | CRITICAL |
+| `vessel_entities` | 2629 | yes | no | yes | SAFE |
+| `vessel_events` | 67578 | no | yes | yes | CRITICAL |
+| `vessel_events_duplicate_quarantine` | 0 | no | yes | yes | CRITICAL |
+| `vessel_identity_candidates` | 1515 | no | yes | yes | CRITICAL |
+| `vessel_master` | 2558 | yes | no | yes | SAFE |
+| `vessel_operator_history` | 1509 | no | yes | yes | CRITICAL |
+| `vessel_route_history` | 1068 | no | yes | yes | CRITICAL |
+| `vessel_snapshot_daily` | 1515 | no | yes | yes | CRITICAL |
+| `vessel_snapshots` | 1515 | yes | no | yes | SAFE |
+| `vessel_universe_audit` | 240 | no | yes | yes | CRITICAL |
+| `vessels` | 0 | no | yes | yes | CRITICAL |
 
-## Recommended Access Model
+## Policy Recommendation
 
-Use this model unless the product later introduces authenticated customer-facing views:
+For intelligence, lead, enrichment, route, operator, feature, model, and event tables:
 
-- Frontend: reads static JSON or Worker endpoints only.
-- Cloudflare Worker: reads Supabase using server-side `SUPABASE_SERVICE_ROLE_KEY`.
-- GitHub Actions Longterm Update: writes Supabase using service-role credentials.
-- `anon`: no direct table access.
-- `authenticated`: no direct table access until a user/tenant model is designed.
+- Access model: service role only.
+- `anon`: deny reads and writes.
+- `authenticated`: deny reads and writes until an explicit customer/tenant access model exists.
+- Dashboard reads: static JSON snapshots only.
+- Scheduled update jobs: service-role writes to Supabase, then emit latest successful JSON.
+
+Recommended deny-all pattern:
+
+```sql
+alter table public.<table_name> enable row level security;
+revoke all on table public.<table_name> from anon, authenticated;
+drop policy if exists "deny_public_<table_name>" on public.<table_name>;
+create policy "deny_public_<table_name>"
+on public.<table_name>
+for all
+to anon, authenticated
+using (false)
+with check (false);
+```
+
+Do not use `force row level security` in the first pass. The service-role update jobs should continue to bypass RLS.
 
 ## Migration Plan
 
-This SQL was applied to production Supabase after approval.
+Generated migration file:
 
-The plan does three things:
+- `migrations/20260610_001_public_schema_rls_hardening.sql`
 
-1. Enables RLS on all audited tables.
-2. Revokes broad table privileges from `anon` and `authenticated`.
-3. Adds explicit deny-all policies for non-service clients.
+This migration is intentionally not applied by this audit. It loops through all public base/partitioned tables, enables RLS, revokes public grants from `anon` and `authenticated`, and creates deny-all public policies.
 
-The Supabase `service_role` normally bypasses RLS. The policies below are still useful as documentation of intent and as a defensive fallback if bypass behavior is changed by role configuration.
+Minimum per-table RLS enable statements for currently disabled tables:
 
 ```sql
-begin;
-
--- 1. Enable RLS.
-alter table if exists public.vessel_master enable row level security;
-alter table if exists public.vessel_snapshots enable row level security;
-alter table if exists public.vessel_entities enable row level security;
-alter table if exists public.port_call_master enable row level security;
-alter table if exists public.opportunity_master enable row level security;
-alter table if exists public.risk_history enable row level security;
-alter table if exists public.commercial_leads enable row level security;
-alter table if exists public.operator_contact_history enable row level security;
-alter table if exists public.sales_candidates_current enable row level security;
-alter table if exists public.immediate_targets_current enable row level security;
-alter table if exists public.dashboard_summary_snapshots enable row level security;
-alter table if exists public.active_dataset_pointer enable row level security;
-
--- Optional hardening. Keep disabled if table owners need to bypass RLS during maintenance.
--- alter table if exists public.vessel_master force row level security;
--- alter table if exists public.vessel_snapshots force row level security;
--- alter table if exists public.vessel_entities force row level security;
--- alter table if exists public.port_call_master force row level security;
--- alter table if exists public.opportunity_master force row level security;
--- alter table if exists public.risk_history force row level security;
--- alter table if exists public.commercial_leads force row level security;
--- alter table if exists public.operator_contact_history force row level security;
--- alter table if exists public.sales_candidates_current force row level security;
--- alter table if exists public.immediate_targets_current force row level security;
--- alter table if exists public.dashboard_summary_snapshots force row level security;
--- alter table if exists public.active_dataset_pointer force row level security;
-
--- 2. Remove direct public table privileges.
-revoke all on table public.vessel_master from anon, authenticated;
-revoke all on table public.vessel_snapshots from anon, authenticated;
-revoke all on table public.vessel_entities from anon, authenticated;
-revoke all on table public.port_call_master from anon, authenticated;
-revoke all on table public.opportunity_master from anon, authenticated;
-revoke all on table public.risk_history from anon, authenticated;
-revoke all on table public.commercial_leads from anon, authenticated;
-revoke all on table public.operator_contact_history from anon, authenticated;
-revoke all on table public.sales_candidates_current from anon, authenticated;
-revoke all on table public.immediate_targets_current from anon, authenticated;
-revoke all on table public.dashboard_summary_snapshots from anon, authenticated;
-revoke all on table public.active_dataset_pointer from anon, authenticated;
-
--- 3. Drop any future/legacy policies with the same names before replacing them.
-drop policy if exists "deny_public_vessel_master" on public.vessel_master;
-drop policy if exists "deny_public_vessel_snapshots" on public.vessel_snapshots;
-drop policy if exists "deny_public_vessel_entities" on public.vessel_entities;
-drop policy if exists "deny_public_port_call_master" on public.port_call_master;
-drop policy if exists "deny_public_opportunity_master" on public.opportunity_master;
-drop policy if exists "deny_public_risk_history" on public.risk_history;
-drop policy if exists "deny_public_commercial_leads" on public.commercial_leads;
-drop policy if exists "deny_public_operator_contact_history" on public.operator_contact_history;
-drop policy if exists "deny_public_sales_candidates_current" on public.sales_candidates_current;
-drop policy if exists "deny_public_immediate_targets_current" on public.immediate_targets_current;
-drop policy if exists "deny_public_dashboard_summary_snapshots" on public.dashboard_summary_snapshots;
-drop policy if exists "deny_public_active_dataset_pointer" on public.active_dataset_pointer;
-
--- Deny-all policies. With no public grants, these are an extra guardrail.
-create policy "deny_public_vessel_master"
-on public.vessel_master
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_vessel_snapshots"
-on public.vessel_snapshots
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_vessel_entities"
-on public.vessel_entities
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_port_call_master"
-on public.port_call_master
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_opportunity_master"
-on public.opportunity_master
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_risk_history"
-on public.risk_history
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_commercial_leads"
-on public.commercial_leads
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_operator_contact_history"
-on public.operator_contact_history
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_sales_candidates_current"
-on public.sales_candidates_current
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_immediate_targets_current"
-on public.immediate_targets_current
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_dashboard_summary_snapshots"
-on public.dashboard_summary_snapshots
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-create policy "deny_public_active_dataset_pointer"
-on public.active_dataset_pointer
-for all
-to anon, authenticated
-using (false)
-with check (false);
-
-commit;
+ALTER TABLE public.agent_master ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.agent_operator_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.agent_operator_mapping ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.anchorage_clusters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.berth_aliases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.berth_occupancy_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.commercial_opportunity_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_master ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.data_collection_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.duplicate_cleanup_quarantine ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.enrichment_match_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.explainability_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feature_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feature_store ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.imo_recovery_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.model_training_rows ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.operator_fleet_opportunities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.operator_graph_edges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.operator_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.operator_master ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.operator_snapshot_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pilot_schedule_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pipeline_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_congestion_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_daily_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_monthly_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_snapshot_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_summary_current ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.port_weekly_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.predicted_arrivals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.raw_archive_index ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.route_graph_edges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.route_patterns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.route_snapshot_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rule_evaluations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.schema_migrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.source_collection_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.terminal_aliases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_aliases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_events_duplicate_quarantine ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_identity_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_operator_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_route_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_snapshot_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessel_universe_audit ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vessels ENABLE ROW LEVEL SECURITY;
 ```
 
-## Optional Service-Role Documentation Policies
+## Verification
 
-These policies are not required for normal Supabase service-role behavior, because the service role bypasses RLS. If you want explicit policy documentation in the database, add service-role policies after confirming they do not interfere with the backend runtime.
+Read-only command:
 
-```sql
--- Example pattern. Repeat per table only after confirming runtime behavior.
-drop policy if exists "service_role_all_vessel_snapshots" on public.vessel_snapshots;
-create policy "service_role_all_vessel_snapshots"
-on public.vessel_snapshots
-for all
-to service_role
-using (true)
-with check (true);
+```bash
+npm run audit:security
 ```
 
-## Post-Migration Verification
+Expected current result before applying the migration:
 
-Production verification after applying the migration:
+- `public_tables: 63`
+- `rls_disabled: 48`
+- `critical: 48`
 
-- 12 of 12 audited tables have `rls_enabled = true`.
-- Remaining direct `anon` / `authenticated` / `public` grants: 0.
-- Each audited table has a deny-all policy for `anon` and `authenticated`.
-- `service_role` retains table privileges.
-- Service-role REST checks succeeded for `vessel_snapshots`, `active_dataset_pointer`, and `commercial_leads`.
-- `npm run audit:data` succeeded through service-role access.
-- `npm run audit:db` succeeded through service-role access.
-- Live Worker endpoints returned HTTP 200 for:
-  - `/api/bootstrap.json`
-  - `/api/targets/current.json`
-  - `/api/targets/categories.json`
-  - `/api/vessels/index.json`
+Expected result after applying the migration:
 
-Run these checks after applying the migration:
+- `rls_disabled: 0`
+- `critical: 0` for direct public table exposure
 
-```sql
-select
-  c.relname as table_name,
-  c.relrowsecurity as rls_enabled,
-  c.relforcerowsecurity as rls_forced
-from pg_class c
-join pg_namespace n on n.oid = c.relnamespace
-where n.nspname = 'public'
-  and c.relname in (
-    'vessel_master',
-    'vessel_snapshots',
-    'vessel_entities',
-    'port_call_master',
-    'opportunity_master',
-    'risk_history',
-    'commercial_leads',
-    'operator_contact_history',
-    'sales_candidates_current',
-    'immediate_targets_current',
-    'dashboard_summary_snapshots',
-    'active_dataset_pointer'
-  )
-order by c.relname;
+Also run:
 
-select table_name, grantee, privilege_type
-from information_schema.role_table_grants
-where table_schema = 'public'
-  and table_name in (
-    'vessel_master',
-    'vessel_snapshots',
-    'vessel_entities',
-    'port_call_master',
-    'opportunity_master',
-    'risk_history',
-    'commercial_leads',
-    'operator_contact_history',
-    'sales_candidates_current',
-    'immediate_targets_current',
-    'dashboard_summary_snapshots',
-    'active_dataset_pointer'
-  )
-  and grantee in ('anon', 'authenticated', 'public')
-order by table_name, grantee, privilege_type;
+```bash
+npm run validate
 ```
 
-Expected result:
+## Notes
 
-- Every audited table has `rls_enabled = true`.
-- No direct `anon` or `authenticated` grants remain.
-- Longterm Update still writes through service role.
-- Cloudflare Worker still reads through service role.
-- Public dashboard still renders from static JSON / Worker endpoints.
-
-## Risk Notes
-
-- Enabling RLS without service-role runtime credentials would break direct public PostgREST table reads. This is acceptable for the intended architecture because the dashboard should not query Supabase directly from the browser.
-- Do not add permissive `anon` policies for these tables unless a separate public-safe view is created.
-- If customer-facing access is added later, create narrow read-only views or RPCs rather than exposing operational tables.
+- This audit does not modify the database.
+- This audit does not change frontend or application logic.
+- Some RLS-enabled tables still show legacy public grants in the catalog, but `anon_access_possible` is `no` because deny-all RLS policies are active. The migration plan still revokes public grants across all public tables as defense in depth.
