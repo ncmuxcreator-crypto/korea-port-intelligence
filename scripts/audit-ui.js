@@ -215,7 +215,10 @@ const effectiveLoadSummary =
   html.match(/async function loadSummary\(\)\{([\s\S]*?)\nfunction flattenVesselPageRow/)?.[1] ||
   "";
 const businessSections = [
+  "dashboardNav",
+  "pageIntro",
   "executiveSummary",
+  "overviewCommandCenter",
   "todaySalesActions",
   "targetCategoryBlock",
   "vesselIntelligenceBlock",
@@ -243,24 +246,37 @@ const secondaryAutoLoad = /setTimeout\(\(\)=>loadSecondarySnapshotData|setTimeou
 const fullVesselStartup = /loadRows\(\)|loadAllVesselRows\(|ensureVesselIndex\(/.test(effectiveLoadSummary);
 const diagnosticsRunner = html.includes("runDiagnostics") && html.includes("상세 기술 진단 실행");
 const topTechnicalCards = /<aside class="grid sticky"(?![^>]*hidden)/.test(html);
+const structuredPages = ["overview", "sales", "vessels", "ports-fleets", "diagnostics"];
+const structuredPageChecks = structuredPages.map(page => ({
+  page,
+  present: html.includes(`key:"${page}"`) || html.includes(`key: "${page}"`) || html.includes(`data-page="${page}"`)
+}));
+const overviewOnlyBootstrap = html.includes("applyDashboardPage") && html.includes("overviewCommandCenter") && startupCalls[0] === "bootstrap";
+const diagnosticsDedicatedPage = html.includes('sections:["technicalDiagnostics"]') || html.includes('sections: ["technicalDiagnostics"]');
 
 console.log("\nBusiness-first layout checks:");
 for (const check of businessChecks) console.log(`- ${check.id}: ${check.present ? "present" : "missing"}`);
+for (const check of structuredPageChecks) console.log(`- page ${check.page}: ${check.present ? "present" : "missing"}`);
 console.log(`- startup API count: ${startupApiCount}`);
 console.log(`- bootstrap first-load source: ${startupCalls[0] === "bootstrap" ? "yes" : "no"}`);
+console.log(`- overview uses bootstrap-first shell: ${overviewOnlyBootstrap ? "yes" : "no"}`);
 console.log(`- full vessel list loads on startup: ${fullVesselStartup ? "yes" : "no"}`);
 console.log(`- secondary intelligence auto-loads on startup: ${secondaryAutoLoad ? "yes" : "no"}`);
 console.log(`- detailed diagnostics require user click: ${diagnosticsRunner ? "yes" : "no"}`);
 console.log(`- technical diagnostics above business sections: ${topTechnicalCards ? "yes" : "no"}`);
+console.log(`- diagnostics dedicated page: ${diagnosticsDedicatedPage ? "yes" : "no"}`);
 
 const layoutWarnings = [];
 if (startupApiCount > 3) layoutWarnings.push("startup API count > 3");
 if (startupCalls[0] !== "bootstrap") layoutWarnings.push("bootstrap.json is not the first-load source");
+if (!overviewOnlyBootstrap) layoutWarnings.push("overview page is not clearly bootstrap-first");
 if (fullVesselStartup) layoutWarnings.push("full vessel list loads on startup");
 if (secondaryAutoLoad) layoutWarnings.push("secondary intelligence loads on startup");
 if (!diagnosticsRunner) layoutWarnings.push("detailed technical diagnostics button missing");
 if (topTechnicalCards) layoutWarnings.push("technical diagnostics appear above business sections");
 if (businessChecks.some(check => !check.present)) layoutWarnings.push("one or more business sections are missing");
+if (structuredPageChecks.some(check => !check.present)) layoutWarnings.push("one or more structured dashboard pages are missing");
+if (!diagnosticsDedicatedPage) layoutWarnings.push("technical diagnostics are not isolated to a dedicated page");
 
 console.log("\nUI architecture warnings:");
 if (!layoutWarnings.length) console.log("- none");
