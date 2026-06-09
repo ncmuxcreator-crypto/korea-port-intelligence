@@ -3,7 +3,12 @@ import path from "path";
 import { pathToFileURL } from "url";
 
 const ROOT = process.cwd();
-const ENV_FILES = [".env.local", ".env"];
+const ENV_FILES = [
+  ".env.local",
+  ".env",
+  path.join("..", "hwkport-push", ".env.local"),
+  path.join("..", "hwkport-push", ".env")
+];
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;

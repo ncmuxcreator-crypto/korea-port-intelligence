@@ -1,101 +1,29 @@
 {
-  "generated_by": "local",
+  "generated_by": "scripts/export-static-from-supabase.js",
   "is_github_actions": false,
   "validation_mode": "local",
-  "serving_mode": "local_diagnostics",
-  "GITHUB_RUN_ID": null,
-  "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260607021140622_baa58c90",
-  "version": "17.7.0",
-  "build_name": "Backend Stability Batch",
-  "status_run_id": "run_20260607021140622_baa58c90",
-  "active_run_id": "run_20260607021140622_baa58c90",
+  "serving_mode": "static_json",
+  "run_id": "run_20260608221252238_21921d11",
+  "status_run_id": "run_20260608221252238_21921d11",
+  "active_run_id": "run_20260608221252238_21921d11",
   "stale_diagnostic": false,
   "placeholder": false,
-  "backend_stage": "actual_collector_backend_ready",
-  "generated_at": "2026-06-07T02:14:41.690Z",
-  "collector_execution_mode": "configured_sources_detected",
-  "supabase_status": "pending_final_snapshot",
-  "record_count": 1407,
-  "candidate_count": 1311,
-  "immediate_candidate_count": 246,
-  "changed_candidate_count": 122,
-  "collector_tiers": [
-    {
-      "tier": "base",
-      "name": "Port-call / berth signals",
-      "sources": [
-        "port_operation",
-        "berth_sources",
-        "pilot_sources",
-        "ulsan_core"
-      ],
-      "active_sources": [
-        "port_operation"
-      ],
-      "readiness_percent": 25,
-      "status": "partial"
-    },
-    {
-      "tier": "movement",
-      "name": "AIS / VTS movement signals",
-      "sources": [
-        "mof_ais_dynamic",
-        "mof_ais_info",
-        "mof_vts"
-      ],
-      "active_sources": [],
-      "readiness_percent": 0,
-      "status": "waiting"
-    },
-    {
-      "tier": "identity",
-      "name": "Vessel master enrichment",
-      "sources": [
-        "vessel_spec",
-        "port_facility",
-        "mof_ais_info"
-      ],
-      "active_sources": [],
-      "readiness_percent": 0,
-      "status": "waiting"
-    },
-    {
-      "tier": "storage",
-      "name": "Accumulation storage",
-      "sources": [
-        "supabase",
-        "google_drive"
-      ],
-      "active_sources": [
-        "supabase"
-      ],
-      "readiness_percent": 50,
-      "status": "partial"
-    },
-    {
-      "tier": "paid_optional",
-      "name": "Paid AIS overlay",
-      "sources": [
-        "marine_traffic",
-        "vesselfinder",
-        "aisstream"
-      ],
-      "active_sources": [],
-      "readiness_percent": 0,
-      "status": "waiting"
+  "generated_at": "2026-06-08T22:18:36.35+00:00",
+  "ok": true,
+  "status": "healthy",
+  "record_count": 1399,
+  "all_vessels_count": 1494,
+  "storage_status": {
+    "supabase": {
+      "status": "completed"
     }
-  ],
-  "backend_priorities": [
-    "Run lightweight collectors first; do not block the dashboard when a source fails.",
-    "Normalize vessel identity before scoring; use IMO/MMSI when available and vessel name only as fallback.",
-    "Append daily/hourly snapshots to Supabase; keep GitHub limited to current dashboard JSON.",
-    "Separate paid AIS from public-data base layer so cost does not block Korea candidate discovery."
-  ],
-  "next_backend_tasks": [
-    "Wire the first real public collector to produce normalized vessel rows.",
-    "Persist hourly candidate snapshots to Supabase with upsert keys.",
-    "Add source-level error reporting per collector.",
-    "Add port-stay duration calculation from repeated snapshots."
-  ]
+  },
+  "supabase_write": {
+    "status": "completed",
+    "post_write_verification": {
+      "status": "completed"
+    }
+  },
+  "promotion_status": "promoted",
+  "static_json_export": "completed"
 }
