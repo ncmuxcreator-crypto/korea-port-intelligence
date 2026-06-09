@@ -1,0 +1,159 @@
+{
+  "type": "FeatureCollection",
+  "name": "biofouling_next4d",
+  "schema_version": "1.0",
+  "window_hours": 96,
+  "ports": [
+    "부산",
+    "여수",
+    "광양"
+  ],
+  "data_health": {
+    "status": "mock",
+    "ports": [
+      "부산",
+      "여수",
+      "광양"
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0756,
+          35.0386
+        ]
+      },
+      "properties": {
+        "mmsi": "440123456",
+        "imo": "9812345",
+        "vessel_name": "DEMO-01",
+        "port_name_ko": "부산",
+        "lon": 129.0756,
+        "lat": 35.0386,
+        "ais_first_seen": "2026-06-05T00:00:00.000Z",
+        "ais_last_seen": "2026-06-09T00:00:00.000Z",
+        "residence_hours_96h": 52.3,
+        "sst_72h_c_avg": 20.7,
+        "sst_7d_c_avg": 19.8,
+        "sst_anomaly_c": 0.9,
+        "portmis_last_ts": "2026-06-09T00:00:00.000Z",
+        "combined_score": 0.78,
+        "score_reason_ko": "최근 96시간 중 항만 체류가 52.3시간으로 깁니다, 최근 수온이 7일 평균보다 0.9℃ 높습니다, Port-MIS 정보가 최근성 판단에 반영되었습니다. 72시간 평균 수온 20.7℃, 7일 평균 19.8℃ 기준으로 부착생물 위험은 높음 수준입니다.",
+        "data_health": {
+          "status": "mock",
+          "sources": [
+            "seed",
+            "AIS mock",
+            "Port-MIS mock",
+            "SST mock"
+          ]
+        },
+        "updated_at": "2026-06-09T00:00:00.000Z",
+        "score_components": {
+          "residence_component": 0.3632,
+          "sst_component": 0.135,
+          "recency_component": 0.28,
+          "portmis_recency_boost": 1.4,
+          "combined_score": 0.78
+        },
+        "risk_level_ko": "높음",
+        "suggested_action": "즉시 영업 후보"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.744,
+          34.74
+        ]
+      },
+      "properties": {
+        "mmsi": "440223456",
+        "imo": "9822345",
+        "vessel_name": "DEMO-02",
+        "port_name_ko": "여수",
+        "lon": 127.744,
+        "lat": 34.74,
+        "ais_first_seen": "2026-06-05T06:00:00.000Z",
+        "ais_last_seen": "2026-06-09T00:00:00.000Z",
+        "residence_hours_96h": 43.6,
+        "sst_72h_c_avg": 21.1,
+        "sst_7d_c_avg": 20.4,
+        "sst_anomaly_c": 0.7,
+        "portmis_last_ts": "2026-06-08T20:00:00.000Z",
+        "combined_score": 0.61,
+        "score_reason_ko": "최근 96시간 체류가 43.6시간입니다, 수온 이상치가 +0.7℃로 관찰됩니다, Port-MIS 정보가 최근성 판단에 반영되었습니다. 72시간 평균 수온 21.1℃, 7일 평균 20.4℃ 기준으로 부착생물 위험은 주의 수준입니다.",
+        "data_health": {
+          "status": "mock",
+          "sources": [
+            "seed",
+            "AIS mock",
+            "Port-MIS mock",
+            "SST mock"
+          ]
+        },
+        "updated_at": "2026-06-09T00:00:00.000Z",
+        "score_components": {
+          "residence_component": 0.3028,
+          "sst_component": 0.105,
+          "recency_component": 0.2,
+          "portmis_recency_boost": 1,
+          "combined_score": 0.61
+        },
+        "risk_level_ko": "주의",
+        "suggested_action": "관심 후보"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.695,
+          34.904
+        ]
+      },
+      "properties": {
+        "mmsi": "440323456",
+        "imo": "9832345",
+        "vessel_name": "DEMO-03",
+        "port_name_ko": "광양",
+        "lon": 127.695,
+        "lat": 34.904,
+        "ais_first_seen": "2026-06-06T00:00:00.000Z",
+        "ais_last_seen": "2026-06-09T00:00:00.000Z",
+        "residence_hours_96h": 31.4,
+        "sst_72h_c_avg": 21,
+        "sst_7d_c_avg": 20.8,
+        "sst_anomaly_c": 0.2,
+        "portmis_last_ts": "2026-06-08T12:00:00.000Z",
+        "combined_score": 0.37,
+        "score_reason_ko": "최근 96시간 체류가 31.4시간입니다, 수온 이상치가 +0.2℃로 관찰됩니다, Port-MIS 정보가 최근성 판단에 반영되었습니다. 72시간 평균 수온 21℃, 7일 평균 20.8℃ 기준으로 부착생물 위험은 낮음 수준입니다.",
+        "data_health": {
+          "status": "mock",
+          "sources": [
+            "seed",
+            "AIS mock",
+            "Port-MIS mock",
+            "SST mock"
+          ]
+        },
+        "updated_at": "2026-06-09T00:00:00.000Z",
+        "score_components": {
+          "residence_component": 0.2181,
+          "sst_component": 0.03,
+          "recency_component": 0.12,
+          "portmis_recency_boost": 0.6,
+          "combined_score": 0.37
+        },
+        "risk_level_ko": "낮음",
+        "suggested_action": "관찰"
+      }
+    }
+  ]
+}

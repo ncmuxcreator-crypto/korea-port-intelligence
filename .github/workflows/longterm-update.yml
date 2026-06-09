@@ -199,6 +199,11 @@ jobs:
           echo "Collectors are executed inside scripts/update.js -> collectKoreaData()"
           npm run update
 
+      - name: Generate Biofouling Next 4 Days GeoJSON
+        if: always()
+        continue-on-error: true
+        run: npm run biofouling:generate || echo "Biofouling Next 4 Days snapshot skipped"
+
       - name: Print collector diagnostics
         if: always()
         run: |
