@@ -16,6 +16,7 @@ function countRowsInFile(file) {
     if (Array.isArray(value?.items)) return value.items.length;
     if (Array.isArray(value?.vessels)) return value.vessels.length;
     if (Array.isArray(value?.candidates)) return value.candidates.length;
+    if (value && typeof value === "object" && (value.run_id || value.status_run_id || value.generated_at)) return 1;
     return Number(value?.record_count || value?.all_vessels_count || value?.target_vessels_count || value?.candidate_count || 0);
   } catch {
     return 0;
