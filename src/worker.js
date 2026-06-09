@@ -2184,12 +2184,7 @@ async function fetchAssetJson(env, path) {
 }
 
 function isLatestSnapshotAssetRoute(pathname = "") {
-  return pathname.endsWith("/bootstrap.json") ||
-    pathname.endsWith("/dashboard-summary.json") ||
-    pathname.endsWith("/status.json") ||
-    pathname.endsWith("/data-continuity.json") ||
-    pathname.endsWith("/candidates/top.json") ||
-    pathname.endsWith("/targets/current.json") ||
+  return pathname.endsWith("/targets/current.json") ||
     pathname.endsWith("/targets/categories.json") ||
     pathname.endsWith("/targets/static.json") ||
     pathname.endsWith("/arrival-pipeline.json") ||
@@ -7120,6 +7115,70 @@ function summaryCandidateItems(summary = {}) {
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
+function buildBootstrapSnapshotFromSummary(summary = {}, source = {}) {
+  const generatedAt = summary.generated_at || new Date().toISOString();
+  const items = summaryCandidateItems(summary);
+  const status = summary.status || {};
+  const priorityOf = item => String(firstNonEmpty(item.priority_label, item.sales_priority_band, item.candidate_band, "")).toUpperCase();
+  const hotItems = items.filter(item => priorityOf(item) === "HOT" || Number(item.opportunity_score || item.sales_priority_score || 0) >= 75);
+  const warmItems = items.filter(item => priorityOf(item) === "WARM" || (Number(item.opportunity_score || item.sales_priority_score || 0) >= 50 && priorityOf(item) !== "HOT"));
+  const numberField = (...values) => {
+    const value = firstFiniteNumber(...values);
+    return Number.isFinite(Number(value)) ? Number(value) : 0;
+  };
+  const topCandidates = items.slice(0, 10).map((item, index) => withVesselDisplay({ ...item, rank: item.rank || index + 1 }));
+  const ports = Array.isArray(summary.ports) ? summary.ports.slice(0, 20) : [];
+  const totalVessels = numberField(summary.all_vessels_count, summary.total_vessels, status.all_vessels_count, summary.record_count);
+  const salesTargets = numberField(summary.sales_target_count, status.sales_target_count, summary.target_count, items.length);
+  const immediateTargets = numberField(summary.immediate_target_count, status.immediate_target_count, hotItems.length);
+  const latestSuccessfulRunId = summary.latest_successful_run_id || summary.summary_run_id || summary.run_id || status.latest_successful_run_id || null;
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: publicDataMode(summary.data_source_used || source.data_source_used, { ...source, fallback_used: summary.fallback_used }),
+    data_source_used: summary.data_source_used || source.data_source_used || "supabase_live_snapshot",
+    fallback_used: Boolean(summary.fallback_used),
+    fallback_reason: summary.fallback_reason || null,
+    active_run_id: summary.active_run_id || status.active_run_id || null,
+    latest_successful_run_id: latestSuccessfulRunId,
+    record_count: numberField(summary.record_count, salesTargets, totalVessels),
+    kpis: {
+      total_vessels: totalVessels,
+      all_vessels_count: totalVessels,
+      sales_target_count: salesTargets,
+      immediate_target_count: immediateTargets,
+      hot_count: numberField(summary.hot_count, status.hot_count, hotItems.length, immediateTargets),
+      warm_count: numberField(summary.warm_count, status.warm_count, warmItems.length),
+      port_count: numberField(summary.port_count, status.port_count, ports.length),
+      arrival_pipeline_count: numberField(summary.arrival_pipeline_count, status.arrival_pipeline_count, summary.candidate_counts?.arrival_pipeline),
+      staying_vessels_count: numberField(summary.staying_vessels_count, status.staying_vessel_count, status.staying_vessels_count),
+      anchorage_waiting_count: numberField(summary.anchorage_waiting_count, status.anchorage_waiting_count),
+      high_risk_count: numberField(summary.high_risk_count, status.high_risk_count, status.high_risk_vessels_count),
+      expected_revenue: numberField(summary.expected_revenue, summary.estimated_revenue, status.expected_revenue)
+    },
+    ports,
+    top_candidates: topCandidates,
+    sales_priority: topCandidates,
+    alerts: Array.isArray(summary.alerts) ? summary.alerts.slice(0, 10) : [],
+    data_health: {
+      status: summary.fallback_used ? "degraded" : "healthy",
+      latest_successful_run_id: latestSuccessfulRunId,
+      last_success_at: status.last_success_at || summary.last_success_at || generatedAt,
+      source_status: status.source_status || summary.source_status || {},
+      db_status: {
+        supabase_write_status: status.supabase_write_status || summary.supabase_write_status || "completed",
+        dataset_promotion_status: status.promotion_status || status.dataset_promotion_status || summary.promotion_status || "promoted",
+        active_run_id: summary.active_run_id || status.active_run_id || null
+      },
+      json_status: {
+        generated_at: generatedAt,
+        source: "worker_supabase_summary_snapshot",
+        static_asset_fallback_used: false
+      }
+    }
+  };
+}
+
 function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
   const generatedAt = summary.generated_at || new Date().toISOString();
   const items = summaryCandidateItems(summary);
@@ -7129,6 +7188,9 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
     source: { ...source, data_source_used: summary.data_source_used, fallback_used: summary.fallback_used },
     sourceTable: "dashboard_summary_snapshots"
   };
+  if (pathname.endsWith("/bootstrap.json")) {
+    return buildBootstrapSnapshotFromSummary(summary, source);
+  }
   if (pathname.endsWith("/targets/current.json") || pathname.endsWith("/targets/static.json")) {
     const totalCount = Number(summary.sales_target_count || summary.target_count || items.length);
     const payload = publicItemsEnvelope({
@@ -7443,7 +7505,8 @@ async function apiResponse(url, env) {
     const assetPayload = await fetchAssetJson(env, pathname);
     if (assetPayload) return json(assetPayload, { headers: corsHeaders() });
   }
-  const lightweightSummaryRoute = pathname.endsWith("/dashboard-summary.json") ||
+  const lightweightSummaryRoute = pathname.endsWith("/bootstrap.json") ||
+    pathname.endsWith("/dashboard-summary.json") ||
     pathname.endsWith("/status.json") ||
     pathname.endsWith("/changes.json") ||
     pathname.endsWith("/candidates/top.json") ||
@@ -7465,6 +7528,7 @@ async function apiResponse(url, env) {
           summary.status.data_source_used = "supabase_live_snapshot";
         }
       }
+      if (pathname.endsWith("/bootstrap.json")) return json(buildBootstrapSnapshotFromSummary(summary, summarySource), { headers: corsHeaders() });
       if (pathname.endsWith("/dashboard-summary.json")) return json(summary, { headers: corsHeaders() });
       if (pathname.endsWith("/status.json")) return json(summary.status, { headers: corsHeaders() });
       if (pathname.endsWith("/candidates/top.json")) {
@@ -7558,6 +7622,8 @@ async function apiResponse(url, env) {
         }, { headers: corsHeaders() });
       }
     }
+    const assetPayload = await fetchAssetJson(env, pathname);
+    if (assetPayload) return json(assetPayload, { headers: corsHeaders() });
   }
   const summaryFirstRoute = pathname.endsWith("/health.json") ||
     pathname.endsWith("/continuity.json") ||
@@ -8064,7 +8130,8 @@ async function apiResponse(url, env) {
 }
 
 function isWorkerCacheableApi(pathname = "") {
-  return pathname.endsWith("/dashboard-summary.json") ||
+  return pathname.endsWith("/bootstrap.json") ||
+    pathname.endsWith("/dashboard-summary.json") ||
     pathname.endsWith("/status.json") ||
     pathname.endsWith("/changes.json") ||
     pathname.endsWith("/candidates/top.json") ||
