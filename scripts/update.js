@@ -8390,6 +8390,239 @@ function buildQuoteOpportunitiesPayload({
   });
 }
 
+const CONTACT_COVERAGE_FIELDS = [
+  { key: "imo", label: "IMO", weight: 12 },
+  { key: "mmsi", label: "MMSI", weight: 8 },
+  { key: "call_sign", label: "콜사인", weight: 12 },
+  { key: "operator_display", label: "운영사/회사", weight: 18 },
+  { key: "owner", label: "선주", weight: 8 },
+  { key: "manager", label: "관리사", weight: 10 },
+  { key: "agent", label: "에이전트", weight: 16 },
+  { key: "contact_person", label: "담당자", weight: 10 },
+  { key: "quote_ready", label: "견적 준비", weight: 6 }
+];
+
+function contactCoverageKnown(value) {
+  return quoteKnown(value);
+}
+
+function firstContactCoverageValue(...values) {
+  return values.find(contactCoverageKnown) || "";
+}
+
+function contactCoverageValues(record = {}) {
+  const existingDisplay = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
+  const display = { ...vesselDisplay(record), ...existingDisplay };
+  const operatorDisplay = firstNonEmpty(
+    display.operator_display,
+    display.operator,
+    record.operator_display,
+    canonicalOperatorValue(record),
+    display.company,
+    record.shipping_company,
+    record.company,
+    record.company_name,
+    record.owner_operator,
+    display.technical_manager,
+    display.manager,
+    display.owner
+  );
+  const agent = firstNonEmpty(
+    display.agent,
+    record.local_agent,
+    record.agent_name,
+    record.agent,
+    record.shipping_agent,
+    record.satmntEntrpsNm,
+    record.entrpsCdNm
+  );
+  const contactPerson = firstNonEmpty(
+    record.contact_person,
+    record.contact_name,
+    record.superintendent,
+    record.superintendent_name,
+    record.technical_superintendent,
+    record.email,
+    record.phone
+  );
+  const quoteScore = firstFiniteNumber(record.quote_readiness_score, quoteReadinessScore(record), 0) || 0;
+  return {
+    imo: firstContactCoverageValue(record.imo, record.imo_no, display.imo),
+    mmsi: firstContactCoverageValue(record.mmsi, record.mmsi_no, display.mmsi),
+    call_sign: firstContactCoverageValue(record.call_sign, record.callsign, record.clsgn, display.call_sign),
+    operator_display: operatorDisplay,
+    owner: firstContactCoverageValue(record.owner, record.owner_name, record.ship_owner, record.registered_owner, display.owner),
+    manager: firstContactCoverageValue(record.manager, record.manager_name, record.technical_manager, record.ship_manager, display.manager, display.technical_manager),
+    agent,
+    contact_person: contactPerson,
+    quote_ready: quoteScore >= 75 ? "READY" : "",
+    quote_readiness_score: quoteScore,
+    vessel_display: {
+      ...display,
+      operator_display: displayText(operatorDisplay),
+      operator: displayText(operatorDisplay),
+      agent: displayText(agent)
+    }
+  };
+}
+
+function contactCoverageScore(record = {}) {
+  const values = contactCoverageValues(record);
+  return Math.min(100, Math.round(CONTACT_COVERAGE_FIELDS.reduce((sum, field) => {
+    return sum + (contactCoverageKnown(values[field.key]) ? field.weight : 0);
+  }, 0)));
+}
+
+function contactCoverageLabel(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 75) return "HIGH";
+  if (value >= 45) return "MEDIUM";
+  return "LOW";
+}
+
+function buildContactCoverageTarget(record = {}, index = 0) {
+  const values = contactCoverageValues(record);
+  const available = [];
+  const missing = [];
+  for (const field of CONTACT_COVERAGE_FIELDS) {
+    if (contactCoverageKnown(values[field.key])) available.push(field.label);
+    else missing.push(field.label);
+  }
+  const score = contactCoverageScore(record);
+  const priorityLabel = firstNonEmpty(record.priority_label, record.sales_priority_band, values.vessel_display.priority_label, salesPriorityBand(salesPriorityScore(record)));
+  const recommendedAction = score >= 75
+    ? "연락 정보가 충분합니다. 영업 담당자가 제안 범위를 확인하세요."
+    : ["HOT", "WARM"].includes(String(priorityLabel).toUpperCase())
+      ? "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
+      : "모니터링하면서 부족한 연락 정보를 보강하세요.";
+  return {
+    rank: index + 1,
+    vessel_display: values.vessel_display,
+    contact_coverage_score: score,
+    contact_coverage_label: contactCoverageLabel(score),
+    missing_contact_fields: missing,
+    available_contact_fields: available,
+    recommended_action: recommendedAction,
+    reason_summary: missing.length
+      ? `${missing.slice(0, 3).join(", ")} 정보가 부족합니다.`
+      : "주요 연락 준비 정보가 확인되었습니다.",
+    opportunity_score: firstFiniteNumber(record.opportunity_score, values.vessel_display.opportunity_score, salesPriorityScore(record), 0) || 0,
+    risk_score: firstFiniteNumber(record.risk_score, values.vessel_display.risk_score, recordRiskScore(record), 0) || 0,
+    confidence_score: firstFiniteNumber(record.confidence_score, values.vessel_display.confidence_score, score, 0) || 0,
+    priority_label: priorityLabel,
+    data_sources: [...new Set([...(Array.isArray(record.data_sources) ? record.data_sources : []), ...(Array.isArray(record.quote_source_names) ? record.quote_source_names : []), "contact_coverage"])].filter(Boolean)
+  };
+}
+
+function hasContactCoverageContext(record = {}) {
+  const values = contactCoverageValues(record);
+  const display = values.vessel_display || {};
+  return Boolean(
+    contactCoverageKnown(display.vessel_name) ||
+    contactCoverageKnown(values.call_sign) ||
+    contactCoverageKnown(values.operator_display) ||
+    contactCoverageKnown(display.current_port)
+  );
+}
+
+function buildContactCoveragePayload({
+  records = [],
+  targets = [],
+  quoteOpportunities = {},
+  verificationQueue = {},
+  generatedAt,
+  dataMode,
+  report = {}
+} = {}) {
+  const targetItems = compactItems(targets);
+  const staticTargetItems = targetItems.length ? [] : compactItems(readJsonSafe("dashboard/api/targets/current.json", null));
+  let sources = [
+    ...targetItems,
+    ...staticTargetItems,
+    ...compactItems(quoteOpportunities),
+    ...compactItems(verificationQueue)
+  ];
+  if (!sources.length) {
+    sources = [
+      ...compactItems(readJsonSafe("dashboard/api/sales/quote-opportunities.json", null)),
+      ...compactItems(readJsonSafe("dashboard/api/sales/verification-queue.json", null))
+    ];
+  }
+  const fallback = sources.length ? [] : records.filter(record => salesPriorityScore(record) >= 50 || recordRiskScore(record) >= 55);
+  const byIdentity = new Map();
+  for (const row of [...sources, ...fallback]) {
+    if (!row || typeof row !== "object") continue;
+    if (!hasContactCoverageContext(row)) continue;
+    const key = quoteIdentityKey(row) || `ROW:${byIdentity.size + 1}:${firstNonEmpty(row.rank, row.vessel_display?.vessel_name, row.vessel_name, row.vessel_display?.call_sign, row.call_sign, "unknown")}`;
+    const current = byIdentity.get(key);
+    const currentScore = current ? Math.max(contactCoverageScore(current), salesPriorityScore(current), recordRiskScore(current)) : -1;
+    const nextScore = Math.max(contactCoverageScore(row), salesPriorityScore(row), recordRiskScore(row));
+    if (!current || nextScore >= currentScore) byIdentity.set(key, row);
+  }
+  const sourceRows = [...byIdentity.values()];
+  const items = sourceRows
+    .map(buildContactCoverageTarget)
+    .sort((a, b) =>
+      String(a.priority_label).toUpperCase() === "HOT" && String(b.priority_label).toUpperCase() !== "HOT" ? -1 :
+      String(b.priority_label).toUpperCase() === "HOT" && String(a.priority_label).toUpperCase() !== "HOT" ? 1 :
+      Number(a.contact_coverage_score || 0) - Number(b.contact_coverage_score || 0) ||
+      Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0)
+    )
+    .slice(0, 100)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  const pct = key => {
+    if (!items.length) return 0;
+    const field = CONTACT_COVERAGE_FIELDS.find(entry => entry.key === key);
+    const count = field
+      ? items.filter(item => (item.available_contact_fields || []).includes(field.label)).length
+      : 0;
+    return Math.round((count / items.length) * 1000) / 10;
+  };
+  const fieldMissingCounts = Object.fromEntries(CONTACT_COVERAGE_FIELDS.map(field => [field.label, 0]));
+  for (const item of items) {
+    for (const field of item.missing_contact_fields || []) fieldMissingCounts[field] = (fieldMissingCounts[field] || 0) + 1;
+  }
+  const hotItems = items.filter(item => String(item.priority_label || "").toUpperCase() === "HOT");
+  const portfolioMetrics = {
+    imo_coverage_pct: pct("imo"),
+    mmsi_coverage_pct: pct("mmsi"),
+    call_sign_coverage_pct: pct("call_sign"),
+    operator_display_coverage_pct: pct("operator_display"),
+    owner_coverage_pct: pct("owner"),
+    manager_coverage_pct: pct("manager"),
+    agent_coverage_pct: pct("agent"),
+    contact_person_coverage_pct: pct("contact_person"),
+    quote_ready_pct: pct("quote_ready")
+  };
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt || report?.generated_at || report?.completed_at || new Date().toISOString(),
+    data_mode: contractDataMode(dataMode, report),
+    record_count: items.length,
+    source_table: "sales_candidates_current,quote-opportunities,verification-queue,operator_contact_history,commercial_leads",
+    items,
+    status: items.length ? "active" : "empty",
+    reason: items.length ? null : "연락 가능성을 계산할 영업 후보가 없습니다.",
+    portfolio_metrics: portfolioMetrics,
+    top_missing_fields: Object.entries(fieldMissingCounts)
+      .map(([field, count]) => ({ field, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    target_count: items.length,
+    high_count: items.filter(item => item.contact_coverage_label === "HIGH").length,
+    medium_count: items.filter(item => item.contact_coverage_label === "MEDIUM").length,
+    low_count: items.filter(item => item.contact_coverage_label === "LOW").length,
+    hot_targets_missing_operator: hotItems.filter(item => (item.missing_contact_fields || []).includes("운영사/회사")).length,
+    hot_targets_missing_agent: hotItems.filter(item => (item.missing_contact_fields || []).includes("에이전트")).length,
+    verification_queue_count: rowCountFromPayload(verificationQueue),
+    summary: {
+      portfolio_metrics: portfolioMetrics,
+      target_count: items.length,
+      low_contact_coverage_count: items.filter(item => item.contact_coverage_label === "LOW").length
+    }
+  };
+}
+
 function previousPortDemandReference() {
   const demand = readJsonSafe("dashboard/api/intelligence/port-demand-radar.json", null);
   const opportunities = readJsonSafe("dashboard/api/intelligence/port-opportunities.json", null);
@@ -13734,6 +13967,15 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const contactCoveragePayload = buildContactCoveragePayload({
+    records: vessels,
+    targets: salesCandidates,
+    quoteOpportunities: quoteOpportunitiesPayload,
+    verificationQueue: verificationQueuePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -13792,6 +14034,7 @@ try {
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
     "dashboard/api/sales/quote-opportunities.json": quoteOpportunitiesPayload,
+    "dashboard/api/intelligence/contact-coverage.json": contactCoveragePayload,
     "dashboard/api/watchlist/current.json": watchlistPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
@@ -13949,6 +14192,7 @@ try {
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
   writeApiJson("dashboard/api/sales/quote-opportunities.json", quoteOpportunitiesPayload, report);
+  writeApiJson("dashboard/api/intelligence/contact-coverage.json", contactCoveragePayload, report);
   writeApiJson("dashboard/api/watchlist/current.json", watchlistPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);

@@ -3149,6 +3149,187 @@ function missingContactFields(record = {}) {
   return fields;
 }
 
+const CONTACT_COVERAGE_FIELDS = [
+  { key: "imo", label: "IMO", weight: 12 },
+  { key: "mmsi", label: "MMSI", weight: 8 },
+  { key: "call_sign", label: "콜사인", weight: 12 },
+  { key: "operator_display", label: "운영사/회사", weight: 18 },
+  { key: "owner", label: "선주", weight: 8 },
+  { key: "manager", label: "관리사", weight: 10 },
+  { key: "agent", label: "에이전트", weight: 16 },
+  { key: "contact_person", label: "담당자", weight: 10 },
+  { key: "quote_ready", label: "견적 준비", weight: 6 }
+];
+
+function contactCoverageKnown(value) {
+  const text = String(value ?? "").trim();
+  return hasContactValue(text) && !["선명 확인 필요", "정보 없음"].includes(text);
+}
+
+function firstContactCoverageValue(...values) {
+  return values.find(contactCoverageKnown) || "";
+}
+
+function contactCoverageValues(record = {}) {
+  const existingDisplay = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
+  const display = { ...vesselDisplay(record), ...existingDisplay };
+  const operatorDisplay = firstNonEmpty(
+    display.operator_display,
+    display.operator,
+    record.operator_display,
+    record.operator,
+    record.operator_name,
+    record.operator_normalized,
+    display.company,
+    record.shipping_company,
+    record.company,
+    record.company_name,
+    record.owner_operator,
+    display.technical_manager,
+    display.manager,
+    display.owner
+  );
+  const agent = firstNonEmpty(display.agent, record.local_agent, record.agent_name, record.agent, record.shipping_agent, record.satmntEntrpsNm, record.entrpsCdNm);
+  const contactPerson = firstNonEmpty(record.contact_person, record.contact_name, record.superintendent, record.superintendent_name, record.technical_superintendent, record.email, record.phone);
+  const quoteReadinessScore = firstFiniteNumber(record.quote_readiness_score, record.contact_readiness_score, 0) || 0;
+  return {
+    imo: firstContactCoverageValue(record.imo, record.imo_no, display.imo),
+    mmsi: firstContactCoverageValue(record.mmsi, display.mmsi),
+    call_sign: firstContactCoverageValue(record.call_sign, record.callsign, record.clsgn, display.call_sign),
+    operator_display: operatorDisplay,
+    owner: firstContactCoverageValue(record.owner, record.owner_name, record.ship_owner, record.registered_owner, display.owner),
+    manager: firstContactCoverageValue(record.manager, record.manager_name, record.technical_manager, record.ship_manager, display.manager, display.technical_manager),
+    agent,
+    contact_person: contactPerson,
+    quote_ready: quoteReadinessScore >= 75 ? "READY" : "",
+    vessel_display: {
+      ...display,
+      operator: displayText(operatorDisplay),
+      operator_display: displayText(operatorDisplay),
+      agent: displayText(agent)
+    }
+  };
+}
+
+function contactCoverageScore(record = {}) {
+  const values = contactCoverageValues(record);
+  return Math.min(100, Math.round(CONTACT_COVERAGE_FIELDS.reduce((sum, field) => sum + (contactCoverageKnown(values[field.key]) ? field.weight : 0), 0)));
+}
+
+function contactCoverageLabel(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 75) return "HIGH";
+  if (value >= 45) return "MEDIUM";
+  return "LOW";
+}
+
+function contactCoverageIdentityKey(record = {}, index = 0) {
+  const values = contactCoverageValues(record);
+  const display = values.vessel_display || {};
+  return firstNonEmpty(
+    contactCoverageKnown(values.imo) && `IMO:${values.imo}`,
+    contactCoverageKnown(values.mmsi) && `MMSI:${values.mmsi}`,
+    contactCoverageKnown(display.vessel_name) && `NAME:${display.vessel_name}|${values.call_sign || display.current_port || index}`,
+    `ROW:${index}`
+  );
+}
+
+function hasContactCoverageContext(record = {}) {
+  const values = contactCoverageValues(record);
+  const display = values.vessel_display || {};
+  return Boolean(contactCoverageKnown(display.vessel_name) || contactCoverageKnown(values.call_sign) || contactCoverageKnown(values.operator_display) || contactCoverageKnown(display.current_port));
+}
+
+function buildContactCoverageEndpoint(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const byKey = new Map();
+  (Array.isArray(records) ? records : []).forEach((record, index) => {
+    if (!record || typeof record !== "object" || !hasContactCoverageContext(record)) return;
+    const key = contactCoverageIdentityKey(record, index);
+    const current = byKey.get(key);
+    const currentScore = current ? Math.max(contactCoverageScore(current), salesPriorityScore(current)) : -1;
+    const nextScore = Math.max(contactCoverageScore(record), salesPriorityScore(record));
+    if (!current || nextScore >= currentScore) byKey.set(key, record);
+  });
+  const items = [...byKey.values()]
+    .map((record, index) => {
+      const values = contactCoverageValues(record);
+      const available = [];
+      const missing = [];
+      CONTACT_COVERAGE_FIELDS.forEach(field => {
+        if (contactCoverageKnown(values[field.key])) available.push(field.label);
+        else missing.push(field.label);
+      });
+      const score = contactCoverageScore(record);
+      const priorityLabel = firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, salesPriorityBand(salesPriorityScore(record)));
+      return {
+        rank: index + 1,
+        vessel_display: values.vessel_display,
+        contact_coverage_score: score,
+        contact_coverage_label: contactCoverageLabel(score),
+        missing_contact_fields: missing,
+        available_contact_fields: available,
+        recommended_action: score >= 75
+          ? "연락 정보가 충분합니다. 영업 담당자가 제안 범위를 확인하세요."
+          : ["HOT", "WARM"].includes(String(priorityLabel).toUpperCase())
+            ? "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
+            : "모니터링하면서 부족한 연락 정보를 보강하세요.",
+        reason_summary: missing.length ? `${missing.slice(0, 3).join(", ")} 정보가 부족합니다.` : "주요 연락 준비 정보가 확인되었습니다.",
+        opportunity_score: firstFiniteNumber(record.opportunity_score, record.sales_priority_score, salesPriorityScore(record), 0) || 0,
+        risk_score: firstFiniteNumber(record.risk_score, record.biofouling_score, 0) || 0,
+        confidence_score: firstFiniteNumber(record.confidence_score, record.data_confidence_score, score, 0) || 0,
+        priority_label: priorityLabel,
+        data_sources: [...new Set([...displaySources(record), "contact_coverage"])].filter(Boolean)
+      };
+    })
+    .sort((a, b) => Number(a.contact_coverage_score || 0) - Number(b.contact_coverage_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 100)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  const pct = key => {
+    if (!items.length) return 0;
+    const field = CONTACT_COVERAGE_FIELDS.find(entry => entry.key === key);
+    const count = field ? items.filter(item => (item.available_contact_fields || []).includes(field.label)).length : 0;
+    return Math.round((count / items.length) * 1000) / 10;
+  };
+  const missingCounts = Object.fromEntries(CONTACT_COVERAGE_FIELDS.map(field => [field.label, 0]));
+  items.forEach(item => (item.missing_contact_fields || []).forEach(field => { missingCounts[field] = (missingCounts[field] || 0) + 1; }));
+  const hotItems = items.filter(item => String(item.priority_label || "").toUpperCase() === "HOT");
+  const portfolioMetrics = {
+    imo_coverage_pct: pct("imo"),
+    mmsi_coverage_pct: pct("mmsi"),
+    call_sign_coverage_pct: pct("call_sign"),
+    operator_display_coverage_pct: pct("operator_display"),
+    owner_coverage_pct: pct("owner"),
+    manager_coverage_pct: pct("manager"),
+    agent_coverage_pct: pct("agent"),
+    contact_person_coverage_pct: pct("contact_person"),
+    quote_ready_pct: pct("quote_ready")
+  };
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: publicDataMode(source.data_source_used, source),
+    record_count: items.length,
+    source_table: "sales_candidates_current,quote-opportunities,verification-queue,operator_contact_history,commercial_leads",
+    items,
+    status: items.length ? "active" : "empty",
+    reason: items.length ? null : "연락 가능성을 계산할 영업 후보가 없습니다.",
+    portfolio_metrics: portfolioMetrics,
+    top_missing_fields: Object.entries(missingCounts).map(([field, count]) => ({ field, count })).sort((a, b) => b.count - a.count).slice(0, 8),
+    target_count: items.length,
+    high_count: items.filter(item => item.contact_coverage_label === "HIGH").length,
+    medium_count: items.filter(item => item.contact_coverage_label === "MEDIUM").length,
+    low_count: items.filter(item => item.contact_coverage_label === "LOW").length,
+    hot_targets_missing_operator: hotItems.filter(item => (item.missing_contact_fields || []).includes("운영사/회사")).length,
+    hot_targets_missing_agent: hotItems.filter(item => (item.missing_contact_fields || []).includes("에이전트")).length,
+    verification_queue_count: buildVerificationQueue(records).length,
+    summary: {
+      portfolio_metrics: portfolioMetrics,
+      target_count: items.length,
+      low_contact_coverage_count: items.filter(item => item.contact_coverage_label === "LOW").length
+    }
+  };
+}
+
 function verificationTypeForMissingFields(fields = []) {
   if (fields.includes("operator")) return "OPERATOR";
   if (fields.includes("owner")) return "OWNER";
@@ -6866,6 +7047,9 @@ function buildWorkerFleetPenetrationSummary(records = [], source = {}, generated
 
 function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, generatedAt = new Date().toISOString()) {
   const buckets = buildVisibilityBuckets(records);
+  if (name === "contact-coverage") {
+    return buildContactCoverageEndpoint(buckets.sales_candidates?.length ? buckets.sales_candidates : records, source, generatedAt);
+  }
   if (name === "risk-summary") {
     const items = records
       .filter(record => firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_risk_score, record.biofouling_score, record.operational_risk_score) > 0 || compactInsightFactors(record).some(factor => /risk|bio|congestion|long|anchor/i.test(factor)))
@@ -7495,6 +7679,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
   const intelligence = pathname.match(/^\/api\/intelligence\/([^/]+)\.json$/);
   if (intelligence) {
     const name = intelligence[1];
+    if (name === "contact-coverage") return buildContactCoverageEndpoint(items, common.source, generatedAt);
     const sourceTable = {
       "sales-priority": "opportunity_master,dashboard_summary_snapshots",
       "risk-summary": "risk_history,dashboard_summary_snapshots",
