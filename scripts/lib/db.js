@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
+import fs from "node:fs";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./port-statistics.js";
+import { normalizeCallSign, scoreMatch } from "./matching.js";
 
 const require = createRequire(import.meta.url);
 let supabaseDependencies = null;
@@ -498,15 +500,69 @@ function buildImoRecoveryRows(records = [], runId, now) {
     }), row => row.recovery_id);
 }
 
+function buildResolvedImoRecoveryRows(records = [], runId, now) {
+  return uniqueBy(records
+    .filter(record => ["resolved", "needs_review"].includes(String(record.identity_recovery_status || "").toLowerCase()))
+    .map(record => {
+      const entityKey = record.hybrid_entity_key || record.vessel_id || `${record.vessel_name || "UNKNOWN"}-${record.port_code || ""}`;
+      const status = String(record.identity_recovery_status || "").toLowerCase() === "resolved" ? "resolved" : "needs_review";
+      return {
+        recovery_id: stableEntityId("IMOR", `${entityKey}-${record.port_code || ""}`),
+        run_id: runId,
+        master_vessel_id: fallbackMasterId(record),
+        snapshot_id: record.snapshot_id || null,
+        hybrid_entity_key: record.hybrid_entity_key || record.vessel_id || null,
+        vessel_name: record.vessel_name || null,
+        normalized_vessel_name: record.normalized_vessel_name || normalizeVesselName(record.vessel_name),
+        call_sign: record.call_sign || null,
+        gt: record.gt || record.grtg || record.intrlGrtg || null,
+        vessel_type: record.vessel_type || null,
+        vessel_type_group: record.vessel_type_group || null,
+        port_code: record.port_code || null,
+        commercial_value_score: commercialScore(record),
+        data_confidence_score: Number(record.data_confidence_score || 0),
+        priority: imoRecoveryPriority(record),
+        status,
+        attempt_count: Number(record.imo_recovery_attempt_count || 0) + 1,
+        last_attempt_at: now,
+        updated_at: now,
+        created_at: record.imo_recovery_created_at || now,
+        recovery_source: record.recovery_source || record.imo_recovery_source || record.identity_source || null,
+        recovery_confidence: Number(record.recovery_confidence || record.imo_recovery_confidence || record.identity_confidence || 0),
+        recovered_imo: record.imo || null,
+        recovered_mmsi: record.mmsi || null,
+        resolved_at: status === "resolved" ? now : null,
+        conflict_values: record.identity_conflict || null,
+        payload: {
+          resolution_stage: "update_pipeline_identity_resolver",
+          recovery_match_type: record.identity_match_type || null,
+          recovery_reason: record.identity_recovery_notes || null,
+          identity_confidence: identityConfidence(record),
+          reason_codes: record.reason_codes || [],
+          vessel_master_cache_match: Boolean(record.vessel_master_cache_match),
+          vessel_master_seed_match: Boolean(record.vessel_master_seed_match)
+        }
+      };
+    }), row => row.recovery_id);
+}
+
 function buildImoRecoveryDiagnostics(records = []) {
   const queue = buildImoRecoveryRows(records, "diagnostic", new Date().toISOString());
   const target = records.filter(record => commercialScore(record) >= 35 || Number(record.gt || record.grtg || record.intrlGrtg || 0) >= 5000);
   const highValue = target.filter(record => commercialScore(record) >= 75 || Number(record.gt || record.grtg || record.intrlGrtg || 0) > 30000);
-  const recovered = records.filter(record => record.imo && (record.imo_recovered_from_cache || record.imo_recovered_from_seed || record.vessel_master_seed_match || record.recovery_source));
+  const recovered = records.filter(record => record.imo && (record.imo_recovered_from_cache || record.imo_recovered_from_seed || record.imo_recovered_from_resolver || record.vessel_master_seed_match || record.recovery_source));
   const denominator = recovered.length + queue.length;
+  const recoveredBySource = {};
+  for (const record of recovered) {
+    const source = record.recovery_source || record.imo_recovery_source || record.identity_source || "source_record";
+    recoveredBySource[source] = (recoveredBySource[source] || 0) + 1;
+  }
   return {
     imo_recovery_queue_count: queue.length,
     imo_recovered_count: recovered.length,
+    recovered_imo_count_by_source: recoveredBySource,
+    recovered_mmsi_count_by_source: recoveredBySource,
+    failed_recovery_reason: recovered.length ? "" : queue.length ? "queued_candidates_without_high_confidence_reference_match" : "no_recovery_candidates_or_reference_sources",
     imo_recovery_success_rate: denominator ? Math.round((recovered.length / denominator) * 100) : 0,
     high_value_imo_coverage: highValue.length ? Math.round((highValue.filter(record => record.imo).length / highValue.length) * 100) : 0,
     unresolved_high_value_count: highValue.filter(record => !record.imo).length,
@@ -739,6 +795,408 @@ async function selectIn(supabase, table, columns, field, values) {
     rows.push(...(data || []));
   }
   return rows;
+}
+
+function normalizeExplicitImo(value) {
+  const digits = String(value || "").replace(/\D+/g, "");
+  return digits.length === 7 ? digits : "";
+}
+
+function normalizeExplicitMmsi(value) {
+  const digits = String(value || "").replace(/\D+/g, "");
+  return digits.length === 9 ? digits : "";
+}
+
+function normalizeTypeToken(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function parseReferenceCsv(text = "") {
+  const lines = String(text || "").replace(/^\uFEFF/, "").split(/\r?\n/).filter(line => line.trim());
+  if (lines.length < 2) return [];
+  const parseLine = line => {
+    const cells = [];
+    let current = "";
+    let quoted = false;
+    for (let index = 0; index < line.length; index += 1) {
+      const char = line[index];
+      const next = line[index + 1];
+      if (char === "\"" && quoted && next === "\"") {
+        current += "\"";
+        index += 1;
+      } else if (char === "\"") {
+        quoted = !quoted;
+      } else if (char === "," && !quoted) {
+        cells.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
+  };
+  const headers = parseLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const cells = parseLine(line);
+    return Object.fromEntries(headers.map((header, index) => [header, cells[index] || ""]));
+  });
+}
+
+function readLocalVesselMasterSeedRows() {
+  const file = "data/reference/vessel_master_seed.csv";
+  if (!fs.existsSync(file)) return [];
+  return parseReferenceCsv(fs.readFileSync(file, "utf8"));
+}
+
+function gtWithinPct(left, right, pct = 0.05) {
+  const a = Number(left || 0);
+  const b = Number(right || 0);
+  if (!a || !b) return false;
+  return Math.abs(a - b) / Math.max(a, b) <= pct;
+}
+
+function referenceSourceFor(row = {}, fallback = "source_record") {
+  return row.reference_source ||
+    row.identity_source ||
+    row.imo_recovery_source ||
+    row.recovery_source ||
+    row.enrichment_source ||
+    row.source_name ||
+    row.source ||
+    row.source_profile ||
+    fallback;
+}
+
+function toIdentityReference(row = {}, source = null) {
+  const payload = row.payload && typeof row.payload === "object" && !Array.isArray(row.payload) ? row.payload : {};
+  const imo = normalizeExplicitImo(row.imo || row.imo_no || row.imo_number || payload.imo || payload.imo_no || payload.imo_number);
+  const mmsi = normalizeExplicitMmsi(row.mmsi || row.mmsi_no || row.mmsi_number || payload.mmsi || payload.mmsi_no || payload.mmsi_number);
+  if (!imo && !mmsi) return null;
+  const vesselName = row.vessel_name || row.canonical_name || row.name || row.ship_name || payload.vessel_name || payload.canonical_name || "";
+  const normalizedName = row.normalized_vessel_name || row.normalized_name || payload.normalized_vessel_name || payload.normalized_name || normalizeVesselName(vesselName);
+  const callSign = normalizeCallSign(row.call_sign || row.callsign || row.clsgn || payload.call_sign || payload.callsign || payload.clsgn);
+  const gt = Number(row.gt || row.grtg || row.intrlGrtg || row.gross_tonnage || payload.gt || payload.grtg || payload.intrlGrtg || payload.gross_tonnage || 0);
+  const vesselType = row.vessel_type_group || row.vessel_type || payload.vessel_type_group || payload.vessel_type || "";
+  const portCode = String(row.port_code || row.prtAgCd || payload.port_code || payload.prtAgCd || "").trim();
+  return {
+    imo,
+    mmsi,
+    call_sign: callSign,
+    vessel_name: vesselName,
+    normalized_vessel_name: normalizedName,
+    vessel_type: vesselType,
+    vessel_type_group: row.vessel_type_group || payload.vessel_type_group || "",
+    gt,
+    dwt: Number(row.dwt || payload.dwt || 0),
+    flag: row.flag || payload.flag || "",
+    operator: row.operator || row.operator_name || payload.operator || payload.operator_name || "",
+    port_code: portCode,
+    source: source || referenceSourceFor(row),
+    raw: row
+  };
+}
+
+function addReference(indexes, reference) {
+  if (!reference) return;
+  indexes.references.push(reference);
+  if (reference.source) indexes.source_counts[reference.source] = (indexes.source_counts[reference.source] || 0) + 1;
+  const add = (map, key) => {
+    if (!key) return;
+    const value = String(key);
+    const bucket = map.get(value) || [];
+    bucket.push(reference);
+    map.set(value, bucket);
+  };
+  add(indexes.byImo, reference.imo);
+  add(indexes.byMmsi, reference.mmsi);
+  add(indexes.byCallSign, reference.call_sign);
+  add(indexes.byName, reference.normalized_vessel_name);
+  const typeKey = `${reference.normalized_vessel_name || ""}|${normalizeTypeToken(reference.vessel_type_group || reference.vessel_type)}|${reference.port_code || ""}`;
+  add(indexes.byNameTypePort, typeKey);
+}
+
+function uniqueIdentityReferences(rows = []) {
+  const map = new Map();
+  for (const row of rows) {
+    const key = [row.imo || "", row.mmsi || "", row.call_sign || "", row.normalized_vessel_name || "", row.gt || "", row.source || ""].join("|");
+    if (!map.has(key)) map.set(key, row);
+  }
+  return [...map.values()];
+}
+
+function createIdentityReferenceIndexes() {
+  return {
+    references: [],
+    byImo: new Map(),
+    byMmsi: new Map(),
+    byCallSign: new Map(),
+    byName: new Map(),
+    byNameTypePort: new Map(),
+    source_counts: {}
+  };
+}
+
+async function loadSupabaseIdentityReferences(records = [], diagnostics = {}) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    diagnostics.supabase_reference_status = "not_configured";
+    return [];
+  }
+  try {
+    const supabase = getSupabase();
+    const normalizedRecords = records.map(record => ({
+      ...record,
+      normalized_vessel_name: record.normalized_vessel_name || normalizeVesselName(record.vessel_name)
+    }));
+    const imos = unique(normalizedRecords.map(record => record.imo));
+    const mmsis = unique(normalizedRecords.map(record => record.mmsi));
+    const callSigns = unique(normalizedRecords.map(record => record.call_sign));
+    const names = unique(normalizedRecords.map(record => record.normalized_vessel_name));
+    const columns = "master_vessel_id,imo,mmsi,call_sign,canonical_name,normalized_name,vessel_type,vessel_type_group,gt,dwt,operator,operator_normalized,flag,identity_confidence,imo_status,payload";
+    const masterRows = [
+      ...(await selectIn(supabase, "vessel_master", columns, "imo", imos)),
+      ...(await selectIn(supabase, "vessel_master", columns, "mmsi", mmsis)),
+      ...(await selectIn(supabase, "vessel_master", columns, "call_sign", callSigns)),
+      ...(await selectIn(supabase, "vessel_master", columns, "normalized_name", names))
+    ];
+    const aliasRows = await selectIn(supabase, "vessel_aliases", "master_vessel_id,alias_name,normalized_alias_name,confidence", "normalized_alias_name", names);
+    const aliasMasterRows = await selectIn(supabase, "vessel_master", columns, "master_vessel_id", aliasRows.map(row => row.master_vessel_id));
+    diagnostics.supabase_reference_status = "loaded";
+    diagnostics.vessel_master_reference_rows = masterRows.length;
+    diagnostics.vessel_alias_reference_rows = aliasRows.length;
+    return [
+      ...masterRows.map(row => ({ ...row, vessel_name: row.canonical_name, normalized_vessel_name: row.normalized_name, reference_source: "vessel_master" })),
+      ...aliasMasterRows.map(row => ({ ...row, vessel_name: row.canonical_name, normalized_vessel_name: row.normalized_name, reference_source: "vessel_aliases" }))
+    ];
+  } catch (error) {
+    diagnostics.supabase_reference_status = "failed";
+    diagnostics.supabase_reference_error = error?.message || String(error);
+    return [];
+  }
+}
+
+function buildIdentityReferenceIndexes(records = [], additionalReferences = [], diagnostics = {}) {
+  const indexes = createIdentityReferenceIndexes();
+  const localSeedRows = readLocalVesselMasterSeedRows().map(row => ({ ...row, reference_source: "vessel_master_seed" }));
+  diagnostics.local_seed_reference_rows = localSeedRows.length;
+  const allReferences = uniqueIdentityReferences([
+    ...records.map(row => ({ ...row, reference_source: referenceSourceFor(row, "current_dataset") })),
+    ...additionalReferences,
+    ...localSeedRows
+  ].map(row => toIdentityReference(row, row.reference_source)).filter(Boolean));
+  for (const reference of allReferences) addReference(indexes, reference);
+  diagnostics.reference_rows_loaded = indexes.references.length;
+  diagnostics.reference_rows_with_imo = indexes.references.filter(row => row.imo).length;
+  diagnostics.reference_rows_with_mmsi = indexes.references.filter(row => row.mmsi).length;
+  diagnostics.reference_source_counts = indexes.source_counts;
+  return indexes;
+}
+
+function consistentReferenceValues(candidates = [], field) {
+  const values = unique(candidates.map(row => row[field]));
+  return values.length === 1 ? values[0] : "";
+}
+
+function bestReferenceCandidate(candidates = [], record = {}) {
+  if (!candidates.length) return null;
+  return candidates
+    .map(reference => ({
+      reference,
+      score: scoreMatch(record, reference, { timeWindowHours: 168, strongTimeMatchHours: 24 }).score +
+        (gtWithinPct(record.gt || record.grtg || record.intrlGrtg, reference.gt) ? 8 : 0)
+    }))
+    .sort((left, right) => right.score - left.score)[0]?.reference || candidates[0];
+}
+
+function candidateConflict(candidates = []) {
+  const imos = unique(candidates.map(row => row.imo));
+  const mmsis = unique(candidates.map(row => row.mmsi));
+  return imos.length > 1 || mmsis.length > 1
+    ? { imo: imos, mmsi: mmsis }
+    : null;
+}
+
+function resolveRecordIdentity(record = {}, indexes = createIdentityReferenceIndexes()) {
+  const currentImo = normalizeExplicitImo(record.imo || record.imo_no || record.imo_number);
+  const currentMmsi = normalizeExplicitMmsi(record.mmsi || record.mmsi_no || record.mmsi_number);
+  if (currentImo && currentMmsi) {
+    return {
+      status: "present",
+      recovered_imo: currentImo,
+      recovered_mmsi: currentMmsi,
+      recovery_confidence: 100,
+      recovery_match_type: "existing_imo_mmsi",
+      recovery_source: record.identity_source || "current_record",
+      apply: false
+    };
+  }
+
+  const callSign = normalizeCallSign(record.call_sign || record.callsign || record.clsgn);
+  const name = record.normalized_vessel_name || normalizeVesselName(record.vessel_name);
+  const type = normalizeTypeToken(record.vessel_type_group || record.vessel_type);
+  const port = String(record.port_code || record.prtAgCd || "").trim();
+  const attempts = [];
+
+  const evaluate = (matchType, candidates, confidence, reason, requireUnique = true) => {
+    const refs = (candidates || []).filter(ref => ref?.imo || ref?.mmsi);
+    if (!refs.length) return null;
+    const conflict = candidateConflict(refs);
+    if (conflict && requireUnique) {
+      return {
+        status: "needs_review",
+        recovery_confidence: Math.min(confidence, 65),
+        recovery_match_type: matchType,
+        recovery_reason: `${reason}; conflicting reference identities`,
+        conflict_values: conflict,
+        apply: false
+      };
+    }
+    const best = bestReferenceCandidate(refs, record);
+    const recoveredImo = consistentReferenceValues(refs, "imo") || best.imo || "";
+    const recoveredMmsi = consistentReferenceValues(refs, "mmsi") || best.mmsi || "";
+    return {
+      status: confidence >= 80 ? "resolved" : "needs_review",
+      recovered_imo: recoveredImo,
+      recovered_mmsi: recoveredMmsi,
+      recovery_source: best.source || "reference_index",
+      recovery_confidence: confidence,
+      recovery_match_type: matchType,
+      recovery_reason: reason,
+      conflict_values: conflict,
+      reference: best,
+      apply: confidence >= 80 && !conflict && Boolean(recoveredImo || recoveredMmsi)
+    };
+  };
+
+  if (currentImo) attempts.push(evaluate("imo_exact", indexes.byImo.get(currentImo), 100, "exact IMO matched reference MMSI"));
+  if (callSign) attempts.push(evaluate("call_sign_exact", indexes.byCallSign.get(callSign), 92, "exact call_sign matched reference identity"));
+  if (currentMmsi) attempts.push(evaluate("mmsi_exact", indexes.byMmsi.get(currentMmsi), 100, "exact MMSI matched reference IMO"));
+  if (name && Number(record.gt || record.grtg || record.intrlGrtg || 0) > 0) {
+    const gtMatches = (indexes.byName.get(name) || []).filter(ref => gtWithinPct(record.gt || record.grtg || record.intrlGrtg, ref.gt));
+    attempts.push(evaluate("normalized_name_gt_5pct", gtMatches, 88, "normalized vessel name and GT within 5% matched reference identity"));
+  }
+  if (name && type && port) {
+    attempts.push(evaluate("normalized_name_type_port", indexes.byNameTypePort.get(`${name}|${type}|${port}`), 82, "normalized vessel name, vessel type, and port matched reference identity"));
+  }
+  if (name || callSign) {
+    const scoreMatches = indexes.references
+      .map(reference => ({ reference, result: scoreMatch(record, reference, { timeWindowHours: 168, strongTimeMatchHours: 24 }) }))
+      .filter(match => match.result.score >= 85 && (match.reference.imo || match.reference.mmsi));
+    attempts.push(evaluate("score_match_high_confidence", scoreMatches.map(match => match.reference), 85, "high-confidence scoreMatch result matched reference identity"));
+  }
+
+  const usable = attempts.filter(Boolean).sort((left, right) => Number(right.recovery_confidence || 0) - Number(left.recovery_confidence || 0));
+  if (usable.length) return usable[0];
+  return {
+    status: "unresolved",
+    recovery_confidence: 0,
+    recovery_match_type: "",
+    recovery_reason: indexes.references.length
+      ? "no high-confidence reference match"
+      : "reference sources lack IMO/MMSI values",
+    apply: false
+  };
+}
+
+export async function resolveImoMmsiCandidates(records = [], options = {}) {
+  const diagnostics = {
+    status: "not_run",
+    total_records: records.length,
+    records_missing_imo_before: records.filter(record => !normalizeExplicitImo(record.imo || record.imo_no || record.imo_number)).length,
+    records_missing_mmsi_before: records.filter(record => !normalizeExplicitMmsi(record.mmsi || record.mmsi_no || record.mmsi_number)).length,
+    candidates_created: records.filter(needsImoRecovery).length,
+    candidates_resolved: 0,
+    applied_high_confidence: 0,
+    needs_review: 0,
+    conflicts: 0,
+    recovered_imo_by_source: {},
+    recovered_mmsi_by_source: {},
+    failed_recovery_reasons: {},
+    reference_rows_loaded: 0,
+    reference_rows_with_imo: 0,
+    reference_rows_with_mmsi: 0,
+    source_availability: {}
+  };
+  const supabaseReferences = await loadSupabaseIdentityReferences(records, diagnostics);
+  const indexes = buildIdentityReferenceIndexes(records, [...supabaseReferences, ...(options.referenceRows || [])], diagnostics);
+  diagnostics.source_availability = {
+    current_dataset: records.some(record => normalizeExplicitImo(record.imo) || normalizeExplicitMmsi(record.mmsi)),
+    vessel_master: Number(diagnostics.vessel_master_reference_rows || 0) > 0,
+    vessel_master_seed: Number(diagnostics.local_seed_reference_rows || 0) > 0,
+    source_csv: indexes.references.some(ref => /source[_-]?csv|csv/i.test(ref.source)),
+    vessel_spec: indexes.references.some(ref => /vessel[_-]?spec|spec/i.test(ref.source)),
+    mof_ais_info: indexes.references.some(ref => /mof[_-]?ais[_-]?info|ais[_-]?info/i.test(ref.source))
+  };
+
+  const resolvedRecords = records.map(record => {
+    const resolution = resolveRecordIdentity(record, indexes);
+    const existingImo = normalizeExplicitImo(record.imo || record.imo_no || record.imo_number);
+    const existingMmsi = normalizeExplicitMmsi(record.mmsi || record.mmsi_no || record.mmsi_number);
+    const referenceConflict = {
+      imo: existingImo && resolution.recovered_imo && existingImo !== resolution.recovered_imo ? [existingImo, resolution.recovered_imo] : [],
+      mmsi: existingMmsi && resolution.recovered_mmsi && existingMmsi !== resolution.recovered_mmsi ? [existingMmsi, resolution.recovered_mmsi] : []
+    };
+    if (referenceConflict.imo.length || referenceConflict.mmsi.length) {
+      resolution.status = "needs_review";
+      resolution.apply = false;
+      resolution.conflict_values = {
+        ...(resolution.conflict_values || {}),
+        existing_vs_reference: referenceConflict
+      };
+      resolution.recovery_reason = `${resolution.recovery_reason || "reference match"}; existing identity conflicts with reference`;
+    }
+    if (resolution.status === "resolved") diagnostics.candidates_resolved += 1;
+    if (resolution.status === "needs_review") diagnostics.needs_review += 1;
+    if (resolution.conflict_values) diagnostics.conflicts += 1;
+    if (resolution.status === "unresolved") {
+      const reason = resolution.recovery_reason || "unresolved";
+      diagnostics.failed_recovery_reasons[reason] = (diagnostics.failed_recovery_reasons[reason] || 0) + 1;
+    }
+    if (!resolution.apply) {
+      return {
+        ...record,
+        identity_recovery_status: record.identity_recovery_status || resolution.status,
+        identity_recovery_notes: record.identity_recovery_notes || resolution.recovery_reason || "",
+        identity_conflict: record.identity_conflict || resolution.conflict_values || null
+      };
+    }
+    diagnostics.applied_high_confidence += 1;
+    if (resolution.recovered_imo && !record.imo) {
+      diagnostics.recovered_imo_by_source[resolution.recovery_source] = (diagnostics.recovered_imo_by_source[resolution.recovery_source] || 0) + 1;
+    }
+    if (resolution.recovered_mmsi && !record.mmsi) {
+      diagnostics.recovered_mmsi_by_source[resolution.recovery_source] = (diagnostics.recovered_mmsi_by_source[resolution.recovery_source] || 0) + 1;
+    }
+    return {
+      ...record,
+      imo: record.imo || resolution.recovered_imo || "",
+      mmsi: record.mmsi || resolution.recovered_mmsi || "",
+      imo_recovered_from_resolver: Boolean(!record.imo && resolution.recovered_imo),
+      mmsi_recovered_from_resolver: Boolean(!record.mmsi && resolution.recovered_mmsi),
+      recovery_source: resolution.recovery_source,
+      imo_recovery_source: resolution.recovery_source,
+      recovery_confidence: resolution.recovery_confidence,
+      imo_recovery_confidence: resolution.recovery_confidence,
+      identity_source: record.identity_source || resolution.recovery_source,
+      identity_confidence: Math.max(Number(record.identity_confidence || 0), Number(resolution.recovery_confidence || 0)),
+      identity_match_type: record.identity_match_type || resolution.recovery_match_type,
+      identity_recovery_status: "resolved",
+      identity_recovery_notes: resolution.recovery_reason,
+      identity_conflict: null,
+      reason_codes: [...new Set([...(record.reason_codes || []), "IMO_MMSI_RECOVERY_RESOLVED"])]
+    };
+  });
+
+  diagnostics.records_missing_imo_after = resolvedRecords.filter(record => !normalizeExplicitImo(record.imo || record.imo_no || record.imo_number)).length;
+  diagnostics.records_missing_mmsi_after = resolvedRecords.filter(record => !normalizeExplicitMmsi(record.mmsi || record.mmsi_no || record.mmsi_number)).length;
+  diagnostics.final_imo_coverage = records.length ? Math.round(((records.length - diagnostics.records_missing_imo_after) / records.length) * 1000) / 10 : 0;
+  diagnostics.final_mmsi_coverage = records.length ? Math.round(((records.length - diagnostics.records_missing_mmsi_after) / records.length) * 1000) / 10 : 0;
+  diagnostics.status = "completed";
+  return { records: resolvedRecords, diagnostics };
 }
 
 export async function enrichWithVesselMasterCache(records = []) {
@@ -3904,13 +4362,25 @@ export async function saveToSupabase(records, options = {}) {
   }
 
   const imoRecoveryRows = buildImoRecoveryRows(records, runId, now);
+  const resolvedImoRecoveryRows = buildResolvedImoRecoveryRows(records, runId, now);
   let imoRecoveryQueueRowsSaved = 0;
+  let imoRecoveryResolvedRowsSaved = 0;
   try {
     for (let index = 0; index < imoRecoveryRows.length; index += batchSize) {
       const batch = imoRecoveryRows.slice(index, index + batchSize);
-      const { error } = await supabase.from("imo_recovery_queue").upsert(batch, { onConflict: "recovery_id" });
-      if (error) throw error;
+      const result = await upsertWithSchemaCompatibility(supabase, "imo_recovery_queue", batch, { onConflict: "recovery_id" }, schemaCompatibility.imo_recovery_queue || (schemaCompatibility.imo_recovery_queue = {
+        optional_columns: ["recovered_imo", "recovered_mmsi", "resolved_at", "conflict_values"]
+      }));
+      if (result.error) throw result.error;
       imoRecoveryQueueRowsSaved += batch.length;
+    }
+    for (let index = 0; index < resolvedImoRecoveryRows.length; index += batchSize) {
+      const batch = resolvedImoRecoveryRows.slice(index, index + batchSize);
+      const result = await upsertWithSchemaCompatibility(supabase, "imo_recovery_queue", batch, { onConflict: "recovery_id" }, schemaCompatibility.imo_recovery_queue || (schemaCompatibility.imo_recovery_queue = {
+        optional_columns: ["recovered_imo", "recovered_mmsi", "resolved_at", "conflict_values"]
+      }));
+      if (result.error) throw result.error;
+      imoRecoveryResolvedRowsSaved += batch.length;
     }
   } catch (error) {
     console.warn(`[HWK] IMO recovery queue save skipped: ${error.message}`);
@@ -4772,6 +5242,7 @@ export async function saveToSupabase(records, options = {}) {
     privateSalesActivityRowsSaved: privateSalesActivityRows.length,
     identityCandidatesSaved: identityCandidates.length,
     imoRecoveryQueueRowsSaved,
+    imoRecoveryResolvedRowsSaved,
     riskRowsSaved: riskRows.length,
     eventsSaved: events.length,
     pilotScheduleEventsSaved: pilotEvents.length,

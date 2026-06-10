@@ -1,6 +1,6 @@
 ﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
-import { createRunId, enrichWithVesselMasterCache, recordRawArchiveIndex, saveToSupabase } from "./lib/db.js";
+import { createRunId, enrichWithVesselMasterCache, recordRawArchiveIndex, resolveImoMmsiCandidates, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
@@ -2663,6 +2663,7 @@ let vessels = [];
 let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
 let vesselMasterCacheDiagnostics = {};
+let identityResolutionDiagnostics = {};
 let startupConfigDiagnostics = configDiagnostics();
 let runtimeConfigAudit = buildRuntimeConfigAudit();
 
@@ -3690,7 +3691,7 @@ function buildImoRecoveryKpis(records = [], diagnostics = {}) {
     const source = firstNonEmpty(record.identity_source, record.imo_recovery_source, record.recovery_source, record.identity_match_type, "source_record");
     acc[source] = (acc[source] || 0) + 1;
     return acc;
-  }, { ...(diagnostics.recovered_imo_count_by_source || {}) });
+  }, { ...(diagnostics.recovered_imo_count_by_source || {}), ...(diagnostics.recovered_imo_by_source || {}) });
   return {
     total_vessels: records.length,
     target_vessels: target.length,
@@ -3708,6 +3709,13 @@ function buildImoRecoveryKpis(records = [], diagnostics = {}) {
       : diagnostics.failed_recovery_reason || (recoveryQueueCount > 0
         ? "identity_candidates_saved_to_manual_queue_but_no_verified_master_identity_match"
         : "not_enough_verified_identity_source"),
+    resolved_count: Number(diagnostics.candidates_resolved || 0),
+    applied_to_snapshots_count: Number(diagnostics.applied_high_confidence || 0),
+    needs_review_count: Number(diagnostics.needs_review || 0),
+    conflicts_count: Number(diagnostics.conflicts || 0),
+    recovered_mmsi_count_by_source: diagnostics.recovered_mmsi_by_source || {},
+    reference_source_counts: diagnostics.reference_source_counts || {},
+    source_availability: diagnostics.source_availability || {},
     imo_recovery_success_rate: recoveryDenominator ? Math.round((recovered.length / recoveryDenominator) * 100) : 0,
     call_sign_match_recovery_count: recovered.filter(v => /call.?sign/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
     vessel_name_match_recovery_count: recovered.filter(v => /name|alias|seed/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
@@ -12561,8 +12569,10 @@ try {
   const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
+  const identityResolution = await resolveImoMmsiCandidates(cacheResult.records, { referenceRows: referenceEnrichedRows });
+  identityResolutionDiagnostics = identityResolution.diagnostics;
   vessels = dedupeVesselDataset(
-    enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))))
+    enhancePredictiveArrivalIntelligence(annotateFleetIntelligence(enrichSalesSignals(annotateRepeatCallerIntelligence(identityResolution.records))))
   );
   vessels = dedupeVesselDataset(
     ensureOutputContractFields(activeRecordsOnly(vessels), {
@@ -12693,6 +12703,7 @@ try {
     port_summary: portSummary,
     supabase_status: supabaseStatus,
     supabase_write: supabaseWrite,
+    identity_resolution: identityResolutionDiagnostics,
     gdrive_archive: gdriveArchive,
     frontend_poll_interval_seconds: 900,
     preflight_status: collectorDiagnostics.preflight_status || null,
@@ -12943,9 +12954,9 @@ try {
     dataset_generation_audit: datasetGenerationAudit,
     count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
-    imo_recovery_kpis: buildImoRecoveryKpis(vessels, vesselMasterCacheDiagnostics),
+    imo_recovery_kpis: buildImoRecoveryKpis(vessels, { ...vesselMasterCacheDiagnostics, ...identityResolutionDiagnostics }),
     imo_missing_count: vessels.filter(v => !v.imo).length,
-    imo_recovered_count: vessels.filter(v => v.vessel_master_seed_match && v.imo).length,
+    imo_recovered_count: vessels.filter(v => v.imo && (v.vessel_master_seed_match || v.imo_recovered_from_seed || v.imo_recovered_from_cache || v.imo_recovered_from_resolver || v.recovery_source)).length,
     high_value_low_confidence_count: buildHighValueLowConfidence(vessels).length,
     unknown_gt_review_count: targetVessels.filter(v => v.gt_status === "unknown_gt_review").length,
     non_target_small_vessel_count: allCollectedVessels.filter(v => v.gt_status === "non_target_small_vessel").length,
@@ -12960,6 +12971,7 @@ try {
     backend_ops: snapshotOutputs.backendOps,
     collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
     vessel_master_cache: vesselMasterCacheDiagnostics,
+    identity_resolution: identityResolutionDiagnostics,
     candidate_changes: snapshotOutputs.candidateChanges,
     supabase_write: supabaseWrite,
     gdrive_archive: gdriveArchive,

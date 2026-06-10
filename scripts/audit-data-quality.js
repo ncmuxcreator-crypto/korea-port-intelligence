@@ -257,14 +257,29 @@ function pipelineIdentityStats() {
   const storage = report.storage_status?.supabase || report.supabase_write || {};
   const runtime = report.daily_enrichment_runtime || readJson("dashboard/api/daily-enrichment-runtime.json") || {};
   const recovery = report.imo_recovery_kpis || report.imo_recovery || storage.imo_recovery || {};
+  const identityResolution = report.identity_resolution || runtime.identity_resolution || {};
   return {
+    total_records: number(identityResolution.total_records ?? report.all_collected_vessel_count ?? report.record_count, 0),
+    records_missing_imo_before: number(identityResolution.records_missing_imo_before, 0),
+    records_missing_mmsi_before: number(identityResolution.records_missing_mmsi_before, 0),
     identity_candidates_saved: number(storage.identityCandidatesSaved ?? report.identityCandidatesSaved, 0),
     imo_recovery_queue_rows_saved: number(storage.imoRecoveryQueueRowsSaved ?? report.imoRecoveryQueueRowsSaved, 0),
+    imo_recovery_resolved_rows_saved: number(storage.imoRecoveryResolvedRowsSaved ?? report.imoRecoveryResolvedRowsSaved, 0),
     recovered_imo_count_reported: number(recovery.recovered_imo_count ?? recovery.imo_recovered_count ?? report.imo_recovered_count, 0),
     vessel_master_cache_matched_rows: number(runtime.vessel_master_cache?.matched_rows ?? runtime.matched_rows, 0),
     vessel_master_cache_imo_recovered: number(runtime.vessel_master_cache?.imo_recovered_count ?? runtime.imo_recovered_count, 0),
-    recovered_imo_count_by_source: recovery.recovered_imo_count_by_source || runtime.vessel_master_cache?.recovered_imo_count_by_source || {},
+    candidates_created: number(identityResolution.candidates_created, 0),
+    candidates_resolved: number(identityResolution.candidates_resolved ?? recovery.resolved_count, 0),
+    applied_high_confidence: number(identityResolution.applied_high_confidence ?? recovery.applied_to_snapshots_count, 0),
+    needs_review: number(identityResolution.needs_review ?? recovery.needs_review_count, 0),
+    conflicts: number(identityResolution.conflicts ?? recovery.conflicts_count, 0),
+    recovered_imo_count_by_source: identityResolution.recovered_imo_by_source || recovery.recovered_imo_count_by_source || runtime.vessel_master_cache?.recovered_imo_count_by_source || {},
+    recovered_mmsi_count_by_source: identityResolution.recovered_mmsi_by_source || recovery.recovered_mmsi_count_by_source || {},
+    final_imo_coverage: number(identityResolution.final_imo_coverage, 0),
+    final_mmsi_coverage: number(identityResolution.final_mmsi_coverage, 0),
+    source_availability: identityResolution.source_availability || recovery.source_availability || {},
     failed_recovery_reason: recovery.failed_recovery_reason ||
+      Object.entries(identityResolution.failed_recovery_reasons || {}).sort((left, right) => right[1] - left[1])[0]?.[0] ||
       (number(storage.imoRecoveryQueueRowsSaved ?? report.imoRecoveryQueueRowsSaved, 0) > 0 &&
         number(recovery.recovered_imo_count ?? recovery.imo_recovered_count ?? report.imo_recovered_count, 0) === 0
         ? "identity_candidates_saved_to_manual_queue_but_no_verified_master_identity_match"
@@ -306,6 +321,9 @@ function topWarnings({ counts, coverageMap, startup, identity }) {
   if (identity.vessels_with_imo_or_mmsi === 0 && identity.call_sign_without_identity > 0) add(`call sign exists but no IMO/MMSI recovered (${identity.call_sign_without_identity} rows)`);
   if (identity.identity_candidates_saved > 0 && identity.recovered_imo_count_reported === 0) add("identity candidates are saved but no verified IMO recovery is reported");
   if (identity.imo_recovery_queue_rows_saved > 0 && identity.vessel_master_cache_imo_recovered === 0) add("IMO recovery queue rows are pending review; they did not produce recovered IMO/MMSI");
+  if (identity.candidates_created > 0 && identity.candidates_resolved === 0) add("IMO/MMSI recovery resolver created candidates but resolved 0 records");
+  if (identity.imo_recovery_queue_rows_saved > 0 && identity.imo_recovery_resolved_rows_saved === 0 && identity.candidates_resolved === 0) add("imo_recovery_queue appears to contain only pending/unresolved rows");
+  if (identity.final_imo_coverage === 0 && identity.candidates_created > 0) add(`final IMO coverage remains 0%; reason: ${identity.failed_recovery_reason || "unknown"}`);
   if (startup.heavyDiagnosticStartup.length) add(`heavy diagnostic endpoint loads on startup: ${startup.heavyDiagnosticStartup.map(entry => entry.url).join(", ")}`);
   return warnings;
 }

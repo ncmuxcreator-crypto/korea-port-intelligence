@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
-import { createRunId, enrichWithVesselMasterCache, getSupabase } from "./lib/db.js";
+import { createRunId, enrichWithVesselMasterCache, getSupabase, resolveImoMmsiCandidates } from "./lib/db.js";
 import {
   matchConfidenceBand,
   normalizeBerthName,
@@ -395,6 +395,29 @@ function buildImoRecoveryRow(record = {}, runId, now) {
   };
 }
 
+function buildResolvedImoRecoveryRow(record = {}, runId, now) {
+  const row = buildImoRecoveryRow(record, runId, now);
+  const status = String(record.identity_recovery_status || "").toLowerCase() === "resolved" ? "resolved" : "needs_review";
+  return {
+    ...row,
+    status,
+    attempt_count: Number(record.imo_recovery_attempt_count || 0) + 1,
+    last_attempt_at: now,
+    recovery_source: record.recovery_source || record.imo_recovery_source || record.identity_source || null,
+    recovery_confidence: Number(record.recovery_confidence || record.imo_recovery_confidence || record.identity_confidence || 0),
+    recovered_imo: record.imo || null,
+    recovered_mmsi: record.mmsi || null,
+    resolved_at: status === "resolved" ? now : null,
+    conflict_values: record.identity_conflict || null,
+    payload: {
+      ...(row.payload || {}),
+      resolution_stage: "daily_enrichment_identity_resolver",
+      recovery_match_type: record.identity_match_type || null,
+      recovery_reason: record.identity_recovery_notes || null
+    }
+  };
+}
+
 function buildIdentityCandidate(record = {}, runId) {
   const confidence = identityConfidence(record);
   return {
@@ -517,14 +540,21 @@ async function main() {
 
   const { records, activeRunId, schemaCompatibility } = await loadCandidateSnapshots(supabase);
   const cacheResult = await enrichWithVesselMasterCache(records);
-  const enrichedRecords = cacheResult.records;
+  const identityResolution = await resolveImoMmsiCandidates(cacheResult.records, { referenceRows: records });
+  const enrichedRecords = identityResolution.records;
   const historicalMatches = await loadHistoricalMatches(supabase, enrichedRecords);
 
   const matchRows = uniqueBy(enrichedRecords
     .map(record => buildMatchMemoryRow(record, runId, now, historicalMatchFor(record, historicalMatches)))
     .filter(row => row.match_score >= 40), row => row.match_id);
   const unresolved = enrichedRecords.filter(record => !record.imo || identityConfidence(record) < 80);
-  const imoRows = uniqueBy(unresolved.map(record => buildImoRecoveryRow(record, runId, now)), row => row.recovery_id);
+  const resolvedRows = enrichedRecords
+    .filter(record => ["resolved", "needs_review"].includes(String(record.identity_recovery_status || "").toLowerCase()))
+    .map(record => buildResolvedImoRecoveryRow(record, runId, now));
+  const imoRows = uniqueBy([
+    ...unresolved.map(record => buildImoRecoveryRow(record, runId, now)),
+    ...resolvedRows
+  ], row => row.recovery_id);
   const identityRows = unresolved.map(record => buildIdentityCandidate(record, runId));
   const aliasRows = uniqueBy(enrichedRecords
     .filter(record => record.vessel_name && (record.master_vessel_id || record.hybrid_entity_key))
@@ -539,6 +569,7 @@ async function main() {
     input_rows: records.length,
     enriched_rows: enrichedRecords.length,
     vessel_master_cache: cacheResult.diagnostics,
+    identity_resolution: identityResolution.diagnostics,
     snapshot_rows_updated: 0,
     enrichment_match_candidates_saved: 0,
     imo_recovery_queue_saved: 0,

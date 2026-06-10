@@ -377,6 +377,10 @@ async function main() {
     FOCUS_FIELDS.some(def => hasFieldValue(def, field(record, def.keys)))
   ).length;
   const failures = attempts ? Math.max(0, attempts - successes) : 0;
+  const pipelineReport = readJson("data/pipeline-report.json", {});
+  const identityResolution = pipelineReport.identity_resolution || dailyRuntime.identity_resolution || {};
+  const recoveredImoBySource = identityResolution.recovered_imo_by_source || pipelineReport.imo_recovery_kpis?.recovered_imo_count_by_source || {};
+  const recoveredMmsiBySource = identityResolution.recovered_mmsi_by_source || pipelineReport.imo_recovery_kpis?.recovered_mmsi_count_by_source || {};
 
   console.log("\nEnrichment activity:");
   console.log(`- enrichment candidates found: ${enrichmentCandidates}`);
@@ -388,6 +392,27 @@ async function main() {
   console.log(`- imo_recovery_queue: ${recoveryQueue.count ?? "unknown"}${recoveryQueue.error ? ` (${recoveryQueue.error})` : ""}`);
   console.log(`- vessel_master_cache_status: ${dailyRuntime.vessel_master_cache?.status || "unknown"}`);
   console.log(`- MAX_IMO_RECOVERY_CALLS: ${process.env.MAX_IMO_RECOVERY_CALLS || "100"}`);
+
+  console.log("\nIMO/MMSI Recovery:");
+  console.log(`- total_records: ${identityResolution.total_records ?? records.length}`);
+  console.log(`- records_missing_imo_before: ${identityResolution.records_missing_imo_before ?? "unknown"}`);
+  console.log(`- records_missing_mmsi_before: ${identityResolution.records_missing_mmsi_before ?? "unknown"}`);
+  console.log(`- candidates_created: ${identityResolution.candidates_created ?? "unknown"}`);
+  console.log(`- candidates_resolved: ${identityResolution.candidates_resolved ?? "unknown"}`);
+  console.log(`- applied_high_confidence: ${identityResolution.applied_high_confidence ?? "unknown"}`);
+  console.log(`- needs_review: ${identityResolution.needs_review ?? "unknown"}`);
+  console.log(`- conflicts: ${identityResolution.conflicts ?? "unknown"}`);
+  console.log(`- recovered_imo_by_source: ${JSON.stringify(recoveredImoBySource)}`);
+  console.log(`- recovered_mmsi_by_source: ${JSON.stringify(recoveredMmsiBySource)}`);
+  console.log(`- final_imo_coverage: ${identityResolution.final_imo_coverage ?? "unknown"}%`);
+  console.log(`- final_mmsi_coverage: ${identityResolution.final_mmsi_coverage ?? "unknown"}%`);
+  if (identityResolution.candidates_created > 0 && Number(identityResolution.candidates_resolved || 0) === 0) {
+    console.log("- WARNING: candidates_created > 0 but candidates_resolved = 0");
+  }
+  if ((identityResolution.final_imo_coverage ?? 0) === 0 && records.some(record => hasValue(field(record, ["call_sign", "callsign", "clsgn"])))) {
+    const reason = Object.entries(identityResolution.failed_recovery_reasons || {}).sort((left, right) => right[1] - left[1])[0]?.[0] || "reference sources lack verified IMO/MMSI or no high-confidence matches";
+    console.log(`- WARNING: call_sign coverage is high but IMO recovery remains 0 (${reason})`);
+  }
 
   printSamples(records);
 }
