@@ -103,18 +103,25 @@ function risk(row = {}) {
 
 function stayHours(row = {}) {
   return Math.max(
-    firstNumber(row, ["stay_hours", "current_call_stay_hours", "cumulative_stay_hours", "port_stay_hours", "berth_hours"]),
+    firstNumber(row, ["stay_hours", "current_call_stay_hours", "cumulative_stay_hours", "port_stay_hours", "portStayHours", "berth_hours"]),
     firstNumber(row, ["stay_days", "dwell_days"]) * 24
   );
 }
 
 function anchorageHours(row = {}) {
-  return firstNumber(row, ["anchorage_hours", "waiting_hours", "estimated_waiting_time"]);
+  return firstNumber(row, ["anchorage_hours", "anchorageHours", "waiting_hours", "estimated_waiting_time"]);
 }
 
 function hasLongStayRisk(row = {}) {
+  const reasons = [
+    ...(Array.isArray(row.riskReasons) ? row.riskReasons : []),
+    ...(Array.isArray(row.risk_reasons) ? row.risk_reasons : []),
+    ...(Array.isArray(row.reason_codes) ? row.reason_codes : []),
+    ...(Array.isArray(row.biofouling_exposure_reasons) ? row.biofouling_exposure_reasons : [])
+  ].map(reason => String(reason || "").toUpperCase());
   return stayHours(row) >= 72 ||
     anchorageHours(row) >= 48 ||
+    reasons.some(reason => reason.includes("LONG_PORT_STAY")) ||
     firstNumber(row, ["waiting_score", "dwell_score"]) >= 60;
 }
 
@@ -256,6 +263,15 @@ function pipelineIdentityStats() {
     recovered_imo_count_reported: number(recovery.recovered_imo_count ?? recovery.imo_recovered_count ?? report.imo_recovered_count, 0),
     vessel_master_cache_matched_rows: number(runtime.vessel_master_cache?.matched_rows ?? runtime.matched_rows, 0),
     vessel_master_cache_imo_recovered: number(runtime.vessel_master_cache?.imo_recovered_count ?? runtime.imo_recovered_count, 0),
+    recovered_imo_count_by_source: recovery.recovered_imo_count_by_source || runtime.vessel_master_cache?.recovered_imo_count_by_source || {},
+    failed_recovery_reason: recovery.failed_recovery_reason ||
+      (number(storage.imoRecoveryQueueRowsSaved ?? report.imoRecoveryQueueRowsSaved, 0) > 0 &&
+        number(recovery.recovered_imo_count ?? recovery.imo_recovered_count ?? report.imo_recovered_count, 0) === 0
+        ? "identity_candidates_saved_to_manual_queue_but_no_verified_master_identity_match"
+        : number(runtime.vessel_master_cache?.matched_rows ?? runtime.matched_rows, 0) > 0 &&
+          number(runtime.vessel_master_cache?.imo_recovered_count ?? runtime.imo_recovered_count, 0) === 0
+          ? "vessel_master_cache_matched_rows_without_imo_mmsi_values"
+          : "not_enough_verified_identity_source"),
     recovery_queue_status: number(storage.imoRecoveryQueueRowsSaved ?? report.imoRecoveryQueueRowsSaved, 0) > 0
       ? "pending_review_queue_not_verified_identity"
       : "not_created"

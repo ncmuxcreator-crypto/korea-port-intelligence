@@ -102,13 +102,13 @@ export function buildRuntimeConfigAudit(env = process.env) {
       GITHUB_RUN_ID: env.GITHUB_RUN_ID || null,
       GITHUB_WORKFLOW: env.GITHUB_WORKFLOW || null
     },
-    is_github_actions: env.GITHUB_ACTIONS === "true",
-    is_local_build: env.GITHUB_ACTIONS !== "true"
+    is_github_actions: env.GITHUB_ACTIONS === "true" || Boolean(env.GITHUB_RUN_ID || env.GITHUB_WORKFLOW),
+    is_local_build: !(env.GITHUB_ACTIONS === "true" || env.GITHUB_RUN_ID || env.GITHUB_WORKFLOW)
   };
 }
 
 export function buildRunOrigin({ runId = null, validationMode = null, servingMode = null, generatedBy = null } = {}, env = process.env) {
-  const isGithubActions = env.GITHUB_ACTIONS === "true";
+  const isGithubActions = env.GITHUB_ACTIONS === "true" || Boolean(env.GITHUB_RUN_ID || env.GITHUB_WORKFLOW);
   const supportedServingModes = new Set(["worker_supabase", "static_json", "local_diagnostics"]);
   const requestedServingMode = String(servingMode || env.SERVING_MODE || "").trim().toLowerCase();
   const normalizedServingMode = supportedServingModes.has(requestedServingMode)

@@ -2045,10 +2045,13 @@ function deriveStatusBucket(v = {}, metrics = {}) {
 
 function isDepartedRecord(v = {}) {
   const status = String(v.status_bucket || v.operational_status || v.status || "").toLowerCase();
+  const actualDeparture = parseScheduleTime(firstNonEmpty(v.atd, v.actual_departure, v.departure_time, v.departed_at));
+  const now = new Date();
   return status === "departed" ||
     status === "departure_completed" ||
     status.includes("departed") ||
     status.includes("출항 완료") ||
+    (actualDeparture && !Number.isNaN(actualDeparture.getTime()) && actualDeparture.getTime() <= now.getTime() + 3600000) ||
     String(v.commercial_relevance_status || "").toLowerCase() === "excluded_departure_only" ||
     String(v.ledger_status || "").toLowerCase() === "departed";
 }
@@ -2335,9 +2338,9 @@ function applyIdentityAndCommercialFallbacks(record = {}) {
 }
 
 function stayDurationSignals(record = {}) {
-  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.port_stay_hours, record.berth_hours, 0) || 0;
-  const anchorageHours = firstFiniteNumber(record.anchorage_hours, record.waiting_hours, record.estimated_waiting_time, 0) || 0;
-  const stayDays = firstFiniteNumber(record.stay_days, stayHours ? stayHours / 24 : undefined, 0) || 0;
+  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.port_stay_hours, record.portStayHours, record.berth_hours, 0) || 0;
+  const anchorageHours = firstFiniteNumber(record.anchorage_hours, record.anchorageHours, record.waiting_hours, record.estimated_waiting_time, 0) || 0;
+  const stayDays = firstFiniteNumber(record.stay_days, record.dwell_days, stayHours ? stayHours / 24 : undefined, 0) || 0;
   const repeatedSameArea = Number(record.observation_count || record.sighting_count || record.same_area_sightings || record.snapshot_count || 0) > 1 && hasPortSignal(record) && !record.atd;
   return {
     stayHours,
@@ -2351,8 +2354,15 @@ function stayDurationSignals(record = {}) {
 function longStayRiskSignal(record = {}) {
   const duration = stayDurationSignals(record);
   const risk = recordRiskScore(record);
+  const riskReasons = [
+    ...(Array.isArray(record.riskReasons) ? record.riskReasons : []),
+    ...(Array.isArray(record.risk_reasons) ? record.risk_reasons : []),
+    ...(Array.isArray(record.reason_codes) ? record.reason_codes : []),
+    ...(Array.isArray(record.biofouling_exposure_reasons) ? record.biofouling_exposure_reasons : [])
+  ].map(reason => String(reason || "").toUpperCase());
+  const reasonLongPortStay = riskReasons.some(reason => reason.includes("LONG_PORT_STAY"));
   const highWaiting = duration.anchorageHours >= 48 || Number(record.waiting_score || record.dwell_score || 0) >= 60;
-  const longStay = duration.stayDays >= 3 || duration.stayHours >= 72 || duration.anchorageHours >= 48;
+  const longStay = duration.stayDays >= 3 || duration.stayHours >= 72 || duration.anchorageHours >= 48 || reasonLongPortStay;
   const repeated = duration.repeatedSameArea && (duration.stayHours >= 24 || duration.anchorageHours >= 24 || hasAnchorageWaitingSignal(record));
   const percentile = Number(record.port_stay_percentile || record.stay_percentile || 0) >= 80;
   if (longStay || highWaiting || repeated || percentile) {
@@ -2367,7 +2377,7 @@ function longStayRiskSignal(record = {}) {
             ? "동일 항만/해역 반복 체류가 확인됩니다."
             : "항만 내 체류시간이 상위 구간입니다.",
       source: duration.source || (percentile ? "stay_percentile" : "derived"),
-      confidence: Math.min(100, Math.max(risk, hours >= 72 ? 80 : highWaiting ? 70 : repeated ? 60 : 55))
+      confidence: Math.min(100, Math.max(risk, hours >= 72 || reasonLongPortStay ? 80 : highWaiting ? 70 : repeated ? 60 : 55))
     };
   }
   return { detected: false, reason: "", source: duration.source, confidence: 0 };
@@ -2438,16 +2448,18 @@ function targetQuality(record = {}) {
   ]);
   const contextCodes = new Set(["korea_port_or_eta", "operator_known"]);
   const coreSignals = strongSignals.filter(signal => coreCodes.has(signal.code));
-  const contextSignalCount = signals.filter(signal => ["korea_port_or_eta", "operator_known"].includes(signal.code)).length;
   const contextSignals = signals.filter(signal => contextCodes.has(signal.code));
   const score = Math.max(Number(record.commercial_value_score || 0), Number(record.total_sales_priority_score || 0), Number(record.cleaning_candidate_score || 0), Number(salesPriorityScore(record) || 0));
   const risk = recordRiskScore(record);
   const longStay = longStayRiskSignal(record);
   const priorityLabel = String(record.priority_label || record.sales_priority_band || salesPriorityBand(score)).toUpperCase();
   const strongCurrentContext = contextSignals.some(signal => signal.code === "korea_port_or_eta");
-  const isTarget = coreSignals.length >= 2 ||
-    (coreSignals.length >= 1 && strongCurrentContext && score >= 85) ||
-    (priorityLabel === "HOT" && coreSignals.length >= 1 && strongCurrentContext && score >= IMMEDIATE_TARGET_THRESHOLD);
+  const coreCodesPresent = new Set(coreSignals.map(signal => signal.code));
+  const nonScoreCoreCount = [...coreCodesPresent].filter(code => code !== "high_opportunity_score").length;
+  const hasIndependentCoreSignals = coreCodesPresent.size >= 2 && nonScoreCoreCount >= 1;
+  const isTarget = (hasIndependentCoreSignals && strongCurrentContext) ||
+    (coreCodesPresent.size >= 3 && nonScoreCoreCount >= 2) ||
+    (priorityLabel === "HOT" && coreCodesPresent.size >= 1 && strongCurrentContext && score >= 85);
   const isImmediate = isTarget &&
     (score >= 80 || priorityLabel === "HOT") &&
     (hasCurrentOrNearTermWorkFeasibility(record) || hasAnchorageWaitingSignal(record) || hasArrivalPipelineSignal(record) || longStay.detected) &&
@@ -3668,12 +3680,17 @@ function buildImoRecoveryQueue(records = []) {
     }));
 }
 
-function buildImoRecoveryKpis(records = []) {
+function buildImoRecoveryKpis(records = [], diagnostics = {}) {
   const target = records.filter(isMainCommercialVessel);
   const highValue = target.filter(v => (v.commercial_value_score || v.total_sales_priority_score || 0) >= REVIEW_TARGET_THRESHOLD || Number(v.gt || 0) >= COMMERCIAL_GT_THRESHOLD || v.is_anchorage_waiting);
   const recovered = records.filter(v => v.imo && (v.imo_recovered_from_seed || v.imo_recovered_from_cache || v.vessel_master_seed_match || v.recovery_source));
   const recoveryQueueCount = buildImoRecoveryQueue(target).length;
   const recoveryDenominator = recovered.length + recoveryQueueCount;
+  const recoveredBySource = recovered.reduce((acc, record) => {
+    const source = firstNonEmpty(record.identity_source, record.imo_recovery_source, record.recovery_source, record.identity_match_type, "source_record");
+    acc[source] = (acc[source] || 0) + 1;
+    return acc;
+  }, { ...(diagnostics.recovered_imo_count_by_source || {}) });
   return {
     total_vessels: records.length,
     target_vessels: target.length,
@@ -3681,10 +3698,16 @@ function buildImoRecoveryKpis(records = []) {
     high_value_imo_coverage: coverageRatio(highValue, v => hasValue(v.imo)),
     recovered_imo_count: recovered.length,
     imo_recovered_count: recovered.length,
+    recovered_imo_count_by_source: recoveredBySource,
     unresolved_high_value_count: highValue.filter(v => !v.imo).length,
     call_sign_available_count: target.filter(v => hasValue(v.call_sign)).length,
     recovery_queue_count: recoveryQueueCount,
     imo_recovery_queue_count: recoveryQueueCount,
+    failed_recovery_reason: recovered.length
+      ? ""
+      : diagnostics.failed_recovery_reason || (recoveryQueueCount > 0
+        ? "identity_candidates_saved_to_manual_queue_but_no_verified_master_identity_match"
+        : "not_enough_verified_identity_source"),
     imo_recovery_success_rate: recoveryDenominator ? Math.round((recovered.length / recoveryDenominator) * 100) : 0,
     call_sign_match_recovery_count: recovered.filter(v => /call.?sign/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
     vessel_name_match_recovery_count: recovered.filter(v => /name|alias|seed/i.test(String(v.imo_recovery_source || v.identity_match_strategy || ""))).length,
@@ -4575,8 +4598,8 @@ function contractDataMode(mode = "", report = {}) {
 
 function vesselDisplay(record = {}) {
   const congestionSignal = record.congestion_signal && typeof record.congestion_signal === "object" ? record.congestion_signal : {};
-  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, record.berth_hours);
-  const waitingHours = firstFiniteNumber(congestionSignal.waiting_hours, record.waiting_hours, record.estimated_waiting_time, record.anchorage_hours);
+  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.port_stay_hours, record.portStayHours, record.anchorage_hours, record.anchorageHours, record.berth_hours);
+  const waitingHours = firstFiniteNumber(congestionSignal.waiting_hours, record.waiting_hours, record.estimated_waiting_time, record.anchorage_hours, record.anchorageHours);
   const stayDays = firstFiniteNumber(record.stay_days, record.dwell_days, Number.isFinite(Number(stayHours)) ? Number(stayHours) / 24 : undefined);
   const waitingScore = firstFiniteNumber(congestionSignal.waiting_score, record.waiting_score, record.dwell_score, record.stay_score);
   const congestionScore = firstFiniteNumber(congestionSignal.congestion_score, record.congestion_score, record.port_congestion_score, record.port_congestion_index);
@@ -4603,8 +4626,8 @@ function vesselDisplay(record = {}) {
   const operatorDisplay = canonicalOperatorValue(record);
   return {
     vessel_name: displayText(firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요")),
-    imo: displayText(firstNonEmpty(record.imo, record.imo_no)),
-    mmsi: displayText(firstNonEmpty(record.mmsi)),
+    imo: displayText(firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo)),
+    mmsi: displayText(firstNonEmpty(record.mmsi, record.mmsi_no, record.vessel_display?.mmsi)),
     call_sign: displayText(firstNonEmpty(record.call_sign, record.callsign, record.clsgn)),
     flag: displayText(firstNonEmpty(record.flag, record.vsslNltyNm, record.vsslNltyCd, record.nationality)),
     vessel_type: displayText(firstNonEmpty(record.vessel_type, record.vsslKndNm, record.vessel_type_group, record.commercial_segment)),
@@ -4665,6 +4688,27 @@ function vesselDisplay(record = {}) {
     data_sources: displaySources(record),
     enrichment_sources: Array.isArray(record.enrichment_sources) ? record.enrichment_sources : []
   };
+}
+
+function buildTargetSplitCounts(records = []) {
+  const split = {
+    qualified_sales_target: 0,
+    monitor_candidate: 0,
+    non_target: 0,
+    target_ratio: 0,
+    target_ratio_reasonable: true,
+    target_ratio_warning: ""
+  };
+  for (const record of records) {
+    const quality = targetQuality(record);
+    if (quality.is_sales_target) split.qualified_sales_target += 1;
+    else if (quality.is_monitor) split.monitor_candidate += 1;
+    else split.non_target += 1;
+  }
+  split.target_ratio = records.length ? Math.round((split.qualified_sales_target / records.length) * 1000) / 10 : 0;
+  split.target_ratio_reasonable = split.target_ratio <= 40;
+  split.target_ratio_warning = split.target_ratio_reasonable ? "" : "영업대상 기준이 너무 넓습니다.";
+  return split;
 }
 
 const PUBLIC_VESSEL_ITEM_FIELDS = [
@@ -5063,7 +5107,7 @@ function withVesselDisplay(record = {}) {
     const value = record[field];
     if (value !== undefined && value !== null && value !== "") compact[field] = value;
   }
-  compact.vessel_display = record.vessel_display || vesselDisplay(record);
+  compact.vessel_display = vesselDisplay(record);
   return compact;
 }
 
@@ -11551,6 +11595,7 @@ function buildSourceHealthRuntimeReport({ report = {}, collectorDiagnostics = {}
     reason: source.skip_reason || source.reason || source.error_message || source.status || "unknown_error",
     raw_reason: source.raw_skip_reason || source.reason || source.error_message || source.status || null
   }));
+  const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
   return {
     version: VERSION,
     run_id: report.run_id || runId,
@@ -11562,8 +11607,8 @@ function buildSourceHealthRuntimeReport({ report = {}, collectorDiagnostics = {}
     ok: !baseDatasetState.base_dataset_empty,
     update_mode: process.env.UPDATE_MODE || null,
     process_env_CI: process.env.CI || null,
-    is_github_actions: process.env.GITHUB_ACTIONS === "true",
-    is_local_build: process.env.GITHUB_ACTIONS !== "true",
+    is_github_actions: isGithubActionsRuntime,
+    is_local_build: !isGithubActionsRuntime,
     collection_mode: report.data_mode === "no_live_data" ? "no_live_data" : "collection_result",
     status_generated_at: report.completed_at || report.generated_at || null,
     stale_source_health: false,
@@ -12578,15 +12623,16 @@ try {
   const portsAttemptedCount = Number(collectorDiagnostics.coverage?.ports_attempted_count || collectorDiagnostics.ports_attempted_count || 0);
   const collectorNotAttempted = portsAttemptedCount === 0;
   const collectorNotAttemptedReason = collectorNotAttempted ? portOperationCollectorNotAttemptedReason(collectorDiagnostics) : null;
+  const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
   const runtimeModeDiagnostics = {
     process_env_CI: process.env.CI || null,
     VALIDATION_MODE: process.env.VALIDATION_MODE || null,
     resolved_validation_mode: VALIDATION_MODE,
     UPDATE_MODE: process.env.UPDATE_MODE || null,
     serving_mode: normalizeServingMode(process.env.SERVING_MODE || "static_json"),
-    is_github_actions: process.env.GITHUB_ACTIONS === "true",
-    is_local_build: process.env.GITHUB_ACTIONS !== "true",
-    generated_by: process.env.GITHUB_ACTIONS === "true" ? "github_actions" : "local",
+    is_github_actions: isGithubActionsRuntime,
+    is_local_build: !isGithubActionsRuntime,
+    generated_by: isGithubActionsRuntime ? "github_actions" : "local",
     GITHUB_RUN_ID: process.env.GITHUB_RUN_ID || null,
     GITHUB_WORKFLOW: process.env.GITHUB_WORKFLOW || null,
     port_operation_service_key_present_effective: portOperationServiceKeyPresent(),
@@ -12774,10 +12820,16 @@ try {
   let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(isSalesCandidate))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
   const directLongStayRiskRows = allCollectedVessels.filter(v => {
-    const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.port_stay_hours || v.berth_hours || 0);
+    const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.port_stay_hours || v.portStayHours || v.berth_hours || 0);
     const stayDays = Number(v.stay_days || 0);
-    const anchorageHours = Number(v.anchorage_hours || v.waiting_hours || v.estimated_waiting_time || 0);
-    return stayHours >= 72 || stayDays >= 3 || anchorageHours >= 48 || Number(v.waiting_score || v.dwell_score || 0) >= 60;
+    const anchorageHours = Number(v.anchorage_hours || v.anchorageHours || v.waiting_hours || v.estimated_waiting_time || 0);
+    const reasons = [
+      ...(Array.isArray(v.riskReasons) ? v.riskReasons : []),
+      ...(Array.isArray(v.risk_reasons) ? v.risk_reasons : []),
+      ...(Array.isArray(v.reason_codes) ? v.reason_codes : []),
+      ...(Array.isArray(v.biofouling_exposure_reasons) ? v.biofouling_exposure_reasons : [])
+    ].map(reason => String(reason || "").toUpperCase());
+    return stayHours >= 72 || stayDays >= 3 || anchorageHours >= 48 || reasons.some(reason => reason.includes("LONG_PORT_STAY")) || Number(v.waiting_score || v.dwell_score || 0) >= 60;
   });
   const longStayRiskVessels = sortCommercialPriority(dedupeCandidateRows([
     ...allCollectedVessels.filter(v => longStayRiskSignal(v).detected),
@@ -12797,6 +12849,7 @@ try {
     ])).slice(0, 50);
   }
   salesCandidates = targetCategorySummary.items;
+  const targetSplitCounts = buildTargetSplitCounts(allCollectedVessels);
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && status !== "failed") {
     try {
@@ -12890,7 +12943,7 @@ try {
     dataset_generation_audit: datasetGenerationAudit,
     count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
-    imo_recovery_kpis: buildImoRecoveryKpis(vessels),
+    imo_recovery_kpis: buildImoRecoveryKpis(vessels, vesselMasterCacheDiagnostics),
     imo_missing_count: vessels.filter(v => !v.imo).length,
     imo_recovered_count: vessels.filter(v => v.vessel_master_seed_match && v.imo).length,
     high_value_low_confidence_count: buildHighValueLowConfidence(vessels).length,
@@ -12903,6 +12956,7 @@ try {
     cleaning_candidate_count: vessels.filter(v => v.is_cleaning_candidate).length,
     target_category_counts: targetCategorySummary.counts,
     target_category_kpis: targetCategorySummary.kpis,
+    target_split_counts: targetSplitCounts,
     backend_ops: snapshotOutputs.backendOps,
     collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
     vessel_master_cache: vesselMasterCacheDiagnostics,
@@ -13074,6 +13128,12 @@ try {
     target_vessels_count: report?.target_vessel_count || targetVessels.length,
     target_count: salesCandidates.length,
     sales_target_count: salesCandidates.length,
+    qualified_sales_target_count: targetSplitCounts.qualified_sales_target,
+    monitor_candidate_count: targetSplitCounts.monitor_candidate,
+    non_target_count: targetSplitCounts.non_target,
+    target_ratio: targetSplitCounts.target_ratio,
+    target_ratio_reasonable: targetSplitCounts.target_ratio_reasonable,
+    target_ratio_warning: targetSplitCounts.target_ratio_warning,
     immediate_target_count: immediateTargets.length,
     contact_now_count: targetCategorySummary.kpis.contact_now_count || 0,
     pre_arrival_target_count: targetCategorySummary.kpis.pre_arrival_target_count || 0,
@@ -13129,6 +13189,12 @@ try {
       all_collected_vessel_count: report?.all_collected_vessel_count || allCollectedVessels.length,
       target_vessel_count: report?.target_vessel_count || targetVessels.length,
       sales_candidate_count: salesCandidates.length,
+      qualified_sales_target_count: targetSplitCounts.qualified_sales_target,
+      monitor_candidate_count: targetSplitCounts.monitor_candidate,
+      non_target_count: targetSplitCounts.non_target,
+      target_ratio: targetSplitCounts.target_ratio,
+      target_ratio_reasonable: targetSplitCounts.target_ratio_reasonable,
+      target_ratio_warning: targetSplitCounts.target_ratio_warning,
       immediate_target_count: immediateTargets.length,
       anchorage_waiting_count: anchorageWaiting.length,
       arrival_pipeline_count: arrivalPipeline.length,

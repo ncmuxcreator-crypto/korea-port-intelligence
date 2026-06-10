@@ -124,6 +124,7 @@ function stayDurationHours(record = {}) {
     scoreNumber(record.current_call_stay_hours),
     scoreNumber(record.cumulative_stay_hours),
     scoreNumber(record.port_stay_hours),
+    scoreNumber(record.portStayHours),
     scoreNumber(record.berth_hours),
     stayDays > 0 ? stayDays * 24 : 0
   );
@@ -132,6 +133,7 @@ function stayDurationHours(record = {}) {
 function anchorageDurationHours(record = {}) {
   return Math.max(
     scoreNumber(record.anchorage_hours),
+    scoreNumber(record.anchorageHours),
     scoreNumber(record.waiting_hours),
     scoreNumber(record.estimated_waiting_time)
   );
@@ -143,9 +145,16 @@ function hasLongStayRiskRecord(record = {}) {
   const stayDays = scoreNumber(record.stay_days || record.dwell_days);
   const stayHours = stayDurationHours(record);
   const anchorageHours = anchorageDurationHours(record);
+  const riskReasons = [
+    ...(Array.isArray(record.riskReasons) ? record.riskReasons : []),
+    ...(Array.isArray(record.risk_reasons) ? record.risk_reasons : []),
+    ...(Array.isArray(record.reason_codes) ? record.reason_codes : []),
+    ...(Array.isArray(record.biofouling_exposure_reasons) ? record.biofouling_exposure_reasons : [])
+  ].map(reason => String(reason || "").toUpperCase());
   return stayDays >= Math.max(1, stayThresholdHours / 24) ||
     stayHours >= stayThresholdHours ||
     anchorageHours >= anchorageThresholdHours ||
+    riskReasons.some(reason => reason.includes("LONG_PORT_STAY")) ||
     scoreNumber(record.waiting_score || record.dwell_score) >= 60;
 }
 
@@ -741,6 +750,8 @@ export async function enrichWithVesselMasterCache(records = []) {
     alias_rows_loaded: 0,
     matched_rows: 0,
     imo_recovered_count: 0,
+    recovered_imo_count_by_source: {},
+    failed_recovery_reason: "",
     strategies: {}
   };
   if (!records.length || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -807,11 +818,19 @@ export async function enrichWithVesselMasterCache(records = []) {
       if (!cached) return record;
       diagnostics.matched_rows += 1;
       diagnostics.strategies[strategy] = (diagnostics.strategies[strategy] || 0) + 1;
-      if (!record.imo && cached.imo) diagnostics.imo_recovered_count += 1;
+      if (!record.imo && cached.imo) {
+        diagnostics.imo_recovered_count += 1;
+        diagnostics.recovered_imo_count_by_source[strategy] = (diagnostics.recovered_imo_count_by_source[strategy] || 0) + 1;
+      }
       return mergeCachedStaticInfo(record, cached, strategy);
     });
 
     diagnostics.status = "loaded";
+    if (diagnostics.matched_rows > 0 && diagnostics.imo_recovered_count === 0) {
+      diagnostics.failed_recovery_reason = "matched vessel_master cache rows did not contain verified IMO values";
+    } else if (diagnostics.matched_rows === 0) {
+      diagnostics.failed_recovery_reason = "no high-confidence vessel_master/cache match";
+    }
     return { records: enriched, diagnostics };
   } catch (error) {
     diagnostics.status = "failed";
