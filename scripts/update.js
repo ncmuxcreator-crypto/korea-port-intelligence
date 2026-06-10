@@ -3888,20 +3888,19 @@ function buildPortSummary(records) {
 }
 
 function enrichSalesSignals(records) {
-  const regulatedDestinations = ["australia", "brazil", "new zealand", "california", "usa", "canada"];
   return records.map(v => {
     const reasons = [];
-    const destination = String(v.destination || "").toLowerCase();
     const routeProfile = deriveRouteCommercialProfile(v);
-    const complianceWatch = routeProfile.high_regulation_route || regulatedDestinations.some(d => destination.includes(d));
+    const scheduleMetrics = deriveScheduleMetrics(v);
+    const gtProfile = commercialGtProfile(v);
+    const complianceExposure = biofoulingComplianceExposure({ ...v, ...routeProfile, ...gtProfile });
+    const complianceWatch = complianceExposure.exposed === true;
     if ((v.risk_score || 0) >= 85) reasons.push("Critical hull-performance risk");
     else if ((v.risk_score || 0) >= 70) reasons.push("High fouling watchlist");
     if ((v.days_in_korea || 0) >= 14) reasons.push("Long Korea stay / idle exposure");
     if ((v.speed || 0) <= 3) reasons.push("Low-speed or waiting condition");
     if (complianceWatch) reasons.push("Biofouling-sensitive destination");
 
-    const scheduleMetrics = deriveScheduleMetrics(v);
-    const gtProfile = commercialGtProfile(v);
     const biofoulingScore = deriveBiofoulingScore(v, scheduleMetrics);
     const ciiPressureScore = deriveCiiPressureScore(v, scheduleMetrics, biofoulingScore);
     const normalizedTypeGroup = v.vessel_type_group || defaultVesselTypeGroup(v);
@@ -3944,6 +3943,13 @@ function enrichSalesSignals(records) {
       ...identity,
       data_quality_tier: dataQualityTier({ ...v, ...scheduleMetrics }),
       compliance_band: complianceWatch ? "biosecurity_watch" : "standard",
+      commercial_size_qualified: gtProfile.meets_commercial_gt_threshold,
+      biofouling_compliance_exposure: complianceExposure,
+      compliance_exposure: complianceExposure,
+      compliance_exposure_jurisdiction: complianceExposure.jurisdiction || "",
+      compliance_exposure_basis: complianceExposure.basis || "",
+      compliance_exposure_threshold_type: complianceExposure.threshold_type || "",
+      compliance_exposure_confidence: complianceExposure.confidence || 0,
       port_code: v.port_code || portCodeFromName(v.port),
       port_name: v.port_name || v.port,
       vessel_type: normalizedType,
@@ -4898,7 +4904,8 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
   const repeatScore = firstFiniteNumber(record.repeat_caller_score, 0) || 0;
   const operatorVesselCount = firstFiniteNumber(record.operator_vessel_count, record.repeat_operator_count, record.operator_call_count, 0) || 0;
   const missingContact = missingContactFields(record);
-  const complianceSignal = regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch || record.compliance_tag || String(record.compliance_band || "").toLowerCase().includes("biosecurity");
+  const complianceExposure = biofoulingComplianceExposure(record);
+  const complianceSignal = complianceExposure.exposed === true;
   const holdReason = categoryHoldReason(record, generatedAt);
   const actionability = salesActionability(record);
   if (holdReason && priority !== "HOT" && opportunity < 75) {
@@ -4918,7 +4925,7 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
     categories.push(targetCategoryItem("LONG_STAY_RISK", Math.max(risk, confidence, longStay.confidence), reason, "장기 체류 원인과 선저 리스크를 함께 확인"));
   }
   if (complianceSignal && risk >= 45) {
-    categories.push(targetCategoryItem("BIOFOULING_COMPLIANCE", Math.max(risk, opportunity), "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.", "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"));
+    categories.push(targetCategoryItem("BIOFOULING_COMPLIANCE", Math.max(risk, opportunity), `${complianceExposure.jurisdiction} ${complianceExposure.basis === "proxy" ? "proxy" : "목적지/항로"} 기반 compliance 노출 신호와 biofouling 리스크가 함께 확인됩니다.`, "목적지 관할 기준과 선저관리 대응 필요 여부 확인"));
   }
   if (visits90 >= 2 || repeatScore >= 45) {
     categories.push(targetCategoryItem("REPEAT_CALLER", Math.max(repeatScore, confidence), `최근 90일 반복 입항 ${visits90}회 또는 반복 기항 점수 ${Math.round(repeatScore)}점 신호가 있습니다.`, "반복 입항 이력을 근거로 선사/대리점 접점을 확인"));
@@ -5884,6 +5891,9 @@ function buildVesselDisplay(record = {}) {
     risk_score: roundedDisplayNumber(riskScore),
     biofouling_score: roundedDisplayNumber(biofoulingRiskScore),
     compliance_score: roundedDisplayNumber(nullableDisplayNumber(record.compliance_score, record.biosecurity_compliance_score, record.compliance_exposure_score, record.vessel_display?.compliance_score)),
+    commercial_size_qualified: commercialSizeQualified(record),
+    biofouling_compliance_exposure: biofoulingComplianceExposure(record),
+    compliance_exposure: biofoulingComplianceExposure(record),
     biofoulingRiskScore: roundedDisplayNumber(biofoulingRiskScore),
     hullGrowthIndex: roundedDisplayNumber(hullGrowthIndex),
     cleaningOpportunityScore: roundedDisplayNumber(cleaningOpportunityScore),
@@ -6130,6 +6140,13 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "compliance_score",
   "biosecurity_compliance_score",
   "compliance_exposure_score",
+  "commercial_size_qualified",
+  "biofouling_compliance_exposure",
+  "compliance_exposure",
+  "compliance_exposure_jurisdiction",
+  "compliance_exposure_basis",
+  "compliance_exposure_threshold_type",
+  "compliance_exposure_confidence",
   "target_categories",
   "enrichment_sources",
   "destination",
@@ -6967,6 +6984,7 @@ function compactVesselInsight(record = {}, index = 0, extra = {}) {
     record.biofouling_score,
     record.operational_risk_score
   );
+  const complianceExposure = biofoulingComplianceExposure(record);
   return {
     rank: index + 1,
     vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
@@ -6978,6 +6996,9 @@ function compactVesselInsight(record = {}, index = 0, extra = {}) {
     reason_summary: compactReasonSummary(record),
     top_factors: compactInsightFactors(record),
     recommended_action: compactRecommendedAction(record),
+    commercial_size_qualified: commercialSizeQualified(record),
+    biofouling_compliance_exposure: complianceExposure,
+    compliance_exposure: complianceExposure,
     source_id: firstNonEmpty(record.port_call_id, record.opportunity_id, record.snapshot_id, record.master_vessel_id, record.hybrid_entity_key) || null,
     ...extra
   };
@@ -7519,10 +7540,10 @@ function buildFleetIntelligenceSummary({ records = [], fleetOpportunities = [], 
     if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || score >= 75) current.hot_count += 1;
     if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "WARM" || (score >= 50 && score < 75)) current.warm_count += 1;
     if (repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0) current.repeat_caller_count += 1;
-    const compliance = complianceCountry(record);
-    if (regulatedRouteSignal(record) || compliance || record.compliance_watch) {
+    const complianceExposure = biofoulingComplianceExposure(record);
+    if (complianceExposure.exposed) {
       current.compliance_exposure_count += 1;
-      current.compliance_tags.add(compliance || "compliance_route_signal");
+      current.compliance_tags.add(complianceExposure.jurisdiction || "compliance_route_signal");
     }
     if (risk >= 70) current.high_risk_count += 1;
     if (Number(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours || record.anchorage_hours || 0) >= 72 || record.is_staying_without_departure) current.staying_count += 1;
@@ -8244,8 +8265,15 @@ function biofoulingRiskLevel(score = 0) {
 function biofoulingVesselRiskItem(record = {}, index = 0, sstContext = {}) {
   const env = biofoulingEnvironmentalInput(record, sstContext);
   const opportunityScore = salesPriorityScore(record);
-  const routeRegions = complianceExposureRegions(record);
-  const complianceScore = Math.min(100, Math.round(env.biofouling_risk_score + Math.min(25, routeRegions.length * 15) + (regulatedRouteSignal(record) ? 10 : 0)));
+  const complianceExposure = biofoulingComplianceExposure(record);
+  const routeRegions = complianceExposure.exposed && complianceExposure.jurisdiction ? [complianceExposure.jurisdiction] : [];
+  const complianceScore = complianceExposure.exposed
+    ? Math.min(100, Math.round(
+      env.biofouling_risk_score +
+      20 +
+      Math.min(10, Number(complianceExposure.confidence || 0) * 10)
+    ))
+    : 0;
   const hullCleaningCandidateScore = Math.min(100, Math.round(
     env.biofouling_risk_score * 0.55 +
     opportunityScore * 0.30 +
@@ -8269,6 +8297,14 @@ function biofoulingVesselRiskItem(record = {}, index = 0, sstContext = {}) {
     risk_level: biofoulingRiskLevel(env.biofouling_risk_score),
     hull_cleaning_candidate_score: hullCleaningCandidateScore,
     compliance_score: complianceScore,
+    commercial_size_qualified: commercialSizeQualified(record),
+    biofouling_compliance_exposure: complianceExposure,
+    compliance_exposure: complianceExposure,
+    compliance_exposure_jurisdiction: complianceExposure.jurisdiction || "",
+    compliance_exposure_basis: complianceExposure.basis || "",
+    compliance_exposure_threshold_type: complianceExposure.threshold_type || "",
+    compliance_exposure_confidence: complianceExposure.confidence || 0,
+    exposure_tags: routeRegions,
     sst_anomaly: env.sst_anomaly,
     ais_dwell_hours: env.dwell_hours,
     salinity_proxy: env.salinity_proxy,
@@ -8412,14 +8448,10 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
     .slice(0, 10)
     .map((item, index) => ({ ...item, rank: index + 1 }));
   const brazilCompliance = vesselItems
-    .filter(item => /brazil|brasil|브라질/i.test(String([
-      item.destination_country,
-      item.destination,
-      item.destination_port,
-      item.vessel_display?.destination,
-      item.reason_summary,
-      item.top_factors
-    ].flat().join(" "))) || complianceCountry(item) === "Brazil" || Number(item.compliance_score || 0) >= 65)
+    .filter(item => {
+      const exposure = biofoulingComplianceExposure(item);
+      return exposure.exposed === true && exposure.jurisdiction === "Brazil";
+    })
     .sort((a, b) => Number(b.compliance_score || 0) - Number(a.compliance_score || 0) || Number(b.biofouling_risk_score || 0) - Number(a.biofouling_risk_score || 0))
     .slice(0, 20)
     .map((item, index) => ({
@@ -8427,7 +8459,7 @@ function buildBiofoulingModuleOutputs({ records = [], portStatistics = {}, sstCo
       rank: index + 1,
       destination_country: "Brazil",
       commercial_compliance_signal: "Commercial compliance signal",
-      reason_summary: `${item.reason_summary}; Brazil compliance route/risk watch`,
+      reason_summary: `${item.reason_summary}; Brazil compliance route/risk watch (${item.compliance_exposure?.threshold_type || "jurisdiction_signal"})`,
       recommended_action: "Brazil 항로 가능성과 biofouling documentation 필요 여부를 선제 확인"
     }));
   const portFeatures = portItems.map(item => ({
@@ -9018,7 +9050,7 @@ function aggregateOperators(records = [], fleetOpportunities = []) {
     current.warm_count += label === "WARM" || (score >= 50 && score < 75) ? 1 : 0;
     current.high_risk_count += risk >= 70 ? 1 : 0;
     current.repeat_caller_count += repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0 ? 1 : 0;
-    current.compliance_exposure_count += regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch ? 1 : 0;
+    current.compliance_exposure_count += hasBiofoulingComplianceExposure(record) ? 1 : 0;
     current.score_total += score;
     current.risk_total += risk;
     const port = recordPortName(record);
@@ -9226,7 +9258,7 @@ function serviceBundleSignals(record = {}) {
   const gt = Number(record.gt || record.grt || record.grtg || record.gross_tonnage || 0);
   const dwt = Number(record.dwt || record.deadweight || 0);
   const largeVessel = gt >= 10000 || dwt >= 15000;
-  const complianceSignal = regulatedRouteSignal(record) || complianceExposureRegions(record).length > 0 || /compliance|biosecurity|biofouling|brazil|australia|new zealand|california|canada/i.test(text);
+  const complianceSignal = hasBiofoulingComplianceExposure(record);
   const performanceSignal = /fuel|performance|cii|efficiency|speed|consumption|연료|효율|성능/i.test(text) || opportunity >= 65 || largeVessel;
   const dockingSignal = /drydock|dock|yard|repair|inspection|정비|수리|드라이독|도크/i.test(text) || risk >= 70 || Number(record.predicted_cleaning_opportunity_score || 0) >= 65;
   const cleaningWindowSignal = Number(record.window_score || record.cleaning_window_score || 0) >= 55 || stay >= 3 || waitingHours >= 24 || hasAnchorageWaitingSignal(record);
@@ -9379,12 +9411,13 @@ function quoteHasValidIdentity(record = {}) {
 }
 
 function quoteCandidateScore(record = {}) {
+  const complianceCandidateScore = hasBiofoulingComplianceExposure(record) ? Number(record.compliance_score || 65) : 0;
   return Math.max(
     Number(salesPriorityScore(record) || 0),
     Number(record.quote_readiness_score || 0),
     Number(record.bundle_score || 0),
     Number(record.window_score || record.cleaning_window_score || 0),
-    Number(record.compliance_score || 0),
+    complianceCandidateScore,
     Number(record.biofouling_risk_score || record.biofouling_exposure_score || record.risk_score || 0)
   );
 }
@@ -9474,7 +9507,7 @@ function quoteReadinessScore(record = {}) {
   if (hasAnchorageWaitingSignal(record) || Number(record.window_score || record.cleaning_window_score || 0) > 0) score += 6;
   if (salesPriorityScore(record) >= 70) score += 8;
   if (recordRiskScore(record) >= 70) score += 5;
-  if (Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length > 0) score += 4;
+  if (hasBiofoulingComplianceExposure(record)) score += 4;
   if (Number(record.window_score || record.cleaning_window_score || 0) >= 45) score += 4;
   if (quoteKnown(record.reason_summary || display.reason_summary)) score += 4;
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -9520,7 +9553,7 @@ function quoteRecommendedServices(record = {}) {
   if ((risk >= 55 || opportunity >= 55 || stay >= 3 || hasAnchorageWaitingSignal(record)) && !services.includes("Hull Cleaning")) services.push("Hull Cleaning");
   if ((risk >= 60 || (quoteKnown(vesselDisplay(record).current_port) && risk >= 50)) && !services.includes("UWI")) services.push("UWI");
   if ((gt >= 10000 || dwt >= 15000 || opportunity >= 65) && !services.includes("Propeller Polish")) services.push("Propeller Polish");
-  if ((Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length > 0 || regulatedRouteSignal(record)) && !services.includes("Biofouling Report")) services.push("Biofouling Report");
+  if (hasBiofoulingComplianceExposure(record) && !services.includes("Biofouling Report")) services.push("Biofouling Report");
   if ((Number(record.drydock_probability || 0) >= 45 || Number(record.window_score || record.cleaning_window_score || 0) >= 55) && !services.includes("Pre-docking Inspection")) services.push("Pre-docking Inspection");
   if (!services.length && (opportunity >= 50 || risk >= 50)) services.push("Hull Cleaning");
   return [...new Set(services)].filter(service => QUOTE_SERVICE_VALUE_RANGES_KRW[service]).slice(0, 5);
@@ -9557,12 +9590,12 @@ function quoteReasonSummary(record = {}, services = []) {
   const opportunity = salesPriorityScore(record);
   const risk = recordRiskScore(record);
   const windowScore = firstFiniteNumber(record.window_score, record.cleaning_window_score, 0) || 0;
-  const complianceScore = firstFiniteNumber(record.compliance_score, 0) || 0;
+  const complianceScore = hasBiofoulingComplianceExposure(record) ? (firstFiniteNumber(record.compliance_score, 45, 0) || 0) : 0;
   if (opportunity >= 75) reasons.push(`HOT 기회 점수 ${opportunity}점`);
   else if (opportunity >= 50) reasons.push(`WARM 기회 점수 ${opportunity}점`);
   if (risk >= 70) reasons.push(`고위험 리스크 ${risk}점`);
   if (windowScore >= 55) reasons.push(`클리닝 가능 시간 신호 ${windowScore}점`);
-  if (complianceScore >= 45 || complianceExposureRegions(record).length) reasons.push("Compliance 상업 신호");
+  if (hasBiofoulingComplianceExposure(record)) reasons.push("Compliance 상업 신호");
   if (hasAnchorageWaitingSignal(record)) reasons.push("묘박/대기 또는 장기 체류 신호");
   if (services.length) reasons.push(`${services.join(" + ")} 제안 가능`);
   const base = compactReasonSummary(record);
@@ -9580,7 +9613,7 @@ function quoteNextAction(label = "MONITOR", missing = []) {
 function quoteMessageAngle(record = {}, services = []) {
   const port = recordPortName(record);
   const action = services.length ? services.join(" + ") : "Hull Cleaning";
-  if (Number(record.compliance_score || 0) >= 45 || complianceExposureRegions(record).length) return `${port} 입항/출항 전 ${action}와 Biofouling Report 필요성을 상업 기회 관점에서 확인`;
+  if (hasBiofoulingComplianceExposure(record)) return `${port} 입항/출항 전 ${action}와 Biofouling Report 필요성을 상업 기회 관점에서 확인`;
   if (hasAnchorageWaitingSignal(record)) return `${port} 묘박/대기 시간을 활용한 ${action} 가능성 확인`;
   if (dwellDays(record) >= 3) return `${port} 장기 체류 중 작업 가능 시간과 ${action} 범위 확인`;
   return `${port} 기항 일정에 맞춘 ${action} 제안 가능성 확인`;
@@ -9642,9 +9675,13 @@ function buildQuoteOpportunitiesPayload({
       const services = quoteRecommendedServices(record);
       const valueBand = quoteEstimatedValueBand(services, record, readinessScore);
       const quoteReason = quoteReasonSummary(record, services);
+      const complianceExposure = biofoulingComplianceExposure(record);
       return {
         rank: index + 1,
         vessel_display: display,
+        commercial_size_qualified: commercialSizeQualified(record),
+        biofouling_compliance_exposure: complianceExposure,
+        compliance_exposure: complianceExposure,
         quote_readiness_score: readinessScore,
         quote_readiness_label: readinessLabel,
         recommended_services: services,
@@ -10126,7 +10163,7 @@ function buildPortDnaIntelligenceSummary({ records = [], portStatistics = {}, ge
     if (isSalesCandidate(record) || score >= 50) row.sales_target_count += 1;
     if (String(firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band)).toUpperCase() === "HOT" || score >= 75) row.hot_count += 1;
     if (repeatCallerVisitCount(record, 90) >= 2 || repeatCallerVisitCount(record, 365) >= 2 || Number(record.repeat_caller_score || 0) > 0) row.repeat_caller_count += 1;
-    if (regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch || Number(record.compliance_score || 0) >= 50) row.compliance_exposure_count += 1;
+    if (hasBiofoulingComplianceExposure(record)) row.compliance_exposure_count += 1;
     if (gt >= 30000 || dwt >= 50000 || /bulk|tanker|container|lng|lpg|carrier/i.test(String(vesselType))) row.large_vessel_count += 1;
     if (operator === "미확인 운영사" || operator === "운영사 확인 필요") row.missing_operator_count += 1;
     increment(row.vessel_types, vesselType);
@@ -10281,21 +10318,26 @@ function complianceCountry(record = {}) {
 function buildComplianceOpportunitiesIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = records
     .map((record, index) => {
-      const country = complianceCountry(record);
+      const exposure = biofoulingComplianceExposure(record);
       const risk = recordRiskScore(record);
-      const score = Math.min(100, Math.round((country ? 45 : 0) + risk * 0.35 + Math.min(20, dwellDays(record) * 2) + Math.min(15, repeatCallerVisitCount(record, 365) * 5)));
-      return { record, index, country, score, risk };
+      const score = exposure.exposed
+        ? Math.min(100, Math.round(45 + risk * 0.35 + Math.min(20, dwellDays(record) * 2) + Math.min(15, repeatCallerVisitCount(record, 365) * 5) + Number(exposure.confidence || 0) * 10))
+        : 0;
+      return { record, index, exposure, country: exposure.jurisdiction || "", score, risk };
     })
-    .filter(row => row.country || row.score >= 55)
+    .filter(row => row.exposure.exposed)
     .sort((a, b) => b.score - a.score || b.risk - a.risk)
     .slice(0, 10)
     .map((row, index) => compactVesselInsight(row.record, index, {
       destination_country: row.country || "확인 필요",
       compliance_score: row.score,
+      commercial_size_qualified: commercialSizeQualified(row.record),
+      biofouling_compliance_exposure: row.exposure,
+      compliance_exposure: row.exposure,
       risk_score: row.risk,
       risk_level: operationalRiskLevel(row.risk),
       urgency: row.score >= 75 ? "HIGH" : row.score >= 50 ? "MEDIUM" : "LOW",
-      reason_summary: `${row.country || "규제 목적지 확인 필요"} 목적지/체류/리스크 신호 기반 compliance opportunity`,
+      reason_summary: `${row.country} ${row.exposure.basis === "proxy" ? "proxy" : "목적지/항로"} 신호와 체류/리스크 기반 compliance opportunity`,
       recommended_action: "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
       data_sources: displaySources(row.record).length ? displaySources(row.record) : ["risk_history", "route_snapshot_daily", "vessel_visits", "explainability_snapshots"]
     }));
@@ -11552,6 +11594,208 @@ const COMPLIANCE_EXPOSURE_REGIONS = [
   { name: "Canada", pattern: /canada|vancouver|montreal|캐나다/i }
 ];
 
+const BIOFOULING_COMPLIANCE_JURISDICTIONS = [
+  { name: "Australia", pattern: /australia|australian|port hedland|fremantle|brisbane|sydney|melbourne|호주/i },
+  { name: "New Zealand", pattern: /new zealand|\bnz\b|auckland|tauranga|wellington|christchurch|뉴질랜드/i },
+  { name: "Brazil", pattern: /brazil|brasil|santos|ponta da madeira|rio de janeiro|paranagua|브라질/i },
+  { name: "California", pattern: /california|los angeles|long beach|oakland|san diego|캘리포니아/i }
+];
+
+function complianceDestinationText(record = {}) {
+  return [
+    record.destination_country,
+    record.destination,
+    record.destination_port,
+    record.next_port,
+    record.arrival_port,
+    record.discharge_port,
+    record.load_port,
+    record.vessel_display?.destination,
+    record.vessel_display?.destination_port
+  ].flat().filter(Boolean).join(" ");
+}
+
+function complianceRouteHistoryText(record = {}) {
+  return [
+    record.previous_port,
+    record.last_port,
+    record.route_region,
+    record.route_name,
+    record.route_pattern,
+    record.route_summary,
+    record.trade_pattern,
+    record.data_sources,
+    record.compliance_tag,
+    record.compliance_tags,
+    record.reason_summary,
+    record.why_now,
+    record.recommended_action
+  ].flat().filter(Boolean).join(" ");
+}
+
+function complianceJurisdictionSignal(record = {}, jurisdiction = {}) {
+  const destinationText = complianceDestinationText(record);
+  if (jurisdiction.pattern?.test(destinationText)) {
+    return { matched: true, basis: "destination", text: destinationText };
+  }
+  const routeText = complianceRouteHistoryText(record);
+  if (jurisdiction.pattern?.test(routeText)) {
+    return { matched: true, basis: "route", text: routeText };
+  }
+  return { matched: false, basis: "", text: "" };
+}
+
+function vesselLengthMeters(record = {}) {
+  return firstFiniteNumber(
+    record.length_m,
+    record.vessel_length_m,
+    record.loa_m,
+    record.loa,
+    record.length,
+    record.ship_length_m,
+    record.vessel_display?.length_m
+  );
+}
+
+function vesselGrossTonnage(record = {}) {
+  return firstFiniteNumber(
+    record.gt,
+    record.grtg,
+    record.intrlGrtg,
+    record.gross_tonnage,
+    record.gross_registered_tonnage,
+    record.gross_registered_tons,
+    record.grt,
+    record.vessel_display?.gt
+  );
+}
+
+function commercialSizeQualified(record = {}) {
+  const gt = vesselGrossTonnage(record);
+  return Number.isFinite(Number(gt)) && Number(gt) >= COMMERCIAL_GT_THRESHOLD;
+}
+
+function isCommercialVesselForBiosecurity(record = {}) {
+  if (excludedCommercialType(record)) return false;
+  const typeText = String(firstNonEmpty(record.vessel_type, record.vessel_type_group, record.ship_type, record.vessel_display?.vessel_type)).toLowerCase();
+  if (/pleasure|yacht|fishing|fishery|naval|military|research|passenger launch|어선|군함|요트/.test(typeText)) return false;
+  return true;
+}
+
+function emptyComplianceExposure(notes = "관할 목적지/항로 신호가 확인되지 않았습니다.") {
+  return {
+    exposed: false,
+    jurisdiction: "",
+    basis: "",
+    threshold_type: "",
+    confidence: 0,
+    notes
+  };
+}
+
+function normalizeComplianceExposureObject(value = {}) {
+  if (!value || typeof value !== "object") return emptyComplianceExposure();
+  return {
+    exposed: Boolean(value.exposed),
+    jurisdiction: String(value.jurisdiction || ""),
+    basis: String(value.basis || ""),
+    threshold_type: String(value.threshold_type || ""),
+    confidence: Math.max(0, Math.min(1, Number(value.confidence || 0))),
+    notes: String(value.notes || "")
+  };
+}
+
+function biofoulingComplianceExposure(record = {}) {
+  const existing = normalizeComplianceExposureObject(record.biofouling_compliance_exposure || record.compliance_exposure);
+  if (existing.exposed && existing.jurisdiction) return existing;
+
+  const gt = vesselGrossTonnage(record);
+  const lengthM = vesselLengthMeters(record);
+  const ballastValue = firstNonEmpty(record.ballast_capable, record.has_ballast_water, record.ballast_water_capable);
+  const ballastKnown = hasValue(ballastValue);
+  const ballastCapable = !ballastKnown ? null : /true|yes|y|1|capable|가능/i.test(String(ballastValue));
+
+  for (const jurisdiction of BIOFOULING_COMPLIANCE_JURISDICTIONS) {
+    const signal = complianceJurisdictionSignal(record, jurisdiction);
+    if (!signal.matched) continue;
+    const baseConfidence = signal.basis === "destination" ? 0.86 : 0.72;
+
+    if (jurisdiction.name === "Australia") {
+      if (!isCommercialVesselForBiosecurity(record)) {
+        return emptyComplianceExposure("Australia 목적지/항로 신호는 있으나 상업 선박 여부가 낮아 자동 노출로 보지 않습니다.");
+      }
+      return {
+        exposed: true,
+        jurisdiction: "Australia",
+        basis: signal.basis,
+        threshold_type: "commercial_vessels",
+        confidence: baseConfidence,
+        notes: "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
+      };
+    }
+
+    if (jurisdiction.name === "New Zealand") {
+      return {
+        exposed: true,
+        jurisdiction: "New Zealand",
+        basis: signal.basis,
+        threshold_type: "all_vessels",
+        confidence: Math.min(0.92, baseConfidence + 0.04),
+        notes: "New Zealand 도착 선박 신호입니다. GT 기준 없이 목적지/항로 기반으로 판단했습니다."
+      };
+    }
+
+    if (jurisdiction.name === "Brazil") {
+      if (Number.isFinite(Number(lengthM)) && Number(lengthM) > 24) {
+        return {
+          exposed: true,
+          jurisdiction: "Brazil",
+          basis: signal.basis,
+          threshold_type: "length_24m",
+          confidence: baseConfidence,
+          notes: "Brazil NORMAM-401/DPC 관련 24m 초과 선박 목적지/항로 신호입니다."
+        };
+      }
+      if (!Number.isFinite(Number(lengthM)) && commercialSizeQualified(record)) {
+        return {
+          exposed: true,
+          jurisdiction: "Brazil",
+          basis: "proxy",
+          threshold_type: "proxy_gt",
+          confidence: signal.basis === "destination" ? 0.58 : 0.5,
+          notes: "Brazil 항로 신호가 있으나 길이 정보가 없어 GT 5000 이상을 proxy confidence로만 사용했습니다. GT 5000은 법적 기준이 아닙니다."
+        };
+      }
+      return emptyComplianceExposure("Brazil 항로 신호는 있으나 길이 24m 초과 또는 보조 proxy를 확인하지 못했습니다.");
+    }
+
+    if (jurisdiction.name === "California") {
+      if (ballastCapable === false) {
+        return emptyComplianceExposure("California 항로 신호는 있으나 ballast water 대상 선박으로 확인되지 않았습니다.");
+      }
+      if (Number.isFinite(Number(gt)) && Number(gt) >= 300) {
+        return {
+          exposed: true,
+          jurisdiction: "California",
+          basis: signal.basis,
+          threshold_type: "gt_300_ballast_capable",
+          confidence: ballastCapable === true ? baseConfidence : Math.max(0.62, baseConfidence - 0.1),
+          notes: ballastCapable === true
+            ? "California 목적지/항로와 GT/GRT 300 이상, ballast capable 신호를 확인했습니다."
+            : "California 목적지/항로와 GT/GRT 300 이상 신호입니다. ballast capable 여부는 미확인 proxy로 처리했습니다."
+        };
+      }
+      return emptyComplianceExposure("California 항로 신호는 있으나 GT/GRT 300 이상 여부가 확인되지 않았습니다.");
+    }
+  }
+
+  return emptyComplianceExposure();
+}
+
+function hasBiofoulingComplianceExposure(record = {}) {
+  return biofoulingComplianceExposure(record).exposed === true;
+}
+
 function complianceExposureText(record = {}) {
   return [
     record.destination_country,
@@ -11575,6 +11819,8 @@ function complianceExposureText(record = {}) {
 }
 
 function complianceExposureRegions(record = {}) {
+  const exposure = biofoulingComplianceExposure(record);
+  if (exposure.exposed && exposure.jurisdiction) return [exposure.jurisdiction];
   const text = complianceExposureText(record);
   const country = complianceCountry(record);
   const regions = new Set(country ? [country] : []);
@@ -11585,41 +11831,52 @@ function complianceExposureRegions(record = {}) {
 }
 
 function complianceRouteSignal(record = {}) {
-  const regions = complianceExposureRegions(record);
+  const exposure = biofoulingComplianceExposure(record);
+  if (exposure.exposed && exposure.jurisdiction) return `${exposure.jurisdiction} ${exposure.basis || "route"} signal`;
+  const regions = complianceExposureRegions(record).filter(region => region !== "Canada");
   if (regions.length) return `${regions.join(", ")} route/destination signal`;
-  if (regulatedRouteSignal(record) || record.compliance_watch || /biosecurity|biofouling|compliance/i.test(complianceExposureText(record))) return "biofouling compliance route/history signal";
   return "route signal not confirmed";
 }
 
 function buildComplianceExposureIntelligenceSummary({ records = [], generatedAt, dataMode } = {}) {
   const items = records
     .map((record, index) => {
-      const regions = complianceExposureRegions(record);
+      const exposure = biofoulingComplianceExposure(record);
+      const regions = exposure.exposed && exposure.jurisdiction ? [exposure.jurisdiction] : [];
       const risk = recordRiskScore(record);
       const opportunity = salesPriorityScore(record);
-      const pressure = firstFiniteNumber(record.compliance_pressure_score, record.compliance_score, regions.length ? 45 : 0, 0) || 0;
+      const pressure = firstFiniteNumber(record.compliance_pressure_score, record.compliance_score, exposure.exposed ? 45 : 0, 0) || 0;
       const complianceScore = Math.min(100, Math.round(
-        Math.min(45, regions.length * 22) +
+        (exposure.exposed ? 35 : 0) +
         Math.min(20, pressure) +
         Math.min(20, risk * 0.25) +
         Math.min(15, opportunity * 0.15) +
         Math.min(10, dwellDays(record) * 1.5) +
-        (regulatedRouteSignal(record) || record.compliance_watch ? 10 : 0)
+        Math.min(10, Number(exposure.confidence || 0) * 10)
       ));
       return compactVesselInsight(record, index, {
         exposure_tags: regions.length ? regions : ["Biofouling commercial watch"],
         compliance_score: complianceScore,
+        commercial_size_qualified: commercialSizeQualified(record),
+        biofouling_compliance_exposure: exposure,
+        compliance_exposure: exposure,
+        compliance_exposure_jurisdiction: exposure.jurisdiction || "",
+        compliance_exposure_basis: exposure.basis || "",
+        compliance_exposure_threshold_type: exposure.threshold_type || "",
+        compliance_exposure_confidence: exposure.confidence || 0,
         risk_score: risk,
         risk_level: operationalRiskLevel(Math.max(risk, complianceScore)),
         route_signal: complianceRouteSignal(record),
         commercial_compliance_signal: "Commercial compliance signal",
-        confidence_score: firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.contact_readiness_score, regions.length ? 70 : 45, 0) || 0,
-        reason_summary: `${regions.length ? regions.join(", ") : "Biofouling"} 항로/목적지/이력 신호 기반 상업 compliance 노출도입니다. 법률 위반 판단이 아닙니다.`,
+        confidence_score: firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.contact_readiness_score, exposure.exposed ? Math.round(Number(exposure.confidence || 0) * 100) : 45, 0) || 0,
+        reason_summary: exposure.exposed
+          ? `${exposure.jurisdiction} ${exposure.basis === "proxy" ? "proxy" : "목적지/항로"} 신호 기반 상업 compliance 노출도입니다. ${exposure.notes} 법률 위반 판단이 아닙니다.`
+          : "관할 목적지/항로 신호가 없어 compliance 노출로 분류하지 않았습니다.",
         recommended_action: "목적지와 출항 전 선저관리 필요 여부를 상업 기회 관점에서 확인",
         data_sources: displaySources(record).length ? displaySources(record) : ["risk_history", "route_snapshot_daily", "opportunity_master", "explainability_snapshots"]
       });
     })
-    .filter(item => Number(item.compliance_score || 0) >= 45 || (item.exposure_tags || []).some(tag => COMPLIANCE_EXPOSURE_REGIONS.some(region => region.name === tag)))
+    .filter(item => item.compliance_exposure?.exposed === true)
     .sort((a, b) => Number(b.compliance_score || 0) - Number(a.compliance_score || 0) || Number(b.risk_score || 0) - Number(a.risk_score || 0))
     .slice(0, 20)
     .map((item, index) => ({ ...item, rank: index + 1 }));
@@ -12359,14 +12616,15 @@ function watchlistLastSeen(record = {}, generatedAt = new Date().toISOString()) 
 }
 
 function watchlistComplianceScore(record = {}) {
-  const regions = complianceExposureRegions(record);
+  const exposure = biofoulingComplianceExposure(record);
+  if (!exposure.exposed) return 0;
   const risk = recordRiskScore(record);
-  const pressure = firstFiniteNumber(record.compliance_pressure_score, record.compliance_score, regions.length ? 45 : 0, 0) || 0;
+  const pressure = firstFiniteNumber(record.compliance_pressure_score, record.compliance_score, exposure.exposed ? 45 : 0, 0) || 0;
   return Math.min(100, Math.round(
-    Math.min(45, regions.length * 22) +
+    (exposure.exposed ? 35 : 0) +
     Math.min(20, pressure) +
     Math.min(20, risk * 0.25) +
-    (regulatedRouteSignal(record) || record.compliance_watch ? 15 : 0)
+    Math.min(15, Number(exposure.confidence || 0) * 15)
   ));
 }
 
@@ -12389,7 +12647,7 @@ function watchlistChangeEvents(record = {}, generatedAt = new Date().toISOString
   }
   if (band === "HOT") events.push(watchlistEvent("BECAME_HOT", eventTime, `영업 우선순위가 HOT입니다. 기회점수 ${score}점.`));
   else if (band === "WARM") events.push(watchlistEvent("BECAME_WARM", eventTime, `영업 우선순위가 WARM입니다. 기회점수 ${score}점.`));
-  if (complianceScore >= 45 || complianceExposureRegions(record).length) {
+  if (hasBiofoulingComplianceExposure(record)) {
     events.push(watchlistEvent("COMPLIANCE_EXPOSURE_CHANGED", eventTime, complianceRouteSignal(record) || "Compliance 노출 신호가 있습니다."));
   }
   if (record.operator_changed || (firstNonEmpty(record.previous_operator, record.last_operator) && firstNonEmpty(record.previous_operator, record.last_operator) !== operator)) {
@@ -12417,7 +12675,7 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
         isSalesCandidate(record) ||
         score >= 55 ||
         recordRiskScore(record) >= 60 ||
-        watchlistComplianceScore(record) >= 45 ||
+        hasBiofoulingComplianceExposure(record) ||
         hasAnchorageWaitingSignal(record) ||
         hasArrivalPipelineSignal(record));
   })))
@@ -12441,6 +12699,9 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
         opportunity_score: opportunityScore,
         risk_score: riskScore,
         compliance_score: complianceScore,
+        commercial_size_qualified: commercialSizeQualified(record),
+        biofouling_compliance_exposure: biofoulingComplianceExposure(record),
+        compliance_exposure: biofoulingComplianceExposure(record),
         actionability_category: actionability.actionability_category,
         actionability_label: actionability.actionability_label,
         actionability_score: actionability.actionability_score,
