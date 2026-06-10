@@ -185,7 +185,6 @@ function endpointRows(payload) {
   if (Array.isArray(payload?.ports)) return payload.ports;
   if (Array.isArray(payload?.categories)) return payload.categories;
   if (Array.isArray(payload?.endpoints)) return payload.endpoints;
-  if (Array.isArray(payload?.pages)) return payload.pages;
   return [];
 }
 

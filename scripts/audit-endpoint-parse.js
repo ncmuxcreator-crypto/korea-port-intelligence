@@ -51,7 +51,7 @@ function listJsonFiles(dir) {
 
 function firstArrayKey(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "";
-  for (const key of ["items", "data", "vessels", "candidates", "opportunities", "contact_today", "ports", "categories", "endpoints", "pages"]) {
+  for (const key of ["items", "data", "vessels", "candidates", "opportunities", "contact_today", "ports", "categories", "endpoints"]) {
     if (Array.isArray(payload[key])) return key;
   }
   return "";

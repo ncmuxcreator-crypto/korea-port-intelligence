@@ -84,7 +84,6 @@ function rows(payload) {
   if (Array.isArray(payload?.ports)) return payload.ports;
   if (Array.isArray(payload?.categories)) return payload.categories;
   if (Array.isArray(payload?.endpoints)) return payload.endpoints;
-  if (Array.isArray(payload?.pages)) return payload.pages;
   return [];
 }
 
@@ -106,8 +105,7 @@ function hasArrayPayload(payload) {
     Array.isArray(payload?.contact_today) ||
     Array.isArray(payload?.ports) ||
     Array.isArray(payload?.categories) ||
-    Array.isArray(payload?.endpoints) ||
-    Array.isArray(payload?.pages);
+    Array.isArray(payload?.endpoints);
 }
 
 function needsWrapper(relativePath) {
@@ -249,6 +247,7 @@ function writeManifest(entries) {
     schema_version: "1.0",
     generated_at: new Date().toISOString(),
     record_count: endpoints.length,
+    item_count: endpoints.length,
     endpoints
   };
   fs.mkdirSync(path.dirname(MANIFEST_PATH), { recursive: true });

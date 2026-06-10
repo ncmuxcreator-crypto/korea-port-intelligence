@@ -2760,7 +2760,7 @@ const DISPLAY_STRING_FIELDS = new Set([
 function endpointItemCount(payload) {
   if (Array.isArray(payload)) return payload.length;
   if (!payload || typeof payload !== "object") return null;
-  for (const key of ["items", "data", "vessels", "candidates", "opportunities", "contact_today", "ports", "categories", "endpoints", "pages"]) {
+  for (const key of ["items", "data", "vessels", "candidates", "opportunities", "contact_today", "ports", "categories", "endpoints"]) {
     if (Array.isArray(payload[key])) return payload[key].length;
   }
   return null;
@@ -6306,8 +6306,62 @@ function hullCleaningPublicFields(record = {}) {
   };
 }
 
+function paginatedVesselIdentityKey(row = {}) {
+  const display = row.vessel_display || {};
+  const vesselId = firstNonEmpty(row.vessel_id, row.master_vessel_id, display.vessel_id);
+  const imo = firstNonEmpty(row.imo, display.imo);
+  const mmsi = firstNonEmpty(row.mmsi, display.mmsi);
+  const callSign = firstNonEmpty(row.call_sign, row.callsign, display.call_sign);
+  const vesselName = firstNonEmpty(row.vessel_name, row.name, display.vessel_name);
+  if (hasValue(vesselId)) return `ID:${normalizeIdentityToken(vesselId)}`;
+  if (hasValue(imo)) return `IMO:${normalizeIdentityToken(imo)}`;
+  if (hasValue(mmsi)) return `MMSI:${normalizeIdentityToken(mmsi)}`;
+  if (hasValue(callSign) && hasValue(vesselName)) return `CALL_NAME:${normalizeIdentityToken(callSign)}|${normalizeVesselName(vesselName)}`;
+  return "";
+}
+
+function paginatedVesselScore(row = {}) {
+  return firstFiniteNumber(
+    row.cleaningOpportunityScore,
+    row.cleaning_opportunity_score,
+    row.opportunity_score,
+    row.commercial_value_score,
+    row.total_sales_priority_score,
+    row.risk_score,
+    row.confidence_score,
+    0
+  ) || 0;
+}
+
+function isBetterPaginatedVessel(next = {}, current = {}) {
+  const nextTime = candidateTimestamp(next);
+  const currentTime = candidateTimestamp(current);
+  const nextScore = paginatedVesselScore(next);
+  const currentScore = paginatedVesselScore(current);
+  const nextStay = firstFiniteNumber(next.stay_hours, next.portStayHours, next.port_stay_hours, next.vessel_display?.stay_hours, 0) || 0;
+  const currentStay = firstFiniteNumber(current.stay_hours, current.portStayHours, current.port_stay_hours, current.vessel_display?.stay_hours, 0) || 0;
+  return nextTime > currentTime ||
+    (nextTime === currentTime && nextScore > currentScore) ||
+    (nextTime === currentTime && nextScore === currentScore && nextStay > currentStay);
+}
+
+function dedupePaginatedVesselRows(rows = []) {
+  const byKey = new Map();
+  const passthrough = [];
+  for (const row of rows) {
+    const key = paginatedVesselIdentityKey(row);
+    if (!key) {
+      passthrough.push(row);
+      continue;
+    }
+    const current = byKey.get(key);
+    if (!current || isBetterPaginatedVessel(row, current)) byKey.set(key, row);
+  }
+  return [...byKey.values(), ...passthrough];
+}
+
 function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().toISOString(), dataMode = "live", pageSize = 30 } = {}) {
-  const rows = Array.isArray(records) ? records.map(row => ({
+  const mappedRows = Array.isArray(records) ? records.map(row => ({
     vessel_id: firstNonEmpty(row.vessel_id, row.master_vessel_id, row.hybrid_entity_key, row.port_call_id),
     master_vessel_id: firstNonEmpty(row.master_vessel_id, row.hybrid_entity_key),
     port_call_id: row.port_call_id || "",
@@ -6328,6 +6382,7 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     ...hullCleaningPublicFields(row),
     vessel_display: vesselDisplay(row)
   })) : [];
+  const rows = dedupePaginatedVesselRows(mappedRows);
   const safePageSize = Math.max(1, Number(pageSize || 30));
   const totalPages = rows.length ? Math.ceil(rows.length / safePageSize) : 0;
   const pages = Array.from({ length: totalPages }, (_, index) => `page-${index + 1}.json`);
@@ -6336,7 +6391,9 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
       schema_version: PUBLIC_API_SCHEMA_VERSION,
       generated_at: generatedAt,
       data_mode: contractDataMode(dataMode),
+      record_count: rows.length,
       total_count: rows.length,
+      item_count: 0,
       page_size: safePageSize,
       total_pages: totalPages,
       pages
@@ -6344,15 +6401,18 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
   };
   for (let index = 0; index < totalPages; index += 1) {
     const page = index + 1;
+    const items = rows.slice(index * safePageSize, (index + 1) * safePageSize);
     outputs[`dashboard/api/vessels/page-${page}.json`] = {
       schema_version: PUBLIC_API_SCHEMA_VERSION,
       generated_at: generatedAt,
       data_mode: contractDataMode(dataMode),
       page,
       page_size: safePageSize,
+      record_count: rows.length,
+      item_count: items.length,
       total_count: rows.length,
       total_pages: totalPages,
-      items: rows.slice(index * safePageSize, (index + 1) * safePageSize)
+      items
     };
   }
   return outputs;
