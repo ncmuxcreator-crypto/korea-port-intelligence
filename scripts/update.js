@@ -60,6 +60,16 @@ const PROTECTED_DASHBOARD_JSON_OUTPUTS = new Set([
   "dashboard/api/status.json",
   "dashboard/api/endpoint-manifest.json"
 ]);
+const CRITICAL_DASHBOARD_JSON_OUTPUTS = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/dashboard-summary.json",
+  "dashboard/api/status.json",
+  "dashboard/api/sales/actions.json",
+  "dashboard/api/sales/conversion-pipeline.json",
+  "dashboard/api/watchlist/current.json",
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/vessels/page-1.json"
+]);
 
 function envPresent(name) {
   return Boolean(process.env[name] && String(process.env[name]).trim());
@@ -2771,25 +2781,134 @@ function ensureParentDir(filePath) {
   if (dir) fs.mkdirSync(dir, { recursive: true });
 }
 
+function dashboardJsonRootType(value) {
+  if (Array.isArray(value)) return "array";
+  if (value === null) return "null";
+  return typeof value;
+}
+
+function firstJsonCharacter(text = "") {
+  const match = String(text || "").replace(/^\uFEFF/, "").match(/\S/);
+  return match ? match[0] : "";
+}
+
+function isCriticalDashboardJsonPath(filePath = "") {
+  return CRITICAL_DASHBOARD_JSON_OUTPUTS.has(String(filePath || "").replace(/\\/g, "/"));
+}
+
+function parseDashboardJsonDocument(filePath, text) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  const firstChar = firstJsonCharacter(text);
+  if (!firstChar) throw new Error("empty_json_file");
+  if (!["{", "["].includes(firstChar)) {
+    throw new Error(`leading_text_before_json_root:first_char=${firstChar}`);
+  }
+  if (isCriticalDashboardJsonPath(normalized) && firstChar !== "{") {
+    throw new Error("critical_endpoint_root_must_start_with_object");
+  }
+  const parsed = JSON.parse(text);
+  if (isCriticalDashboardJsonPath(normalized) && (!parsed || typeof parsed !== "object" || Array.isArray(parsed))) {
+    throw new Error(`critical_endpoint_root_object_required:${dashboardJsonRootType(parsed)}`);
+  }
+  return parsed;
+}
+
+function assertDashboardJsonPayload(filePath, payload) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  const type = dashboardJsonRootType(payload);
+  if (!payload || (typeof payload !== "object" && !Array.isArray(payload))) {
+    throw new Error(`dashboard_json_payload_object_required:${type}`);
+  }
+  if (typeof payload === "string") {
+    throw new Error("dashboard_json_payload_string_rejected");
+  }
+  if (isCriticalDashboardJsonPath(normalized) && Array.isArray(payload)) {
+    throw new Error("critical_endpoint_array_payload_rejected");
+  }
+}
+
+function assertFinalDashboardPayload(filePath, payload) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  const type = dashboardJsonRootType(payload);
+  if (!payload || typeof payload !== "object" || (isCriticalDashboardJsonPath(normalized) && Array.isArray(payload))) {
+    throw new Error(`dashboard_json_root_object_required_after_sanitize:${type}`);
+  }
+}
+
+function writeParsedJsonTextAtomically(filePath, body) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  ensureParentDir(normalized);
+  parseDashboardJsonDocument(normalized, body);
+  const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
+  try {
+    fs.writeFileSync(tempPath, body, "utf8");
+    parseDashboardJsonDocument(normalized, fs.readFileSync(tempPath, "utf8"));
+    fs.renameSync(tempPath, normalized);
+  } catch (error) {
+    try {
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    } catch {
+      // Best effort cleanup only.
+    }
+    throw error;
+  }
+  return normalized;
+}
+
+function existingDashboardJsonIsValid(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (!fs.existsSync(normalized)) return false;
+  try {
+    parseDashboardJsonDocument(normalized, fs.readFileSync(normalized, "utf8"));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function quarantineInvalidDashboardJson(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (!fs.existsSync(normalized) || existingDashboardJsonIsValid(normalized)) return false;
+  const quarantinePath = `${normalized}.invalid-${process.pid}-${Date.now()}`;
+  try {
+    fs.renameSync(normalized, quarantinePath);
+    return quarantinePath;
+  } catch {
+    try {
+      fs.unlinkSync(normalized);
+      return "removed_invalid_previous_file";
+    } catch {
+      return false;
+    }
+  }
+}
+
 function recordDashboardJsonWriteError(filePath, error, payload) {
   const normalizedPath = String(filePath || "").replace(/\\/g, "/");
   const protectedOutput = PROTECTED_DASHBOARD_JSON_OUTPUTS.has(normalizedPath);
+  const previousValidJson = protectedOutput ? existingDashboardJsonIsValid(normalizedPath) : null;
+  const invalidPreviousAction = protectedOutput && !previousValidJson
+    ? quarantineInvalidDashboardJson(normalizedPath)
+    : false;
   const diagnostic = {
     path: normalizedPath,
-    status: protectedOutput ? "failed_protected_previous_file_preserved" : "failed",
+    status: protectedOutput && previousValidJson ? "failed_protected_previous_file_preserved" : "failed",
     protected_output: protectedOutput,
+    previous_file_valid_json: previousValidJson,
+    invalid_previous_action: invalidPreviousAction || null,
     error: error?.message || String(error),
     recorded_at: new Date().toISOString(),
     payload_type: Array.isArray(payload) ? "array" : typeof payload,
     record_count: rowCountFromPayload(payload),
-    action: protectedOutput
+    action: protectedOutput && previousValidJson
       ? "previous successful dashboard JSON was not replaced"
+      : protectedOutput
+        ? "invalid previous dashboard JSON was not preserved"
       : "write rejected before publishing invalid JSON"
   };
   DASHBOARD_JSON_WRITE_DIAGNOSTICS.push(diagnostic);
   try {
-    fs.mkdirSync(DEBUG_API_DIR, { recursive: true });
-    fs.writeFileSync(
+    writeParsedJsonTextAtomically(
       `${DEBUG_API_DIR}/json-write-errors.json`,
       `${JSON.stringify({
         schema_version: PUBLIC_API_SCHEMA_VERSION,
@@ -2798,7 +2917,6 @@ function recordDashboardJsonWriteError(filePath, error, payload) {
         item_count: DASHBOARD_JSON_WRITE_DIAGNOSTICS.length,
         items: DASHBOARD_JSON_WRITE_DIAGNOSTICS
       }, null, 2)}\n`,
-      "utf8"
     );
   } catch {
     // Keep the original write failure visible to the caller.
@@ -2845,8 +2963,19 @@ function sanitizeDashboardJsonValue(value, key = "") {
   return value;
 }
 
-function safeDashboardJsonString(payload) {
-  return `${JSON.stringify(sanitizeDashboardJsonValue(withEndpointItemCount(payload)), null, 2)}\n`;
+function safeDashboardJsonString(filePath, payload) {
+  let normalized = String(filePath || "").replace(/\\/g, "/");
+  let sourcePayload = payload;
+  if (payload === undefined) {
+    sourcePayload = filePath;
+    normalized = "";
+  }
+  assertDashboardJsonPayload(normalized, sourcePayload);
+  const preparedPayload = sanitizeDashboardJsonValue(withEndpointItemCount(sourcePayload));
+  assertFinalDashboardPayload(normalized, preparedPayload);
+  const body = `${JSON.stringify(preparedPayload, null, 2)}\n`;
+  parseDashboardJsonDocument(normalized, body);
+  return body;
 }
 
 function writeDashboardJson(filePath, payload) {
@@ -2854,23 +2983,14 @@ function writeDashboardJson(filePath, payload) {
   ensureParentDir(normalized);
   let body;
   try {
-    body = safeDashboardJsonString(payload);
-    JSON.parse(body);
+    body = safeDashboardJsonString(normalized, payload);
   } catch (error) {
     recordDashboardJsonWriteError(normalized, error, payload);
     throw new Error(`Refusing to write invalid dashboard JSON for ${normalized}: ${error.message}`);
   }
-  const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
   try {
-    fs.writeFileSync(tempPath, body, "utf8");
-    JSON.parse(fs.readFileSync(tempPath, "utf8"));
-    fs.renameSync(tempPath, normalized);
+    writeParsedJsonTextAtomically(normalized, body);
   } catch (error) {
-    try {
-      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-    } catch {
-      // Best effort cleanup only.
-    }
     recordDashboardJsonWriteError(normalized, error, payload);
     throw new Error(`Dashboard JSON write failed; previous file preserved for ${normalized}: ${error.message}`);
   }
@@ -3059,7 +3179,7 @@ function endpointManifestEntry(key, relativePath) {
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
-    const payload = JSON.parse(text);
+    const payload = parseDashboardJsonDocument(normalized, text);
     const schemaProblem = schemaProblemForEndpoint(normalized, payload);
     const count = rowCountFromPayload(payload);
     const itemCount = endpointItemCount(payload) ?? 0;
@@ -3141,7 +3261,7 @@ function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healt
     fileManifest.push({
       path: normalized,
       rows: rowCountFromPayload(payload),
-      bytes: Buffer.byteLength(safeDashboardJsonString(payload))
+      bytes: Buffer.byteLength(safeDashboardJsonString(target, payload))
     });
   }
   const manifest = {
@@ -11081,8 +11201,7 @@ function ensureFleetPenetrationStaticContract(filePath = "dashboard/api/intellig
   if (!payload?.items) return { status: "skipped", reason: "missing_or_invalid_payload" };
   const upgraded = upgradeFleetPenetrationPayloadContract(payload);
   if (JSON.stringify(upgraded) === JSON.stringify(payload)) return { status: "not_needed" };
-  fs.mkdirSync(filePath.split("/").slice(0, -1).join("/"), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(upgraded, null, 2));
+  writeDashboardJson(filePath, upgraded);
   return { status: "upgraded", path: filePath, rows: rowCountFromPayload(upgraded) };
 }
 
@@ -11388,8 +11507,7 @@ function ensureOpportunityMemoryStaticContract(filePath = "dashboard/api/intelli
   if (!payload?.items) return { status: "skipped", reason: "missing_or_invalid_payload" };
   const upgraded = upgradeOpportunityMemoryPayloadContract(payload);
   if (JSON.stringify(upgraded) === JSON.stringify(payload)) return { status: "not_needed" };
-  fs.mkdirSync(filePath.split("/").slice(0, -1).join("/"), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(upgraded, null, 2));
+  writeDashboardJson(filePath, upgraded);
   return { status: "upgraded", path: filePath, rows: rowCountFromPayload(upgraded) };
 }
 

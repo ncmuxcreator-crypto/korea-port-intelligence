@@ -153,6 +153,31 @@ function validateSchema(relativePath, payload) {
   return "";
 }
 
+function writeJsonAtomically(filePath, payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error(`Refusing to write non-object JSON payload: ${filePath}`);
+  }
+  const body = `${JSON.stringify(payload, null, 2)}\n`;
+  const parsed = JSON.parse(body);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`Refusing to write non-object JSON root: ${filePath}`);
+  }
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const tempPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  try {
+    fs.writeFileSync(tempPath, body, "utf8");
+    JSON.parse(fs.readFileSync(tempPath, "utf8"));
+    fs.renameSync(tempPath, filePath);
+  } catch (error) {
+    try {
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    } catch {
+      // Best effort cleanup only.
+    }
+    throw error;
+  }
+}
+
 function auditFile(relativePath) {
   const filePath = path.join(ROOT, ...relativePath.split("/"));
   if (!fs.existsSync(filePath)) {
@@ -250,8 +275,7 @@ function writeManifest(entries) {
     item_count: endpoints.length,
     endpoints
   };
-  fs.mkdirSync(path.dirname(MANIFEST_PATH), { recursive: true });
-  fs.writeFileSync(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  writeJsonAtomically(MANIFEST_PATH, manifest);
   return manifest;
 }
 
