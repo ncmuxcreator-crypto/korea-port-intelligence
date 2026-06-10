@@ -192,9 +192,10 @@ function opportunityScore(record = {}) {
     record.total_sales_priority_score,
     record.opportunity_score,
     record.cleaning_candidate_score,
-    record.biofoulingScore,
-    record.biofouling_score,
-    record.biofouling_exposure_score
+    record.cleaningOpportunityScore,
+    record.cleaning_opportunity_score,
+    record.hull_cleaning_opportunity_score,
+    record.predicted_cleaning_opportunity_score
   ]);
 }
 
@@ -240,22 +241,24 @@ function commercialSignalCount(record = {}) {
   const gt = Number(record.gt || record.grtg || record.intrlGrtg || record.gross_tonnage || 0);
   const typeText = String(record.vessel_type || record.vessel_type_group || record.commercial_segment || "").toLowerCase();
   const repeat = Number(record.korea_call_count || record.repeat_korea_call_count || record.visit_count_90d || record.visit_count || record.repeat_caller_score || record.korea_presence_score || 0);
+  const cleaningWindow = Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || record.cleaningOpportunityScore || record.cleaning_opportunity_score || 0);
+  const complianceScore = Number(record.compliance_score || record.compliance_exposure_score || 0);
+  const highValueVessel = gt >= 30000 || /bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText);
   const signals = [];
-  if (score >= 75 || (score >= 70 && (risk >= 60 || Number(record.compliance_score || record.compliance_exposure_score || 0) >= 55 || Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 65))) signals.push("opportunity");
-  if (risk >= 60 || Number(record.compliance_score || record.compliance_exposure_score || 0) >= 55) signals.push("risk");
-  if (hours >= 72 || Number(record.anchorage_hours || record.waiting_hours || 0) >= 48) signals.push("long_stay");
-  if ((gt >= 80000 && (score >= 75 || risk >= 60 || Number(record.cleaning_window_score || record.window_score || 0) >= 65)) ||
+  if (score >= 65 || (score >= 55 && risk >= 65) || cleaningWindow >= 70) signals.push("opportunity");
+  if (risk >= 65 || complianceScore >= 65) signals.push("risk");
+  if ((hours >= 72 || Number(record.anchorage_hours || record.waiting_hours || 0) >= 48) && (score >= 50 || risk >= 50 || cleaningWindow >= 50 || highValueVessel)) signals.push("long_stay");
+  if ((gt >= 80000 && (score >= 55 || risk >= 55 || cleaningWindow >= 60 || hours >= 72)) ||
     (gt >= 30000 && (score >= 80 || risk >= 65 || Number(record.cleaning_window_score || record.window_score || 0) >= 70)) ||
     (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || Number(record.cleaning_window_score || record.window_score || 0) >= 70))) signals.push("large_vessel");
-  if (repeat >= 2 || Number(record.repeat_caller_score || record.korea_presence_score || 0) >= 70) signals.push("repeat");
-  if (Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 60) signals.push("cleaning_window");
+  if ((repeat >= 2 || Number(record.repeat_caller_score || record.korea_presence_score || 0) >= 70) && (score >= 50 || risk >= 60 || cleaningWindow >= 60 || hours >= 72)) signals.push("repeat");
+  if (cleaningWindow >= 60) signals.push("cleaning_window");
   return new Set(signals).size;
 }
 
 function isHotCandidate(record = {}) {
   const score = opportunityScore(record) || 0;
-  const label = String(record.priority_label || record.sales_priority_band || "").toUpperCase();
-  return (label === "HOT" || score >= 75) && commercialSignalCount(record) >= 1;
+  return score >= 75 && isSalesCandidate(record);
 }
 
 function isSalesCandidate(record = {}) {
@@ -348,7 +351,7 @@ export function buildPortStatistics(records = [], generatedAt = new Date().toISO
         vessel_count: port.vessel_count,
         hot_count: port.hot_count,
         hot_candidate_count: port.hot_candidate_count,
-        hot_count_semantics: "HOT priority or score >= 75 with commercial signal",
+        hot_count_semantics: "qualified sales target with commercial score >= 75",
         avg_opportunity_score: avgScore,
         last_seen_at: port.last_seen_ms === null ? null : new Date(port.last_seen_ms).toISOString(),
         total_vessels: port.vessel_count,

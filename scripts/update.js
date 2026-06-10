@@ -2383,35 +2383,60 @@ function longStayRiskSignal(record = {}) {
   return { detected: false, reason: "", source: duration.source, confidence: 0 };
 }
 
-function targetCommercialSignals(v = {}) {
-  const score = Math.max(
-    Number(v.commercial_value_score || 0),
-    Number(v.total_sales_priority_score || 0),
-    Number(v.cleaning_candidate_score || 0),
-    Number(v.opportunity_score || 0),
-    Number(salesPriorityScore(v) || 0)
+function commercialOpportunityScore(record = {}) {
+  return Math.max(
+    Number(record.commercial_value_score || 0),
+    Number(record.total_sales_priority_score || 0),
+    Number(record.cleaning_candidate_score || 0),
+    Number(record.opportunity_score || 0),
+    Number(record.cleaningOpportunityScore || 0),
+    Number(record.cleaning_opportunity_score || 0),
+    Number(record.hull_cleaning_opportunity_score || 0),
+    Number(record.predicted_cleaning_opportunity_score || 0)
   );
+}
+
+function cleaningWindowOpportunityScore(record = {}) {
+  return Math.max(
+    Number(record.cleaning_window_score || 0),
+    Number(record.window_score || 0),
+    Number(record.predicted_cleaning_opportunity_score || 0),
+    Number(record.cleaningOpportunityScore || 0),
+    Number(record.cleaning_opportunity_score || 0),
+    Number(record.hull_cleaning_opportunity_score || 0)
+  );
+}
+
+function targetCommercialSignals(v = {}) {
+  const score = commercialOpportunityScore(v);
   const risk = recordRiskScore(v);
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || v.gross_tonnage || 0);
   const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
   const longStay = longStayRiskSignal(v);
-  const cleaningWindowScore = Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0);
+  const cleaningWindowScore = cleaningWindowOpportunityScore(v);
+  const complianceScore = Number(v.compliance_score || v.compliance_exposure_score || 0);
+  const hasHighValueVesselSignal = gt >= 30000 || /bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText);
   const signals = [];
   const add = (code, strength, reason) => signals.push({ code, strength, reason });
   if (score >= SALES_CANDIDATE_THRESHOLD ||
-    (score >= 70 && (risk >= 60 || regulatedRouteSignal(v) || cleaningWindowScore >= 65))) {
-    add("high_opportunity_score", score, "기회 점수와 추가 상업 신호가 함께 확인됩니다.");
+    (score >= 55 && risk >= 65) ||
+    cleaningWindowScore >= 70) {
+    add("high_opportunity_score", Math.max(score, cleaningWindowScore), "기회 점수와 추가 상업 신호가 함께 확인됩니다.");
   }
-  if (hasCurrentOrNearTermWorkFeasibility(v) || hasArrivalPipelineSignal(v) || hasPortSignal(v)) add("korea_port_or_eta", 40, "현재 한국 항만 또는 입항 예정 신호가 있습니다.");
-  if (hasAnchorageWaitingSignal(v) || longStay.detected) add("anchorage_or_long_stay", longStay.confidence || 60, longStay.reason || "묘박/대기 또는 장기 체류 신호가 있습니다.");
-  if (risk >= 60 || regulatedRouteSignal(v) || Number(v.compliance_score || v.compliance_exposure_score || 0) >= 55) add("risk_or_compliance", Math.max(risk, 60), "리스크 또는 compliance 노출 신호가 있습니다.");
-  if ((gt >= 80000 && (score >= IMMEDIATE_TARGET_THRESHOLD || risk >= 60 || cleaningWindowScore >= 65)) ||
+  if (hasCurrentOrNearTermWorkFeasibility(v) || hasArrivalPipelineSignal(v) || hasPortSignal(v)) add("korea_port_or_eta", 55, "현재 한국 항만 또는 입항 예정 신호가 있습니다.");
+  if ((hasAnchorageWaitingSignal(v) || longStay.detected) &&
+    (score >= 50 || risk >= 50 || cleaningWindowScore >= 50 || hasHighValueVesselSignal)) {
+    add("anchorage_or_long_stay", longStay.confidence || 60, longStay.reason || "묘박/대기 또는 장기 체류 신호가 있습니다.");
+  }
+  if (risk >= 65 || complianceScore >= 65 || (regulatedRouteSignal(v) && risk >= 45)) add("risk_or_compliance", Math.max(risk, complianceScore, 65), "리스크 또는 compliance 노출 신호가 있습니다.");
+  if ((gt >= 80000 && (score >= 55 || risk >= 55 || cleaningWindowScore >= 60 || longStay.detected)) ||
     (gt >= 30000 && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70)) ||
     (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70))) {
     add("large_high_value_vessel", gt >= 80000 ? 58 : 52, "선종 또는 선박 크기가 서비스 대상군이며 추가 신호가 있습니다.");
   }
-  if (repeatCallerVisitCount(v, 90) >= 2 || Number(v.repeat_caller_score || v.korea_presence_score || 0) >= 70) add("repeat_korea_caller", 60, "한국 반복 기항 신호가 있습니다.");
-  if (canonicalOperatorValue(v)) add("operator_known", 35, "운영사/회사 정보가 확인됩니다.");
+  if ((repeatCallerVisitCount(v, 90) >= 2 || Number(v.repeat_caller_score || v.korea_presence_score || 0) >= 70) &&
+    (score >= 50 || risk >= 60 || cleaningWindowScore >= 60 || longStay.detected)) add("repeat_korea_caller", 60, "한국 반복 기항 신호가 있습니다.");
+  if (canonicalOperatorValue(v) && (score >= 50 || risk >= 60 || cleaningWindowScore >= 60 || longStay.detected)) add("operator_known", 45, "운영사/회사 정보가 확인됩니다.");
   if (cleaningWindowScore >= 60) add("cleaning_window", 65, "클리닝 적기 신호가 있습니다.");
   return signals;
 }
@@ -2449,21 +2474,26 @@ function targetQuality(record = {}) {
   const contextCodes = new Set(["korea_port_or_eta", "operator_known"]);
   const coreSignals = strongSignals.filter(signal => coreCodes.has(signal.code));
   const contextSignals = signals.filter(signal => contextCodes.has(signal.code));
-  const score = Math.max(Number(record.commercial_value_score || 0), Number(record.total_sales_priority_score || 0), Number(record.cleaning_candidate_score || 0), Number(salesPriorityScore(record) || 0));
+  const score = commercialOpportunityScore(record);
   const risk = recordRiskScore(record);
   const longStay = longStayRiskSignal(record);
-  const priorityLabel = String(record.priority_label || record.sales_priority_band || salesPriorityBand(score)).toUpperCase();
+  const cleaningWindowScore = cleaningWindowOpportunityScore(record);
+  const priorityLabel = salesPriorityBand(score);
   const strongCurrentContext = contextSignals.some(signal => signal.code === "korea_port_or_eta");
   const coreCodesPresent = new Set(coreSignals.map(signal => signal.code));
   const nonScoreCoreCount = [...coreCodesPresent].filter(code => code !== "high_opportunity_score").length;
   const hasIndependentCoreSignals = coreCodesPresent.size >= 2 && nonScoreCoreCount >= 1;
-  const isTarget = (hasIndependentCoreSignals && strongCurrentContext) ||
-    (coreCodesPresent.size >= 3 && nonScoreCoreCount >= 2) ||
-    (priorityLabel === "HOT" && coreCodesPresent.size >= 1 && strongCurrentContext && score >= 85);
+  const signalCodesPresent = new Set(signals.filter(signal => signal.strength >= 45).map(signal => signal.code));
+  const commerciallyGrounded = score >= 50 || risk >= 65 || cleaningWindowScore >= 60;
+  const isTarget = commerciallyGrounded &&
+    strongCurrentContext &&
+    coreSignals.length >= 1 &&
+    signalCodesPresent.size >= 2 &&
+    (hasIndependentCoreSignals || score >= SALES_CANDIDATE_THRESHOLD || risk >= 65 || cleaningWindowScore >= 60);
   const isImmediate = isTarget &&
-    (score >= 80 || priorityLabel === "HOT") &&
+    score >= IMMEDIATE_TARGET_THRESHOLD &&
     (hasCurrentOrNearTermWorkFeasibility(record) || hasAnchorageWaitingSignal(record) || hasArrivalPipelineSignal(record) || longStay.detected) &&
-    (risk >= 60 || longStay.detected || regulatedRouteSignal(record) || Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 60);
+    (risk >= 60 || longStay.detected || regulatedRouteSignal(record) || cleaningWindowScore >= 60);
   return {
     is_sales_target: isTarget,
     is_immediate_target: isImmediate,
@@ -2489,20 +2519,19 @@ function isSalesCandidate(v = {}) {
 }
 
 function isImmediateTarget(v = {}) {
-  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  const score = commercialOpportunityScore(v);
   const risk = recordRiskScore(v);
   const longStay = longStayRiskSignal(v);
-  const priorityLabel = String(v.priority_label || v.sales_priority_band || "").toUpperCase();
   const quality = targetQuality(v);
   const commercialTrigger = risk >= 70 ||
     longStay.detected ||
     regulatedRouteSignal(v) ||
-    Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0) >= 65;
+    cleaningWindowOpportunityScore(v) >= 65;
   const timingTrigger = hasCurrentOrNearTermWorkFeasibility(v) ||
     hasAnchorageWaitingSignal(v) ||
     hasArrivalPipelineSignal(v) ||
     longStay.detected;
-  const scoreTrigger = score >= 80 || (priorityLabel === "HOT" && score >= IMMEDIATE_TARGET_THRESHOLD);
+  const scoreTrigger = score >= IMMEDIATE_TARGET_THRESHOLD;
   return !isDepartedRecord(v) &&
     !isHardCandidateExcluded(v) &&
     hasUsefulVesselIdentity(v) &&
@@ -2514,7 +2543,7 @@ function isImmediateTarget(v = {}) {
 }
 
 function isWatchlistVessel(v = {}) {
-  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
+  const score = commercialOpportunityScore(v);
   return !isDepartedRecord(v) && !isHardCandidateExcluded(v) && score >= 50 && score < SALES_CANDIDATE_THRESHOLD;
 }
 
@@ -3158,7 +3187,7 @@ function buildPortIntelligence(records) {
       current.sales_target_count += 1;
       current.sales_candidates.push(v);
     }
-    if (String(v.priority_label || v.sales_priority_band || "").toUpperCase() === "HOT" || Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0) >= IMMEDIATE_TARGET_THRESHOLD) {
+    if (isSalesCandidate(v) && commercialOpportunityScore(v) >= IMMEDIATE_TARGET_THRESHOLD) {
       current.hot_count += 1;
     }
     if (isImmediateTarget(v)) {
@@ -3184,7 +3213,7 @@ function buildPortIntelligence(records) {
     operator_quality: port.vessel_count ? Math.round(((port.operator_known_count * 0.65 + port.agent_known_count * 0.35) / port.vessel_count) * 100) : 0,
     target_count: port.sales_target_count,
     immediate_count: port.immediate_target_count,
-    hot_count_semantics: "HOT priority or score >= immediate threshold",
+    hot_count_semantics: "qualified sales target with commercial score >= 75",
     immediate_count_semantics: "strict immediate target",
     port_opportunity_score: Math.min(100, Math.round(
       Math.min(35, port.high_value_vessels * 7) +
@@ -11014,8 +11043,8 @@ function buildScoringDiagnostics(records = []) {
     immediate_target_threshold: IMMEDIATE_TARGET_THRESHOLD,
     candidate_threshold_used: {
       watchlist: "commercial_value_score 50-64",
-      sales_target: "commercial_value_score >= 65 AND global_percentile <= 20 OR port_percentile <= 20",
-      immediate_target: "commercial_value_score >= 75 AND global_percentile <= 10 OR port_percentile <= 10 AND current/near-term work feasibility"
+      sales_target: "commercial signal gate plus Korea timing and at least two actionable signals",
+      immediate_target: "qualified sales target with commercial score >= 75 and timing plus urgency trigger"
     },
     commercial_score_bands: {
       critical: "90+",
@@ -11052,17 +11081,17 @@ function buildScoringDiagnostics(records = []) {
     waiting_10d_plus_count: waitingDays.filter(value => value >= 10).length,
     work_feasibility_score_avg: avg(workScores),
     sales_target_count: salesTargetCount,
-    sales_target_count_calculation: "score >= 65 AND not departed/excluded AND global_percentile <= 20 OR port_percentile <= 20",
+    sales_target_count_calculation: "qualified_sales_target only; MONITOR is excluded; requires Korea timing plus strong commercial/risk/stay/cleaning signals",
     sales_target_threshold_only_count: thresholdOnlySalesTargetCount,
     percentile_logic_active: percentileLogicActive,
     only_threshold_logic_active: onlyThresholdLogicActive,
     percentile_rank_present_count: percentileRankPresentCount,
     percentile_rank_missing_count: percentileRankMissingCount,
     candidate_classification_logic: {
-      immediate_targets: "score >= 75 AND top 10% global/port AND current/near-term work feasibility",
-      sales_targets: "score >= 65 AND top 20% global/port",
-      watchlist: "score 50-64, excluding sales/immediate targets",
-      percentile_fallback: "if rank fields are missing, percentile guard fails so target ratio cannot inflate"
+      immediate_targets: "qualified sales target with commercial score >= 75, timing, and urgency trigger",
+      sales_targets: "requires Korea timing plus at least one core commercial signal and a commercial/risk/cleaning gate",
+      watchlist: "commercial score 50-64 or weaker actionability, excluding sales/immediate targets",
+      monitor: "useful signal exists but not counted as sales target"
     },
     watchlist_count: records.filter(v => !isSalesCandidate(v) && isWatchlistVessel(v)).length,
     immediate_target_count: immediateTargetCount,
