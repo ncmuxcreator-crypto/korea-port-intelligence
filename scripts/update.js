@@ -20,6 +20,13 @@ import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
 import { PORT_ENVIRONMENT_MOCKS } from "../src/lib/environment.js";
 import { validateVesselRecords } from "../src/lib/dataHealth.js";
+import {
+  buildOceanIntelligenceLayer,
+  buildOceanRiskGeoJson,
+  enrichRecordsWithOceanRisk,
+  marineHeatwaveLabelKo,
+  oceanRiskLabelKo
+} from "../src/lib/oceanIntelligence.js";
 
 const VERSION = "17.7.0";
 const BUILD_NAME = "Backend Stability Batch";
@@ -47,6 +54,12 @@ const DEBUG_API_DIR = "dashboard/api/debug";
 const SUCCESSFUL_DATASET_DIR = "data/successful";
 const SUCCESSFUL_DATASET_MANIFEST = `${SUCCESSFUL_DATASET_DIR}/latest.json`;
 const DASHBOARD_JSON_WRITE_DIAGNOSTICS = [];
+const PROTECTED_DASHBOARD_JSON_OUTPUTS = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/dashboard-summary.json",
+  "dashboard/api/status.json",
+  "dashboard/api/endpoint-manifest.json"
+]);
 
 function envPresent(name) {
   return Boolean(process.env[name] && String(process.env[name]).trim());
@@ -2758,12 +2771,19 @@ function ensureParentDir(filePath) {
 }
 
 function recordDashboardJsonWriteError(filePath, error, payload) {
+  const normalizedPath = String(filePath || "").replace(/\\/g, "/");
+  const protectedOutput = PROTECTED_DASHBOARD_JSON_OUTPUTS.has(normalizedPath);
   const diagnostic = {
-    path: String(filePath || "").replace(/\\/g, "/"),
+    path: normalizedPath,
+    status: protectedOutput ? "failed_protected_previous_file_preserved" : "failed",
+    protected_output: protectedOutput,
     error: error?.message || String(error),
     recorded_at: new Date().toISOString(),
     payload_type: Array.isArray(payload) ? "array" : typeof payload,
-    record_count: rowCountFromPayload(payload)
+    record_count: rowCountFromPayload(payload),
+    action: protectedOutput
+      ? "previous successful dashboard JSON was not replaced"
+      : "write rejected before publishing invalid JSON"
   };
   DASHBOARD_JSON_WRITE_DIAGNOSTICS.push(diagnostic);
   try {
@@ -2877,9 +2897,78 @@ function writeInternalJson(filePath, payload) {
   return normalized;
 }
 
+function shouldNormalizeBusinessOutput(filePath = "") {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (!normalized.startsWith("dashboard/api/")) return false;
+  if (normalized.startsWith(`${DEBUG_API_DIR}/`)) return false;
+  if (/\/(?:debug|quality|review)\//.test(normalized)) return false;
+  if (/endpoint-manifest|backend|health\/pipeline|source-health|readiness|snapshot|coverage|doctor|audit/i.test(normalized)) return false;
+  return true;
+}
+
+function normalizeBusinessOutputItem(item, depth = 0) {
+  if (!item || typeof item !== "object" || depth > 6) return item;
+  if (Array.isArray(item)) return item.map(child => normalizeBusinessOutputItem(child, depth + 1));
+  const out = { ...item };
+  const hasPortField = BUSINESS_PORT_SIGNAL_FIELDS.some(field => meaningfulPortText(out[field])) || (out.normalized_port && typeof out.normalized_port === "object");
+  if (hasPortField) {
+    const normalizedPort = normalizedPortObject(out);
+    out.normalized_port = normalizedPort;
+    if (out.port_code === undefined || out.port_code === null || out.port_code === "") out.port_code = normalizedPort.port_code;
+    for (const field of ["port", "port_name", "current_port", "arrival_port", "destination_port", "next_port", "port_name_ko", "port_display_name"]) {
+      if (out[field] !== undefined) out[field] = normalizedPort.display_name;
+    }
+    out.port_name = normalizedPort.display_name;
+    out.port_display_name = normalizedPort.display_name;
+    if (out.display_name === undefined || portNameFromText(out.display_name)) out.display_name = normalizedPort.display_name;
+  }
+  const categoryCode = firstNonEmpty(out.primary_category_code, out.action_type, out.category_code, out.code);
+  const label = businessLabelForCode(categoryCode);
+  if (label) {
+    out.korean_label = label;
+    out.category_label = label;
+    if (out.action_label !== undefined) out.action_label = label;
+    if (out.primary_category_label !== undefined) out.primary_category_label = label;
+    if (out.label !== undefined && String(categoryCode).toUpperCase() === String(out.code || categoryCode).toUpperCase()) out.label = label;
+  }
+  if (Array.isArray(out.target_categories)) out.target_categories = out.target_categories.map(normalizeBusinessCategory);
+  if (out.primary_category && typeof out.primary_category === "object") out.primary_category = normalizeBusinessCategory(out.primary_category);
+  if (out.vessel_display && typeof out.vessel_display === "object") {
+    out.vessel_display = vesselDisplay({ ...out, vessel_display: out.vessel_display });
+    const displayHasPort = BUSINESS_PORT_SIGNAL_FIELDS.some(field => meaningfulPortText(out.vessel_display[field])) ||
+      (out.vessel_display.normalized_port && typeof out.vessel_display.normalized_port === "object");
+    if (displayHasPort) {
+      const displayPort = normalizedPortObject(out.vessel_display);
+      out.vessel_display = {
+        ...out.vessel_display,
+        normalized_port: displayPort,
+        current_port: displayPort.display_name,
+        current_port_korean: displayPort.display_name,
+        port_display_name: displayPort.display_name
+      };
+    }
+  }
+  const skipRecursiveKeys = new Set(["normalized_port", "raw_aliases", "data_sources", "enrichment_sources", "source_names", "reason_codes"]);
+  for (const [key, value] of Object.entries(out)) {
+    if (skipRecursiveKeys.has(key)) continue;
+    if (Array.isArray(value)) {
+      out[key] = value.map(child => child && typeof child === "object" ? normalizeBusinessOutputItem(child, depth + 1) : child);
+    } else if (value && typeof value === "object") {
+      out[key] = normalizeBusinessOutputItem(value, depth + 1);
+    }
+  }
+  return out;
+}
+
+function normalizeBusinessOutputPayload(filePath = "", payload) {
+  if (!shouldNormalizeBusinessOutput(filePath)) return payload;
+  return normalizeBusinessOutputItem(payload);
+}
+
 function writeApiJson(filePath, payload, report = {}) {
   const target = routeApiOutputPath(filePath, report);
-  writeDashboardJson(target, payload);
+  const preparedPayload = normalizeBusinessOutputPayload(filePath, payload);
+  writeDashboardJson(target, preparedPayload);
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const existingPayload = target !== normalized && normalized.startsWith("dashboard/api/") && fs.existsSync(normalized)
     ? readJsonSafe(normalized, null)
@@ -2887,14 +2976,14 @@ function writeApiJson(filePath, payload, report = {}) {
   const shouldBackfillEmptyStatic = existingPayload &&
     contractDataMode(existingPayload.data_mode) !== "live" &&
     rowCountFromPayload(existingPayload) === 0 &&
-    rowCountFromPayload(payload) > 0;
+    rowCountFromPayload(preparedPayload) > 0;
   const shouldRefreshNonLiveStatic = existingPayload &&
     contractDataMode(existingPayload.data_mode) !== "live" &&
-    contractDataMode(payload?.data_mode, report) !== "live" &&
-    rowCountFromPayload(payload) > 0 &&
-    String(payload?.generated_at || "") > String(existingPayload?.generated_at || "");
+    contractDataMode(preparedPayload?.data_mode, report) !== "live" &&
+    rowCountFromPayload(preparedPayload) > 0 &&
+    String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
   if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic)) {
-    writeDashboardJson(normalized, payload);
+    writeDashboardJson(normalized, preparedPayload);
   }
   return target;
 }
@@ -3009,6 +3098,7 @@ function writeEndpointManifest(generatedAt = new Date().toISOString()) {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
     record_count: endpoints.length,
+    item_count: endpoints.length,
     endpoints
   };
   writeDashboardJson("dashboard/api/endpoint-manifest.json", payload);
@@ -3196,7 +3286,7 @@ function withRunOrigin(payload = {}, origin = {}) {
 
 function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
-  const body = withRunOrigin(payload, origin);
+  const body = normalizeBusinessOutputPayload(normalized, withRunOrigin(payload, origin));
   writeDashboardJson(normalized, body);
   if (normalized.startsWith("dashboard/api/")) {
     const debugPath = `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
@@ -3316,8 +3406,9 @@ function buildCandidateSummary(records) {
   const watch = records.filter(v => v.cleaning_candidate_score >= REVIEW_TARGET_THRESHOLD && v.cleaning_candidate_score < SALES_CANDIDATE_THRESHOLD);
   const byPort = new Map();
   for (const v of candidates) {
-    const port = v.port || "Unknown";
-    const current = byPort.get(port) || { port, total: 0, immediate: 0, strong: 0, watch: 0, top_score: 0 };
+    const normalizedPort = normalizedPortObject(v);
+    const port = normalizedPort.display_name;
+    const current = byPort.get(port) || { port, port_name: port, display_name: port, normalized_port: normalizedPort, total: 0, immediate: 0, strong: 0, watch: 0, top_score: 0 };
     current.total += 1;
     current.immediate += v.is_immediate_candidate ? 1 : 0;
     current.strong += v.cleaning_candidate_score >= SALES_CANDIDATE_THRESHOLD && v.cleaning_candidate_score < IMMEDIATE_TARGET_THRESHOLD ? 1 : 0;
@@ -3336,7 +3427,9 @@ function buildCandidateSummary(records) {
       .slice(0, 10)
       .map(v => ({
         vessel_name: v.vessel_name,
-        port: v.port,
+        port: normalizedPortObject(v).display_name,
+        port_name: normalizedPortObject(v).display_name,
+        normalized_port: normalizedPortObject(v),
         score: v.cleaning_candidate_score,
         level: v.cleaning_candidate_level,
         contact_window: v.contact_window,
@@ -3352,14 +3445,154 @@ function portCodeFromName(port = "") {
   return normalizePort(port).port_code || "UNKNOWN";
 }
 
+const CANONICAL_PORT_DISPLAY_BY_CODE = new Map([
+  ["020", "부산"],
+  ["BUSAN", "부산"],
+  ["KRPUS", "부산"],
+  ["820", "울산"],
+  ["ULSAN", "울산"],
+  ["KRUSN", "울산"],
+  ["620-YEOSU", "여수"],
+  ["620", "여수"],
+  ["YEOSU", "여수"],
+  ["620-GWANGYANG", "광양"],
+  ["GWANGYANG", "광양"],
+  ["030", "인천"],
+  ["INCHEON", "인천"],
+  ["031", "평택·당진"],
+  ["PYEONGTAEK", "평택·당진"],
+  ["DANGJIN", "평택·당진"],
+  ["810", "포항"],
+  ["POHANG", "포항"],
+  ["622", "마산/창원"],
+  ["MASAN", "마산/창원"],
+  ["CHANGWON", "마산/창원"],
+  ["JINHAE", "마산/창원"],
+  ["070", "목포"],
+  ["MOKPO", "목포"],
+  ["080", "군산"],
+  ["GUNSAN", "군산"],
+  ["621", "대산"],
+  ["DAESAN", "대산"],
+  ["SAMCHEONPO", "삼천포"],
+  ["HADONG", "하동"],
+  ["SAMCHEOK", "삼척"],
+  ["UNKNOWN", "미확인 항만"]
+]);
+
+const BUSINESS_LABEL_BY_CODE = {
+  CONTACT_NOW: "즉시 연락",
+  VERIFY_CONTACT: "연락처 확인 필요",
+  PRE_ARRIVAL: "입항 전 선제 연락",
+  ANCHORAGE_OPPORTUNITY: "묘박/정박 작업 가능",
+  LONG_STAY_RISK: "장기 체류 위험",
+  BIOFOULING_COMPLIANCE: "Compliance 대상",
+  REPEAT_CALLER: "반복 입항",
+  FLEET_EXPANSION: "선대 확장",
+  MONITOR: "모니터링",
+  HOLD: "보류"
+};
+
+const BUSINESS_PORT_FIELDS = [
+  "port",
+  "port_name",
+  "current_port",
+  "arrival_port",
+  "destination_port",
+  "next_port",
+  "port_name_ko",
+  "port_display_name"
+];
+const BUSINESS_PORT_SIGNAL_FIELDS = [...BUSINESS_PORT_FIELDS, "port_code", "display_name"];
+
+function meaningfulPortText(value) {
+  const text = String(value ?? "").normalize("NFKC").trim();
+  if (!text) return "";
+  if (/^[-–—]+$/.test(text)) return "";
+  if (/^(unknown|unk|null|undefined|n\/a|na|none)$/i.test(text)) return "";
+  return text;
+}
+
+function canonicalPortDisplayName(port = {}, rawPort = "") {
+  const code = String(port?.port_code || "").toUpperCase();
+  const byCode = CANONICAL_PORT_DISPLAY_BY_CODE.get(code);
+  if (byCode) return byCode;
+  const byRaw = portNameFromText(rawPort);
+  if (byRaw) return byRaw;
+  const byName = portNameFromText(port?.display_name || port?.port_name || "");
+  if (byName) return byName;
+  return "미확인 항만";
+}
+
+function normalizedPortObject(record = {}) {
+  const existing = record?.normalized_port && typeof record.normalized_port === "object" ? record.normalized_port : {};
+  const rawAliases = [];
+  const addRaw = value => {
+    const text = meaningfulPortText(value);
+    if (text && !rawAliases.includes(text)) rawAliases.push(text);
+  };
+  addRaw(existing.raw_port);
+  for (const field of BUSINESS_PORT_FIELDS) addRaw(record?.[field]);
+  if (record?.vessel_display && typeof record.vessel_display === "object") {
+    for (const field of BUSINESS_PORT_FIELDS) addRaw(record.vessel_display[field]);
+  }
+  const rawPort = rawAliases[0] || "";
+  let normalized = null;
+  try {
+    normalized = normalizeRecordPort({
+      ...record,
+      port: rawPort || record?.port,
+      port_name: rawPort || record?.port_name,
+      current_port: rawPort || record?.current_port
+    });
+  } catch {
+    normalized = null;
+  }
+  const code = String(
+    existing.port_code ||
+    record?.port_code ||
+    normalized?.port?.port_code ||
+    (rawPort ? normalizePort(rawPort).port_code : "") ||
+    "UNKNOWN"
+  ).toUpperCase() || "UNKNOWN";
+  const displayName = canonicalPortDisplayName({ ...normalized?.port, port_code: code }, rawPort);
+  return {
+    port_code: code,
+    port_name: displayName,
+    display_name: displayName,
+    raw_port: rawPort || existing.raw_port || null,
+    raw_aliases: [...new Set([...(Array.isArray(existing.raw_aliases) ? existing.raw_aliases : []), ...rawAliases].filter(Boolean))]
+  };
+}
+
+function businessLabelForCode(code) {
+  return BUSINESS_LABEL_BY_CODE[String(code || "").trim().toUpperCase()] || "";
+}
+
+function normalizeBusinessCategory(category = {}) {
+  if (!category || typeof category !== "object" || Array.isArray(category)) return category;
+  const code = String(category.code || category.category_code || category.action_type || "").trim().toUpperCase();
+  const label = businessLabelForCode(code) || category.korean_label || category.category_label || category.short_label || category.label || code;
+  return {
+    ...category,
+    code: code || category.code,
+    label,
+    korean_label: label,
+    category_label: label
+  };
+}
+
 function normalizedPortInfo(record = {}) {
   const normalized = normalizeRecordPort(record);
-  if (normalized.missing) return { port_code: "UNKNOWN", port_name: "미확인 항만", display_name: "미확인 항만", raw: null };
+  if (normalized.missing) return { port_code: "UNKNOWN", port_name: "미확인 항만", display_name: "미확인 항만", raw: null, raw_aliases: [] };
+  const normalizedPort = normalizedPortObject(record);
   return {
-    port_code: normalized.port.port_code || "UNKNOWN",
-    port_name: normalized.port.port_name || "미확인 항만",
-    display_name: normalized.port.display_name || normalized.port.port_name || "미확인 항만",
-    raw: normalized.raw
+    port_code: normalizedPort.port_code || "UNKNOWN",
+    port_name: normalizedPort.port_name || "미확인 항만",
+    display_name: normalizedPort.display_name || "미확인 항만",
+    raw: normalized.raw,
+    raw_port: normalizedPort.raw_port,
+    raw_aliases: normalizedPort.raw_aliases
   };
 }
 function buildPortIntelligence(records) {
@@ -4328,9 +4561,12 @@ function lastSeenAgeHours(record = {}, generatedAt = new Date().toISOString()) {
 
 function targetCategoryItem(code, confidence, reason, recommendedAction) {
   const definition = TARGET_CATEGORY_BY_CODE[code] || { code, label: code };
+  const label = businessLabelForCode(code) || definition.short_label || definition.label || code;
   return {
     code,
-    label: definition.label,
+    label,
+    korean_label: label,
+    category_label: label,
     confidence: categoryConfidence(confidence),
     reason,
     recommended_action: recommendedAction
@@ -4421,9 +4657,12 @@ function buildTargetCategorySummary(records = [], { generatedAt = new Date().toI
   const items = sortCommercialPriority(dedupeCandidateRows(records)).map(record => annotateTargetCategories(record, { generatedAt }));
   const categories = TARGET_CATEGORY_DEFINITIONS.map(definition => {
     const categoryItems = items.filter(item => (item.target_categories || []).some(category => category.code === definition.code));
+    const label = businessLabelForCode(definition.code) || definition.short_label || definition.label;
     return {
       code: definition.code,
-      label: definition.label,
+      label,
+      korean_label: label,
+      category_label: label,
       short_label: definition.short_label,
       count: categoryItems.length,
       items: categoryItems
@@ -4478,9 +4717,13 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
       vessel_display: buildVesselDisplay(item),
       vessel_name: item.vessel_name,
       imo: item.imo || "",
-      port: firstNonEmpty(item.port_name, item.port, item.current_port, item.destination_port),
+      port: normalizedPortObject(item).display_name,
+      port_name: normalizedPortObject(item).display_name,
+      normalized_port: normalizedPortObject(item),
       action_type: item.primary_category_code,
-      action_label: item.primary_category_label,
+      action_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+      category_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+      korean_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
       priority_label: item.priority_label,
       opportunity_score: item.opportunity_score,
       risk_score: item.risk_score,
@@ -4835,6 +5078,15 @@ function salesPriorityBand(score = 0) {
   return "LOW";
 }
 
+function salesPriorityLabelKo(label = "") {
+  const value = String(label || "").trim().toUpperCase();
+  if (value === "HOT") return "우선 연락";
+  if (value === "WARM") return "검토";
+  if (value === "LOW") return "모니터링";
+  if (value === "COLD") return "낮음";
+  return value || "-";
+}
+
 function assignSalesPriorityTiers(records = []) {
   const rows = sortCommercialPriority(records);
   if (!rows.length) return rows;
@@ -4972,6 +5224,21 @@ function vesselDisplayNumber(record = {}, aliases = [], reasonFallback = null) {
   return nullableDisplayNumber(...aliases.map(alias => vesselDisplayPathValue(record, alias)), reasonFallback);
 }
 
+function positiveDisplayNumber(record = {}, aliases = [], reasonFallback = null) {
+  const number = nullableDisplayNumber(...aliases.map(alias => vesselDisplayPathValue(record, alias)));
+  const fallback = nullableDisplayNumber(reasonFallback);
+  if (number !== null && number > 0) return number;
+  if (fallback !== null && fallback > 0) return fallback;
+  return null;
+}
+
+function displayNumberPreferReason(record = {}, aliases = [], reasonFallback = null) {
+  const number = vesselDisplayNumber(record, aliases);
+  const fallback = nullableDisplayNumber(reasonFallback);
+  if (fallback !== null && fallback > 0 && (number === null || number <= 0)) return fallback;
+  return number;
+}
+
 function vesselDisplayArray(record = {}, aliases = []) {
   const values = aliases.flatMap(alias => {
     const value = vesselDisplayPathValue(record, alias);
@@ -5060,6 +5327,7 @@ function portNameFromText(value = "") {
   const text = String(value || "").normalize("NFKC").trim();
   const compact = text.toUpperCase().replace(/[\s._-]+/g, "");
   if (!text) return "";
+  if (/UNKNOWN|UNK/.test(compact) || /미확인/.test(text)) return "미확인 항만";
   if (/BUSAN|PUSAN|KRPUS/.test(compact) || /부산/.test(text)) return "부산";
   if (/ULSAN|KRUSN/.test(compact) || /울산/.test(text)) return "울산";
   if (/YEOSU|KRYOS/.test(compact) || /여수/.test(text)) return "여수";
@@ -5071,6 +5339,9 @@ function portNameFromText(value = "") {
   if (/MOKPO|KRMOK/.test(compact) || /목포/.test(text)) return "목포";
   if (/GUNSAN|KRKUV/.test(compact) || /군산/.test(text)) return "군산";
   if (/DAESAN|KRTSN/.test(compact) || /대산/.test(text)) return "대산";
+  if (/SAMCHEONPO/.test(compact) || /삼천포/.test(text)) return "삼천포";
+  if (/HADONG/.test(compact) || /하동/.test(text)) return "하동";
+  if (/SAMCHEOK/.test(compact) || /삼척/.test(text)) return "삼척";
   if (/DONGHAE|MUKHO|KRTGH/.test(compact) || /동해|묵호/.test(text)) return "동해/묵호";
   if (/JEJU|KRCJU/.test(compact) || /제주/.test(text)) return "제주";
   return "";
@@ -5113,7 +5384,7 @@ function buildVesselDisplay(record = {}) {
   const anchorageFromReason = textFromReasonSummary(record, [
     /([A-Za-z0-9가-힣·._-]{1,30}(?:묘박지|정박지|대기지|anchorage)[A-Za-z0-9가-힣·._-]{0,30})/i
   ]);
-  const stayHours = vesselDisplayNumber(source, [
+  const stayHours = displayNumberPreferReason(source, [
     "stay_hours",
     "current_call_stay_hours",
     "cumulative_stay_hours",
@@ -5126,7 +5397,7 @@ function buildVesselDisplay(record = {}) {
     "vessel_display.port_stay_hours",
     "vessel_display.portStayHours"
   ], stayHoursFromReason);
-  const waitingHours = vesselDisplayNumber({ ...source, congestion_signal: congestionSignal }, [
+  const waitingHours = displayNumberPreferReason({ ...source, congestion_signal: congestionSignal }, [
     "congestion_signal.waiting_hours",
     "waiting_hours",
     "estimated_waiting_time",
@@ -5135,7 +5406,7 @@ function buildVesselDisplay(record = {}) {
     "vessel_display.waiting_hours",
     "vessel_display.anchorageHours"
   ], waitingHoursFromReason);
-  const portStayHours = vesselDisplayNumber(source, [
+  const portStayHours = displayNumberPreferReason(source, [
     "port_stay_hours",
     "portStayHours",
     "stay_hours",
@@ -5144,18 +5415,22 @@ function buildVesselDisplay(record = {}) {
     "vessel_display.port_stay_hours",
     "vessel_display.portStayHours"
   ], stayHours);
-  const anchorageHours = vesselDisplayNumber(source, [
+  const anchorageHours = displayNumberPreferReason(source, [
     "anchorage_hours",
     "anchorageHours",
     "waiting_hours",
     "vessel_display.anchorageHours",
     "vessel_display.waiting_hours"
   ], waitingHours);
-  const stayDays = vesselDisplayNumber(source, [
+  const stayDays = displayNumberPreferReason(source, [
     "stay_days",
     "dwell_days",
     "vessel_display.stay_days"
-  ], stayDaysFromReason ?? (stayHours !== null ? stayHours / 24 : null));
+  ], stayDaysFromReason ??
+    (stayHours !== null ? stayHours / 24 :
+      portStayHours !== null ? portStayHours / 24 :
+        waitingHours !== null ? waitingHours / 24 :
+          anchorageHours !== null ? anchorageHours / 24 : null));
   const waitingScore = vesselDisplayNumber({ ...source, congestion_signal: congestionSignal }, [
     "congestion_signal.waiting_score",
     "waiting_score",
@@ -5204,9 +5479,11 @@ function buildVesselDisplay(record = {}) {
     "next_port",
     "vessel_display.current_port"
   ]);
-  const currentPortKorean = vesselDisplayPortName(record, currentPort === "-" ? "" : currentPort);
+  const normalizedPort = normalizedPortObject({ ...record, current_port: currentPort === "-" ? "" : currentPort });
+  const currentPortKorean = normalizedPort.display_name || vesselDisplayPortName(record, currentPort === "-" ? "" : currentPort);
   const reasonSummary = vesselDisplayReasonSummary(record);
   const recommendedAction = vesselDisplayRecommendedAction(record);
+  const priorityLabel = displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0)));
   return {
     vessel_name: vesselDisplayText(source, ["vessel_name", "name", "ship_name", "vsslNm", "vessel_display.vessel_name"], "선명 확인 필요"),
     imo: vesselDisplayText(source, ["imo", "imo_no", "imoNo", "vessel_imo", "recovered_imo", "vessel_display.imo"]),
@@ -5214,8 +5491,8 @@ function buildVesselDisplay(record = {}) {
     call_sign: vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn", "vsslCallSgn", "vessel_display.call_sign"]),
     flag: vesselDisplayText(source, ["flag", "vsslNltyNm", "vsslNltyCd", "nationality", "country", "vessel_display.flag"]),
     vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_type_group", "commercial_segment", "vessel_display.vessel_type"]),
-    gt: vesselDisplayNumber(source, ["gt", "grtg", "intrlGrtg", "gross_tonnage", "grossTonnage", "vessel_display.gt"], gtFromReason),
-    dwt: vesselDisplayNumber(source, ["dwt", "deadweight", "deadweight_tonnage", "vessel_display.dwt"]),
+    gt: positiveDisplayNumber(source, ["gt", "grtg", "intrlGrtg", "gross_tonnage", "grossTonnage", "vessel_display.gt"], gtFromReason),
+    dwt: positiveDisplayNumber(source, ["dwt", "deadweight", "deadweight_tonnage", "vessel_display.dwt"]),
     operator: displayText(operatorDisplay),
     operator_display: displayText(operatorDisplay),
     operator_source: displayText(firstDisplayText(record.operator_source, vesselDisplayOperatorSource(record))),
@@ -5225,8 +5502,11 @@ function buildVesselDisplay(record = {}) {
     manager: vesselDisplayText(source, ["manager_name", "manager", "ship_manager", "technical_manager", "vessel_display.manager"]),
     technical_manager: vesselDisplayText(source, ["technical_manager", "ship_manager", "manager_name", "manager", "vessel_display.technical_manager"]),
     agent: vesselDisplayText(source, ["agent_name", "agent", "local_agent", "shipping_agent", "vessel_display.agent"]),
-    current_port: currentPort,
+    current_port: currentPortKorean,
+    raw_current_port: currentPort === "-" ? "" : currentPort,
     current_port_korean: currentPortKorean,
+    normalized_port: normalizedPort,
+    port_display_name: normalizedPort.display_name,
     berth: vesselDisplayText(source, ["berth", "berth_name", "berth_no", "berth_code", "laidupFcltyNm", "terminal_name", "vessel_display.berth"], berthFromReason || "-"),
     anchorage: vesselDisplayText(source, ["anchorage", "anchorage_name", "anchorage_zone", "anchorage_area", "vessel_display.anchorage"], anchorageFromReason || "-"),
     eta: vesselDisplayText(source, ["eta", "estimated_arrival", "arrival_eta", "predicted_arrival_time", "next_eta", "vessel_display.eta"]),
@@ -5260,14 +5540,24 @@ function buildVesselDisplay(record = {}) {
     sstCelsius: roundedDisplayNumber(nullableDisplayNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg, record.vessel_display?.sstCelsius)),
     sstAnomalyCelsius: roundedDisplayNumber(nullableDisplayNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly, record.noaa_sst_anomaly, record.vessel_display?.sstAnomalyCelsius)),
     salinityPsu: roundedDisplayNumber(nullableDisplayNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy, record.vessel_display?.salinityPsu)),
+    ocean_risk_score: roundedDisplayNumber(nullableDisplayNumber(record.ocean_risk_score, record.vessel_display?.ocean_risk_score)),
+    ocean_risk_label_ko: vesselDisplayText(source, ["ocean_risk_label_ko", "vessel_display.ocean_risk_label_ko"], oceanRiskLabelKo(record.ocean_risk_score || biofoulingRiskScore || 0)),
+    marine_heatwave_level: vesselDisplayText(source, ["marine_heatwave_level", "vessel_display.marine_heatwave_level"]),
+    marine_heatwave_label_ko: vesselDisplayText(source, ["marine_heatwave_label_ko", "vessel_display.marine_heatwave_label_ko"], marineHeatwaveLabelKo(record.marine_heatwave_level)),
+    fouling_accelerator_pct: roundedDisplayNumber(nullableDisplayNumber(record.fouling_accelerator_pct, record.vessel_display?.fouling_accelerator_pct)),
+    ocean_source: vesselDisplayText(source, ["ocean_source", "vessel_display.ocean_source"]),
+    ocean_updated_at: vesselDisplayText(source, ["ocean_updated_at", "vessel_display.ocean_updated_at"]),
     tropicalExposureDays: roundedDisplayNumber(nullableDisplayNumber(record.tropicalExposureDays, record.tropical_exposure_days, record.vessel_display?.tropicalExposureDays)),
     slowSteamingHours: roundedDisplayNumber(nullableDisplayNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours, record.vessel_display?.slowSteamingHours)),
     riskReasons,
     recommendedAction: recommendedAction,
     confidence: vesselDisplayText(source, ["confidence", "confidence_label", "vessel_display.confidence"]),
     contact_readiness_score: roundedDisplayNumber(nullableDisplayNumber(record.contact_readiness_score, record.sales_accessibility_score, record.vessel_display?.contact_readiness_score)),
-    priority_label: displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0))),
-    target_categories: Array.isArray(record.target_categories) ? record.target_categories : Array.isArray(existingDisplay.target_categories) ? existingDisplay.target_categories : [],
+    priority_label: priorityLabel,
+    priority_label_ko: salesPriorityLabelKo(priorityLabel),
+    target_categories: (Array.isArray(record.target_categories) ? record.target_categories : Array.isArray(existingDisplay.target_categories) ? existingDisplay.target_categories : []).map(normalizeBusinessCategory),
+    category_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
+    korean_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     reason_summary: reasonSummary,
     recommended_action: recommendedAction,
     data_sources: [...new Set([...displaySources(record), ...vesselDisplayArray(record, ["vessel_display.data_sources"])])],
@@ -5352,7 +5642,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "port",
   "port_code",
   "port_name",
+  "port_display_name",
+  "display_name",
+  "normalized_port",
   "sub_port",
+  "current_port",
+  "raw_current_port",
   "berth",
   "berth_name",
   "berth_no",
@@ -5434,6 +5729,20 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "risk_reasons",
   "environmental_source",
   "environmental_quality",
+  "ocean_port_code",
+  "ocean_port_name_ko",
+  "ocean_risk_score",
+  "ocean_risk_label",
+  "ocean_risk_label_ko",
+  "marine_heatwave_level",
+  "marine_heatwave_label_ko",
+  "biofouling_water_temp_factor",
+  "fouling_accelerator_pct",
+  "regulatory_multiplier",
+  "ocean_source",
+  "ocean_observed_at",
+  "ocean_updated_at",
+  "ocean_score_components",
   "hull_cleaning_opportunity_score",
   "departure_prediction_eta",
   "departure_prediction_confidence",
@@ -5626,6 +5935,7 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "candidate_band",
   "sales_priority_band",
   "priority_label",
+  "priority_label_ko",
   "watch_type",
   "watch_name",
   "priority",
@@ -5635,6 +5945,8 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "primary_category",
   "primary_category_code",
   "primary_category_label",
+  "category_label",
+  "korean_label",
   "target_categories",
   "target_reason_count",
   "target_strength",
@@ -5699,6 +6011,21 @@ function withVesselDisplay(record = {}) {
     const value = record[field];
     if (value !== undefined && value !== null && value !== "") compact[field] = value;
   }
+  const normalizedPort = normalizedPortObject(record);
+  const categoryCode = firstNonEmpty(record.primary_category_code, record.action_type, record.category_code, record.primary_category?.code);
+  const categoryLabel = businessLabelForCode(categoryCode);
+  compact.normalized_port = normalizedPort;
+  compact.port_code = compact.port_code || normalizedPort.port_code;
+  compact.port_name = normalizedPort.display_name;
+  compact.port_display_name = normalizedPort.display_name;
+  if (categoryLabel) {
+    compact.category_label = categoryLabel;
+    compact.korean_label = categoryLabel;
+    if (compact.action_label) compact.action_label = categoryLabel;
+    if (compact.primary_category_label) compact.primary_category_label = categoryLabel;
+  }
+  if (Array.isArray(compact.target_categories)) compact.target_categories = compact.target_categories.map(normalizeBusinessCategory);
+  if (compact.primary_category && typeof compact.primary_category === "object") compact.primary_category = normalizeBusinessCategory(compact.primary_category);
   compact.vessel_display = vesselDisplay(record);
   return compact;
 }
@@ -5726,6 +6053,13 @@ function hullCleaningPublicFields(record = {}) {
     sstCelsius: firstFiniteNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg),
     sstAnomalyCelsius: firstFiniteNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly),
     salinityPsu: firstFiniteNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy),
+    ocean_risk_score: firstFiniteNumber(record.ocean_risk_score),
+    ocean_risk_label_ko: record.ocean_risk_label_ko || null,
+    marine_heatwave_level: record.marine_heatwave_level || null,
+    marine_heatwave_label_ko: record.marine_heatwave_label_ko || null,
+    fouling_accelerator_pct: firstFiniteNumber(record.fouling_accelerator_pct),
+    ocean_source: record.ocean_source || null,
+    ocean_updated_at: record.ocean_updated_at || null,
     tropicalExposureDays: firstFiniteNumber(record.tropicalExposureDays, record.tropical_exposure_days),
     slowSteamingHours: firstFiniteNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours),
     riskReasons: mergeHullRiskReasons(record, {}),
@@ -5747,7 +6081,9 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     identity_confidence: firstFiniteNumber(row.identity_confidence, 0) || 0,
     identity_match_type: row.identity_match_type || row.identity_match_strategy || "",
     port_code: row.port_code || "",
-    port_name: row.port_name || row.port || "",
+    port_name: normalizedPortObject(row).display_name,
+    port_display_name: normalizedPortObject(row).display_name,
+    normalized_port: normalizedPortObject(row),
     operator_display: canonicalOperatorValue(row) || "",
     operator_source: row.operator_source || canonicalOperatorSource(row) || "",
     operator_confidence: firstFiniteNumber(row.operator_confidence, canonicalOperatorValue(row) ? 70 : 0, 0) || 0,
@@ -5811,17 +6147,29 @@ function compactItems(value) {
 
 function compactBootstrapVesselItem(item = {}, index = 0) {
   const display = buildVesselDisplay(item);
+  const normalizedPort = normalizedPortObject({ ...item, current_port: display.current_port });
   return {
     rank: Number(item.rank || index + 1),
     vessel_display: display,
     vessel_name: display.vessel_name || item.vessel_name || "선명 확인 필요",
     imo: display.imo || item.imo || "-",
     mmsi: display.mmsi || item.mmsi || "-",
-    port: item.port || item.port_name || display.current_port || "-",
+    port: normalizedPort.display_name,
+    port_name: normalizedPort.display_name,
+    port_display_name: normalizedPort.display_name,
+    normalized_port: normalizedPort,
     opportunity_score: firstFiniteNumber(item.opportunity_score, item.sales_priority_score, item.commercial_value_score, display.opportunity_score, 0),
     risk_score: firstFiniteNumber(item.risk_score, item.biofouling_exposure_score, item.biofouling_score, display.risk_score, 0),
     confidence_score: firstFiniteNumber(item.confidence_score, item.data_confidence_score, display.confidence_score, 0),
     biofoulingRiskScore: firstFiniteNumber(item.biofoulingRiskScore, item.biofouling_risk_score, display.biofoulingRiskScore, 0),
+    ocean_risk_score: firstFiniteNumber(item.ocean_risk_score, display.ocean_risk_score, 0),
+    ocean_risk_label_ko: item.ocean_risk_label_ko || display.ocean_risk_label_ko || oceanRiskLabelKo(item.ocean_risk_score || item.biofouling_risk_score || 0),
+    sst_c: firstFiniteNumber(item.sst_c, item.sstCelsius, display.sstCelsius, 0),
+    sst_anomaly_c: firstFiniteNumber(item.sst_anomaly_c, item.sstAnomalyCelsius, display.sstAnomalyCelsius, 0),
+    marine_heatwave_level: item.marine_heatwave_level || display.marine_heatwave_level || null,
+    marine_heatwave_label_ko: item.marine_heatwave_label_ko || display.marine_heatwave_label_ko || marineHeatwaveLabelKo(item.marine_heatwave_level),
+    fouling_accelerator_pct: firstFiniteNumber(item.fouling_accelerator_pct, display.fouling_accelerator_pct, 0),
+    ocean_source: item.ocean_source || display.ocean_source || null,
     hullGrowthIndex: firstFiniteNumber(item.hullGrowthIndex, item.hull_growth_index, display.hullGrowthIndex, 0),
     cleaningOpportunityScore: firstFiniteNumber(item.cleaningOpportunityScore, item.cleaning_opportunity_score, item.hull_cleaning_opportunity_score, display.cleaningOpportunityScore, 0),
     anchorageHours: firstFiniteNumber(item.anchorageHours, item.anchorage_hours, display.anchorageHours, 0),
@@ -12625,7 +12973,7 @@ function buildStaticApiPayload(path, payload, report = {}) {
 
 function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
   const outputPath = routeApiOutputPath(path, report);
-  const outputPayload = buildStaticApiPayload(path, payload, report);
+  const outputPayload = normalizeBusinessOutputPayload(path, buildStaticApiPayload(path, payload, report));
   const writeJson = String(path || "").replace(/\\/g, "/").startsWith("dashboard/api/")
     ? writeDashboardJson
     : writeInternalJson;
@@ -14043,6 +14391,13 @@ try {
       }
     )
   );
+  const oceanLayer = await buildOceanIntelligenceLayer({
+    records: allCollectedVessels,
+    generatedAt: completedAt,
+    dataMode: baseReport.data_mode || "live"
+  });
+  enrichRecordsWithOceanRisk(allCollectedVessels, oceanLayer);
+  const oceanRiskGeoJson = buildOceanRiskGeoJson(oceanLayer);
   const targetVesselsRaw = allCollectedVessels.filter(v => isQualifiedSalesTarget(v));
   annotateTargetClassification(targetVesselsRaw);
   const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
@@ -14062,6 +14417,30 @@ try {
   const biofoulingTimeline = buildBiofoulingTimeline(vessels);
   const portIntelligence = buildPortIntelligence(allCollectedVessels);
   const portStatistics = buildPortStatistics(allCollectedVessels, completedAt);
+  const oceanConditionByPort = new Map((oceanLayer.port_ocean_conditions || []).map(condition => [condition.port_code, condition]));
+  for (const port of portStatistics.ports || []) {
+    const condition = oceanConditionByPort.get(String(port.port_code || "").toUpperCase());
+    if (!condition) continue;
+    const score = buildOceanRiskGeoJson({ ...oceanLayer, port_ocean_conditions: [condition] }).features[0]?.properties || {};
+    Object.assign(port, {
+      ocean: {
+        sst_c: condition.sst_c,
+        sst_anomaly_c: condition.sst_anomaly_c,
+        marine_heatwave_level: condition.marine_heatwave_level,
+        marine_heatwave_label_ko: marineHeatwaveLabelKo(condition.marine_heatwave_level),
+        biofouling_risk_score: score.biofouling_risk_score,
+        risk_label_ko: score.risk_label_ko,
+        source: condition.source,
+        updated_at: condition.updated_at
+      },
+      sst_c: condition.sst_c,
+      sst_anomaly_c: condition.sst_anomaly_c,
+      marine_heatwave_level: condition.marine_heatwave_level,
+      marine_heatwave_label_ko: marineHeatwaveLabelKo(condition.marine_heatwave_level),
+      ocean_risk_score: score.biofouling_risk_score,
+      ocean_risk_label_ko: score.risk_label_ko
+    });
+  }
   const biofoulingSstContext = await loadDailyNoaaSstContext(completedAt);
   const hullCleaningPredictionDiagnostics = applyHullCleaningPredictionFields([
     allCollectedVessels,
@@ -14248,6 +14627,13 @@ try {
       sst_cache_date: biofoulingSstContext.cache_date || null,
       ais_update_interval_hours: BIOFOULING_AIS_UPDATE_INTERVAL_HOURS,
       source_url: biofoulingSstContext.source_url || null
+    },
+    ocean_intelligence: {
+      source: oceanLayer.data_health?.source || "FALLBACK",
+      live_or_fallback: oceanLayer.data_health?.live_or_fallback || "fallback",
+      ports_covered: oceanLayer.data_health?.ports_covered || 0,
+      last_updated: oceanLayer.data_health?.last_updated || completedAt,
+      stale_warning: Boolean(oceanLayer.data_health?.stale_warning)
     },
     deployment_readiness: buildDeploymentReadiness(baseReport, vessels, detectSecrets())
   };
@@ -14469,6 +14855,9 @@ try {
     data_quality_summary: dataQualityLayer,
     data_health_validation: dataHealthValidation,
     hull_cleaning_prediction_kpis: hullCleaningPredictionKpis,
+    ocean_data_health: oceanLayer.data_health,
+    ocean_conditions: oceanLayer.port_ocean_conditions,
+    ocean_risk_geojson_path: "/api/ocean-risk.geojson",
     source_health_summary: collectorDiagnosticsAfterCollection
   };
   const staticOutputManifest = {};
@@ -14541,6 +14930,7 @@ try {
     supabase_write_status: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
     promotion_status: report.promotion_status || "unknown",
     latest_successful_run_id: latestSuccessfulRunId,
+    ocean_data_health: oceanLayer.data_health || {},
     status: report.status || status
   }, finalRunOrigin);
   const topCandidatesPayload = buildTopCandidatesPayload({
@@ -14612,6 +15002,12 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json"
   });
+  bootstrapPayload.ocean_conditions = (oceanLayer.port_ocean_conditions || []).slice(0, 20);
+  bootstrapPayload.ocean_data_health = oceanLayer.data_health || {};
+  bootstrapPayload.ocean_risk_geojson_path = "/api/ocean-risk.geojson";
+  bootstrapPayload.kpis.ocean_high_risk_port_count = (oceanRiskGeoJson.features || [])
+    .filter(feature => Number(feature.properties?.biofouling_risk_score || 0) >= 61)
+    .length;
   dashboardSummary.kpis = bootstrapPayload.kpis;
   dashboardSummary.kpi_trends = bootstrapPayload.kpi_trends;
   dashboardSummary.trend_metrics = bootstrapPayload.trend_metrics;
@@ -14844,6 +15240,15 @@ try {
     "dashboard/api/intelligence/revenue-forecast.json": intelligenceSummaries["revenue-forecast"],
     "dashboard/api/intelligence/commercial-summary.json": intelligenceSummaries["commercial-summary"],
     "dashboard/api/intelligence/sales-priority.json": intelligenceSummaries["sales-priority"],
+    "dashboard/api/ocean-conditions.json": publicItemsEnvelope({
+      generatedAt: completedAt,
+      dataMode: report.data_mode || dashboardSummary.data_mode || "static_json",
+      report,
+      sourceTable: "port_ocean_conditions",
+      items: oceanLayer.port_ocean_conditions || [],
+      extra: { data_health: oceanLayer.data_health || {} }
+    }),
+    "dashboard/api/ocean-risk.geojson": oceanRiskGeoJson,
     ...biofoulingModule.outputs,
     ...paginatedVesselOutputs
   };
@@ -14985,6 +15390,15 @@ try {
   for (const [name, payload] of Object.entries(intelligenceSummaries)) {
     writeApiJson(`dashboard/api/intelligence/${name}.json`, payload, report);
   }
+  writeApiJson("dashboard/api/ocean-conditions.json", publicItemsEnvelope({
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_json",
+    report,
+    sourceTable: "port_ocean_conditions",
+    items: oceanLayer.port_ocean_conditions || [],
+    extra: { data_health: oceanLayer.data_health || {} }
+  }), report);
+  writeApiJson("dashboard/api/ocean-risk.geojson", oceanRiskGeoJson, report);
   report.fleet_penetration_contract_upgrade = ensureFleetPenetrationStaticContract();
   report.opportunity_memory_contract_upgrade = ensureOpportunityMemoryStaticContract();
   for (const [filePath, payload] of Object.entries(biofoulingModule.outputs)) {
@@ -15018,26 +15432,26 @@ try {
   for (const port of portIntelligence) {
     const dir = routeApiOutputPath(`dashboard/api/ports/${port.port_code}/vessels.json`, report).split("/").slice(0, -1).join("/");
     fs.mkdirSync(dir, { recursive: true });
-    writeDashboardJson(`${dir}/vessels.json`, port.all_vessels);
-    writeDashboardJson(`${dir}/candidates.json`, port.sales_candidates);
-    writeDashboardJson(`${dir}/berths.json`, port.berths);
-    writeDashboardJson(`${dir}/congestion.json`, portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || publicItemsEnvelope({
+    writeDashboardJson(`${dir}/vessels.json`, normalizeBusinessOutputPayload(`${dir}/vessels.json`, port.all_vessels));
+    writeDashboardJson(`${dir}/candidates.json`, normalizeBusinessOutputPayload(`${dir}/candidates.json`, port.sales_candidates));
+    writeDashboardJson(`${dir}/berths.json`, normalizeBusinessOutputPayload(`${dir}/berths.json`, port.berths));
+    writeDashboardJson(`${dir}/congestion.json`, normalizeBusinessOutputPayload(`${dir}/congestion.json`, portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || publicItemsEnvelope({
       generatedAt: completedAt,
       dataMode: report.data_mode,
       report,
       sourceTable: "port_congestion_snapshots",
       items: [],
       extra: { status: "empty", reason: "해당 항만 혼잡 데이터가 없습니다." }
-    }));
-    writeDashboardJson(`${dir}/anchorage.json`, buildPortAnchorage(allCollectedVessels, port.port_code));
-    writeDashboardJson(`${dir}/hull-cleaning.json`, hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
+    })));
+    writeDashboardJson(`${dir}/anchorage.json`, normalizeBusinessOutputPayload(`${dir}/anchorage.json`, buildPortAnchorage(allCollectedVessels, port.port_code)));
+    writeDashboardJson(`${dir}/hull-cleaning.json`, normalizeBusinessOutputPayload(`${dir}/hull-cleaning.json`, hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
       generatedAt: completedAt,
       dataMode: report.data_mode,
       report,
       sourceTable: "AIS_vessel_tracks,Port-MIS_pilot_events,VTS_operations,NOAA_SST,opportunity_master",
       items: [],
       extra: { status: "empty", reason: "해당 항만 Hull Cleaning 후보가 없습니다." }
-    }));
+    })));
   }
   writeApiJson("dashboard/api/commercial-command-center.json", commercialCommandCenter, report);
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);

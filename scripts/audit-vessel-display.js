@@ -30,6 +30,7 @@ const REQUIRED_FIELDS = [
   ["dwt", "number"],
   ["operator", "text"],
   ["operator_display", "text"],
+  ["company", "text"],
   ["owner", "text"],
   ["manager", "text"],
   ["agent", "text"],
@@ -55,9 +56,24 @@ const REQUIRED_FIELDS = [
   ["compliance_score", "number"],
   ["confidence_score", "number"],
   ["priority_label", "text"],
+  ["priority_label_ko", "text"],
+  ["target_categories", "array"],
   ["reason_summary", "text"],
   ["recommended_action", "text"],
+  ["data_sources", "array"],
+  ["enrichment_sources", "array"],
   ["last_seen_at", "text"]
+];
+
+const COVERAGE_FIELDS = [
+  ["gt", "number"],
+  ["vessel_type", "text"],
+  ["operator_display", "text"],
+  ["current_port_korean", "text"],
+  ["stay_days", "number"],
+  ["waiting_hours", "number"],
+  ["opportunity_score", "number"],
+  ["risk_score", "number"]
 ];
 
 const MISSING_TEXT = new Set(["", "-", "--", "0", "unknown", "null", "undefined", "n/a", "na", "none", "확인 불가", "확인 필요", "미확인", "정보 없음"]);
@@ -107,6 +123,7 @@ function hasNumber(value) {
 }
 
 function present(value, type) {
+  if (type === "array") return Array.isArray(value) && value.length > 0;
   return type === "number" ? hasNumber(value) : hasText(value);
 }
 
@@ -127,6 +144,23 @@ function reasonMentionsGt(reason = "") {
 
 function reasonMentionsStay(reason = "") {
   return /체류|stay|dwell|묘박|정박|대기|waiting|anchorage/i.test(String(reason || ""));
+}
+
+function reasonMentionsStayOrWaiting(reason = "") {
+  return reasonMentionsStay(reason) || /체류|묘박|정박|대기|장기\s*체류|LONG_PORT_STAY|stay|dwell|waiting|anchorage/i.test(String(reason || ""));
+}
+
+function reasonMentionsDurationValue(reason = "") {
+  const text = String(reason || "");
+  return /(?:체류|묘박|정박|대기|장기\s*체류|stay|dwell|waiting|anchorage)[^0-9]{0,24}[1-9][0-9,]*(?:\.\d+)?\s*(?:일|시간|d|day|days|h|hr|hrs|hour|hours)?/i.test(text) ||
+    /[1-9][0-9,]*(?:\.\d+)?\s*(?:일|시간|d|day|days|h|hr|hrs|hour|hours)[^가-힣A-Za-z0-9]{0,16}(?:체류|묘박|정박|대기|stay|dwell|waiting|anchorage)/i.test(text);
+}
+
+function reasonMentionsDurationValueSafe(reason = "") {
+  const text = String(reason || "");
+  const termsBeforeNumber = /(?:\uCCB4\uB958|\uBB18\uBC15|\uC815\uBC15|\uB300\uAE30|\uC7A5\uAE30\s*\uCCB4\uB958|stay|dwell|waiting|anchorage)[^0-9]{0,24}[1-9][0-9,]*(?:\.\d+)?\s*(?:\uC77C|\uC2DC\uAC04|d|day|days|h|hr|hrs|hour|hours)/i;
+  const numberBeforeTerms = /[1-9][0-9,]*(?:\.\d+)?\s*(?:\uC77C|\uC2DC\uAC04|d|day|days|h|hr|hrs|hour|hours)[^\uAC00-\uD7A3A-Za-z0-9]{0,16}(?:\uCCB4\uB958|\uBB18\uBC15|\uC815\uBC15|\uB300\uAE30|stay|dwell|waiting|anchorage)/i;
+  return termsBeforeNumber.test(text) || numberBeforeTerms.test(text);
 }
 
 function analyzeEndpoint(endpoint) {
@@ -162,8 +196,9 @@ function analyzeEndpoint(endpoint) {
     if (rawScore && !hasNumber(display.opportunity_score)) analysis.contradictions.push("opportunity_score_missing_despite_raw_score");
     const reason = firstText(item.reason_summary, item.quote_reason_summary, item.why_now, display.reason_summary);
     if (reasonMentionsGt(reason) && !hasNumber(display.gt)) analysis.contradictions.push("reason_mentions_gt_but_display_gt_missing");
+    if (reasonMentionsDurationValueSafe(reason) && !hasNumber(display.stay_days)) analysis.contradictions.push("reason_mentions_stay_but_display_stay_days_missing");
     if (
-      reasonMentionsStay(reason) &&
+      reasonMentionsDurationValueSafe(reason) &&
       !hasNumber(display.stay_days) &&
       !hasNumber(display.stay_hours) &&
       !hasNumber(display.waiting_hours) &&
@@ -238,9 +273,9 @@ for (const result of results) {
   if (result.parse_error) console.log(`- parse_error: ${result.parse_error}`);
   console.log(`- rows: ${result.record_count}`);
   console.log(`- rows_with_vessel_display: ${result.rows_with_display}`);
-  console.log(`- operator_display_coverage: ${pct(result.coverage.operator_display || 0, result.record_count)}`);
-  console.log(`- current_port_korean_coverage: ${pct(result.coverage.current_port_korean || 0, result.record_count)}`);
-  console.log(`- opportunity_score_coverage: ${pct(result.coverage.opportunity_score || 0, result.record_count)}`);
+  for (const [field] of COVERAGE_FIELDS) {
+    console.log(`- ${field}_coverage: ${pct(result.coverage[field] || 0, result.record_count)}`);
+  }
   if (result.contradictions.length) console.log(`- contradictions: ${result.contradictions.join(", ")}`);
   if (result.warnings.length) console.log(`- warnings: ${result.warnings.join(", ")}`);
 }
