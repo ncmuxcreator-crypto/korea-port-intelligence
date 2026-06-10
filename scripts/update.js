@@ -2734,12 +2734,40 @@ const DISPLAY_STRING_FIELDS = new Set([
   "message_angle",
   "short_message",
   "event_summary",
+  "warnings",
   "warning",
   "message",
   "diagnostic_message",
   "error",
   "reason"
 ]);
+
+function endpointItemCount(payload) {
+  if (Array.isArray(payload)) return payload.length;
+  if (!payload || typeof payload !== "object") return null;
+  for (const key of ["items", "data", "vessels", "candidates", "opportunities", "contact_today", "ports", "categories", "endpoints", "pages"]) {
+    if (Array.isArray(payload[key])) return payload[key].length;
+  }
+  return null;
+}
+
+function withEndpointItemCount(payload) {
+  if (Array.isArray(payload)) {
+    return {
+      schema_version: PUBLIC_API_SCHEMA_VERSION,
+      generated_at: new Date().toISOString(),
+      record_count: payload.length,
+      item_count: payload.length,
+      items: payload
+    };
+  }
+  if (!payload || typeof payload !== "object") return payload;
+  const itemCount = endpointItemCount(payload);
+  return {
+    ...payload,
+    item_count: Number(payload.item_count ?? (Number.isFinite(itemCount) ? itemCount : 0))
+  };
+}
 
 function sanitizeDashboardJsonValue(value, key = "") {
   if (value === undefined) return null;
@@ -2763,13 +2791,23 @@ function sanitizeDashboardJsonValue(value, key = "") {
 }
 
 function safeDashboardJsonString(payload) {
-  return `${JSON.stringify(sanitizeDashboardJsonValue(payload), null, 2)}\n`;
+  return `${JSON.stringify(sanitizeDashboardJsonValue(withEndpointItemCount(payload)), null, 2)}\n`;
 }
 
 function writeDashboardJson(filePath, payload) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
   fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
   const body = safeDashboardJsonString(payload);
+  const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tempPath, body, "utf8");
+  fs.renameSync(tempPath, normalized);
+  return normalized;
+}
+
+function writeInternalJson(filePath, payload) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
+  const body = `${JSON.stringify(sanitizeDashboardJsonValue(payload), null, 2)}\n`;
   const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
   fs.writeFileSync(tempPath, body, "utf8");
   fs.renameSync(tempPath, normalized);
@@ -2808,13 +2846,15 @@ function readJsonSafe(filePath, fallback = null) {
 
 function rowCountFromPayload(payload) {
   if (Array.isArray(payload)) return payload.length;
-  if (Array.isArray(payload?.data)) return payload.data.length;
-  if (Array.isArray(payload?.items)) return payload.items.length;
-  if (Array.isArray(payload?.vessels)) return payload.vessels.length;
-  if (Array.isArray(payload?.candidates)) return payload.candidates.length;
-  if (Array.isArray(payload?.opportunities)) return payload.opportunities.length;
   if (payload && typeof payload === "object") {
-    return Number(payload.all_vessels_count || payload.all_collected_vessel_count || payload.record_count || payload.target_vessels_count || payload.candidate_count || 0);
+    const direct = Number(payload.record_count ?? payload.total_count ?? payload.total_vessels);
+    if (Number.isFinite(direct)) return direct;
+    if (Array.isArray(payload.data)) return payload.data.length;
+    if (Array.isArray(payload.items)) return payload.items.length;
+    if (Array.isArray(payload.vessels)) return payload.vessels.length;
+    if (Array.isArray(payload.candidates)) return payload.candidates.length;
+    if (Array.isArray(payload.opportunities)) return payload.opportunities.length;
+    return Number(payload.all_vessels_count || payload.all_collected_vessel_count || payload.target_vessels_count || payload.candidate_count || 0);
   }
   return 0;
 }
@@ -2841,6 +2881,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["intelligence.complianceExposure", "dashboard/api/intelligence/compliance-exposure.json"],
   ["intelligence.cleaningWindow", "dashboard/api/intelligence/cleaning-window.json"]
 ];
+const ENDPOINT_TOO_LARGE_BYTES = 500 * 1024;
 
 function schemaProblemForEndpoint(relativePath, payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "root_object_required";
@@ -2861,14 +2902,16 @@ function endpointManifestEntry(key, relativePath) {
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
   if (!exists) {
-    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, status: "MISSING", problem: "file_missing" };
+    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, status: "MISSING", problem: "file_missing" };
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
     const payload = JSON.parse(text);
     const schemaProblem = schemaProblemForEndpoint(normalized, payload);
     const count = rowCountFromPayload(payload);
-    const status = schemaProblem ? "SCHEMA_MISMATCH" : count === 0 ? "EMPTY_VALID" : "OK";
+    const itemCount = endpointItemCount(payload) ?? 0;
+    const bytes = Buffer.byteLength(text);
+    const status = schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK";
     return {
       key,
       path: normalized,
@@ -2876,9 +2919,10 @@ function endpointManifestEntry(key, relativePath) {
       valid_json: true,
       schema_valid: !schemaProblem,
       record_count: count,
-      bytes: Buffer.byteLength(text),
+      item_count: itemCount,
+      bytes,
       status,
-      problem: schemaProblem || ""
+      problem: schemaProblem || (status === "TOO_LARGE" ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
     };
   } catch (error) {
     return {
@@ -2888,6 +2932,7 @@ function endpointManifestEntry(key, relativePath) {
       valid_json: false,
       schema_valid: false,
       record_count: 0,
+      item_count: 0,
       bytes: fs.statSync(fullPath).size,
       status: "INVALID_JSON",
       problem: error.message
@@ -12184,6 +12229,7 @@ function buildStaticApiPayload(path, payload, report = {}) {
   if (!normalizedPath.startsWith("dashboard/api/") || !Array.isArray(payload)) return payload;
   const servingMode = normalizeServingMode(report.serving_mode || report.output_mode || (shouldWriteDebugApiOutputs(report) ? "local_diagnostics" : "static_json"));
   return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
     serving_mode: servingMode,
     data_source_used: report.data_source_used || (servingMode === "local_diagnostics" ? "diagnostics_only_no_live_data" : "static_json_snapshot"),
     fallback_used: Boolean(report.fallback_used),
@@ -12195,6 +12241,7 @@ function buildStaticApiPayload(path, payload, report = {}) {
       active_collected_at: report.completed_at || report.generated_at || null
     },
     record_count: payload.length,
+    item_count: payload.length,
     data: payload
   };
 }
@@ -12202,14 +12249,17 @@ function buildStaticApiPayload(path, payload, report = {}) {
 function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
   const outputPath = routeApiOutputPath(path, report);
   const outputPayload = buildStaticApiPayload(path, payload, report);
+  const writeJson = String(path || "").replace(/\\/g, "/").startsWith("dashboard/api/")
+    ? writeDashboardJson
+    : writeInternalJson;
   if (outputPath !== path) {
     const incomingRows = countJsonRows(outputPayload);
     fs.mkdirSync(outputPath.split("/").slice(0, -1).join("/"), { recursive: true });
-    fs.writeFileSync(outputPath, JSON.stringify(outputPayload, null, 2));
+    writeJson(outputPath, outputPayload);
     const rootOutputCreated = !fs.existsSync(path);
     if (rootOutputCreated) {
       fs.mkdirSync(path.split("/").slice(0, -1).join("/"), { recursive: true });
-      fs.writeFileSync(path, JSON.stringify(outputPayload, null, 2));
+      writeJson(path, outputPayload);
     }
     manifest[path] = {
       status: "written_to_debug_only",
@@ -12234,7 +12284,7 @@ function writeStaticDatasetJson(path, payload, report = {}, manifest = {}) {
     };
     return manifest[path];
   }
-  fs.writeFileSync(path, JSON.stringify(outputPayload, null, 2));
+  writeJson(path, outputPayload);
   manifest[path] = {
     status: "written",
     rows: incomingRows,

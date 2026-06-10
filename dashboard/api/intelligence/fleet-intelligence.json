@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 2,
@@ -9,44 +9,44 @@
       "rank": 1,
       "operator_name": "미확인 운영사",
       "operator": "미확인 운영사",
-      "average_stay_days": 8.9,
-      "repeat_caller_count": 21,
+      "average_stay_days": 6.9,
+      "repeat_caller_count": 20,
       "korea_presence_score": 100,
-      "fleet_size_korea": 21,
-      "vessel_count": 21,
-      "hot_count": 1,
-      "warm_count": 20,
+      "fleet_size_korea": 20,
+      "vessel_count": 20,
+      "hot_count": 2,
+      "warm_count": 18,
       "high_risk_count": 0,
-      "compliance_exposure_count": 2,
+      "compliance_exposure_count": 3,
       "fleet_dna": {
         "preferred_ports": [
           {
             "port_name": "대산",
-            "count": 7
+            "count": 6
           },
           {
             "port_name": "부산",
-            "count": 5
-          },
-          {
-            "port_name": "미확인 항만",
             "count": 3
           },
           {
             "port_name": "울산",
-            "count": 2
+            "count": 3
           },
           {
             "port_name": "여수",
-            "count": 2
+            "count": 3
+          },
+          {
+            "port_name": "미확인 항만",
+            "count": 3
           }
         ],
-        "average_stay_days": 8.9,
+        "average_stay_days": 6.9,
         "repeat_visit_frequency": 1.1,
         "common_vessel_types": [
           {
             "vessel_type": "bulk_carrier",
-            "count": 10
+            "count": 9
           },
           {
             "vessel_type": "tanker",
@@ -54,7 +54,7 @@
           },
           {
             "vessel_type": "crude_tanker",
-            "count": 4
+            "count": 5
           },
           {
             "vessel_type": "기타선",
@@ -67,20 +67,20 @@
         ],
         "relationship_status": "contact_verification_needed",
         "commercial_tendency": [
+          "HOT 후보 집중",
           "WARM 후보 풀",
           "반복입항형",
           "Compliance 노출형",
           "장기체류형",
-          "다항만 활동",
-          "고기회 선대"
+          "다항만 활동"
         ]
       },
-      "fleet_profile": "WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동, 고기회 선대",
+      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
       "repeat_visit_frequency": 1.1,
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
-          "count": 10
+          "count": 9
         },
         {
           "vessel_type": "tanker",
@@ -88,7 +88,7 @@
         },
         {
           "vessel_type": "crude_tanker",
-          "count": 4
+          "count": 5
         },
         {
           "vessel_type": "기타선",
@@ -99,38 +99,47 @@
         "Australia",
         "compliance_route_signal"
       ],
-      "congestion_exposure": 34,
-      "commercial_tendency": "WARM 후보 풀",
+      "congestion_exposure": 33,
+      "commercial_tendency": "HOT 후보 집중",
       "estimated_revenue": {
         "currency": "USD",
-        "estimated_revenue_low": 146500,
-        "estimated_revenue_high": 460500,
+        "estimated_revenue_low": 147000,
+        "estimated_revenue_high": 461000,
         "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
       },
-      "average_opportunity_score": 62,
+      "average_opportunity_score": 61,
       "top_ports": [
         {
           "port_name": "대산",
-          "count": 7
+          "count": 6
         },
         {
           "port_name": "부산",
-          "count": 5
-        },
-        {
-          "port_name": "미확인 항만",
           "count": 3
         },
         {
           "port_name": "울산",
-          "count": 2
+          "count": 3
         },
         {
           "port_name": "여수",
-          "count": 2
+          "count": 3
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 3
         }
       ],
       "top_vessels": [
+        {
+          "vessel_name": "TORM SPLENDID",
+          "imo": null,
+          "mmsi": null,
+          "port": "울산",
+          "opportunity_score": 76,
+          "risk_score": 45,
+          "priority_label": "WARM"
+        },
         {
           "vessel_name": "GELBRAY EXPRESS",
           "imo": null,
@@ -150,15 +159,6 @@
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "YUAN JU WAN",
-          "imo": null,
-          "mmsi": null,
-          "port": "대산",
-          "opportunity_score": 69,
-          "risk_score": 45,
-          "priority_label": "WARM"
-        },
-        {
           "vessel_name": "ADMIRAL SCHMIDT",
           "imo": null,
           "mmsi": null,
@@ -168,29 +168,29 @@
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "AMIS VICTORY",
+          "vessel_name": "PROTEUS RONG NA",
           "imo": null,
           "mmsi": null,
-          "port": "부산",
+          "port": "대산",
           "opportunity_score": 67,
           "risk_score": 45,
           "priority_label": "WARM"
         }
       ],
       "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 146500,
-      "estimated_revenue_high": 460500,
-      "missing_contact_count": 21,
-      "opportunity_score": 69,
+      "estimated_revenue_low": 147000,
+      "estimated_revenue_high": 461000,
+      "missing_contact_count": 20,
+      "opportunity_score": 75,
       "top_factors": [
+        "HOT 후보 집중",
         "WARM 후보 풀",
         "반복입항형",
         "Compliance 노출형",
         "장기체류형",
-        "다항만 활동",
-        "고기회 선대"
+        "다항만 활동"
       ],
-      "reason_summary": "미확인 운영사 관련 21척, HOT 1척, 반복입항 21척, Compliance 2척",
+      "reason_summary": "미확인 운영사 관련 20척, HOT 2척, 반복입항 20척, Compliance 3척",
       "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
@@ -231,7 +231,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 69,
+        "opportunity_score": 75,
         "risk_score": 0,
         "biofouling_score": 0,
         "compliance_score": 0,
@@ -246,19 +246,19 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
+          "HOT 후보 집중",
           "WARM 후보 풀",
           "반복입항형",
           "Compliance 노출형",
           "장기체류형",
-          "다항만 활동",
-          "고기회 선대"
+          "다항만 활동"
         ],
         "recommendedAction": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
         "target_categories": [],
-        "reason_summary": "미확인 운영사 관련 21척, HOT 1척, 반복입항 21척, Compliance 2척",
+        "reason_summary": "미확인 운영사 관련 20척, HOT 2척, 반복입항 20척, Compliance 3척",
         "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
         "data_sources": [],
         "enrichment_sources": []
@@ -414,5 +414,6 @@
   "summary": {
     "operator_count": 2,
     "source_hint": "operator_snapshot_daily / fleet-memory / operator-opportunities / repeat-callers"
-  }
+  },
+  "item_count": 2
 }

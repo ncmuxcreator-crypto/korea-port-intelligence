@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 1,
@@ -8,24 +8,24 @@
     {
       "rank": 1,
       "operator_name": "전체 영업 퍼널",
-      "target_count": 22,
-      "total_targets": 22,
-      "hot_targets": 0,
-      "warm_targets": 21,
+      "target_count": 21,
+      "total_targets": 21,
+      "hot_targets": 1,
+      "warm_targets": 19,
       "low_targets": 1,
-      "conservative_revenue": 31680,
-      "expected_revenue": 63360,
-      "aggressive_revenue": 110880,
-      "estimated_revenue_low": 31680,
-      "estimated_revenue_high": 110880,
+      "conservative_revenue": 30240,
+      "expected_revenue": 60480,
+      "aggressive_revenue": 105840,
+      "estimated_revenue_low": 30240,
+      "estimated_revenue_high": 105840,
       "portfolio": {
-        "total_targets": 22,
-        "hot_targets": 0,
-        "warm_targets": 21,
+        "total_targets": 21,
+        "hot_targets": 1,
+        "warm_targets": 19,
         "low_targets": 1,
-        "conservative_revenue": 31680,
-        "expected_revenue": 63360,
-        "aggressive_revenue": 110880
+        "conservative_revenue": 30240,
+        "expected_revenue": 60480,
+        "aggressive_revenue": 105840
       },
       "by_operator": [
         {
@@ -39,33 +39,33 @@
       "by_port": [
         {
           "port_name": "대산",
-          "target_count": 7,
+          "target_count": 6,
           "hot_count": 0,
-          "expected_revenue": 20160
+          "expected_revenue": 17280
+        },
+        {
+          "port_name": "울산",
+          "target_count": 3,
+          "hot_count": 1,
+          "expected_revenue": 8640
         },
         {
           "port_name": "부산",
-          "target_count": 5,
+          "target_count": 3,
           "hot_count": 0,
-          "expected_revenue": 14400
+          "expected_revenue": 8640
+        },
+        {
+          "port_name": "여수",
+          "target_count": 3,
+          "hot_count": 0,
+          "expected_revenue": 8640
         },
         {
           "port_name": "미확인 항만",
           "target_count": 3,
           "hot_count": 0,
           "expected_revenue": 8640
-        },
-        {
-          "port_name": "울산",
-          "target_count": 2,
-          "hot_count": 0,
-          "expected_revenue": 5760
-        },
-        {
-          "port_name": "여수",
-          "target_count": 2,
-          "hot_count": 0,
-          "expected_revenue": 5760
         },
         {
           "port_name": "평택·당진",
@@ -84,60 +84,60 @@
         {
           "category_code": "MONITOR",
           "category_label": "MONITOR",
-          "target_count": 22,
-          "expected_revenue": 63360
+          "target_count": 21,
+          "expected_revenue": 60480
         }
       ],
       "sections": {
         "HOT": {
-          "target_count": 0,
-          "estimated_revenue_low": 0,
-          "estimated_revenue_high": 0
+          "target_count": 1,
+          "estimated_revenue_low": 9000,
+          "estimated_revenue_high": 28000
         },
         "WARM": {
-          "target_count": 21,
-          "estimated_revenue_low": 105000,
-          "estimated_revenue_high": 336000
+          "target_count": 19,
+          "estimated_revenue_low": 95000,
+          "estimated_revenue_high": 304000
         },
         "portfolio": {
-          "total_targets": 22,
-          "hot_targets": 0,
-          "warm_targets": 21,
+          "total_targets": 21,
+          "hot_targets": 1,
+          "warm_targets": 19,
           "low_targets": 1,
-          "conservative_revenue": 31680,
-          "expected_revenue": 63360,
-          "aggressive_revenue": 110880
+          "conservative_revenue": 30240,
+          "expected_revenue": 60480,
+          "aggressive_revenue": 105840
         },
         "by_port": [
           {
             "port_name": "대산",
-            "target_count": 7,
+            "target_count": 6,
             "hot_count": 0,
-            "expected_revenue": 20160
+            "expected_revenue": 17280
+          },
+          {
+            "port_name": "울산",
+            "target_count": 3,
+            "hot_count": 1,
+            "expected_revenue": 8640
           },
           {
             "port_name": "부산",
-            "target_count": 5,
+            "target_count": 3,
             "hot_count": 0,
-            "expected_revenue": 14400
+            "expected_revenue": 8640
+          },
+          {
+            "port_name": "여수",
+            "target_count": 3,
+            "hot_count": 0,
+            "expected_revenue": 8640
           },
           {
             "port_name": "미확인 항만",
             "target_count": 3,
             "hot_count": 0,
             "expected_revenue": 8640
-          },
-          {
-            "port_name": "울산",
-            "target_count": 2,
-            "hot_count": 0,
-            "expected_revenue": 5760
-          },
-          {
-            "port_name": "여수",
-            "target_count": 2,
-            "hot_count": 0,
-            "expected_revenue": 5760
           },
           {
             "port_name": "평택·당진",
@@ -165,8 +165,8 @@
           {
             "category_code": "MONITOR",
             "category_label": "MONITOR",
-            "target_count": 22,
-            "expected_revenue": 63360
+            "target_count": 21,
+            "expected_revenue": 60480
           }
         ],
         "assumptions": {
@@ -179,60 +179,60 @@
         },
         "disclaimer": "Estimated Opportunity Only"
       },
-      "reason_summary": "Estimated Opportunity Only: HOT 0척, WARM 21척, LOW 1척 기준의 예상 영업 기회",
+      "reason_summary": "Estimated Opportunity Only: HOT 1척, WARM 19척, LOW 1척 기준의 예상 영업 기회",
       "recommended_action": "보장 매출이 아니라 영업 우선순위 산정용입니다. HOT 후보부터 연락 가능성과 작업 가능 시간을 확인하세요."
     }
   ],
   "sections": {
     "HOT": {
-      "target_count": 0,
-      "estimated_revenue_low": 0,
-      "estimated_revenue_high": 0
+      "target_count": 1,
+      "estimated_revenue_low": 9000,
+      "estimated_revenue_high": 28000
     },
     "WARM": {
-      "target_count": 21,
-      "estimated_revenue_low": 105000,
-      "estimated_revenue_high": 336000
+      "target_count": 19,
+      "estimated_revenue_low": 95000,
+      "estimated_revenue_high": 304000
     },
     "portfolio": {
-      "total_targets": 22,
-      "hot_targets": 0,
-      "warm_targets": 21,
+      "total_targets": 21,
+      "hot_targets": 1,
+      "warm_targets": 19,
       "low_targets": 1,
-      "conservative_revenue": 31680,
-      "expected_revenue": 63360,
-      "aggressive_revenue": 110880
+      "conservative_revenue": 30240,
+      "expected_revenue": 60480,
+      "aggressive_revenue": 105840
     },
     "by_port": [
       {
         "port_name": "대산",
-        "target_count": 7,
+        "target_count": 6,
         "hot_count": 0,
-        "expected_revenue": 20160
+        "expected_revenue": 17280
+      },
+      {
+        "port_name": "울산",
+        "target_count": 3,
+        "hot_count": 1,
+        "expected_revenue": 8640
       },
       {
         "port_name": "부산",
-        "target_count": 5,
+        "target_count": 3,
         "hot_count": 0,
-        "expected_revenue": 14400
+        "expected_revenue": 8640
+      },
+      {
+        "port_name": "여수",
+        "target_count": 3,
+        "hot_count": 0,
+        "expected_revenue": 8640
       },
       {
         "port_name": "미확인 항만",
         "target_count": 3,
         "hot_count": 0,
         "expected_revenue": 8640
-      },
-      {
-        "port_name": "울산",
-        "target_count": 2,
-        "hot_count": 0,
-        "expected_revenue": 5760
-      },
-      {
-        "port_name": "여수",
-        "target_count": 2,
-        "hot_count": 0,
-        "expected_revenue": 5760
       },
       {
         "port_name": "평택·당진",
@@ -260,8 +260,8 @@
       {
         "category_code": "MONITOR",
         "category_label": "MONITOR",
-        "target_count": 22,
-        "expected_revenue": 63360
+        "target_count": 21,
+        "expected_revenue": 60480
       }
     ],
     "assumptions": {
@@ -275,13 +275,13 @@
     "disclaimer": "Estimated Opportunity Only"
   },
   "portfolio": {
-    "total_targets": 22,
-    "hot_targets": 0,
-    "warm_targets": 21,
+    "total_targets": 21,
+    "hot_targets": 1,
+    "warm_targets": 19,
     "low_targets": 1,
-    "conservative_revenue": 31680,
-    "expected_revenue": 63360,
-    "aggressive_revenue": 110880
+    "conservative_revenue": 30240,
+    "expected_revenue": 60480,
+    "aggressive_revenue": 105840
   },
   "by_operator": [
     {
@@ -295,33 +295,33 @@
   "by_port": [
     {
       "port_name": "대산",
-      "target_count": 7,
+      "target_count": 6,
       "hot_count": 0,
-      "expected_revenue": 20160
+      "expected_revenue": 17280
+    },
+    {
+      "port_name": "울산",
+      "target_count": 3,
+      "hot_count": 1,
+      "expected_revenue": 8640
     },
     {
       "port_name": "부산",
-      "target_count": 5,
+      "target_count": 3,
       "hot_count": 0,
-      "expected_revenue": 14400
+      "expected_revenue": 8640
+    },
+    {
+      "port_name": "여수",
+      "target_count": 3,
+      "hot_count": 0,
+      "expected_revenue": 8640
     },
     {
       "port_name": "미확인 항만",
       "target_count": 3,
       "hot_count": 0,
       "expected_revenue": 8640
-    },
-    {
-      "port_name": "울산",
-      "target_count": 2,
-      "hot_count": 0,
-      "expected_revenue": 5760
-    },
-    {
-      "port_name": "여수",
-      "target_count": 2,
-      "hot_count": 0,
-      "expected_revenue": 5760
     },
     {
       "port_name": "평택·당진",
@@ -340,8 +340,8 @@
     {
       "category_code": "MONITOR",
       "category_label": "MONITOR",
-      "target_count": 22,
-      "expected_revenue": 63360
+      "target_count": 21,
+      "expected_revenue": 60480
     }
   ],
   "assumptions": {
@@ -355,54 +355,54 @@
   "disclaimer": "Estimated Opportunity Only",
   "summary": {
     "HOT": {
-      "target_count": 0,
-      "estimated_revenue_low": 0,
-      "estimated_revenue_high": 0
+      "target_count": 1,
+      "estimated_revenue_low": 9000,
+      "estimated_revenue_high": 28000
     },
     "WARM": {
-      "target_count": 21,
-      "estimated_revenue_low": 105000,
-      "estimated_revenue_high": 336000
+      "target_count": 19,
+      "estimated_revenue_low": 95000,
+      "estimated_revenue_high": 304000
     },
     "portfolio": {
-      "total_targets": 22,
-      "hot_targets": 0,
-      "warm_targets": 21,
+      "total_targets": 21,
+      "hot_targets": 1,
+      "warm_targets": 19,
       "low_targets": 1,
-      "conservative_revenue": 31680,
-      "expected_revenue": 63360,
-      "aggressive_revenue": 110880
+      "conservative_revenue": 30240,
+      "expected_revenue": 60480,
+      "aggressive_revenue": 105840
     },
     "by_port": [
       {
         "port_name": "대산",
-        "target_count": 7,
+        "target_count": 6,
         "hot_count": 0,
-        "expected_revenue": 20160
+        "expected_revenue": 17280
+      },
+      {
+        "port_name": "울산",
+        "target_count": 3,
+        "hot_count": 1,
+        "expected_revenue": 8640
       },
       {
         "port_name": "부산",
-        "target_count": 5,
+        "target_count": 3,
         "hot_count": 0,
-        "expected_revenue": 14400
+        "expected_revenue": 8640
+      },
+      {
+        "port_name": "여수",
+        "target_count": 3,
+        "hot_count": 0,
+        "expected_revenue": 8640
       },
       {
         "port_name": "미확인 항만",
         "target_count": 3,
         "hot_count": 0,
         "expected_revenue": 8640
-      },
-      {
-        "port_name": "울산",
-        "target_count": 2,
-        "hot_count": 0,
-        "expected_revenue": 5760
-      },
-      {
-        "port_name": "여수",
-        "target_count": 2,
-        "hot_count": 0,
-        "expected_revenue": 5760
       },
       {
         "port_name": "평택·당진",
@@ -430,8 +430,8 @@
       {
         "category_code": "MONITOR",
         "category_label": "MONITOR",
-        "target_count": 22,
-        "expected_revenue": 63360
+        "target_count": 21,
+        "expected_revenue": 60480
       }
     ],
     "assumptions": {
@@ -443,5 +443,6 @@
       "note": "Estimated Opportunity Only - guaranteed revenue가 아닙니다."
     },
     "disclaimer": "Estimated Opportunity Only"
-  }
+  },
+  "item_count": 1
 }

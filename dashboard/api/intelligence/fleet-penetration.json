@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 2,
@@ -8,37 +8,44 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "targeted_vessels": 21,
+      "targeted_vessels": 20,
       "won_vessels": 0,
       "captured_vessels": 0,
       "penetration_rate": 0,
-      "opportunity_gap": 21,
-      "estimated_remaining_revenue": 60480,
-      "fleet_size_korea": 21,
-      "average_opportunity_score": 62,
+      "opportunity_gap": 20,
+      "estimated_remaining_revenue": 57600,
+      "fleet_size_korea": 20,
+      "average_opportunity_score": 61,
       "top_ports": [
         {
           "port_name": "대산",
-          "count": 7
+          "count": 6
         },
         {
           "port_name": "부산",
-          "count": 5
-        },
-        {
-          "port_name": "미확인 항만",
           "count": 3
         },
         {
           "port_name": "울산",
-          "count": 2
+          "count": 3
         },
         {
           "port_name": "여수",
-          "count": 2
+          "count": 3
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 3
         }
       ],
       "top_vessels": [
+        {
+          "vessel_name": "TORM SPLENDID",
+          "imo": "",
+          "port": "울산",
+          "opportunity_score": 76,
+          "priority_label": "LOW"
+        },
         {
           "vessel_name": "GELBRAY EXPRESS",
           "imo": "",
@@ -54,13 +61,6 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "YUAN JU WAN",
-          "imo": "",
-          "port": "대산",
-          "opportunity_score": 69,
-          "priority_label": "WARM"
-        },
-        {
           "vessel_name": "ADMIRAL SCHMIDT",
           "imo": "",
           "port": "부산",
@@ -68,15 +68,15 @@
           "priority_label": "LOW"
         },
         {
-          "vessel_name": "AMIS VICTORY",
+          "vessel_name": "PROTEUS RONG NA",
           "imo": "",
-          "port": "부산",
+          "port": "대산",
           "opportunity_score": 67,
           "priority_label": "LOW"
         }
       ],
       "opportunity_score": 100,
-      "reason_summary": "미확인 운영사: 한국 확인 선대 21척 중 영업대상 21척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "reason_summary": "미확인 운영사: 한국 확인 선대 20척 중 영업대상 20척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
       "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "recommended_next_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "data_sources": [
@@ -150,7 +150,7 @@
         "contact_readiness_score": 0,
         "priority_label": "HOT",
         "target_categories": [],
-        "reason_summary": "미확인 운영사: 한국 확인 선대 21척 중 영업대상 21척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "reason_summary": "미확인 운영사: 한국 확인 선대 20척 중 영업대상 20척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
         "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
         "data_sources": [
           "fleet-intelligence",
@@ -166,7 +166,7 @@
         ],
         "enrichment_sources": []
       },
-      "observed_vessels": 21,
+      "observed_vessels": 20,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
       "lost_vessels": 0,
@@ -175,6 +175,13 @@
       "win_rate": 0,
       "currency": "USD",
       "top_gap_vessels": [
+        {
+          "vessel_name": "TORM SPLENDID",
+          "imo": "",
+          "port": "울산",
+          "opportunity_score": 76,
+          "priority_label": "LOW"
+        },
         {
           "vessel_name": "GELBRAY EXPRESS",
           "imo": "",
@@ -190,13 +197,6 @@
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "YUAN JU WAN",
-          "imo": "",
-          "port": "대산",
-          "opportunity_score": 69,
-          "priority_label": "WARM"
-        },
-        {
           "vessel_name": "ADMIRAL SCHMIDT",
           "imo": "",
           "port": "부산",
@@ -204,9 +204,9 @@
           "priority_label": "LOW"
         },
         {
-          "vessel_name": "AMIS VICTORY",
+          "vessel_name": "PROTEUS RONG NA",
           "imo": "",
-          "port": "부산",
+          "port": "대산",
           "opportunity_score": 67,
           "priority_label": "LOW"
         }
@@ -359,5 +359,6 @@
       "note": "Estimated Opportunity Only - guaranteed revenue가 아닙니다."
     },
     "definition": "penetration_rate = contacted_or_deeper_vessels / fleet_size_korea; target_coverage_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 접촉/견적/수주/실주 이력은 실제 신호가 있을 때만 집계합니다."
-  }
+  },
+  "item_count": 2
 }

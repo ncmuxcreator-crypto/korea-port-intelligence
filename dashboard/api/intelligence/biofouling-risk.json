@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -115,114 +115,6 @@
     },
     {
       "rank": 2,
-      "vessel_name": "AMIS VICTORY",
-      "port": "Busan",
-      "risk_level": "HIGH",
-      "factors": [
-        "LONG_PORT_STAY",
-        "LONG_ANCHORAGE",
-        "REPEATED_INACTIVITY",
-        "VESSEL_TYPE_EXPOSURE",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD"
-      ],
-      "opportunity_score": 65,
-      "risk_score": 100,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL"
-      ],
-      "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
-      "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
-      "data_sources": [
-        "Merged Port Operation port call",
-        "port_operation_busan_o",
-        "real_public_api_snapshot",
-        "port_operation",
-        "grtg"
-      ],
-      "vessel_display": {
-        "vessel_name": "AMIS VICTORY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Busan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 0,
-        "opportunity_score": 65,
-        "risk_score": 100,
-        "biofouling_score": 100,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 100,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "target_categories": [],
-        "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
-        "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
-        "data_sources": [
-          "Merged Port Operation port call",
-          "port_operation_busan_o",
-          "real_public_api_snapshot",
-          "port_operation",
-          "grtg"
-        ],
-        "enrichment_sources": []
-      }
-    },
-    {
-      "rank": 3,
       "vessel_name": "BOYM",
       "port": "Ulsan",
       "risk_level": "HIGH",
@@ -330,7 +222,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 3,
       "vessel_name": "VITUS BERING",
       "port": "Yeosu",
       "risk_level": "HIGH",
@@ -438,7 +330,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 4,
       "vessel_name": "ERSOZ WEST",
       "port": "Pyeongtaek-Dangjin",
       "risk_level": "HIGH",
@@ -544,7 +436,7 @@
       }
     },
     {
-      "rank": 6,
+      "rank": 5,
       "vessel_name": "GLOBAL PROSPERITY",
       "port": "South Gyeongsang",
       "risk_level": "HIGH",
@@ -652,7 +544,7 @@
       }
     },
     {
-      "rank": 7,
+      "rank": 6,
       "vessel_name": "PROTEUS RONG NA",
       "port": "Daesan",
       "risk_level": "HIGH",
@@ -760,12 +652,12 @@
       }
     },
     {
-      "rank": 8,
+      "rank": 7,
       "vessel_name": "YUAN JU WAN",
       "port": "Daesan",
       "risk_level": "HIGH",
       "factors": [
-        "LONG_PORT_STAY",
+        "PORT_DWELL_TIME",
         "LONG_ANCHORAGE",
         "REPEATED_INACTIVITY",
         "VESSEL_TYPE_EXPOSURE",
@@ -781,7 +673,7 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+      "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
       "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
       "data_sources": [
         "Merged Port Operation port call",
@@ -855,7 +747,7 @@
         "contact_readiness_score": 0,
         "priority_label": "WARM",
         "target_categories": [],
-        "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+        "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
         "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
         "data_sources": [
           "Merged Port Operation port call",
@@ -868,20 +760,19 @@
       }
     },
     {
-      "rank": 9,
-      "vessel_name": "디엘 루비",
-      "port": "Busan",
+      "rank": 8,
+      "vessel_name": "TORM SPLENDID",
+      "port": "Ulsan",
       "risk_level": "HIGH",
       "factors": [
-        "LONG_PORT_STAY",
+        "PORT_DWELL_TIME",
         "LONG_ANCHORAGE",
         "REPEATED_INACTIVITY",
         "VESSEL_TYPE_EXPOSURE",
-        "PREVIOUS_VISIT_PATTERN",
         "LONG_ANCHORAGE_WAIT",
         "EXTENDED_IDLE_PERIOD"
       ],
-      "opportunity_score": 57,
+      "opportunity_score": 61,
       "risk_score": 100,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -890,17 +781,17 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, PREVIOUS_VISIT_PATTERN, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+      "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
       "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
       "data_sources": [
         "Merged Port Operation port call",
-        "port_operation_busan_i",
+        "port_operation_ulsan_o",
         "real_public_api_snapshot",
         "port_operation",
         "grtg"
       ],
       "vessel_display": {
-        "vessel_name": "디엘 루비",
+        "vessel_name": "TORM SPLENDID",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -917,7 +808,7 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Busan",
+        "current_port": "Ulsan",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -938,7 +829,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 57,
+        "opportunity_score": 61,
         "risk_score": 100,
         "biofouling_score": 100,
         "compliance_score": 0,
@@ -962,13 +853,13 @@
         "recommendedAction": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
         "confidence": "-",
         "contact_readiness_score": 0,
-        "priority_label": "LOW",
+        "priority_label": "WARM",
         "target_categories": [],
-        "reason_summary": "LONG_PORT_STAY, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, PREVIOUS_VISIT_PATTERN, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+        "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
         "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
         "data_sources": [
           "Merged Port Operation port call",
-          "port_operation_busan_i",
+          "port_operation_ulsan_o",
           "real_public_api_snapshot",
           "port_operation",
           "grtg"
@@ -977,7 +868,7 @@
       }
     },
     {
-      "rank": 10,
+      "rank": 9,
       "vessel_name": "HAFNIA BEIJING",
       "port": "Daesan",
       "risk_level": "HIGH",
@@ -1079,10 +970,120 @@
         ],
         "enrichment_sources": []
       }
+    },
+    {
+      "rank": 10,
+      "vessel_name": "스카이케미",
+      "port": "Ulsan",
+      "risk_level": "HIGH",
+      "factors": [
+        "PORT_DWELL_TIME",
+        "LONG_ANCHORAGE",
+        "REPEATED_INACTIVITY",
+        "VESSEL_TYPE_EXPOSURE",
+        "PREVIOUS_VISIT_PATTERN",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD"
+      ],
+      "opportunity_score": 48,
+      "risk_score": 100,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "BULK_OR_TANKER"
+      ],
+      "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, PREVIOUS_VISIT_PATTERN, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+      "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "grtg"
+      ],
+      "vessel_display": {
+        "vessel_name": "스카이케미",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Ulsan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 48,
+        "risk_score": 100,
+        "biofouling_score": 100,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 100,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "BULK_OR_TANKER"
+        ],
+        "recommendedAction": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "target_categories": [],
+        "reason_summary": "PORT_DWELL_TIME, LONG_ANCHORAGE, REPEATED_INACTIVITY, VESSEL_TYPE_EXPOSURE, PREVIOUS_VISIT_PATTERN, LONG_ANCHORAGE_WAIT, EXTENDED_IDLE_PERIOD 기반 운영 리스크 신호",
+        "recommended_action": "체류/묘박 이력과 선종을 근거로 선저 상태 확인을 우선 제안",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "grtg"
+        ],
+        "enrichment_sources": []
+      }
     }
   ],
   "summary": {
     "high_risk_count": 10,
     "disclaimer": "운항 신호 기반 상대 리스크입니다. 과학적 부착량 판정이 아닙니다."
-  }
+  },
+  "item_count": 10
 }

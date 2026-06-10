@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 1,
@@ -8,11 +8,11 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "targeted_vessels": 1,
-      "opportunity_gap": 20,
-      "known_korea_vessels": 21,
-      "opportunity_score": 68,
-      "reason_summary": "미확인 운영사: 한국 관측 선대 21척 중 미타겟 기회 20척",
+      "targeted_vessels": 3,
+      "opportunity_gap": 17,
+      "known_korea_vessels": 20,
+      "opportunity_score": 61,
+      "reason_summary": "미확인 운영사: 한국 관측 선대 20척 중 미타겟 기회 17척",
       "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "recommended_next_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "data_sources": [
@@ -64,7 +64,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 68,
+        "opportunity_score": 61,
         "risk_score": 0,
         "biofouling_score": 0,
         "compliance_score": 0,
@@ -84,7 +84,7 @@
         "contact_readiness_score": 0,
         "priority_label": "WARM",
         "target_categories": [],
-        "reason_summary": "미확인 운영사: 한국 관측 선대 21척 중 미타겟 기회 20척",
+        "reason_summary": "미확인 운영사: 한국 관측 선대 20척 중 미타겟 기회 17척",
         "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
         "data_sources": [
           "fleet-intelligence",
@@ -102,8 +102,8 @@
   ],
   "summary": {
     "operator_count": 1,
-    "total_gap_vessels": 20,
-    "unknown_operator_gap": 20,
+    "total_gap_vessels": 17,
+    "unknown_operator_gap": 17,
     "assumptions": {
       "currency": "USD",
       "average_cleaning_price": 18000,
@@ -113,5 +113,6 @@
       "note": "Estimated Opportunity Only - guaranteed revenue가 아닙니다."
     },
     "definition": "known_korea_vessels는 한국 관측 선대를 기준으로 하며, gap_vessels는 영업대상/접촉/견적/수주 파이프라인에 아직 포함되지 않은 상업 신호 보유 선박입니다."
-  }
+  },
+  "item_count": 1
 }

@@ -1,10 +1,122 @@
 {
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
   "source_table": "vessel_visits,vessel_snapshot_daily,route_snapshot_daily,risk_history,opportunity_master",
   "items": [
+    {
+      "rank": 17,
+      "vessel_name": "TORM SPLENDID",
+      "port": "Ulsan",
+      "ports_visited": [
+        "울산"
+      ],
+      "last_seen": "2026-06-10T07:27:56.847Z",
+      "first_seen": "2026-06-10T07:27:56.847Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-10T07:27:56.847Z",
+          "port": "울산",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-10T07:27:56.847Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-10T07:27:56.847Z",
+          "opportunity_score": 76,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 76,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL"
+      ],
+      "reason_summary": "TORM SPLENDID 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "TORM SPLENDID",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Ulsan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 76,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "TORM SPLENDID 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
     {
       "rank": 21,
       "vessel_name": "GELBRAY EXPRESS",
@@ -12,11 +124,11 @@
       "ports_visited": [
         "부산"
       ],
-      "last_seen": "2026-06-01T23:30:27.534Z",
-      "first_seen": "2026-06-01T23:30:27.534Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "부산",
           "status": "arriving_soon",
           "eta": null
@@ -24,13 +136,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 71,
           "priority_label": "WARM"
         }
@@ -118,17 +230,17 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 4,
       "vessel_name": "VITUS BERING",
       "port": "Yeosu",
       "ports_visited": [
         "여수"
       ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "여수",
           "status": "arriving_soon",
           "eta": null
@@ -136,13 +248,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 70,
           "priority_label": "WARM"
         }
@@ -230,129 +342,17 @@
       }
     },
     {
-      "rank": 16,
-      "vessel_name": "YUAN JU WAN",
-      "port": "Daesan",
-      "ports_visited": [
-        "대산"
-      ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "port": "대산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "opportunity_score": 69,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 69,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL"
-      ],
-      "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "YUAN JU WAN",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Daesan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 0,
-        "opportunity_score": 69,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "target_categories": [],
-        "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": [],
-        "enrichment_sources": []
-      }
-    },
-    {
       "rank": 1,
       "vessel_name": "ADMIRAL SCHMIDT",
       "port": "Busan",
       "ports_visited": [
         "부산"
       ],
-      "last_seen": "2026-06-01T23:30:27.534Z",
-      "first_seen": "2026-06-01T23:30:27.534Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "부산",
           "status": "arriving_soon",
           "eta": null
@@ -360,13 +360,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-01T23:30:27.534Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 67,
           "priority_label": "WARM"
         }
@@ -454,129 +454,17 @@
       }
     },
     {
-      "rank": 2,
-      "vessel_name": "AMIS VICTORY",
-      "port": "Busan",
-      "ports_visited": [
-        "부산"
-      ],
-      "last_seen": "2026-06-10T05:16:21.991Z",
-      "first_seen": "2026-06-10T05:16:21.991Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-10T05:16:21.991Z",
-          "port": "부산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-10T05:16:21.991Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-10T05:16:21.991Z",
-          "opportunity_score": 67,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 67,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL"
-      ],
-      "reason_summary": "AMIS VICTORY 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "AMIS VICTORY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Busan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 0,
-        "opportunity_score": 67,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "target_categories": [],
-        "reason_summary": "AMIS VICTORY 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": [],
-        "enrichment_sources": []
-      }
-    },
-    {
       "rank": 15,
       "vessel_name": "PROTEUS RONG NA",
       "port": "Daesan",
       "ports_visited": [
         "대산"
       ],
-      "last_seen": "2026-06-10T05:16:21.991Z",
-      "first_seen": "2026-06-10T05:16:21.991Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-10T05:16:21.991Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "대산",
           "status": "arriving_soon",
           "eta": null
@@ -584,13 +472,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-10T05:16:21.991Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-10T05:16:21.991Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 67,
           "priority_label": "WARM"
         }
@@ -678,31 +566,31 @@
       }
     },
     {
-      "rank": 17,
-      "vessel_name": "디엘 루비",
-      "port": "Busan",
+      "rank": 16,
+      "vessel_name": "YUAN JU WAN",
+      "port": "Daesan",
       "ports_visited": [
-        "부산"
+        "대산"
       ],
-      "last_seen": "2026-06-05T07:35:52.082Z",
-      "first_seen": "2026-06-05T07:35:52.082Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-05T07:35:52.082Z",
-          "port": "부산",
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "port": "대산",
           "status": "arriving_soon",
           "eta": null
         }
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-05T07:35:52.082Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-05T07:35:52.082Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 67,
           "priority_label": "WARM"
         }
@@ -716,122 +604,10 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "디엘 루비 이력: 항만 1곳, 방문 신호 1건",
+      "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
       "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
       "vessel_display": {
-        "vessel_name": "디엘 루비",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Busan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 0,
-        "opportunity_score": 67,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "target_categories": [],
-        "reason_summary": "디엘 루비 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": [],
-        "enrichment_sources": []
-      }
-    },
-    {
-      "rank": 18,
-      "vessel_name": "HAFNIA BEIJING",
-      "port": "Daesan",
-      "ports_visited": [
-        "대산"
-      ],
-      "last_seen": "2026-06-04T08:10:12.127Z",
-      "first_seen": "2026-06-04T08:10:12.127Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-04T08:10:12.127Z",
-          "port": "대산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-04T08:10:12.127Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-04T08:10:12.127Z",
-          "opportunity_score": 67,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 67,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET"
-      ],
-      "reason_summary": "HAFNIA BEIJING 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "HAFNIA BEIJING",
+        "vessel_name": "YUAN JU WAN",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -885,6 +661,118 @@
         "slowSteamingHours": 0,
         "riskReasons": [
           "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 18,
+      "vessel_name": "HAFNIA BEIJING",
+      "port": "Daesan",
+      "ports_visited": [
+        "대산"
+      ],
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "port": "대산",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "opportunity_score": 65,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET"
+      ],
+      "reason_summary": "HAFNIA BEIJING 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "HAFNIA BEIJING",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Daesan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
           "HIGH_GT_VESSEL",
           "HIGH_VALUE_GT_30000_PLUS",
           "BULK_OR_TANKER",
@@ -908,11 +796,11 @@
       "ports_visited": [
         "미확인 항만"
       ],
-      "last_seen": "2026-06-05T23:56:18.250Z",
-      "first_seen": "2026-06-05T23:56:18.250Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-05T23:56:18.250Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "미확인 항만",
           "status": "arriving_soon",
           "eta": null
@@ -920,13 +808,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-05T23:56:18.250Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-05T23:56:18.250Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 64,
           "priority_label": "WARM"
         }
@@ -1020,11 +908,11 @@
       "ports_visited": [
         "여수"
       ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "port": "여수",
           "status": "arriving_soon",
           "eta": null
@@ -1032,13 +920,13 @@
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-10T07:23:28.931Z",
           "opportunity_score": 63,
           "priority_label": "WARM"
         }
@@ -1124,7 +1012,120 @@
         "data_sources": [],
         "enrichment_sources": []
       }
+    },
+    {
+      "rank": 8,
+      "vessel_name": "ERSOZ WEST",
+      "port": "Pyeongtaek-Dangjin",
+      "ports_visited": [
+        "평택·당진"
+      ],
+      "last_seen": "2026-06-10T07:23:28.931Z",
+      "first_seen": "2026-06-10T07:23:28.931Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "port": "평택·당진",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-10T07:23:28.931Z",
+          "opportunity_score": 63,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 63,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER"
+      ],
+      "reason_summary": "ERSOZ WEST 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "ERSOZ WEST",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Pyeongtaek-Dangjin",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 63,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "EXTENDED_IDLE_PERIOD",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "ERSOZ WEST 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
     }
   ],
-  "summary": {}
+  "summary": {},
+  "item_count": 10
 }

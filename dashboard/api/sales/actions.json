@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T05:19:49.050Z",
+  "generated_at": "2026-06-10T07:31:11.742Z",
   "data_mode": "live",
-  "record_count": 22,
+  "record_count": 21,
   "source_table": "targets/categories,sales_candidates_current,sales/actions",
   "items": [
     {
@@ -485,7 +485,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 233시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 232시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -581,7 +581,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 233시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 232시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -610,6 +610,13 @@
       "vessel_name": "GLOBAL PROSPERITY",
       "port": "South Gyeongsang",
       "target_categories": [
+        {
+          "code": "CONTACT_NOW",
+          "label": "즉시 연락 대상",
+          "confidence": 0.65,
+          "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+          "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+        },
         {
           "code": "PRE_ARRIVAL",
           "label": "입항 전 선제 연락 대상",
@@ -650,10 +657,10 @@
       "risk_score": 45,
       "confidence_score": 35,
       "priority_label": "WARM",
-      "action_type": "PRE_ARRIVAL",
-      "action_label": "입항 전 선제 연락 대상",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+      "action_type": "CONTACT_NOW",
+      "action_label": "즉시 연락 대상",
+      "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
       "vessel_display": {
         "vessel_name": "GLOBAL PROSPERITY",
         "imo": "-",
@@ -708,11 +715,18 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [],
-        "recommendedAction": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "recommendedAction": "기술감독 또는 에이전트에 즉시 연락",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
         "target_categories": [
+          {
+            "code": "CONTACT_NOW",
+            "label": "즉시 연락 대상",
+            "confidence": 0.65,
+            "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+            "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+          },
           {
             "code": "PRE_ARRIVAL",
             "label": "입항 전 선제 연락 대상",
@@ -749,8 +763,8 @@
             "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
           }
         ],
-        "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-        "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+        "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
         "data_sources": [],
         "enrichment_sources": []
       }
@@ -771,7 +785,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 142시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -867,7 +881,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 142시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -914,7 +928,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 163시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -932,7 +946,7 @@
           "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
         }
       ],
-      "opportunity_score": 69,
+      "opportunity_score": 67,
       "risk_score": 45,
       "confidence_score": 35,
       "priority_label": "WARM",
@@ -979,7 +993,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 35,
-        "opportunity_score": 69,
+        "opportunity_score": 67,
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": 0,
@@ -1017,7 +1031,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 163시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -1193,7 +1207,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 118시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -1282,7 +1296,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 118시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -1315,7 +1329,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 86시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -1404,7 +1418,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 86시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -1444,7 +1458,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 74시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -1540,7 +1554,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 74시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -1559,6 +1573,142 @@
     },
     {
       "rank": 12,
+      "vessel_name": "FLORA MARIS",
+      "port": "Yeosu",
+      "target_categories": [
+        {
+          "code": "PRE_ARRIVAL",
+          "label": "입항 전 선제 연락 대상",
+          "confidence": 0.22,
+          "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+          "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
+        },
+        {
+          "code": "ANCHORAGE_OPPORTUNITY",
+          "label": "묘박/정박 중 작업 가능 대상",
+          "confidence": 0.95,
+          "reason": "묘박/대기 시간이 감지되었습니다.",
+          "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
+        },
+        {
+          "code": "LONG_STAY_RISK",
+          "label": "장기 체류 고위험 대상",
+          "confidence": 0.8,
+          "reason": "체류 시간이 73시간으로 길게 확인됩니다.",
+          "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
+        },
+        {
+          "code": "REPEAT_CALLER",
+          "label": "반복 입항 선박",
+          "confidence": 0.49,
+          "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
+          "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
+        }
+      ],
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "action_type": "PRE_ARRIVAL",
+      "action_label": "입항 전 선제 연락 대상",
+      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+      "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+      "vessel_display": {
+        "vessel_name": "FLORA MARIS",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Yeosu",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "opportunity_score": 65,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [],
+        "recommendedAction": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "LOW",
+        "target_categories": [
+          {
+            "code": "PRE_ARRIVAL",
+            "label": "입항 전 선제 연락 대상",
+            "confidence": 0.22,
+            "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+            "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
+          },
+          {
+            "code": "ANCHORAGE_OPPORTUNITY",
+            "label": "묘박/정박 중 작업 가능 대상",
+            "confidence": 0.95,
+            "reason": "묘박/대기 시간이 감지되었습니다.",
+            "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
+          },
+          {
+            "code": "LONG_STAY_RISK",
+            "label": "장기 체류 고위험 대상",
+            "confidence": 0.8,
+            "reason": "체류 시간이 73시간으로 길게 확인됩니다.",
+            "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
+          },
+          {
+            "code": "REPEAT_CALLER",
+            "label": "반복 입항 선박",
+            "confidence": 0.49,
+            "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
+            "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
+          }
+        ],
+        "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+        "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 13,
       "vessel_name": "PROTEUS RONG NA",
       "port": "Daesan",
       "target_categories": [
@@ -1694,7 +1844,7 @@
       }
     },
     {
-      "rank": 13,
+      "rank": 14,
       "vessel_name": "ADMIRAL SCHMIDT",
       "port": "Busan",
       "target_categories": [
@@ -1827,156 +1977,6 @@
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
             "reason": "체류 시간이 346시간으로 길게 확인됩니다.",
-            "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
-          },
-          {
-            "code": "REPEAT_CALLER",
-            "label": "반복 입항 선박",
-            "confidence": 0.49,
-            "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
-            "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
-          }
-        ],
-        "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
-        "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
-        "data_sources": [],
-        "enrichment_sources": []
-      }
-    },
-    {
-      "rank": 14,
-      "vessel_name": "AMIS VICTORY",
-      "port": "Busan",
-      "target_categories": [
-        {
-          "code": "CONTACT_NOW",
-          "label": "즉시 연락 대상",
-          "confidence": 0.67,
-          "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
-          "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
-        },
-        {
-          "code": "PRE_ARRIVAL",
-          "label": "입항 전 선제 연락 대상",
-          "confidence": 0.22,
-          "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-          "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
-        },
-        {
-          "code": "ANCHORAGE_OPPORTUNITY",
-          "label": "묘박/정박 중 작업 가능 대상",
-          "confidence": 0.95,
-          "reason": "묘박/대기 시간이 감지되었습니다.",
-          "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
-        },
-        {
-          "code": "LONG_STAY_RISK",
-          "label": "장기 체류 고위험 대상",
-          "confidence": 0.8,
-          "reason": "체류 시간이 235시간으로 길게 확인됩니다.",
-          "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
-        },
-        {
-          "code": "REPEAT_CALLER",
-          "label": "반복 입항 선박",
-          "confidence": 0.49,
-          "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
-          "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
-        }
-      ],
-      "opportunity_score": 67,
-      "risk_score": 45,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "action_type": "CONTACT_NOW",
-      "action_label": "즉시 연락 대상",
-      "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
-      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
-      "vessel_display": {
-        "vessel_name": "AMIS VICTORY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Busan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "opportunity_score": 67,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "기술감독 또는 에이전트에 즉시 연락",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "target_categories": [
-          {
-            "code": "CONTACT_NOW",
-            "label": "즉시 연락 대상",
-            "confidence": 0.67,
-            "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
-            "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
-          },
-          {
-            "code": "PRE_ARRIVAL",
-            "label": "입항 전 선제 연락 대상",
-            "confidence": 0.22,
-            "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-            "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
-          },
-          {
-            "code": "ANCHORAGE_OPPORTUNITY",
-            "label": "묘박/정박 중 작업 가능 대상",
-            "confidence": 0.95,
-            "reason": "묘박/대기 시간이 감지되었습니다.",
-            "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
-          },
-          {
-            "code": "LONG_STAY_RISK",
-            "label": "장기 체류 고위험 대상",
-            "confidence": 0.8,
-            "reason": "체류 시간이 235시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -2131,7 +2131,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 100시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -2220,7 +2220,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 144시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 100시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -2239,20 +2239,27 @@
     },
     {
       "rank": 17,
-      "vessel_name": "디엘 루비",
-      "port": "Busan",
+      "vessel_name": "TORM SPLENDID",
+      "port": "Ulsan",
       "target_categories": [
+        {
+          "code": "CONTACT_NOW",
+          "label": "즉시 연락 대상",
+          "confidence": 0.76,
+          "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+          "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+        },
         {
           "code": "PRE_ARRIVAL",
           "label": "입항 전 선제 연락 대상",
-          "confidence": 0.42,
+          "confidence": 0.32,
           "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
           "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
         },
         {
           "code": "ANCHORAGE_OPPORTUNITY",
           "label": "묘박/정박 중 작업 가능 대상",
-          "confidence": 0.89,
+          "confidence": 0.95,
           "reason": "묘박/대기 시간이 감지되었습니다.",
           "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
         },
@@ -2260,27 +2267,34 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 545시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 125시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
+        },
+        {
+          "code": "BIOFOULING_COMPLIANCE",
+          "label": "Biofouling Compliance 대상",
+          "confidence": 0.76,
+          "reason": "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.",
+          "recommended_action": "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"
         },
         {
           "code": "REPEAT_CALLER",
           "label": "반복 입항 선박",
-          "confidence": 0.69,
-          "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 69점 신호가 있습니다.",
+          "confidence": 0.49,
+          "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
           "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
         }
       ],
-      "opportunity_score": 67,
+      "opportunity_score": 76,
       "risk_score": 45,
       "confidence_score": 35,
       "priority_label": "LOW",
-      "action_type": "PRE_ARRIVAL",
-      "action_label": "입항 전 선제 연락 대상",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+      "action_type": "CONTACT_NOW",
+      "action_label": "즉시 연락 대상",
+      "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
       "vessel_display": {
-        "vessel_name": "디엘 루비",
+        "vessel_name": "TORM SPLENDID",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -2297,7 +2311,7 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Busan",
+        "current_port": "Ulsan",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -2318,7 +2332,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 35,
-        "opportunity_score": 67,
+        "opportunity_score": 76,
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": 0,
@@ -2333,22 +2347,29 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [],
-        "recommendedAction": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "recommendedAction": "기술감독 또는 에이전트에 즉시 연락",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "LOW",
         "target_categories": [
           {
+            "code": "CONTACT_NOW",
+            "label": "즉시 연락 대상",
+            "confidence": 0.76,
+            "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+            "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+          },
+          {
             "code": "PRE_ARRIVAL",
             "label": "입항 전 선제 연락 대상",
-            "confidence": 0.42,
+            "confidence": 0.32,
             "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
             "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
           },
           {
             "code": "ANCHORAGE_OPPORTUNITY",
             "label": "묘박/정박 중 작업 가능 대상",
-            "confidence": 0.89,
+            "confidence": 0.95,
             "reason": "묘박/대기 시간이 감지되었습니다.",
             "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
           },
@@ -2356,19 +2377,26 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 545시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 125시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
+          },
+          {
+            "code": "BIOFOULING_COMPLIANCE",
+            "label": "Biofouling Compliance 대상",
+            "confidence": 0.76,
+            "reason": "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.",
+            "recommended_action": "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"
           },
           {
             "code": "REPEAT_CALLER",
             "label": "반복 입항 선박",
-            "confidence": 0.69,
-            "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 69점 신호가 있습니다.",
+            "confidence": 0.49,
+            "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 49점 신호가 있습니다.",
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
-        "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-        "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+        "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
         "data_sources": [],
         "enrichment_sources": []
       }
@@ -2389,13 +2417,13 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 141시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 107시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
           "code": "BIOFOULING_COMPLIANCE",
           "label": "Biofouling Compliance 대상",
-          "confidence": 0.67,
+          "confidence": 0.65,
           "reason": "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.",
           "recommended_action": "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"
         },
@@ -2407,7 +2435,7 @@
           "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
         }
       ],
-      "opportunity_score": 67,
+      "opportunity_score": 65,
       "risk_score": 45,
       "confidence_score": 35,
       "priority_label": "LOW",
@@ -2454,7 +2482,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 35,
-        "opportunity_score": 67,
+        "opportunity_score": 65,
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": 0,
@@ -2485,13 +2513,13 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 141시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 107시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
             "code": "BIOFOULING_COMPLIANCE",
             "label": "Biofouling Compliance 대상",
-            "confidence": 0.67,
+            "confidence": 0.65,
             "reason": "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.",
             "recommended_action": "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"
           },
@@ -2787,6 +2815,13 @@
       "port": "Busan",
       "target_categories": [
         {
+          "code": "CONTACT_NOW",
+          "label": "즉시 연락 대상",
+          "confidence": 0.71,
+          "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+          "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+        },
+        {
           "code": "PRE_ARRIVAL",
           "label": "입항 전 선제 연락 대상",
           "confidence": 0.32,
@@ -2804,7 +2839,7 @@
           "code": "LONG_STAY_RISK",
           "label": "장기 체류 고위험 대상",
           "confidence": 0.8,
-          "reason": "체류 시간이 198시간으로 길게 확인됩니다.",
+          "reason": "체류 시간이 189시간으로 길게 확인됩니다.",
           "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
         },
         {
@@ -2826,10 +2861,10 @@
       "risk_score": 45,
       "confidence_score": 35,
       "priority_label": "LOW",
-      "action_type": "PRE_ARRIVAL",
-      "action_label": "입항 전 선제 연락 대상",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+      "action_type": "CONTACT_NOW",
+      "action_label": "즉시 연락 대상",
+      "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
       "vessel_display": {
         "vessel_name": "GELBRAY EXPRESS",
         "imo": "-",
@@ -2884,11 +2919,18 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [],
-        "recommendedAction": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "recommendedAction": "기술감독 또는 에이전트에 즉시 연락",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "LOW",
         "target_categories": [
+          {
+            "code": "CONTACT_NOW",
+            "label": "즉시 연락 대상",
+            "confidence": 0.71,
+            "reason": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+            "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+          },
           {
             "code": "PRE_ARRIVAL",
             "label": "입항 전 선제 연락 대상",
@@ -2907,7 +2949,7 @@
             "code": "LONG_STAY_RISK",
             "label": "장기 체류 고위험 대상",
             "confidence": 0.8,
-            "reason": "체류 시간이 198시간으로 길게 확인됩니다.",
+            "reason": "체류 시간이 189시간으로 길게 확인됩니다.",
             "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
           },
           {
@@ -2925,149 +2967,14 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
-        "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-        "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
-        "data_sources": [],
-        "enrichment_sources": []
-      }
-    },
-    {
-      "rank": 22,
-      "vessel_name": "한유누리",
-      "port": "Daesan",
-      "target_categories": [
-        {
-          "code": "PRE_ARRIVAL",
-          "label": "입항 전 선제 연락 대상",
-          "confidence": 0.42,
-          "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-          "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
-        },
-        {
-          "code": "ANCHORAGE_OPPORTUNITY",
-          "label": "묘박/정박 중 작업 가능 대상",
-          "confidence": 0.68,
-          "reason": "묘박/대기 시간이 감지되었습니다.",
-          "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
-        },
-        {
-          "code": "LONG_STAY_RISK",
-          "label": "장기 체류 고위험 대상",
-          "confidence": 0.8,
-          "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
-          "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
-        },
-        {
-          "code": "REPEAT_CALLER",
-          "label": "반복 입항 선박",
-          "confidence": 0.69,
-          "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 69점 신호가 있습니다.",
-          "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
-        }
-      ],
-      "opportunity_score": 49,
-      "risk_score": 45,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "action_type": "PRE_ARRIVAL",
-      "action_label": "입항 전 선제 연락 대상",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
-      "vessel_display": {
-        "vessel_name": "한유누리",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": 0,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "Daesan",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 0,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": 0,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "opportunity_score": 49,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 0,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "target_categories": [
-          {
-            "code": "PRE_ARRIVAL",
-            "label": "입항 전 선제 연락 대상",
-            "confidence": 0.42,
-            "reason": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-            "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"
-          },
-          {
-            "code": "ANCHORAGE_OPPORTUNITY",
-            "label": "묘박/정박 중 작업 가능 대상",
-            "confidence": 0.68,
-            "reason": "묘박/대기 시간이 감지되었습니다.",
-            "recommended_action": "묘박/정박 상태와 작업 가능 시간을 확인"
-          },
-          {
-            "code": "LONG_STAY_RISK",
-            "label": "장기 체류 고위험 대상",
-            "confidence": 0.8,
-            "reason": "체류 시간이 192시간으로 길게 확인됩니다.",
-            "recommended_action": "장기 체류 원인과 선저 리스크를 함께 확인"
-          },
-          {
-            "code": "REPEAT_CALLER",
-            "label": "반복 입항 선박",
-            "confidence": 0.69,
-            "reason": "최근 90일 반복 입항 1회 또는 반복 기항 점수 69점 신호가 있습니다.",
-            "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
-          }
-        ],
-        "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-        "recommended_action": "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인",
+        "reason_summary": "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.",
+        "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
         "data_sources": [],
         "enrichment_sources": []
       }
     }
   ],
-  "total_count": 22,
-  "returned_count": 22
+  "total_count": 21,
+  "returned_count": 21,
+  "item_count": 21
 }

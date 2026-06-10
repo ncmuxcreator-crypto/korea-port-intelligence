@@ -83,7 +83,12 @@ function rows(payload) {
   if (Array.isArray(payload?.ports)) return payload.ports;
   if (Array.isArray(payload?.categories)) return payload.categories;
   if (Array.isArray(payload?.endpoints)) return payload.endpoints;
+  if (Array.isArray(payload?.pages)) return payload.pages;
   return [];
+}
+
+function itemCount(payload) {
+  return rows(payload).length;
 }
 
 function recordCount(payload) {
@@ -100,7 +105,8 @@ function hasArrayPayload(payload) {
     Array.isArray(payload?.contact_today) ||
     Array.isArray(payload?.ports) ||
     Array.isArray(payload?.categories) ||
-    Array.isArray(payload?.endpoints);
+    Array.isArray(payload?.endpoints) ||
+    Array.isArray(payload?.pages);
 }
 
 function needsWrapper(relativePath) {
@@ -151,7 +157,7 @@ function validateSchema(relativePath, payload) {
 function auditFile(relativePath) {
   const filePath = path.join(ROOT, ...relativePath.split("/"));
   if (!fs.existsSync(filePath)) {
-    return { endpoint: relativePath, path: relativePath, exists: false, valid_json: false, schema_valid: false, record_count: 0, status: "MISSING", problem: "file missing", bytes: 0 };
+  return { endpoint: relativePath, path: relativePath, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, status: "MISSING", problem: "file missing", bytes: 0 };
   }
   const bytes = fs.statSync(filePath).size;
   const text = fs.readFileSync(filePath, "utf8");
@@ -161,6 +167,7 @@ function auditFile(relativePath) {
     const schemaProblem = validateSchema(relativePath, payload);
     const age = staleHours(payload);
     const count = recordCount(payload);
+    const actualItemCount = itemCount(payload);
     let status = "OK";
     let problem = "";
     if (undefinedLike.length) {
@@ -186,6 +193,7 @@ function auditFile(relativePath) {
       valid_json: true,
       schema_valid: !schemaProblem && !undefinedLike.length,
       record_count: count,
+      item_count: actualItemCount,
       status,
       problem,
       bytes
@@ -198,6 +206,7 @@ function auditFile(relativePath) {
       valid_json: false,
       schema_valid: false,
       record_count: 0,
+      item_count: 0,
       status: "INVALID_JSON",
       problem: error.message,
       bytes
@@ -230,6 +239,7 @@ function writeManifest(entries) {
       valid_json: entry.valid_json,
       schema_valid: entry.schema_valid,
       record_count: entry.record_count,
+      item_count: entry.item_count,
       status: entry.status,
       problem: entry.problem || ""
     };
@@ -252,7 +262,7 @@ const entries = allPaths.map(auditFile);
 const manifest = writeManifest(entries);
 const endpointMap = readDashboardEndpointMap();
 
-console.log("Endpoint | Path | Exists | Valid JSON | Schema Valid | Record Count | Status | Problem");
+console.log("Endpoint | Path | Exists | Valid JSON | Schema Valid | Record Count | Item Count | Status | Problem");
 for (const entry of entries) {
   console.log([
     entry.endpoint,
@@ -261,6 +271,7 @@ for (const entry of entries) {
     entry.valid_json ? "yes" : "no",
     entry.schema_valid ? "yes" : "no",
     entry.record_count,
+    entry.item_count,
     entry.status,
     entry.problem || "-"
   ].join(" | "));

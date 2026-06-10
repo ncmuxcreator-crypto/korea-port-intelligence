@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-10T05:20:09.220Z",
+  "generated_at": "2026-06-10T07:31:31.068Z",
   "audit_type": "dataset_generation",
   "base_dataset_empty": false,
   "derived_from_empty_dataset": false,
-  "source_vessel_dataset_count": 883,
+  "source_vessel_dataset_count": 908,
   "base_dataset_empty_reasons": [],
   "ok": true,
   "root_cause": "dataset_generation_completed",
@@ -11,18 +11,18 @@
   "counts_by_stage": {
     "enabled_ports_count": 22,
     "ports_attempted_count": 12,
-    "source_rows_collected": 2163,
-    "port_operation_source_rows_collected": 6275,
-    "normalized_rows": 883,
-    "all_vessels_generated": 883,
-    "port_call_master_count": 883,
-    "watchlist_generated": 18,
-    "sales_targets_generated": 22,
-    "immediate_targets_generated": 2,
-    "static_all_collected_rows": 883,
-    "static_target_rows": 22,
-    "vessels_json_rows": 22,
-    "candidates_json_rows": 22
+    "source_rows_collected": 2252,
+    "port_operation_source_rows_collected": 6607,
+    "normalized_rows": 908,
+    "all_vessels_generated": 908,
+    "port_call_master_count": 908,
+    "watchlist_generated": 31,
+    "sales_targets_generated": 21,
+    "immediate_targets_generated": 4,
+    "static_all_collected_rows": 908,
+    "static_target_rows": 21,
+    "vessels_json_rows": 21,
+    "candidates_json_rows": 21
   },
   "enabled_ports_count": 22,
   "preflight_status": "passed",
@@ -33,9 +33,9 @@
   "port_operation_smoke_test": {
     "smoke_test_status": "passed",
     "smoke_test_failure_reason": null,
-    "started_at": "2026-06-10T05:16:22.003Z",
-    "finished_at": "2026-06-10T05:16:24.407Z",
-    "duration_ms": 2404,
+    "started_at": "2026-06-10T07:27:56.853Z",
+    "finished_at": "2026-06-10T07:27:57.745Z",
+    "duration_ms": 892,
     "source_name": "port_operation_busan_i",
     "label": "PORT-MIS VsslEtrynd5 Busan I",
     "prtAgCd": "020",
@@ -44,14 +44,14 @@
     "deGb": "I",
     "http_status": 200,
     "response_content_type": "application/xhtml+xml; charset=UTF-8",
-    "latency_ms": 2401,
+    "latency_ms": 888,
     "item_count": 1,
-    "total_count": 609,
+    "total_count": 636,
     "valid_empty_response": false,
     "result_meta": {
       "resultCode": "00",
       "resultMsg": "NORMAL_SERVICE",
-      "totalCount": "609"
+      "totalCount": "636"
     },
     "requested_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260607&ede=20260617&deGb=I",
     "redacted_response_sample": {
@@ -117,23 +117,23 @@
       "sub_port": "인천항/영흥 터미널"
     }
   ],
-  "source_rows_collected": 2163,
-  "normalized_rows": 883,
-  "all_vessels_generated": 883,
-  "port_call_master_count": 883,
-  "watchlist_generated": 18,
-  "sales_targets_generated": 22,
-  "immediate_targets_generated": 2,
-  "target_vessels_generated": 22,
-  "static_all_collected_rows": 883,
-  "static_target_rows": 22,
-  "vessels_json_rows": 22,
-  "candidates_json_rows": 22,
+  "source_rows_collected": 2252,
+  "normalized_rows": 908,
+  "all_vessels_generated": 908,
+  "port_call_master_count": 908,
+  "watchlist_generated": 31,
+  "sales_targets_generated": 21,
+  "immediate_targets_generated": 4,
+  "target_vessels_generated": 21,
+  "static_all_collected_rows": 908,
+  "static_target_rows": 21,
+  "vessels_json_rows": 21,
+  "candidates_json_rows": 21,
   "active_dataset_audit": {
-    "status_json_run_id": "run_20260610051621946_636add02",
+    "status_json_run_id": "run_20260610072756829_69ea5038",
     "latest_successful_run": null,
-    "current_run": "run_20260610051621946_636add02",
-    "status_json_generated_at": "2026-06-10T05:19:49.050Z",
+    "current_run": "run_20260610072756829_69ea5038",
+    "status_json_generated_at": "2026-06-10T07:31:11.742Z",
     "vessels_json_basis": "dashboard/api/vessels.json is a static export of targetVessels from this run",
     "candidates_json_basis": "dashboard/api/candidates.json is a static export of candidateList from this run",
     "production_serving_rule": "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
@@ -219,11 +219,11 @@
     }
   ],
   "static_outputs_generated": {
-    "dashboard/api/vessels.json": 22,
-    "dashboard/api/all-collected-vessels.json": 883,
-    "dashboard/api/target-vessels.json": 22,
-    "dashboard/api/candidates.json": 22,
-    "dashboard/api/dashboard-summary.json": 22
+    "dashboard/api/vessels.json": 21,
+    "dashboard/api/all-collected-vessels.json": 908,
+    "dashboard/api/target-vessels.json": 21,
+    "dashboard/api/candidates.json": 21,
+    "dashboard/api/dashboard-summary.json": 21
   },
   "production_promotion_blocked": false,
   "previous_successful_dataset_available": true,
@@ -243,5 +243,6 @@
     "Keep Cloudflare upload skip rules for generated dashboard/api JSON assets.",
     "Use /api/dashboard-summary.json and /api/vessels?group=all from the Worker to verify the live active dataset.",
     "If source_rows_collected is zero in GitHub Actions, check required secrets and source collector logs before debugging scoring."
-  ]
+  ],
+  "item_count": 0
 }

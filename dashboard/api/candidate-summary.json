@@ -1,23 +1,11 @@
 {
-  "candidate_count": 22,
-  "immediate_count": 1,
+  "candidate_count": 21,
+  "immediate_count": 3,
   "strong_count": 16,
   "watch_count": 5,
   "top_candidates": [
     {
       "vessel_name": "ADMIRAL SCHMIDT",
-      "port": "Busan",
-      "score": 65,
-      "level": "Monitor",
-      "contact_window": "Monitor weekly",
-      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
-      "reasons": [
-        "Commercially relevant vessel type",
-        "High fouling / performance risk score"
-      ]
-    },
-    {
-      "vessel_name": "AMIS VICTORY",
       "port": "Busan",
       "score": 65,
       "level": "Monitor",
@@ -62,6 +50,18 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "High fouling / performance risk score"
+      ]
+    },
+    {
+      "vessel_name": "FLORA MARIS",
+      "port": "Yeosu",
+      "score": 65,
+      "level": "Monitor",
+      "contact_window": "Monitor weekly",
+      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
+      "reasons": [
+        "Commercially relevant vessel type",
+        "Workable UWC window available"
       ]
     },
     {
@@ -129,18 +129,34 @@
   "port_candidate_summary": [
     {
       "port": "Busan",
-      "total": 5,
+      "total": 3,
+      "immediate": 2,
+      "strong": 1,
+      "watch": 2,
+      "top_score": 65
+    },
+    {
+      "port": "Yeosu",
+      "total": 3,
       "immediate": 1,
-      "strong": 2,
-      "watch": 3,
+      "strong": 3,
+      "watch": 0,
       "top_score": 65
     },
     {
       "port": "Daesan",
-      "total": 7,
+      "total": 6,
       "immediate": 0,
       "strong": 5,
       "watch": 1,
+      "top_score": 65
+    },
+    {
+      "port": "Ulsan",
+      "total": 3,
+      "immediate": 0,
+      "strong": 1,
+      "watch": 2,
       "top_score": 65
     },
     {
@@ -148,22 +164,6 @@
       "total": 3,
       "immediate": 0,
       "strong": 3,
-      "watch": 0,
-      "top_score": 65
-    },
-    {
-      "port": "Ulsan",
-      "total": 2,
-      "immediate": 0,
-      "strong": 1,
-      "watch": 1,
-      "top_score": 65
-    },
-    {
-      "port": "Yeosu",
-      "total": 2,
-      "immediate": 0,
-      "strong": 2,
       "watch": 0,
       "top_score": 65
     },
@@ -184,5 +184,6 @@
       "top_score": 65
     }
   ],
-  "operating_rule": "Candidate score prioritizes immediate sales action: waiting/anchorage + long idle + high-value vessel + regulated destination + known operator."
+  "operating_rule": "Candidate score prioritizes immediate sales action: waiting/anchorage + long idle + high-value vessel + regulated destination + known operator.",
+  "item_count": 0
 }

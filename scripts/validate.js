@@ -185,7 +185,12 @@ function endpointRows(payload) {
   if (Array.isArray(payload?.ports)) return payload.ports;
   if (Array.isArray(payload?.categories)) return payload.categories;
   if (Array.isArray(payload?.endpoints)) return payload.endpoints;
+  if (Array.isArray(payload?.pages)) return payload.pages;
   return [];
+}
+
+function endpointItemCount(payload) {
+  return endpointRows(payload).length;
 }
 
 function hasEndpointArray(payload) {
@@ -197,7 +202,8 @@ function hasEndpointArray(payload) {
     Array.isArray(payload?.contact_today) ||
     Array.isArray(payload?.ports) ||
     Array.isArray(payload?.categories) ||
-    Array.isArray(payload?.endpoints);
+    Array.isArray(payload?.endpoints) ||
+    Array.isArray(payload?.pages);
 }
 
 function findUndefinedLikeJsonValue(value, currentPath = "$", found = []) {
@@ -256,6 +262,28 @@ for (const file of listDashboardApiJson()) {
     );
     if (brokenCritical.length) {
       throw new Error(`endpoint-manifest.json reports broken critical endpoints: ${brokenCritical.map(entry => entry.path).join(", ")}`);
+    }
+    for (const entry of payload.endpoints) {
+      if (!entry?.path || !fs.existsSync(entry.path)) continue;
+      let actualPayload;
+      try {
+        actualPayload = JSON.parse(fs.readFileSync(entry.path, "utf8"));
+      } catch (error) {
+        if (entry.valid_json === true) throw new Error(`endpoint-manifest.json valid_json mismatch: ${entry.path}: ${error.message}`);
+        continue;
+      }
+      const actualRecordCount = Number(actualPayload?.record_count ?? actualPayload?.total_count ?? actualPayload?.total_vessels ?? endpointItemCount(actualPayload));
+      const actualItemCount = endpointItemCount(actualPayload);
+      if (entry.valid_json !== true) throw new Error(`endpoint-manifest.json valid_json=false for parseable endpoint: ${entry.path}`);
+      if ("record_count" in entry && Number(entry.record_count) !== actualRecordCount) {
+        throw new Error(`endpoint-manifest.json record_count mismatch for ${entry.path}: manifest=${entry.record_count}, actual=${actualRecordCount}`);
+      }
+      if ("item_count" in entry && Number(entry.item_count) !== actualItemCount) {
+        throw new Error(`endpoint-manifest.json item_count mismatch for ${entry.path}: manifest=${entry.item_count}, actual=${actualItemCount}`);
+      }
+      if (criticalDashboardEndpoints.has(entry.path) && !hasEndpointArray(actualPayload) && /\/(sales|watchlist)\//.test(entry.path)) {
+        throw new Error(`Critical endpoint missing items array: ${entry.path}`);
+      }
     }
   }
 }
