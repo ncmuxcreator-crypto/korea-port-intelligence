@@ -8,10 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const ENDPOINT_PATH = "dashboard/api/intelligence/fleet-penetration.json";
+const UNKNOWN_OPERATOR = "미확인 운영사";
 
 const REQUIRED_FIELDS = [
   "operator_name",
   "fleet_size_korea",
+  "observed_vessels",
   "targeted_vessels",
   "contacted_vessels",
   "quoted_vessels",
@@ -22,11 +24,13 @@ const REQUIRED_FIELDS = [
   "win_rate",
   "opportunity_gap",
   "estimated_remaining_revenue",
+  "top_gap_vessels",
   "recommended_next_action"
 ];
 
 const NUMERIC_FIELDS = [
   "fleet_size_korea",
+  "observed_vessels",
   "targeted_vessels",
   "contacted_vessels",
   "quoted_vessels",
@@ -70,6 +74,12 @@ function sum(items, field) {
   return items.reduce((total, item) => total + number(item[field]), 0);
 }
 
+function topGapVesselName(item) {
+  const first = Array.isArray(item.top_gap_vessels) ? item.top_gap_vessels[0] : null;
+  if (!first) return "-";
+  return first.vessel_name || first.vessel_display?.vessel_name || "-";
+}
+
 const result = readJson(ENDPOINT_PATH);
 console.log("Fleet Penetration Audit");
 console.log("========================");
@@ -85,30 +95,40 @@ const payload = result.value;
 const items = rows(payload);
 const missingFieldRows = [];
 const invalidNumericRows = [];
+const invalidGapRows = [];
 
 for (const [index, item] of items.entries()) {
   const missing = REQUIRED_FIELDS.filter(field => !(field in item));
   if (missing.length) missingFieldRows.push({ row: index + 1, operator_name: item.operator_name || "-", missing });
   const invalid = NUMERIC_FIELDS.filter(field => !Number.isFinite(Number(item[field])) || Number(item[field]) < 0);
   if (invalid.length) invalidNumericRows.push({ row: index + 1, operator_name: item.operator_name || "-", invalid });
+  if (!Array.isArray(item.top_gap_vessels)) invalidGapRows.push({ row: index + 1, operator_name: item.operator_name || "-" });
 }
 
 const operatorCount = items.length;
-const unknownOperator = items.find(item => item.operator_name === "미확인 운영사");
+const unknownOperatorItems = items.filter(item => item.operator_name === UNKNOWN_OPERATOR);
+const operatorsWithTargets = items.filter(item => number(item.targeted_vessels) > 0).length;
 const totalFleetSize = sum(items, "fleet_size_korea");
+const totalObserved = sum(items, "observed_vessels");
 const totalTargeted = sum(items, "targeted_vessels");
 const totalContacted = sum(items, "contacted_vessels");
 const totalQuoted = sum(items, "quoted_vessels");
 const totalWon = sum(items, "won_vessels");
 const totalLost = sum(items, "lost_vessels");
+const totalGap = sum(items, "opportunity_gap");
 const totalRemainingRevenue = sum(items, "estimated_remaining_revenue");
+const unknownOperatorTargeted = sum(unknownOperatorItems, "targeted_vessels");
+const unknownOperatorGap = sum(unknownOperatorItems, "opportunity_gap");
+const unknownOperatorRevenue = sum(unknownOperatorItems, "estimated_remaining_revenue");
 
 console.log(`- generated_at: ${payload.generated_at || "-"}`);
 console.log(`- data_mode: ${payload.data_mode || "unknown"}`);
 console.log(`- source_table: ${payload.source_table || "-"}`);
 console.log(`- record_count: ${payload.record_count ?? items.length}`);
 console.log(`- operator_count: ${operatorCount}`);
+console.log(`- operators_with_targets: ${operatorsWithTargets}`);
 console.log(`- fleet_size_korea_total: ${totalFleetSize}`);
+console.log(`- observed_vessels_total: ${totalObserved}`);
 console.log(`- targeted_vessels_total: ${totalTargeted}`);
 console.log(`- contacted_vessels_total: ${totalContacted}`);
 console.log(`- quoted_vessels_total: ${totalQuoted}`);
@@ -117,8 +137,10 @@ console.log(`- lost_vessels_total: ${totalLost}`);
 console.log(`- average_penetration_rate: ${average(items, "penetration_rate")}%`);
 console.log(`- average_quote_rate: ${average(items, "quote_rate")}%`);
 console.log(`- average_win_rate: ${average(items, "win_rate")}%`);
+console.log(`- opportunity_gap_total: ${totalGap}`);
 console.log(`- estimated_remaining_revenue_total: ${Math.round(totalRemainingRevenue)}`);
-console.log(`- unknown_operator_group_present: ${unknownOperator ? "yes" : "no"}`);
+console.log(`- unknown_operator_count: ${unknownOperatorItems.length}`);
+console.log(`- missing_operator_impact: targeted=${unknownOperatorTargeted}, gap=${unknownOperatorGap}, estimated_remaining_revenue=${Math.round(unknownOperatorRevenue)}`);
 
 if (!items.length) {
   console.log("WARNING: fleet penetration endpoint is empty.");
@@ -135,6 +157,12 @@ if (invalidNumericRows.length) {
     console.log(`  - row ${row.row} ${row.operator_name}: ${row.invalid.join(", ")}`);
   }
 }
+if (invalidGapRows.length) {
+  console.log("ERROR: top_gap_vessels must be an array.");
+  for (const row of invalidGapRows.slice(0, 10)) {
+    console.log(`  - row ${row.row} ${row.operator_name}`);
+  }
+}
 if (totalContacted === 0 && totalQuoted === 0 && totalWon === 0 && totalLost === 0) {
   console.log("INFO: private sales history appears empty; contact/quote/win/loss counts are correctly reported as 0.");
 }
@@ -149,7 +177,19 @@ items
   )
   .slice(0, 10)
   .forEach((item, index) => {
-    console.log(`  ${index + 1}. ${item.operator_name || "-"} | fleet=${number(item.fleet_size_korea)} target=${number(item.targeted_vessels)} contact=${number(item.contacted_vessels)} quote=${number(item.quoted_vessels)} won=${number(item.won_vessels)} lost=${number(item.lost_vessels)} penetration=${number(item.penetration_rate)}% gap=${number(item.opportunity_gap)}`);
+    console.log(`  ${index + 1}. ${item.operator_name || "-"} | fleet=${number(item.fleet_size_korea)} observed=${number(item.observed_vessels)} target=${number(item.targeted_vessels)} contact=${number(item.contacted_vessels)} quote=${number(item.quoted_vessels)} won=${number(item.won_vessels)} lost=${number(item.lost_vessels)} penetration=${number(item.penetration_rate)}% gap=${number(item.opportunity_gap)}`);
   });
 
-if (missingFieldRows.length || invalidNumericRows.length) process.exit(1);
+console.log("\nTop opportunity gaps:");
+items
+  .slice()
+  .sort((a, b) =>
+    number(b.opportunity_gap) - number(a.opportunity_gap) ||
+    number(b.estimated_remaining_revenue) - number(a.estimated_remaining_revenue)
+  )
+  .slice(0, 10)
+  .forEach((item, index) => {
+    console.log(`  ${index + 1}. ${item.operator_name || "-"} | gap=${number(item.opportunity_gap)} | top_gap_vessel=${topGapVesselName(item)} | action=${item.recommended_next_action || "-"}`);
+  });
+
+if (missingFieldRows.length || invalidNumericRows.length || invalidGapRows.length) process.exit(1);

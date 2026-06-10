@@ -9209,7 +9209,8 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
       score_total: 0,
       risk_total: 0,
       ports: new Map(),
-      top_vessels: []
+      top_vessels: [],
+      top_gap_vessels: []
     };
     byOperator.set(operator, current);
     return current;
@@ -9219,12 +9220,17 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
     const current = ensure(operator);
     const key = opportunityMemoryIdentityKey(record);
     const score = salesPriorityScore(record);
+    const isTargeted = fleetPenetrationTargetSignal(record);
+    const isContacted = fleetPenetrationContactSignal(record);
+    const isQuoted = fleetPenetrationQuoteSignal(record);
+    const isWon = fleetPenetrationWonSignal(record);
+    const isLost = fleetPenetrationLostSignal(record);
     current.vesselKeys.add(key);
-    if (fleetPenetrationTargetSignal(record)) current.targetedKeys.add(key);
-    if (fleetPenetrationContactSignal(record)) current.contactedKeys.add(key);
-    if (fleetPenetrationQuoteSignal(record)) current.quotedKeys.add(key);
-    if (fleetPenetrationWonSignal(record)) current.wonKeys.add(key);
-    if (fleetPenetrationLostSignal(record)) current.lostKeys.add(key);
+    if (isTargeted) current.targetedKeys.add(key);
+    if (isContacted) current.contactedKeys.add(key);
+    if (isQuoted) current.quotedKeys.add(key);
+    if (isWon) current.wonKeys.add(key);
+    if (isLost) current.lostKeys.add(key);
     current.score_total += score;
     current.risk_total += recordRiskScore(record);
     const port = recordPortName(record);
@@ -9236,6 +9242,20 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
       opportunity_score: score,
       priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score))
     });
+    if (isTargeted && !isContacted && !isQuoted && !isWon && !isLost) {
+      current.top_gap_vessels.push({
+        vessel_display: vesselDisplay(record),
+        vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name, "선명 확인 필요"),
+        imo: firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo, "-"),
+        mmsi: firstNonEmpty(record.mmsi, record.vessel_display?.mmsi, "-"),
+        call_sign: firstNonEmpty(record.call_sign, record.callsign, record.vessel_display?.call_sign, "-"),
+        port,
+        opportunity_score: score,
+        priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score)),
+        reason_summary: firstNonEmpty(record.reason_summary, record.candidate_summary_ko, record.opportunity_summary, "영업대상 신호는 있으나 접촉/견적 이력이 확인되지 않습니다."),
+        recommended_action: "운영사 또는 대리점 연락 경로 확인 후 첫 접촉 준비"
+      });
+    }
   }
   for (const row of fleetOpportunities) {
     const operator = fleetPenetrationOperatorName(row);
@@ -9253,17 +9273,20 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
   const items = [...byOperator.values()]
     .map(row => {
       const signal = operatorSignals.get(row.operator_name);
-      const fleetSize = Math.max(row.vesselKeys.size, row.totalFleetHint, Number(signal?.vessel_count || 0), Number(signal?.fleet_size_korea || 0));
+      const observedVessels = row.vesselKeys.size;
+      const fleetSize = Math.max(observedVessels, row.totalFleetHint, Number(signal?.vessel_count || 0), Number(signal?.fleet_size_korea || 0));
       const wonVessels = row.wonKeys.size;
       const lostVessels = row.lostKeys.size;
       const quotedVessels = row.quotedKeys.size;
       const contactedVessels = row.contactedKeys.size;
       const targetedVessels = Math.max(row.targetedKeys.size, row.targetedHint, contactedVessels, quotedVessels, wonVessels, lostVessels);
+      const penetratedVessels = Math.max(contactedVessels, quotedVessels, wonVessels);
       const capturedVessels = wonVessels;
-      const penetrationRate = fleetSize > 0 ? Math.round((targetedVessels / fleetSize) * 1000) / 10 : 0;
+      const penetrationRate = fleetSize > 0 ? Math.round((penetratedVessels / fleetSize) * 1000) / 10 : 0;
+      const targetCoverageRate = fleetSize > 0 ? Math.round((targetedVessels / fleetSize) * 1000) / 10 : 0;
       const quoteRate = targetedVessels > 0 ? Math.round((quotedVessels / targetedVessels) * 1000) / 10 : 0;
       const winRate = quotedVessels > 0 ? Math.round((wonVessels / quotedVessels) * 1000) / 10 : 0;
-      const opportunityGap = Math.max(0, fleetSize - targetedVessels);
+      const opportunityGap = Math.max(0, targetedVessels - penetratedVessels);
       const estimatedRemainingRevenue = revenueValue(opportunityGap, assumptions.expected_conversion_rate, assumptions);
       const topPorts = [...row.ports.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([port_name, count]) => ({ port_name, count }));
       const averageOpportunity = fleetSize ? Math.round(row.score_total / Math.max(1, row.vesselKeys.size)) : Number(signal?.average_opportunity_score || 0);
@@ -9271,7 +9294,9 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
         ? "운영사 확인 후 선대 단위 커버리지 산정"
         : !targetedVessels
           ? "상위 기회 선박부터 첫 접촉 계획 수립"
-          : contactedVessels > quotedVessels
+          : opportunityGap > 0 && !contactedVessels
+            ? "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비"
+            : contactedVessels > quotedVessels
             ? "접촉 완료 선박 중 견적 가능 후보를 선별"
             : quotedVessels > wonVessels + lostVessels
               ? "견적 진행 건의 결과와 후속 일정을 확인"
@@ -9281,6 +9306,7 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
       return {
         operator_name: row.operator_name,
         fleet_size_korea: fleetSize,
+        observed_vessels: observedVessels,
         targeted_vessels: targetedVessels,
         contacted_vessels: contactedVessels,
         quoted_vessels: quotedVessels,
@@ -9288,6 +9314,7 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
         lost_vessels: lostVessels,
         captured_vessels: capturedVessels,
         penetration_rate: penetrationRate,
+        target_coverage_rate: targetCoverageRate,
         quote_rate: quoteRate,
         win_rate: winRate,
         opportunity_gap: opportunityGap,
@@ -9297,6 +9324,9 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
         opportunity_score: Math.min(100, Math.round((100 - penetrationRate) * 0.25 + averageOpportunity * 0.35 + opportunityGap * 3 + targetedVessels * 2 + wonVessels * 6)),
         top_ports: topPorts,
         top_vessels: row.top_vessels
+          .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+          .slice(0, 5),
+        top_gap_vessels: row.top_gap_vessels
           .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
           .slice(0, 5),
         reason_summary: `${row.operator_name}: 한국 확인 선대 ${fleetSize}척 중 영업대상 ${targetedVessels}척, 접촉 ${contactedVessels}척, 견적 ${quotedVessels}척, 수주 ${wonVessels}척, 실주 ${lostVessels}척`,
@@ -9321,7 +9351,7 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
     summary: {
       operator_count: items.length,
       assumptions,
-      definition: "penetration_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 수주/견적 이력은 실제 신호가 있을 때만 집계합니다."
+      definition: "penetration_rate = contacted_or_deeper_vessels / fleet_size_korea; target_coverage_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 접촉/견적/수주/실주 이력은 실제 신호가 있을 때만 집계합니다."
     }
   });
 }
@@ -9329,19 +9359,22 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
 function upgradeFleetPenetrationPayloadContract(payload = {}) {
   if (!payload || typeof payload !== "object" || !Array.isArray(payload.items)) return payload;
   const assumptions = payload.summary?.assumptions || payload.extra?.summary?.assumptions || revenueAssumptions();
-  const definition = "penetration_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 수주/견적 이력은 실제 신호가 있을 때만 집계합니다.";
+  const definition = "penetration_rate = contacted_or_deeper_vessels / fleet_size_korea; target_coverage_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 접촉/견적/수주/실주 이력은 실제 신호가 있을 때만 집계합니다.";
   const sourceTable = "fleet-intelligence,fleet-memory,operator_snapshot_daily,relationship-intelligence,customer-memory,commercial_leads,sales-pipeline,operator_contact_history,vessel_visits,opportunity_memory";
   const items = payload.items.map((item = {}, index) => {
     const fleetSize = Math.max(0, Math.round(firstFiniteNumber(item.fleet_size_korea, item.total_operator_vessels, item.operator_vessel_count, item.vessel_count, 0) || 0));
+    const observedVessels = Math.max(0, Math.round(firstFiniteNumber(item.observed_vessels, item.vessels_seen, item.vessel_count, fleetSize, 0) || 0));
     const contactedVessels = Math.max(0, Math.round(firstFiniteNumber(item.contacted_vessels, item.contact_count, item.previous_contacts, 0) || 0));
     const quotedVessels = Math.max(0, Math.round(firstFiniteNumber(item.quoted_vessels, item.quote_count, item.previous_quotes, 0) || 0));
     const wonVessels = Math.max(0, Math.round(firstFiniteNumber(item.won_vessels, item.captured_vessels, item.won_count, item.previous_wins, 0) || 0));
     const lostVessels = Math.max(0, Math.round(firstFiniteNumber(item.lost_vessels, item.lost_count, 0) || 0));
     const targetedVessels = Math.max(0, Math.round(firstFiniteNumber(item.targeted_vessels, item.target_vessels, item.sales_target_count, contactedVessels, quotedVessels, wonVessels, lostVessels, 0) || 0));
-    const penetrationRate = fleetSize > 0 ? Math.round((targetedVessels / fleetSize) * 1000) / 10 : 0;
+    const penetratedVessels = Math.max(contactedVessels, quotedVessels, wonVessels);
+    const penetrationRate = fleetSize > 0 ? Math.round((penetratedVessels / fleetSize) * 1000) / 10 : 0;
+    const targetCoverageRate = fleetSize > 0 ? Math.round((targetedVessels / fleetSize) * 1000) / 10 : 0;
     const quoteRate = targetedVessels > 0 ? Math.round((quotedVessels / targetedVessels) * 1000) / 10 : 0;
     const winRate = quotedVessels > 0 ? Math.round((wonVessels / quotedVessels) * 1000) / 10 : 0;
-    const opportunityGap = Math.max(0, fleetSize - targetedVessels);
+    const opportunityGap = Math.max(0, targetedVessels - penetratedVessels);
     const estimatedRemainingRevenue = firstFiniteNumber(item.estimated_remaining_revenue) != null && Number(item.opportunity_gap) === opportunityGap
       ? Math.max(0, Math.round(Number(item.estimated_remaining_revenue)))
       : revenueValue(opportunityGap, assumptions.expected_conversion_rate, assumptions);
@@ -9360,6 +9393,7 @@ function upgradeFleetPenetrationPayloadContract(payload = {}) {
       rank: firstFiniteNumber(item.rank, index + 1),
       operator_name: operatorName,
       fleet_size_korea: fleetSize,
+      observed_vessels: observedVessels,
       targeted_vessels: targetedVessels,
       contacted_vessels: contactedVessels,
       quoted_vessels: quotedVessels,
@@ -9367,6 +9401,7 @@ function upgradeFleetPenetrationPayloadContract(payload = {}) {
       lost_vessels: lostVessels,
       captured_vessels: wonVessels,
       penetration_rate: penetrationRate,
+      target_coverage_rate: targetCoverageRate,
       quote_rate: quoteRate,
       win_rate: winRate,
       opportunity_gap: opportunityGap,
@@ -9375,6 +9410,11 @@ function upgradeFleetPenetrationPayloadContract(payload = {}) {
       reason_summary: firstNonEmpty(item.reason_summary, `${operatorName}: 한국 확인 선대 ${fleetSize}척 중 영업대상 ${targetedVessels}척, 접촉 ${contactedVessels}척, 견적 ${quotedVessels}척, 수주 ${wonVessels}척, 실주 ${lostVessels}척`),
       recommended_action: recommendedNextAction,
       recommended_next_action: recommendedNextAction,
+      top_gap_vessels: Array.isArray(item.top_gap_vessels) && item.top_gap_vessels.length
+        ? item.top_gap_vessels.slice(0, 5)
+        : Array.isArray(item.top_vessels) && opportunityGap > 0
+          ? item.top_vessels.slice(0, 5)
+          : [],
       data_sources: Array.isArray(item.data_sources) && item.data_sources.length
         ? [...new Set([...item.data_sources, "fleet-memory", "relationship-intelligence", "customer-memory", "sales-pipeline", "operator_contact_history", "opportunity_memory"])]
         : ["fleet-intelligence", "fleet-memory", "operator_snapshot_daily", "relationship-intelligence", "customer-memory", "commercial_leads", "sales-pipeline", "operator_contact_history", "vessel_visits", "opportunity_memory"]
