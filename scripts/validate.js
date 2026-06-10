@@ -128,6 +128,7 @@ const required = [
   "dashboard/api/watchlist/current.json",
   "dashboard/api/sales/actions.json",
   "dashboard/api/sales/conversion-pipeline.json",
+  "dashboard/api/endpoint-manifest.json",
   "dashboard/api/quality/basic-info-coverage.json",
   "dashboard/api/quality/dataset-generation-audit.json",
   "dashboard/api/review/basic-info-missing.json",
@@ -158,6 +159,103 @@ for (const file of required) {
       readOutputJson(file);
     } catch (error) {
       throw new Error(`Invalid JSON output: ${file}`);
+    }
+  }
+}
+
+function listDashboardApiJson(dir = "dashboard/api") {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) out.push(...listDashboardApiJson(fullPath));
+    else if (entry.isFile() && entry.name.endsWith(".json")) out.push(fullPath);
+  }
+  return out;
+}
+
+function endpointRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.vessels)) return payload.vessels;
+  if (Array.isArray(payload?.candidates)) return payload.candidates;
+  if (Array.isArray(payload?.opportunities)) return payload.opportunities;
+  if (Array.isArray(payload?.contact_today)) return payload.contact_today;
+  if (Array.isArray(payload?.ports)) return payload.ports;
+  if (Array.isArray(payload?.categories)) return payload.categories;
+  if (Array.isArray(payload?.endpoints)) return payload.endpoints;
+  return [];
+}
+
+function hasEndpointArray(payload) {
+  return Array.isArray(payload?.items) ||
+    Array.isArray(payload?.data) ||
+    Array.isArray(payload?.vessels) ||
+    Array.isArray(payload?.candidates) ||
+    Array.isArray(payload?.opportunities) ||
+    Array.isArray(payload?.contact_today) ||
+    Array.isArray(payload?.ports) ||
+    Array.isArray(payload?.categories) ||
+    Array.isArray(payload?.endpoints);
+}
+
+function findUndefinedLikeJsonValue(value, currentPath = "$", found = []) {
+  if (found.length > 10) return found;
+  if (typeof value === "string" && /^(undefined|nan|infinity|-infinity)$/i.test(value.trim())) {
+    found.push(currentPath);
+  } else if (Array.isArray(value)) {
+    value.forEach((item, index) => findUndefinedLikeJsonValue(item, `${currentPath}[${index}]`, found));
+  } else if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) findUndefinedLikeJsonValue(child, `${currentPath}.${key}`, found);
+  }
+  return found;
+}
+
+const criticalDashboardEndpoints = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/status.json",
+  "dashboard/api/dashboard-summary.json",
+  "dashboard/api/sales/actions.json",
+  "dashboard/api/sales/conversion-pipeline.json",
+  "dashboard/api/watchlist/current.json",
+  "dashboard/api/vessels/index.json"
+]);
+
+function validateCriticalDashboardEndpoint(file, payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error(`Critical endpoint must be a JSON object: ${file}`);
+  }
+  for (const field of ["schema_version", "generated_at"]) {
+    if (!(field in payload)) throw new Error(`Critical endpoint missing ${field}: ${file}`);
+  }
+  const numericCount = Number(payload.record_count ?? payload.total_count ?? payload.total_vessels);
+  if (!Number.isFinite(numericCount)) throw new Error(`Critical endpoint missing numeric record_count/total_count: ${file}`);
+  if (/\/(sales|watchlist)\//.test(file) && !Array.isArray(payload.items)) {
+    throw new Error(`Critical endpoint missing items array: ${file}`);
+  }
+}
+
+for (const file of listDashboardApiJson()) {
+  let payload;
+  try {
+    payload = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    throw new Error(`Invalid dashboard API JSON: ${file}: ${error.message}`);
+  }
+  const undefinedLike = findUndefinedLikeJsonValue(payload);
+  if (undefinedLike.length) {
+    throw new Error(`Dashboard API JSON contains undefined-like values: ${file}: ${undefinedLike.slice(0, 3).join(", ")}`);
+  }
+  if (criticalDashboardEndpoints.has(file)) validateCriticalDashboardEndpoint(file, payload);
+  if (file === "dashboard/api/endpoint-manifest.json") {
+    if (!Array.isArray(payload.endpoints)) throw new Error("endpoint-manifest.json missing endpoints array");
+    const brokenCritical = payload.endpoints.filter(entry =>
+      criticalDashboardEndpoints.has(entry.path) &&
+      (entry.status === "INVALID_JSON" || entry.status === "MISSING" || entry.schema_valid === false)
+    );
+    if (brokenCritical.length) {
+      throw new Error(`endpoint-manifest.json reports broken critical endpoints: ${brokenCritical.map(entry => entry.path).join(", ")}`);
     }
   }
 }

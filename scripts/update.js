@@ -2727,10 +2727,58 @@ function routeApiOutputPath(filePath, report = {}) {
   return `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
 }
 
+const DISPLAY_STRING_FIELDS = new Set([
+  "reason_summary",
+  "recommended_action",
+  "recommended_next_action",
+  "message_angle",
+  "short_message",
+  "event_summary",
+  "warning",
+  "message",
+  "diagnostic_message",
+  "error",
+  "reason"
+]);
+
+function sanitizeDashboardJsonValue(value, key = "") {
+  if (value === undefined) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "string") {
+    return DISPLAY_STRING_FIELDS.has(String(key))
+      ? value.replace(/\s*\r?\n\s*/g, " ").trim()
+      : value;
+  }
+  if (Array.isArray(value)) return value.map(item => sanitizeDashboardJsonValue(item, key));
+  if (value && typeof value === "object") {
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
+    const out = {};
+    for (const [childKey, childValue] of Object.entries(value)) {
+      out[childKey] = sanitizeDashboardJsonValue(childValue, childKey);
+    }
+    return out;
+  }
+  return value;
+}
+
+function safeDashboardJsonString(payload) {
+  return `${JSON.stringify(sanitizeDashboardJsonValue(payload), null, 2)}\n`;
+}
+
+function writeDashboardJson(filePath, payload) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
+  const body = safeDashboardJsonString(payload);
+  const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tempPath, body, "utf8");
+  fs.renameSync(tempPath, normalized);
+  return normalized;
+}
+
 function writeApiJson(filePath, payload, report = {}) {
   const target = routeApiOutputPath(filePath, report);
-  fs.mkdirSync(target.split("/").slice(0, -1).join("/"), { recursive: true });
-  fs.writeFileSync(target, JSON.stringify(payload, null, 2));
+  writeDashboardJson(target, payload);
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const existingPayload = target !== normalized && normalized.startsWith("dashboard/api/") && fs.existsSync(normalized)
     ? readJsonSafe(normalized, null)
@@ -2745,8 +2793,7 @@ function writeApiJson(filePath, payload, report = {}) {
     rowCountFromPayload(payload) > 0 &&
     String(payload?.generated_at || "") > String(existingPayload?.generated_at || "");
   if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic)) {
-    fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
-    fs.writeFileSync(normalized, JSON.stringify(payload, null, 2));
+    writeDashboardJson(normalized, payload);
   }
   return target;
 }
@@ -2770,6 +2817,94 @@ function rowCountFromPayload(payload) {
     return Number(payload.all_vessels_count || payload.all_collected_vessel_count || payload.record_count || payload.target_vessels_count || payload.candidate_count || 0);
   }
   return 0;
+}
+
+const ENDPOINT_MANIFEST_ENDPOINTS = [
+  ["bootstrap", "dashboard/api/bootstrap.json"],
+  ["status", "dashboard/api/status.json"],
+  ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
+  ["sales.actions", "dashboard/api/sales/actions.json"],
+  ["sales.conversionPipeline", "dashboard/api/sales/conversion-pipeline.json"],
+  ["sales.quoteOpportunities", "dashboard/api/sales/quote-opportunities.json"],
+  ["sales.verificationQueue", "dashboard/api/sales/verification-queue.json"],
+  ["watchlist.current", "dashboard/api/watchlist/current.json"],
+  ["targets.current", "dashboard/api/targets/current.json"],
+  ["targets.categories", "dashboard/api/targets/categories.json"],
+  ["vessels.index", "dashboard/api/vessels/index.json"],
+  ["vessels.page1", "dashboard/api/vessels/page-1.json"],
+  ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
+  ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
+  ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
+  ["intelligence.portDna", "dashboard/api/intelligence/port-dna.json"],
+  ["intelligence.opportunityMemory", "dashboard/api/intelligence/opportunity-memory.json"],
+  ["intelligence.contactCoverage", "dashboard/api/intelligence/contact-coverage.json"],
+  ["intelligence.complianceExposure", "dashboard/api/intelligence/compliance-exposure.json"],
+  ["intelligence.cleaningWindow", "dashboard/api/intelligence/cleaning-window.json"]
+];
+
+function schemaProblemForEndpoint(relativePath, payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "root_object_required";
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (!payload.schema_version) return "missing_schema_version";
+  if (!payload.generated_at) return "missing_generated_at";
+  const wrapperEndpoints = /dashboard\/api\/(sales\/|watchlist\/|targets\/|intelligence\/|candidates\/top\.json|arrival-pipeline\.json|anchorage-waiting\.json|staying-vessels\.json)/.test(normalized);
+  if (wrapperEndpoints) {
+    if (!Number.isFinite(Number(payload.record_count))) return "missing_numeric_record_count";
+    const hasArray = Array.isArray(payload.items) || Array.isArray(payload.categories) || Array.isArray(payload.opportunities) || Array.isArray(payload.ports);
+    if (!hasArray) return "missing_items_array";
+  }
+  return "";
+}
+
+function endpointManifestEntry(key, relativePath) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const fullPath = normalized;
+  const exists = fs.existsSync(fullPath);
+  if (!exists) {
+    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, status: "MISSING", problem: "file_missing" };
+  }
+  try {
+    const text = fs.readFileSync(fullPath, "utf8");
+    const payload = JSON.parse(text);
+    const schemaProblem = schemaProblemForEndpoint(normalized, payload);
+    const count = rowCountFromPayload(payload);
+    const status = schemaProblem ? "SCHEMA_MISMATCH" : count === 0 ? "EMPTY_VALID" : "OK";
+    return {
+      key,
+      path: normalized,
+      exists: true,
+      valid_json: true,
+      schema_valid: !schemaProblem,
+      record_count: count,
+      bytes: Buffer.byteLength(text),
+      status,
+      problem: schemaProblem || ""
+    };
+  } catch (error) {
+    return {
+      key,
+      path: normalized,
+      exists: true,
+      valid_json: false,
+      schema_valid: false,
+      record_count: 0,
+      bytes: fs.statSync(fullPath).size,
+      status: "INVALID_JSON",
+      problem: error.message
+    };
+  }
+}
+
+function writeEndpointManifest(generatedAt = new Date().toISOString()) {
+  const endpoints = ENDPOINT_MANIFEST_ENDPOINTS.map(([key, relativePath]) => endpointManifestEntry(key, relativePath));
+  const payload = {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    record_count: endpoints.length,
+    endpoints
+  };
+  writeDashboardJson("dashboard/api/endpoint-manifest.json", payload);
+  return payload;
 }
 
 function loadSuccessfulDatasetManifest() {
@@ -2803,12 +2938,11 @@ function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healt
   for (const [filePath, payload] of Object.entries(files)) {
     const normalized = String(filePath).replace(/\\/g, "/");
     const target = `${dir}/${normalized}`;
-    fs.mkdirSync(target.split("/").slice(0, -1).join("/"), { recursive: true });
-    fs.writeFileSync(target, JSON.stringify(payload, null, 2));
+    writeDashboardJson(target, payload);
     fileManifest.push({
       path: normalized,
       rows: rowCountFromPayload(payload),
-      bytes: Buffer.byteLength(JSON.stringify(payload))
+      bytes: Buffer.byteLength(safeDashboardJsonString(payload))
     });
   }
   const manifest = {
@@ -2827,9 +2961,9 @@ function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healt
     },
     files: fileManifest
   };
-  fs.writeFileSync(`${dir}/manifest.json`, JSON.stringify(manifest, null, 2));
+  writeDashboardJson(`${dir}/manifest.json`, manifest);
   fs.mkdirSync(SUCCESSFUL_DATASET_DIR, { recursive: true });
-  fs.writeFileSync(SUCCESSFUL_DATASET_MANIFEST, JSON.stringify(manifest, null, 2));
+  writeDashboardJson(SUCCESSFUL_DATASET_MANIFEST, manifest);
   return manifest;
 }
 
@@ -2934,6 +3068,7 @@ function withRunOrigin(payload = {}, origin = {}) {
   const activeRunId = payload.active_run_id || origin.active_run_id || statusRunId;
   const staleDiagnostic = Boolean(statusRunId && runId && String(statusRunId) !== String(runId));
   return {
+    schema_version: payload.schema_version || origin.schema_version || PUBLIC_API_SCHEMA_VERSION,
     ...origin,
     ...payload,
     run_id: runId,
@@ -2954,12 +3089,10 @@ function withRunOrigin(payload = {}, origin = {}) {
 function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const body = withRunOrigin(payload, origin);
-  fs.mkdirSync(normalized.split("/").slice(0, -1).join("/"), { recursive: true });
-  fs.writeFileSync(normalized, JSON.stringify(body, null, 2));
+  writeDashboardJson(normalized, body);
   if (normalized.startsWith("dashboard/api/")) {
     const debugPath = `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
-    fs.mkdirSync(debugPath.split("/").slice(0, -1).join("/"), { recursive: true });
-    fs.writeFileSync(debugPath, JSON.stringify(body, null, 2));
+    writeDashboardJson(debugPath, body);
   }
   return normalized;
 }
@@ -11367,7 +11500,9 @@ function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {},
   const warm = opportunities.filter(v => v.sales_priority_band === "WARM");
   const compliance = opportunities.filter(regulatedRouteSignal);
   return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
+    record_count: opportunities.length,
     report_type: "daily_sales_intelligence",
     title: "HWK Daily Sales Intelligence Report",
     executive_summary_ko: dataContinuity.status === "fallback_active"
@@ -14456,19 +14591,26 @@ try {
   for (const port of portIntelligence) {
     const dir = routeApiOutputPath(`dashboard/api/ports/${port.port_code}/vessels.json`, report).split("/").slice(0, -1).join("/");
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(`${dir}/vessels.json`, JSON.stringify(port.all_vessels, null, 2));
-    fs.writeFileSync(`${dir}/candidates.json`, JSON.stringify(port.sales_candidates, null, 2));
-    fs.writeFileSync(`${dir}/berths.json`, JSON.stringify(port.berths, null, 2));
-    fs.writeFileSync(`${dir}/congestion.json`, JSON.stringify(portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || null, null, 2));
-    fs.writeFileSync(`${dir}/anchorage.json`, JSON.stringify(buildPortAnchorage(allCollectedVessels, port.port_code), null, 2));
-    fs.writeFileSync(`${dir}/hull-cleaning.json`, JSON.stringify(hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
+    writeDashboardJson(`${dir}/vessels.json`, port.all_vessels);
+    writeDashboardJson(`${dir}/candidates.json`, port.sales_candidates);
+    writeDashboardJson(`${dir}/berths.json`, port.berths);
+    writeDashboardJson(`${dir}/congestion.json`, portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || publicItemsEnvelope({
+      generatedAt: completedAt,
+      dataMode: report.data_mode,
+      report,
+      sourceTable: "port_congestion_snapshots",
+      items: [],
+      extra: { status: "empty", reason: "해당 항만 혼잡 데이터가 없습니다." }
+    }));
+    writeDashboardJson(`${dir}/anchorage.json`, buildPortAnchorage(allCollectedVessels, port.port_code));
+    writeDashboardJson(`${dir}/hull-cleaning.json`, hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
       generatedAt: completedAt,
       dataMode: report.data_mode,
       report,
       sourceTable: "AIS_vessel_tracks,Port-MIS_pilot_events,VTS_operations,NOAA_SST,opportunity_master",
       items: [],
       extra: { status: "empty", reason: "해당 항만 Hull Cleaning 후보가 없습니다." }
-    }), null, 2));
+    }));
   }
   writeApiJson("dashboard/api/commercial-command-center.json", commercialCommandCenter, report);
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
@@ -14483,8 +14625,9 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
-  fs.writeFileSync("data/pipeline-report.json", JSON.stringify(report, null, 2));
-  fs.writeFileSync(`data/reports/${today}.json`, JSON.stringify(report, null, 2));
+  writeEndpointManifest(completedAt);
+  writeDashboardJson("data/pipeline-report.json", report);
+  writeDashboardJson(`data/reports/${today}.json`, report);
   fs.copyFileSync("dashboard/index.html", "public/index.html");
   const collectionSummary = {
     validation_mode: VALIDATION_MODE,
