@@ -7045,6 +7045,152 @@ function buildWorkerFleetPenetrationSummary(records = [], source = {}, generated
   });
 }
 
+function workerFleetGapTargetSignal(record = {}) {
+  const stageText = String(firstNonEmpty(record.current_stage, record.pipeline_stage, record.sales_stage, record.lead_stage, record.lead_status, record.opportunity_state, record.action_type, record.primary_category_code, record.primary_category, "")).toUpperCase();
+  return record.is_sales_target === true ||
+    record.is_immediate_candidate === true ||
+    record.is_current_target === true ||
+    record.sales_target === true ||
+    /CONTACT_NOW|PRE_ARRIVAL|ANCHORAGE_OPPORTUNITY|LONG_STAY_RISK|BIOFOULING_COMPLIANCE|CONTACT_PLANNED|CONTACTED|QUOTE_REQUESTED|QUOTE_SENT|NEGOTIATION|WON|LOST|연락|견적|수주|실주|대상/.test(stageText);
+}
+
+function workerFleetGapActivePipelineSignal(record = {}) {
+  return workerFleetGapTargetSignal(record) ||
+    workerFleetPenetrationContactSignal(record) ||
+    workerFleetPenetrationQuoteSignal(record) ||
+    workerFleetPenetrationWonSignal(record) ||
+    workerFleetPenetrationLostSignal(record) ||
+    workerPrivateActivityCount(record, "contact_attempt") > 0 ||
+    workerPrivateActivityCount(record, "quote_sent") > 0 ||
+    workerPrivateActivityCount(record, "won") > 0 ||
+    workerPrivateActivityCount(record, "lost") > 0;
+}
+
+function workerFleetGapOpportunitySignal(record = {}) {
+  const score = salesPriorityScore(record);
+  const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, record.berth_hours, 0) || 0;
+  const cleaningWindowScore = firstFiniteNumber(record.cleaning_window_score, record.window_score, record.cleaningOpportunityScore, record.cleaning_opportunity_score, 0) || 0;
+  return score >= 45 ||
+    risk >= 60 ||
+    stayHours >= 48 ||
+    repeatCallerVisitCount(record, 90) >= 2 ||
+    cleaningWindowScore >= 50 ||
+    /anchor|anchorage|waiting|묘박|정박|대기|arrival|입항/i.test(String(firstNonEmpty(record.status, record.status_bucket, record.operational_status, record.port_call_status, "")));
+}
+
+function buildWorkerFleetGapFinderSummary(records = [], source = {}, generatedAt = new Date().toISOString()) {
+  const assumptions = {
+    currency: "USD",
+    average_cleaning_price: 18000,
+    expected_conversion_rate: 0.16,
+    note: "Estimated Opportunity Only - guaranteed revenue가 아닙니다."
+  };
+  const byOperator = new Map();
+  const ensure = operator => {
+    const current = byOperator.get(operator) || {
+      operator_name: operator,
+      vesselKeys: new Set(),
+      targetedKeys: new Set(),
+      gapKeys: new Set(),
+      hotGapKeys: new Set(),
+      warmGapKeys: new Set(),
+      highRiskGapKeys: new Set(),
+      totalFleetHint: 0,
+      gapScoreTotal: 0,
+      gapRiskTotal: 0,
+      gap_vessels: []
+    };
+    byOperator.set(operator, current);
+    return current;
+  };
+  for (const record of records) {
+    const operator = workerFleetPenetrationOperatorName(record);
+    const current = ensure(operator);
+    const key = workerCustomerMemoryIdentityKey(record);
+    const score = salesPriorityScore(record);
+    const risk = firstFiniteNumber(record.risk_score, record.biofouling_exposure_score, record.biofouling_score, record.operational_risk_score, 0) || 0;
+    const isPipeline = workerFleetGapActivePipelineSignal(record);
+    current.vesselKeys.add(key);
+    current.totalFleetHint = Math.max(current.totalFleetHint, firstFiniteNumber(record.total_operator_vessels, record.operator_vessel_count, record.current_vessel_count, record.fleet_size_korea, 0) || 0);
+    if (isPipeline) current.targetedKeys.add(key);
+    if (isPipeline || !workerFleetGapOpportunitySignal(record) || current.gapKeys.has(key)) continue;
+    current.gapKeys.add(key);
+    current.gapScoreTotal += score;
+    current.gapRiskTotal += risk;
+    const band = firstNonEmpty(record.priority_label, record.sales_priority_band, record.candidate_band, salesPriorityBand(score));
+    if (String(band).toUpperCase() === "HOT" || score >= 80) current.hotGapKeys.add(key);
+    if (String(band).toUpperCase() === "WARM" || (score >= 60 && score < 80)) current.warmGapKeys.add(key);
+    if (risk >= 70) current.highRiskGapKeys.add(key);
+    current.gap_vessels.push({
+      vessel_display: vesselDisplay(record),
+      opportunity_score: score,
+      risk_score: risk,
+      priority_label: band,
+      reason_summary: firstNonEmpty(compactReasonSummary(record), "기회 신호는 있으나 현재 영업대상 또는 파이프라인에 포함되지 않았습니다."),
+      recommended_action: operator === "미확인 운영사" ? "운영사 확인 후 선대 단위 영업 기회로 분류" : "미타겟 선박을 확인해 영업대상 편입 여부를 검토"
+    });
+  }
+  const items = [...byOperator.values()]
+    .map(row => {
+      const knownKoreaVessels = Math.max(row.vesselKeys.size, row.totalFleetHint);
+      const targetedVessels = Math.min(knownKoreaVessels, row.targetedKeys.size);
+      const untargetedVessels = row.gapKeys.size;
+      const averageGapOpportunity = untargetedVessels ? row.gapScoreTotal / untargetedVessels : 0;
+      const averageGapRisk = untargetedVessels ? row.gapRiskTotal / untargetedVessels : 0;
+      const gapScore = Math.min(100, Math.round(averageGapOpportunity * 0.45 + averageGapRisk * 0.2 + Math.min(untargetedVessels * 8, 25) + row.hotGapKeys.size * 6 + row.highRiskGapKeys.size * 4));
+      const estimatedGapRevenue = Math.round(untargetedVessels * assumptions.average_cleaning_price * assumptions.expected_conversion_rate);
+      const topGapVessels = row.gap_vessels
+        .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || Number(b.risk_score || 0) - Number(a.risk_score || 0))
+        .slice(0, 5);
+      const recommendedNextAction = row.operator_name === "미확인 운영사"
+        ? "미확인 운영사 선박을 연락처 확인 큐와 함께 검토"
+        : row.hotGapKeys.size
+          ? "HOT 미타겟 선박부터 운영사/대리점 확인 후 영업대상으로 편입"
+          : "미타겟 선박을 점수순으로 검토해 다음 연락 후보를 선별";
+      return {
+        operator_name: row.operator_name,
+        known_korea_vessels: knownKoreaVessels,
+        targeted_vessels: targetedVessels,
+        untargeted_vessels: untargetedVessels,
+        hot_untargeted_vessels: row.hotGapKeys.size,
+        warm_untargeted_vessels: row.warmGapKeys.size,
+        high_risk_untargeted_vessels: row.highRiskGapKeys.size,
+        gap_score: gapScore,
+        score: gapScore,
+        opportunity_score: gapScore,
+        opportunity_gap: untargetedVessels,
+        estimated_gap_revenue: estimatedGapRevenue,
+        currency: assumptions.currency,
+        gap_vessels: topGapVessels,
+        top_gap_vessels: topGapVessels,
+        reason_summary: `${row.operator_name}: 한국 관측 선대 ${knownKoreaVessels}척 중 미타겟 기회 ${untargetedVessels}척`,
+        recommended_action: recommendedNextAction,
+        recommended_next_action: recommendedNextAction,
+        data_sources: ["fleet-intelligence", "fleet-penetration", "fleet-expansion", "fleet-memory", "operator_snapshot_daily", "vessel_master", "opportunity_memory", "revenue-forecast"]
+      };
+    })
+    .filter(item => item.known_korea_vessels > 0 && item.untargeted_vessels > 0)
+    .sort((a, b) => Number(b.gap_score || 0) - Number(a.gap_score || 0) || Number(b.untargeted_vessels || 0) - Number(a.untargeted_vessels || 0))
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return publicItemsEnvelope({
+    generatedAt,
+    dataMode: source.data_source_used,
+    source,
+    sourceTable: "fleet-intelligence,fleet-penetration,fleet-expansion,fleet-memory,operator_snapshot_daily,vessel_master,opportunity_memory,revenue-forecast",
+    items,
+    extra: {
+      summary: {
+        operator_count: items.length,
+        total_gap_vessels: items.reduce((sum, item) => sum + Number(item.untargeted_vessels || 0), 0),
+        unknown_operator_gap: items.find(item => item.operator_name === "미확인 운영사")?.untargeted_vessels || 0,
+        assumptions
+      }
+    }
+  });
+}
+
 function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, generatedAt = new Date().toISOString()) {
   const buckets = buildVisibilityBuckets(records);
   if (name === "contact-coverage") {
@@ -7105,6 +7251,7 @@ function buildWorkerIntelligenceSummary(name = "", records = [], source = {}, ge
   if (name === "fleet-memory") return buildFleetSummary(records, source, generatedAt);
   if (name === "customer-memory") return buildWorkerCustomerMemorySummary(records, source, generatedAt);
   if (name === "fleet-penetration") return buildWorkerFleetPenetrationSummary(records, source, generatedAt);
+  if (name === "fleet-gap-finder") return buildWorkerFleetGapFinderSummary(records, source, generatedAt);
   if (name === "fleet-expansion") {
     return publicItemsEnvelope({ generatedAt, dataMode: source.data_source_used, source, sourceTable: "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities", items: workerFleetExpansionItems(records) });
   }
@@ -7696,6 +7843,7 @@ function lightweightSummaryEndpoint(pathname = "", summary = {}, source = {}) {
       "fleet-memory": "operator_contact_history,commercial_leads,operator_snapshot_daily,dashboard_summary_snapshots",
       "customer-memory": "commercial_leads,operator_contact_history,sales-pipeline,relationship-intelligence,fleet-memory,dashboard_summary_snapshots",
       "fleet-penetration": "fleet-intelligence,fleet-memory,operator_snapshot_daily,relationship-intelligence,customer-memory,commercial_leads,sales-pipeline,operator_contact_history,vessel_visits,dashboard_summary_snapshots",
+      "fleet-gap-finder": "fleet-intelligence,fleet-penetration,fleet-expansion,fleet-memory,operator_snapshot_daily,vessel_master,opportunity_memory,revenue-forecast,dashboard_summary_snapshots",
       "fleet-expansion": "vessel_master,vessel_visits,operator_snapshot_daily,fleet-memory,repeat-callers,operator-opportunities,dashboard_summary_snapshots",
       "fleet-clusters": "operator-opportunities,fleet-memory,operator_snapshot_daily,dashboard_summary_snapshots",
       "cleaning-window": "vessel_snapshot_daily,opportunity_master,risk_history,dashboard_summary_snapshots",

@@ -9589,6 +9589,200 @@ function buildFleetPenetrationIntelligenceSummary({ records = [], fleetOpportuni
   });
 }
 
+function fleetGapTargetSignal(record = {}) {
+  const stage = leadConversionStage(record);
+  const category = String(firstNonEmpty(record.primary_category, record.primary_category_code, record.target_category, "")).toUpperCase();
+  return record.is_sales_target === true ||
+    record.is_immediate_candidate === true ||
+    record.is_current_target === true ||
+    record.sales_target === true ||
+    ["CONTACT_NOW", "PRE_ARRIVAL", "ANCHORAGE_OPPORTUNITY", "LONG_STAY_RISK", "BIOFOULING_COMPLIANCE"].includes(category) ||
+    ["CONTACT_PLANNED", "CONTACTED", "QUOTE_REQUESTED", "QUOTE_SENT", "NEGOTIATION", "WON", "LOST"].includes(stage);
+}
+
+function fleetGapActivePipelineSignal(record = {}) {
+  return fleetGapTargetSignal(record) ||
+    fleetPenetrationContactSignal(record) ||
+    fleetPenetrationQuoteSignal(record) ||
+    fleetPenetrationWonSignal(record) ||
+    fleetPenetrationLostSignal(record) ||
+    privateActivityCount(record, "contact_attempt") > 0 ||
+    privateActivityCount(record, "quote_sent") > 0 ||
+    privateActivityCount(record, "won") > 0 ||
+    privateActivityCount(record, "lost") > 0;
+}
+
+function fleetGapOpportunitySignal(record = {}) {
+  const score = salesPriorityScore(record);
+  const risk = recordRiskScore(record);
+  const longStay = longStayRiskSignal(record);
+  const repeatVisits = repeatCallerVisitCount(record, 90);
+  const cleaningWindowScore = firstFiniteNumber(record.cleaning_window_score, record.window_score, record.cleaningOpportunityScore, record.cleaning_opportunity_score, 0) || 0;
+  return score >= 45 ||
+    risk >= 60 ||
+    longStay.detected ||
+    repeatVisits >= 2 ||
+    cleaningWindowScore >= 50 ||
+    hasAnchorageWaitingSignal(record) ||
+    hasArrivalPipelineSignal(record);
+}
+
+function buildFleetGapFinderIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
+  const assumptions = revenueAssumptions();
+  const operatorSignals = new Map(aggregateOperators(records, fleetOpportunities).map(row => [row.operator_name, row]));
+  const byOperator = new Map();
+  const ensure = operator => {
+    const current = byOperator.get(operator) || {
+      operator_name: operator,
+      vesselKeys: new Set(),
+      targetedKeys: new Set(),
+      gapKeys: new Set(),
+      hotGapKeys: new Set(),
+      warmGapKeys: new Set(),
+      highRiskGapKeys: new Set(),
+      totalFleetHint: 0,
+      scoreTotal: 0,
+      riskTotal: 0,
+      gapScoreTotal: 0,
+      gapRiskTotal: 0,
+      gap_vessels: []
+    };
+    byOperator.set(operator, current);
+    return current;
+  };
+
+  for (const record of records) {
+    const operator = fleetPenetrationOperatorName(record);
+    const current = ensure(operator);
+    const key = opportunityMemoryIdentityKey(record);
+    const score = salesPriorityScore(record);
+    const risk = recordRiskScore(record);
+    const isTargeted = fleetGapTargetSignal(record);
+    const isPipeline = fleetGapActivePipelineSignal(record);
+    const isGap = !isPipeline && fleetGapOpportunitySignal(record);
+    current.vesselKeys.add(key);
+    current.scoreTotal += score;
+    current.riskTotal += risk;
+    if (isTargeted || isPipeline) current.targetedKeys.add(key);
+    current.totalFleetHint = Math.max(
+      current.totalFleetHint,
+      firstFiniteNumber(record.total_operator_vessels, record.operator_vessel_count, record.current_vessel_count, record.fleet_size_korea, 0) || 0
+    );
+    if (!isGap || current.gapKeys.has(key)) continue;
+    current.gapKeys.add(key);
+    current.gapScoreTotal += score;
+    current.gapRiskTotal += risk;
+    const band = firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score));
+    if (String(band).toUpperCase() === "HOT" || score >= 80) current.hotGapKeys.add(key);
+    if (String(band).toUpperCase() === "WARM" || (score >= 60 && score < 80)) current.warmGapKeys.add(key);
+    if (risk >= 70) current.highRiskGapKeys.add(key);
+    const reasonSummary = firstNonEmpty(
+      record.reason_summary,
+      record.candidate_summary_ko,
+      record.opportunity_summary,
+      longStayRiskSignal(record).reason,
+      "기회 신호는 있으나 현재 영업대상 또는 파이프라인에 포함되지 않았습니다."
+    );
+    const recommendedAction = operator === "미확인 운영사"
+      ? "운영사 확인 후 선대 단위 영업 기회로 분류"
+      : score >= 60 || risk >= 70
+        ? "미타겟 선박을 확인해 영업대상 편입 여부를 검토"
+        : "모니터링 후보로 두고 다음 입항/체류 신호를 확인";
+    current.gap_vessels.push({
+      vessel_display: vesselDisplay(record),
+      opportunity_score: score,
+      risk_score: risk,
+      priority_label: band,
+      reason_summary: reasonSummary,
+      recommended_action: recommendedAction,
+      data_sources: ["fleet-intelligence", "fleet-penetration", "fleet-expansion", "fleet-memory", "opportunity_memory", "revenue-forecast"]
+    });
+  }
+
+  for (const row of fleetOpportunities) {
+    const operator = fleetPenetrationOperatorName(row);
+    const current = ensure(operator);
+    current.totalFleetHint = Math.max(
+      current.totalFleetHint,
+      firstFiniteNumber(row.total_operator_vessels, row.operator_vessel_count, row.current_vessel_count, row.fleet_size_korea, row.vessel_count, 0) || 0
+    );
+  }
+
+  const items = [...byOperator.values()]
+    .map(row => {
+      const signal = operatorSignals.get(row.operator_name);
+      const knownKoreaVessels = Math.max(row.vesselKeys.size, row.totalFleetHint, Number(signal?.vessel_count || 0), Number(signal?.fleet_size_korea || 0));
+      const targetedVessels = Math.min(knownKoreaVessels, row.targetedKeys.size);
+      const untargetedVessels = row.gapKeys.size;
+      const averageGapOpportunity = untargetedVessels ? row.gapScoreTotal / untargetedVessels : 0;
+      const averageGapRisk = untargetedVessels ? row.gapRiskTotal / untargetedVessels : 0;
+      const gapScore = Math.min(100, Math.round(
+        averageGapOpportunity * 0.45 +
+        averageGapRisk * 0.2 +
+        Math.min(untargetedVessels * 8, 25) +
+        row.hotGapKeys.size * 6 +
+        row.highRiskGapKeys.size * 4
+      ));
+      const estimatedGapRevenue = revenueValue(untargetedVessels, assumptions.expected_conversion_rate, assumptions);
+      const topGapVessels = row.gap_vessels
+        .sort((a, b) =>
+          Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) ||
+          Number(b.risk_score || 0) - Number(a.risk_score || 0)
+        )
+        .slice(0, 5);
+      const recommendedNextAction = row.operator_name === "미확인 운영사"
+        ? "미확인 운영사 선박을 연락처 확인 큐와 함께 검토"
+        : untargetedVessels > 0 && row.hotGapKeys.size > 0
+          ? "HOT 미타겟 선박부터 운영사/대리점 확인 후 영업대상으로 편입"
+          : untargetedVessels > 0
+            ? "미타겟 선박을 점수순으로 검토해 다음 연락 후보를 선별"
+            : "현재 추가 갭이 작습니다. 기존 파이프라인 후속 조치에 집중";
+      return {
+        operator_name: row.operator_name,
+        known_korea_vessels: knownKoreaVessels,
+        targeted_vessels: targetedVessels,
+        untargeted_vessels: untargetedVessels,
+        hot_untargeted_vessels: row.hotGapKeys.size,
+        warm_untargeted_vessels: row.warmGapKeys.size,
+        high_risk_untargeted_vessels: row.highRiskGapKeys.size,
+        gap_score: gapScore,
+        score: gapScore,
+        opportunity_score: gapScore,
+        opportunity_gap: untargetedVessels,
+        estimated_gap_revenue: estimatedGapRevenue,
+        currency: assumptions.currency,
+        gap_vessels: topGapVessels,
+        top_gap_vessels: topGapVessels,
+        reason_summary: `${row.operator_name}: 한국 관측 선대 ${knownKoreaVessels}척 중 미타겟 기회 ${untargetedVessels}척`,
+        recommended_action: recommendedNextAction,
+        recommended_next_action: recommendedNextAction,
+        data_sources: ["fleet-intelligence", "fleet-penetration", "fleet-expansion", "fleet-memory", "operator_snapshot_daily", "vessel_master", "opportunity_memory", "revenue-forecast"]
+      };
+    })
+    .filter(item => item.known_korea_vessels > 0 && item.untargeted_vessels > 0)
+    .sort((a, b) =>
+      Number(b.gap_score || 0) - Number(a.gap_score || 0) ||
+      Number(b.untargeted_vessels || 0) - Number(a.untargeted_vessels || 0) ||
+      Number(b.estimated_gap_revenue || 0) - Number(a.estimated_gap_revenue || 0)
+    )
+    .slice(0, 20)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+
+  return intelligenceEnvelope({
+    generatedAt,
+    dataMode,
+    sourceTable: "fleet-intelligence,fleet-penetration,fleet-expansion,fleet-memory,operator_snapshot_daily,vessel_master,opportunity_memory,revenue-forecast",
+    items,
+    summary: {
+      operator_count: items.length,
+      total_gap_vessels: items.reduce((sum, item) => sum + Number(item.untargeted_vessels || 0), 0),
+      unknown_operator_gap: items.find(item => item.operator_name === "미확인 운영사")?.untargeted_vessels || 0,
+      assumptions,
+      definition: "known_korea_vessels는 한국 관측 선대를 기준으로 하며, gap_vessels는 영업대상/접촉/견적/수주 파이프라인에 아직 포함되지 않은 상업 신호 보유 선박입니다."
+    }
+  });
+}
+
 function upgradeFleetPenetrationPayloadContract(payload = {}) {
   if (!payload || typeof payload !== "object" || !Array.isArray(payload.items)) return payload;
   const assumptions = payload.summary?.assumptions || payload.extra?.summary?.assumptions || revenueAssumptions();
@@ -10801,6 +10995,7 @@ function buildIntelligenceSummaries({
     "fleet-dna": buildFleetDnaIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-memory": buildFleetMemoryIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-penetration": buildFleetPenetrationIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
+    "fleet-gap-finder": buildFleetGapFinderIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-expansion": buildFleetExpansionIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "fleet-clusters": buildFleetClusterIntelligenceSummary({ records, fleetOpportunities, generatedAt, dataMode }),
     "opportunity-memory": buildOpportunityMemoryIntelligenceSummary({ records, generatedAt, dataMode }),
@@ -14060,6 +14255,7 @@ try {
     "dashboard/api/intelligence/fleet-dna.json": intelligenceSummaries["fleet-dna"],
     "dashboard/api/intelligence/fleet-memory.json": intelligenceSummaries["fleet-memory"],
     "dashboard/api/intelligence/fleet-penetration.json": intelligenceSummaries["fleet-penetration"],
+    "dashboard/api/intelligence/fleet-gap-finder.json": intelligenceSummaries["fleet-gap-finder"],
     "dashboard/api/intelligence/fleet-expansion.json": intelligenceSummaries["fleet-expansion"],
     "dashboard/api/intelligence/fleet-clusters.json": intelligenceSummaries["fleet-clusters"],
     "dashboard/api/intelligence/route-summary.json": intelligenceSummaries["route-summary"],
