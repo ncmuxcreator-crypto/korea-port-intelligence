@@ -1134,10 +1134,36 @@ function buildPredictedCleaningOpportunities(records = []) {
     })));
 }
 
+function isBlankLikeValue(value) {
+  const text = String(value ?? "").normalize("NFKC").trim();
+  if (!text) return true;
+  const lowered = text.toLowerCase();
+  return [
+    "-",
+    "--",
+    "0",
+    "unknown",
+    "unknown operator",
+    "unknown owner",
+    "unknown manager",
+    "null",
+    "undefined",
+    "n/a",
+    "na",
+    "none",
+    "확인 필요",
+    "미확인",
+    "정보 없음",
+    "없음",
+    "선사 확인 필요",
+    "운영사 확인 필요"
+  ].includes(lowered);
+}
+
 function hasValue(value) {
   if (value === null || value === undefined) return false;
   if (typeof value === "number") return Number.isFinite(value) && value > 0;
-  return String(value).trim() !== "";
+  return !isBlankLikeValue(value);
 }
 
 function hasUsefulVesselIdentity(v = {}) {
@@ -2165,11 +2191,11 @@ function canonicalOperatorValue(record = {}) {
     record.company,
     record.company_name,
     record.owner_operator,
+    record.owner,
+    record.owner_name,
     record.technical_manager,
     record.manager,
-    record.manager_name,
-    record.owner,
-    record.owner_name
+    record.manager_name
   );
 }
 
@@ -2179,9 +2205,9 @@ function canonicalOperatorSource(record = {}) {
   if (hasValue(record.shipping_company)) return "shipping_company";
   if (hasValue(record.company) || hasValue(record.company_name)) return "company";
   if (hasValue(record.owner_operator)) return "owner_operator";
+  if (hasValue(record.owner) || hasValue(record.owner_name)) return "owner";
   if (hasValue(record.technical_manager)) return "technical_manager";
   if (hasValue(record.manager) || hasValue(record.manager_name)) return "manager";
-  if (hasValue(record.owner) || hasValue(record.owner_name)) return "owner";
   return "";
 }
 
@@ -2205,6 +2231,13 @@ function applyIdentityAndCommercialFallbacks(record = {}) {
     "imo_number",
     "ship_imo",
     "vessel_imo",
+    "vessel_imo_no",
+    "shipImo",
+    "ship_imo_no",
+    "lloyds_number",
+    "lloydsNo",
+    "lloyds_no",
+    "imo_number_raw",
     "vsslImoNo",
     "imoNo"
   ];
@@ -2215,6 +2248,10 @@ function applyIdentityAndCommercialFallbacks(record = {}) {
     "mmsi_number",
     "ship_mmsi",
     "vessel_mmsi",
+    "shipMmsi",
+    "vessel_mmsi_no",
+    "maritime_mobile_service_identity",
+    "mmsiNo",
     "vsslMmsi",
     "ais_mmsi"
   ];
@@ -2249,8 +2286,12 @@ function applyIdentityAndCommercialFallbacks(record = {}) {
     record.identity_source,
     record.imo_recovery_source,
     record.recovery_source,
-    record.vessel_master_cache_match && (imo || mmsi) ? "vessel_master" : "",
-    record.vessel_master_seed_match && (imo || mmsi) ? "vessel_master_seed" : "",
+    record.source_csv_match && (imo || mmsi) ? "source_csv" : "",
+    record.vessel_master_seed_match && (imo || mmsi) ? "source_csv" : "",
+    record.vessel_master_cache_match && (imo || mmsi) ? "vessel_master_cache" : "",
+    record.vessel_spec_match && (imo || mmsi) ? "vessel_spec" : "",
+    record.mof_ais_info_match && (imo || mmsi) ? "mof_ais_info" : "",
+    record.mof_ais_dynamic_match && (imo || mmsi) ? "mof_ais_dynamic" : "",
     imoSource,
     mmsiSource
   );
@@ -2268,18 +2309,28 @@ function applyIdentityAndCommercialFallbacks(record = {}) {
     callSign ? 82 : undefined,
     0
   );
+  const recoveredIdentity = Boolean((imo && !normalizeExplicitImo(record.imo)) || (mmsi && !normalizeExplicitMmsi(record.mmsi)));
+  const missingRecoverableIdentity = !imo && !mmsi && Boolean(callSign || record.vessel_name || record.normalized_vessel_name);
   return {
     ...record,
-    imo: record.imo || imo,
-    mmsi: record.mmsi || mmsi,
-    call_sign: record.call_sign || callSign,
+    imo: hasValue(record.imo) ? record.imo : imo,
+    mmsi: hasValue(record.mmsi) ? record.mmsi : mmsi,
+    call_sign: hasValue(record.call_sign) ? record.call_sign : callSign,
     operator_display: operatorDisplay || "",
     operator_source: record.operator_source || operatorSource,
     operator_confidence: firstFiniteNumber(record.operator_confidence, operatorDisplay ? (operatorSource === "operator" ? 90 : 70) : 0, 0),
     identity_source: identitySource || "",
     identity_confidence: identityConfidence || 0,
     identity_match_type: identityMatchType || "",
-    identity_conflict: record.identity_conflict || record.identity_conflicts || null
+    identity_conflict: record.identity_conflict || record.identity_conflicts || null,
+    identity_recovery_status: record.identity_recovery_status || (imo || mmsi
+      ? (recoveredIdentity ? "recovered" : "present")
+      : missingRecoverableIdentity
+        ? "missing_recoverable"
+        : "missing_source_unavailable"),
+    identity_recovery_notes: record.identity_recovery_notes || (!imo && !mmsi && callSign
+      ? "call_sign_available_no_imo_mmsi_match"
+      : "")
   };
 }
 
@@ -2334,16 +2385,24 @@ function targetCommercialSignals(v = {}) {
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || v.gross_tonnage || 0);
   const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
   const longStay = longStayRiskSignal(v);
+  const cleaningWindowScore = Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0);
   const signals = [];
   const add = (code, strength, reason) => signals.push({ code, strength, reason });
-  if (score >= SALES_CANDIDATE_THRESHOLD || salesPriorityScore(v) >= 60) add("high_opportunity_score", score, "기회 점수가 기준 이상입니다.");
+  if (score >= IMMEDIATE_TARGET_THRESHOLD ||
+    (score >= 70 && (risk >= 60 || regulatedRouteSignal(v) || cleaningWindowScore >= 65))) {
+    add("high_opportunity_score", score, "기회 점수와 추가 상업 신호가 함께 확인됩니다.");
+  }
   if (hasCurrentOrNearTermWorkFeasibility(v) || hasArrivalPipelineSignal(v) || hasPortSignal(v)) add("korea_port_or_eta", 40, "현재 한국 항만 또는 입항 예정 신호가 있습니다.");
   if (hasAnchorageWaitingSignal(v) || longStay.detected) add("anchorage_or_long_stay", longStay.confidence || 60, longStay.reason || "묘박/대기 또는 장기 체류 신호가 있습니다.");
   if (risk >= 60 || regulatedRouteSignal(v) || Number(v.compliance_score || v.compliance_exposure_score || 0) >= 55) add("risk_or_compliance", Math.max(risk, 60), "리스크 또는 compliance 노출 신호가 있습니다.");
-  if (gt >= 30000 || (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 50 || risk >= 45))) add("large_or_relevant_vessel", gt >= 30000 ? 70 : 55, "선종 또는 선박 크기가 서비스 대상군입니다.");
-  if (repeatCallerVisitCount(v, 90) >= 2 || Number(v.repeat_caller_score || v.korea_presence_score || 0) >= 70) add("repeat_korea_caller", 55, "한국 반복 기항 신호가 있습니다.");
+  if ((gt >= 80000 && (score >= IMMEDIATE_TARGET_THRESHOLD || risk >= 60 || cleaningWindowScore >= 65)) ||
+    (gt >= 30000 && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70)) ||
+    (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70))) {
+    add("large_high_value_vessel", gt >= 80000 ? 58 : 52, "선종 또는 선박 크기가 서비스 대상군이며 추가 신호가 있습니다.");
+  }
+  if (repeatCallerVisitCount(v, 90) >= 2 || Number(v.repeat_caller_score || v.korea_presence_score || 0) >= 70) add("repeat_korea_caller", 60, "한국 반복 기항 신호가 있습니다.");
   if (canonicalOperatorValue(v)) add("operator_known", 35, "운영사/회사 정보가 확인됩니다.");
-  if (Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0) >= 50) add("cleaning_window", 60, "클리닝 적기 신호가 있습니다.");
+  if (cleaningWindowScore >= 60) add("cleaning_window", 65, "클리닝 적기 신호가 있습니다.");
   return signals;
 }
 
@@ -2370,21 +2429,42 @@ function targetQuality(record = {}) {
   }
   const signals = targetCommercialSignals(record);
   const strongSignals = signals.filter(signal => signal.strength >= 50);
-  const coreSignals = strongSignals.filter(signal => !["korea_port_or_eta", "operator_known"].includes(signal.code));
+  const coreCodes = new Set([
+    "high_opportunity_score",
+    "anchorage_or_long_stay",
+    "risk_or_compliance",
+    "repeat_korea_caller",
+    "cleaning_window"
+  ]);
+  const contextCodes = new Set(["korea_port_or_eta", "operator_known"]);
+  const coreSignals = strongSignals.filter(signal => coreCodes.has(signal.code));
   const contextSignalCount = signals.filter(signal => ["korea_port_or_eta", "operator_known"].includes(signal.code)).length;
+  const contextSignals = signals.filter(signal => contextCodes.has(signal.code));
   const score = Math.max(Number(record.commercial_value_score || 0), Number(record.total_sales_priority_score || 0), Number(record.cleaning_candidate_score || 0), Number(salesPriorityScore(record) || 0));
-  const isTarget = coreSignals.length >= 2 || (coreSignals.length >= 1 && contextSignalCount >= 1 && score >= IMMEDIATE_TARGET_THRESHOLD);
-  const isImmediate = isTarget && (score >= IMMEDIATE_TARGET_THRESHOLD || coreSignals.some(signal => ["anchorage_or_long_stay", "risk_or_compliance", "cleaning_window"].includes(signal.code)) && score >= 60);
+  const risk = recordRiskScore(record);
+  const longStay = longStayRiskSignal(record);
+  const priorityLabel = String(record.priority_label || record.sales_priority_band || salesPriorityBand(score)).toUpperCase();
+  const strongCurrentContext = contextSignals.some(signal => signal.code === "korea_port_or_eta");
+  const isTarget = coreSignals.length >= 2 ||
+    (coreSignals.length >= 1 && strongCurrentContext && score >= 85) ||
+    (priorityLabel === "HOT" && coreSignals.length >= 1 && strongCurrentContext && score >= IMMEDIATE_TARGET_THRESHOLD);
+  const isImmediate = isTarget &&
+    (score >= 80 || priorityLabel === "HOT") &&
+    (hasCurrentOrNearTermWorkFeasibility(record) || hasAnchorageWaitingSignal(record) || hasArrivalPipelineSignal(record) || longStay.detected) &&
+    (risk >= 60 || longStay.detected || regulatedRouteSignal(record) || Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 60);
   return {
     is_sales_target: isTarget,
     is_immediate_target: isImmediate,
     is_monitor: !isTarget && signals.length > 0,
-    target_reason_count: strongSignals.length,
-    target_strength: isImmediate ? "immediate" : isTarget ? (strongSignals.length >= 3 ? "strong" : "qualified") : signals.length ? "monitor" : "low",
+    target_reason_count: coreSignals.length,
+    target_strength: isImmediate ? "immediate" : isTarget ? (coreSignals.length >= 3 ? "strong" : "qualified") : signals.length ? "monitor" : "low",
     target_reasons: strongSignals.map(signal => signal.reason),
     monitor_reason: !isTarget && signals.length ? signals.map(signal => signal.reason).slice(0, 2).join(" / ") : "",
     disqualification_reason: !isTarget && !signals.length ? "no_strong_commercial_signal" : "",
-    target_signal_codes: signals.map(signal => signal.code)
+    target_signal_codes: signals.map(signal => signal.code),
+    monitor_signal_codes: !isTarget ? signals.map(signal => signal.code) : [],
+    target_core_signal_codes: coreSignals.map(signal => signal.code),
+    target_context_signal_codes: contextSignals.map(signal => signal.code)
   };
 }
 
@@ -2398,30 +2478,26 @@ function isSalesCandidate(v = {}) {
 
 function isImmediateTarget(v = {}) {
   const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
-  const risk = Number(v.risk_score || v.biofouling_exposure_score || v.biofouling_risk_score || v.biofouling_score || v.operational_risk_score || 0);
-  const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0);
-  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
-  const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
+  const risk = recordRiskScore(v);
+  const longStay = longStayRiskSignal(v);
   const priorityLabel = String(v.priority_label || v.sales_priority_band || "").toUpperCase();
   const quality = targetQuality(v);
-  const strongTrigger =
-    priorityLabel === "HOT" ||
-    score >= IMMEDIATE_TARGET_THRESHOLD ||
-    risk >= 70 ||
-    stayHours >= 72 ||
-    (hasAnchorageWaitingSignal(v) && score >= 50) ||
-    (hasArrivalPipelineSignal(v) && score >= 50) ||
-    (gt >= 30000 && score >= 45) ||
-    (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && score >= 45) ||
-    (regulatedRouteSignal(v) && score >= 45) ||
-    (Boolean(canonicalOperatorValue(v) || v.owner || v.owner_name || v.manager || v.manager_name) && score >= 55) ||
-    (Number(v.korea_call_count || v.repeat_korea_call_count || v.visit_count || 0) >= 2 && score >= 50);
+  const commercialTrigger = risk >= 70 ||
+    longStay.detected ||
+    regulatedRouteSignal(v) ||
+    Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0) >= 65;
+  const timingTrigger = hasCurrentOrNearTermWorkFeasibility(v) ||
+    hasAnchorageWaitingSignal(v) ||
+    hasArrivalPipelineSignal(v) ||
+    longStay.detected;
+  const scoreTrigger = score >= 80 || (priorityLabel === "HOT" && score >= IMMEDIATE_TARGET_THRESHOLD);
   return !isDepartedRecord(v) &&
     !isHardCandidateExcluded(v) &&
     hasUsefulVesselIdentity(v) &&
     quality.is_sales_target &&
-    strongTrigger &&
-    (hasCurrentOrNearTermWorkFeasibility(v) || hasAnchorageWaitingSignal(v) || hasArrivalPipelineSignal(v) || stayHours >= 72 || score >= IMMEDIATE_TARGET_THRESHOLD) &&
+    scoreTrigger &&
+    timingTrigger &&
+    commercialTrigger &&
     v.commercial_relevance_status !== "excluded_departure_only";
 }
 
@@ -3038,6 +3114,8 @@ function buildPortIntelligence(records) {
       vessel_count: 0,
       scored_count: 0,
       candidate_count: 0,
+      sales_target_count: 0,
+      hot_count: 0,
       immediate_target_count: 0,
       high_value_vessels: 0,
       anchorage_waiting: 0,
@@ -3064,7 +3142,11 @@ function buildPortIntelligence(records) {
     }
     if (isSalesCandidate(v)) {
       current.candidate_count += 1;
+      current.sales_target_count += 1;
       current.sales_candidates.push(v);
+    }
+    if (String(v.priority_label || v.sales_priority_band || "").toUpperCase() === "HOT" || Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0) >= IMMEDIATE_TARGET_THRESHOLD) {
+      current.hot_count += 1;
     }
     if (isImmediateTarget(v)) {
       current.immediate_target_count += 1;
@@ -3087,6 +3169,10 @@ function buildPortIntelligence(records) {
     work_window_hours: port.work_window_count ? Math.round((port.work_window_hours_total / port.work_window_count) * 10) / 10 : 0,
     average_work_window_hours: port.work_window_count ? Math.round((port.work_window_hours_total / port.work_window_count) * 10) / 10 : 0,
     operator_quality: port.vessel_count ? Math.round(((port.operator_known_count * 0.65 + port.agent_known_count * 0.35) / port.vessel_count) * 100) : 0,
+    target_count: port.sales_target_count,
+    immediate_count: port.immediate_target_count,
+    hot_count_semantics: "HOT priority or score >= immediate threshold",
+    immediate_count_semantics: "strict immediate target",
     port_opportunity_score: Math.min(100, Math.round(
       Math.min(35, port.high_value_vessels * 7) +
       Math.min(25, port.anchorage_waiting * 6) +
@@ -5132,7 +5218,12 @@ function buildBootstrapSnapshot({
     display_name: port.display_name || port.port_name || port.port || "미확인 항만",
     vessel_count: Number(port.vessel_count || port.total_vessels || 0),
     target_count: Number(port.target_count || port.sales_target_count || port.candidate_count || port.target_vessels || port.sales_candidates || port.sales_targets || 0),
-    hot_count: Number(port.hot_count || port.hot_candidate_count || port.immediate_target_count || port.immediate_targets || 0),
+    sales_target_count: Number(port.sales_target_count || port.target_count || port.candidate_count || port.sales_candidates || port.sales_targets || 0),
+    hot_count: Number(port.hot_count || port.hot_candidate_count || 0),
+    hot_candidate_count: Number(port.hot_candidate_count || port.hot_count || 0),
+    immediate_target_count: Number(port.immediate_target_count || port.immediate_count || port.immediate_targets || 0),
+    immediate_count: Number(port.immediate_count || port.immediate_target_count || port.immediate_targets || 0),
+    hot_count_semantics: port.hot_count_semantics || (port.hot_candidate_count !== undefined ? "hot_candidate_count" : "HOT priority or score >= immediate threshold"),
     avg_opportunity_score: firstFiniteNumber(port.avg_opportunity_score, port.average_opportunity_score, port.port_opportunity_score, port.opportunity_index) ?? null
   }));
   const revenueRadar = compactItems(portRevenueRadar.items || portRevenueRadar).slice(0, 20).map(port => ({
@@ -5289,7 +5380,7 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
 const INTELLIGENCE_SCHEMA_VERSION = PUBLIC_API_SCHEMA_VERSION;
 
 function firstNonEmpty(...values) {
-  return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
+  return values.find(value => hasValue(value)) ?? "";
 }
 
 function displayText(value) {
@@ -12678,7 +12769,29 @@ try {
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
   let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v)))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
+  const directLongStayRiskRows = allCollectedVessels.filter(v => {
+    const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.port_stay_hours || v.berth_hours || 0);
+    const stayDays = Number(v.stay_days || 0);
+    const anchorageHours = Number(v.anchorage_hours || v.waiting_hours || v.estimated_waiting_time || 0);
+    return stayHours >= 72 || stayDays >= 3 || anchorageHours >= 48 || Number(v.waiting_score || v.dwell_score || 0) >= 60;
+  });
+  const longStayRiskVessels = sortCommercialPriority(dedupeCandidateRows([
+    ...allCollectedVessels.filter(v => longStayRiskSignal(v).detected),
+    ...directLongStayRiskRows,
+    ...(directLongStayRiskRows.length ? [] : stayingVessels.filter(v => Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || 0) >= 72))
+  ]));
+  const longStayRiskCount = longStayRiskVessels.length || Math.max(directLongStayRiskRows.length, 0);
   const targetCategorySummary = buildTargetCategorySummary(salesCandidates, { generatedAt: completedAt });
+  targetCategorySummary.kpis.long_stay_risk_count = Math.max(targetCategorySummary.kpis.long_stay_risk_count || 0, longStayRiskCount);
+  targetCategorySummary.counts.LONG_STAY_RISK = Math.max(targetCategorySummary.counts.LONG_STAY_RISK || 0, longStayRiskCount);
+  const longStayCategory = (targetCategorySummary.categories || []).find(category => category.code === "LONG_STAY_RISK");
+  if (longStayCategory && longStayCategory.count < longStayRiskCount) {
+    longStayCategory.count = longStayRiskCount;
+    longStayCategory.items = sortCommercialPriority(dedupeCandidateRows([
+      ...(longStayCategory.items || []),
+      ...longStayRiskVessels.slice(0, 50)
+    ])).slice(0, 50);
+  }
   salesCandidates = targetCategorySummary.items;
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && status !== "failed") {
@@ -12757,6 +12870,7 @@ try {
     target_vessel_uncapped_count: targetVesselsRaw.length,
     gt_5000_plus_count: targetVessels.filter(v => v.gt_status === "target_vessel").length,
     staying_vessel_count: stayingVessels.length,
+    long_stay_risk_count: longStayRiskCount,
     anchorage_waiting_count: anchorageWaiting.length,
     arrival_pipeline_count: arrivalPipeline.length,
     predicted_arrivals_count: arrivalPipeline.length,
@@ -13288,7 +13402,11 @@ try {
       sales_target_count: salesCandidates.length,
       immediate_target_count: immediateTargets.length,
       target_ratio: allCollectedVessels.length ? Math.round((salesCandidates.length / allCollectedVessels.length) * 1000) / 10 : 0,
-      target_ratio_warning: allCollectedVessels.length && salesCandidates.length / allCollectedVessels.length < 0.2 ? "영업대상 비율이 비정상적으로 낮음" : null,
+      target_ratio_warning: allCollectedVessels.length && salesCandidates.length / allCollectedVessels.length < 0.2
+        ? "영업대상 비율이 비정상적으로 낮음"
+        : allCollectedVessels.length && salesCandidates.length / allCollectedVessels.length > 0.4
+          ? "영업대상 비율이 너무 넓게 분류됨"
+          : null,
       target_category_counts: targetCategorySummary.counts,
       ...targetCategorySummary.kpis,
       ...(salesCandidates.length ? {} : { status: "empty", reason: "영업 후보 조건을 통과한 선박이 없습니다." })

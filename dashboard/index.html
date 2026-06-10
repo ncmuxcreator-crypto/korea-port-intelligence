@@ -467,7 +467,7 @@ const VESSEL_QUICK_FILTERS=[
 function meaningful(value){return value!==undefined&&value!==null&&String(value).trim()!==""&&!["-","확인 불가","선명 확인 필요","항만 확인 필요"].includes(String(value).trim())}
 function vesselField(v,...keys){const display=v?.vessel_display||{},congestion=v?.congestion_signal||{},schedule=v?.schedule_summary||{};for(const key of keys){const value=v?.[key]??display?.[key]??congestion?.[key]??schedule?.[key];if(meaningful(value))return value}return""}
 function vesselDisplayValue(v,...keys){const value=vesselField(v,...keys);if(Array.isArray(value))return value.map(item=>koreanizeText(textValue(item))).filter(Boolean).join(", ")||"-";if(value&&typeof value==="object")return koreanizeText(textValue(value));return meaningful(value)?koreanizeText(String(value)):"-"}
-const OPERATOR_FIELD_KEYS=["operator_display","operator","operator_name","operator_normalized","shipping_company","company","company_name","owner_operator","technical_manager","manager","manager_name","owner","owner_name"];
+const OPERATOR_FIELD_KEYS=["operator_display","operator","operator_name","operator_normalized","shipping_company","company","company_name","owner_operator","owner","owner_name","technical_manager","manager","manager_name"];
 function operatorDisplayValue(v){return vesselDisplayValue(v,...OPERATOR_FIELD_KEYS)}
 function vesselNumber(v,...keys){const value=vesselField(v,...keys);return hasNumber(value)?Number(value):0}
 function vesselMaybeNumber(v,...keys){const value=vesselField(v,...keys);return hasNumber(value)?Number(value):null}

@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const API_DIR = path.join(ROOT, "dashboard", "api");
 const DASHBOARD_HTML = path.join(ROOT, "dashboard", "index.html");
 
 function readJson(relativePath) {
@@ -19,9 +18,26 @@ function readJson(relativePath) {
 
 function meaningful(value) {
   if (value === undefined || value === null) return false;
-  const text = String(value).trim();
+  const text = String(value).normalize("NFKC").trim();
   if (!text) return false;
-  return !["-", "0", "unknown", "UNKNOWN", "null", "undefined", "확인 필요", "미확인", "정보 없음"].includes(text);
+  return ![
+    "-",
+    "--",
+    "0",
+    "unknown",
+    "UNKNOWN",
+    "null",
+    "undefined",
+    "n/a",
+    "N/A",
+    "none",
+    "확인 필요",
+    "미확인",
+    "정보 없음",
+    "없음",
+    "선사 확인 필요",
+    "운영사 확인 필요"
+  ].includes(text);
 }
 
 function number(value, fallback = 0) {
@@ -57,6 +73,7 @@ function coverage(rows, aliases) {
   const count = rows.filter(row => meaningful(first(row, aliases))).length;
   return {
     count,
+    total,
     percent: total ? Math.round((count / total) * 1000) / 10 : 0
   };
 }
@@ -109,8 +126,8 @@ function fieldCoverageReport(rows) {
     dwt: ["dwt", "deadweight", "deadweight_tonnage"],
     flag: ["flag", "vsslNltyNm", "vsslNltyCd", "nationality"],
     operator: ["operator", "operator_name", "operator_normalized"],
-    company: ["operator_display", "shipping_company", "company", "company_name", "owner_operator"],
-    operator_display: ["operator_display", "operator", "operator_name", "shipping_company", "company", "company_name", "owner_operator", "technical_manager", "manager", "owner"],
+    company: ["shipping_company", "company", "company_name", "owner_operator"],
+    operator_display: ["operator_display", "operator", "operator_name", "shipping_company", "company", "company_name", "owner_operator", "owner", "technical_manager", "manager"],
     owner: ["owner", "owner_name", "ship_owner", "registered_owner"],
     manager: ["manager", "manager_name", "ship_manager", "technical_manager"],
     agent: ["agent", "agent_name", "local_agent", "shipping_agent", "satmntEntrpsNm", "entrpsCdNm"],
@@ -124,7 +141,31 @@ function fieldCoverageReport(rows) {
   return Object.fromEntries(Object.entries(fields).map(([key, aliases]) => [key, coverage(rows, aliases)]));
 }
 
-function topWarnings({ counts, coverageMap, startup }) {
+function bucketCounts(rows, aliases) {
+  const counts = {};
+  for (const row of rows) {
+    const value = first(row, aliases);
+    const key = meaningful(value) ? String(value) : "missing";
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(counts).sort((left, right) => right[1] - left[1]).slice(0, 12));
+}
+
+function identityStats(rows) {
+  return {
+    vessels_with_imo_mmsi: rows.filter(row => meaningful(first(row, ["imo", "imo_no", "imo_number"])) && meaningful(first(row, ["mmsi", "mmsi_no", "mmsi_number"]))).length,
+    vessels_with_imo_or_mmsi: rows.filter(row => meaningful(first(row, ["imo", "imo_no", "imo_number"])) || meaningful(first(row, ["mmsi", "mmsi_no", "mmsi_number"]))).length,
+    call_sign_without_identity: rows.filter(row => meaningful(first(row, ["call_sign", "callsign", "clsgn", "callSign"])) &&
+      !meaningful(first(row, ["imo", "imo_no", "imo_number"])) &&
+      !meaningful(first(row, ["mmsi", "mmsi_no", "mmsi_number"]))).length,
+    identity_source_counts: bucketCounts(rows, ["identity_source", "imo_recovery_source", "recovery_source"]),
+    identity_match_type_counts: bucketCounts(rows, ["identity_match_type", "identity_match_strategy"]),
+    identity_recovery_status_counts: bucketCounts(rows, ["identity_recovery_status"]),
+    operator_source_counts: bucketCounts(rows, ["operator_source"])
+  };
+}
+
+function topWarnings({ counts, coverageMap, startup, identity }) {
   const warnings = [];
   const add = message => warnings.push(message);
   if (coverageMap.imo.percent < 50) add(`IMO coverage < 50% (${coverageMap.imo.percent}%)`);
@@ -132,12 +173,13 @@ function topWarnings({ counts, coverageMap, startup }) {
   if (coverageMap.operator_display.percent < 40) add(`operator/company display coverage < 40% (${coverageMap.operator_display.percent}%)`);
   if (counts.sales_target_ratio > 40) add(`sales_target_ratio > 40% (${counts.sales_target_ratio}%)`);
   if (counts.long_stay_risk_count === 0 && counts.staying_vessels_count > 0) add("long_stay_risk_count = 0 while staying_vessels_count > 0");
+  if (identity.vessels_with_imo_or_mmsi === 0 && identity.call_sign_without_identity > 0) add(`call sign exists but no IMO/MMSI recovered (${identity.call_sign_without_identity} rows)`);
   if (startup.heavyDiagnosticStartup.length) add(`heavy diagnostic endpoint loads on startup: ${startup.heavyDiagnosticStartup.map(entry => entry.url).join(", ")}`);
   return warnings;
 }
 
 function printCoverage(label, entry) {
-  console.log(`- ${label}: ${entry.count}/${entry.total ?? ""}${entry.total ? " " : ""}${entry.percent}%`);
+  console.log(`  - ${label}: ${entry.count}/${entry.total} (${entry.percent}%)`);
 }
 
 function main() {
@@ -174,15 +216,19 @@ function main() {
     high_risk_count: number(kpis.high_risk_count ?? summary.high_risk_count, 0)
   };
   const coverageMap = fieldCoverageReport(vesselRows);
-  for (const entry of Object.values(coverageMap)) entry.total = vesselRows.length;
+  const identity = identityStats(vesselRows);
   const startup = inspectStartup();
-  const warnings = topWarnings({ counts, coverageMap, startup });
+  const warnings = topWarnings({ counts, coverageMap, startup, identity });
 
   console.log("Data quality audit:");
   console.log("- counts:");
   for (const [key, value] of Object.entries(counts)) console.log(`  - ${key}: ${value}`);
+  console.log("- identity recovery:");
+  for (const [key, value] of Object.entries(identity)) {
+    console.log(`  - ${key}: ${typeof value === "object" ? JSON.stringify(value) : value}`);
+  }
   console.log("- field coverage:");
-  for (const [key, value] of Object.entries(coverageMap)) printCoverage(`  ${key}`, value);
+  for (const [key, value] of Object.entries(coverageMap)) printCoverage(key, value);
   console.log("- startup load:");
   console.log(`  - startup API count: ${startup.startupApiNames.length}`);
   console.log(`  - startup APIs: ${startup.startupApiNames.map(entry => `${entry.key}:${entry.url}`).join(", ") || "none"}`);

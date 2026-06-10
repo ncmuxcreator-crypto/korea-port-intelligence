@@ -198,20 +198,76 @@ function opportunityScore(record = {}) {
   ]);
 }
 
+function riskScore(record = {}) {
+  return firstFiniteNumber([
+    record.risk_score,
+    record.biofouling_exposure_score,
+    record.biofouling_risk_score,
+    record.biofouling_score,
+    record.operational_risk_score
+  ]) || 0;
+}
+
+function hasText(value) {
+  const text = String(value ?? "").normalize("NFKC").trim();
+  if (!text) return false;
+  return !["-", "--", "0", "unknown", "null", "undefined", "n/a", "na", "none", "확인 필요", "미확인", "정보 없음"].includes(text.toLowerCase());
+}
+
+function stayHours(record = {}) {
+  const hours = firstFiniteNumber([
+    record.stay_hours,
+    record.current_call_stay_hours,
+    record.cumulative_stay_hours,
+    record.port_stay_hours,
+    record.berth_hours
+  ]);
+  const days = firstFiniteNumber([record.stay_days]);
+  const anchorage = firstFiniteNumber([record.anchorage_hours, record.waiting_hours, record.estimated_waiting_time]);
+  return Math.max(hours || 0, days ? days * 24 : 0, anchorage || 0);
+}
+
+function hasTimingSignal(record = {}) {
+  return hasText(record.port_name || record.port || record.current_port || record.destination_port) ||
+    hasText(record.eta || record.etb || record.ata || record.atb) ||
+    /arrival|inbound|waiting|anchor|anchorage|묘박|정박|대기|입항/.test(String(record.status || record.status_bucket || record.port_call_status || "").toLowerCase());
+}
+
+function commercialSignalCount(record = {}) {
+  const score = opportunityScore(record) || 0;
+  const risk = riskScore(record);
+  const hours = stayHours(record);
+  const gt = Number(record.gt || record.grtg || record.intrlGrtg || record.gross_tonnage || 0);
+  const typeText = String(record.vessel_type || record.vessel_type_group || record.commercial_segment || "").toLowerCase();
+  const repeat = Number(record.korea_call_count || record.repeat_korea_call_count || record.visit_count_90d || record.visit_count || record.repeat_caller_score || record.korea_presence_score || 0);
+  const signals = [];
+  if (score >= 75 || (score >= 70 && (risk >= 60 || Number(record.compliance_score || record.compliance_exposure_score || 0) >= 55 || Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 65))) signals.push("opportunity");
+  if (risk >= 60 || Number(record.compliance_score || record.compliance_exposure_score || 0) >= 55) signals.push("risk");
+  if (hours >= 72 || Number(record.anchorage_hours || record.waiting_hours || 0) >= 48) signals.push("long_stay");
+  if ((gt >= 80000 && (score >= 75 || risk >= 60 || Number(record.cleaning_window_score || record.window_score || 0) >= 65)) ||
+    (gt >= 30000 && (score >= 80 || risk >= 65 || Number(record.cleaning_window_score || record.window_score || 0) >= 70)) ||
+    (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || Number(record.cleaning_window_score || record.window_score || 0) >= 70))) signals.push("large_vessel");
+  if (repeat >= 2 || Number(record.repeat_caller_score || record.korea_presence_score || 0) >= 70) signals.push("repeat");
+  if (Number(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score || 0) >= 60) signals.push("cleaning_window");
+  return new Set(signals).size;
+}
+
 function isHotCandidate(record = {}) {
-  const score = opportunityScore(record);
-  return record.is_immediate_candidate === true ||
-    ["HOT", "hot"].includes(record.priority_label) ||
-    ["critical", "immediate_target"].includes(record.candidate_band) ||
-    (score !== null && score >= 75);
+  const score = opportunityScore(record) || 0;
+  const label = String(record.priority_label || record.sales_priority_band || "").toUpperCase();
+  return (label === "HOT" || score >= 75) && commercialSignalCount(record) >= 1;
 }
 
 function isSalesCandidate(record = {}) {
-  const score = opportunityScore(record);
-  return isHotCandidate(record) ||
-    ["sales_target", "WARM", "warm"].includes(record.candidate_band) ||
-    ["WARM", "HOT"].includes(record.priority_label) ||
-    (score !== null && score >= 50);
+  return commercialSignalCount(record) >= 2 && hasTimingSignal(record);
+}
+
+function isImmediatePortCandidate(record = {}) {
+  const score = opportunityScore(record) || 0;
+  return isSalesCandidate(record) &&
+    isHotCandidate(record) &&
+    hasTimingSignal(record) &&
+    (riskScore(record) >= 60 || stayHours(record) >= 72 || Number(record.cleaning_window_score || record.window_score || 0) >= 60);
 }
 
 function latestTimestamp(record = {}) {
@@ -252,7 +308,10 @@ export function buildPortStatistics(records = [], generatedAt = new Date().toISO
         display_name: display_name || port_name || "미확인 항만",
         vessel_count: 0,
         hot_candidate_count: 0,
+        hot_count: 0,
         candidate_count: 0,
+        sales_target_count: 0,
+        immediate_target_count: 0,
         score_total: 0,
         score_count: 0,
         last_seen_ms: null,
@@ -260,8 +319,15 @@ export function buildPortStatistics(records = [], generatedAt = new Date().toISO
       };
       current.vessel_count += 1;
       if (normalized.raw !== null && normalized.raw !== undefined && String(normalized.raw).trim()) current.raw_aliases.add(String(normalized.raw).trim());
-      if (isHotCandidate(record)) current.hot_candidate_count += 1;
-      if (isSalesCandidate(record)) current.candidate_count += 1;
+      if (isHotCandidate(record)) {
+        current.hot_candidate_count += 1;
+        current.hot_count += 1;
+      }
+      if (isSalesCandidate(record)) {
+        current.candidate_count += 1;
+        current.sales_target_count += 1;
+      }
+      if (isImmediatePortCandidate(record)) current.immediate_target_count += 1;
       const score = opportunityScore(record);
       if (score !== null) {
         current.score_total += score;
@@ -280,15 +346,20 @@ export function buildPortStatistics(records = [], generatedAt = new Date().toISO
         port_name: port.port_name,
         display_name: port.display_name,
         vessel_count: port.vessel_count,
+        hot_count: port.hot_count,
         hot_candidate_count: port.hot_candidate_count,
+        hot_count_semantics: "HOT priority or score >= 75 with commercial signal",
         avg_opportunity_score: avgScore,
         last_seen_at: port.last_seen_ms === null ? null : new Date(port.last_seen_ms).toISOString(),
         total_vessels: port.vessel_count,
         candidate_count: port.candidate_count,
+        target_count: port.sales_target_count,
+        sales_target_count: port.sales_target_count,
         sales_candidates: port.candidate_count,
-        sales_targets: port.candidate_count,
-        immediate_target_count: port.hot_candidate_count,
-        immediate_targets: port.hot_candidate_count,
+        sales_targets: port.sales_target_count,
+        immediate_target_count: port.immediate_target_count,
+        immediate_count: port.immediate_target_count,
+        immediate_targets: port.immediate_target_count,
         port_opportunity_score: avgScore,
         raw_aliases: rawAliases,
         raw_alias_count: rawAliases.length
