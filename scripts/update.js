@@ -1047,7 +1047,7 @@ function enhancePredictiveArrivalIntelligence(records = []) {
       Math.round(predictedCongestionScore * 0.16) +
       Math.round(anchorageProbability * 0.12) +
       Math.min(12, Number(record.route_bonus || 0)) +
-      (record.operator_name || record.operator ? 4 : 0)
+      (canonicalOperatorValue(record) ? 4 : 0)
     )));
     const predictedPipeline = Boolean(
       record.predicted_arrival_pipeline ||
@@ -1213,7 +1213,7 @@ function contextualIdentityBonus(v = {}) {
   let bonus = 0;
   if (Number(v.gt || v.grtg || v.intrlGrtg || 0) > 0) bonus += 4;
   if (v.vessel_type_group && v.vessel_type_group !== "unknown") bonus += 3;
-  if (v.operator || v.agent) bonus += 3;
+  if (canonicalOperatorValue(v) || v.agent) bonus += 3;
   if (v.port_code || v.port) bonus += 2;
   if (v.observation_count && Number(v.observation_count) > 1) bonus += 3;
   return bonus;
@@ -1304,7 +1304,7 @@ function deriveFleetBadges(v) {
   const vesselName = String(v.vessel_name || "").toLowerCase();
   const text = `${operator} ${vesselName}`;
   const badges = [];
-  if (v.operator) badges.push("operator_known");
+  if (canonicalOperatorValue(v)) badges.push("operator_known");
   if (/hmm|hyundai|glovis|pan ocean|panocean|kss|sk shipping|sinokor|kmtc|korea|현대|글로비스|팬오션|고려|흥아|장금/.test(text)) {
     badges.push("korea_linked_operator");
   }
@@ -2094,7 +2094,8 @@ function commercialRelevanceStatus(v = {}) {
 function isMainCommercialVessel(v = {}) {
   const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
   if (!hasUsefulVesselIdentity(v) || isDepartedRecord(v) || isExplicitlyExcluded(v)) return false;
-  return ["target_vessel", "unknown_gt_review"].includes(v.commercial_relevance_status) || score >= REVIEW_TARGET_THRESHOLD || hasSalesRelevantSignal(v);
+  return isQualifiedSalesTarget(v) ||
+    (score >= SALES_CANDIDATE_THRESHOLD && ["target_vessel", "unknown_gt_review"].includes(v.commercial_relevance_status));
 }
 
 function isExplicitlyExcluded(v = {}) {
@@ -2150,16 +2151,249 @@ function hasSalesRelevantSignal(v = {}) {
     hasAnchorageWaitingSignal(v) ||
     hasArrivalPipelineSignal(v) ||
     regulatedRouteSignal(v) ||
-    Boolean(v.predicted_arrival_pipeline || v.contact_path_available || v.agent || v.agent_name || v.operator || v.operator_name) ||
+    Boolean(v.predicted_arrival_pipeline || v.contact_path_available || v.agent || v.agent_name || canonicalOperatorValue(v)) ||
     (hasPortSignal(v) && hasScheduleSignal(v) && (gt >= COMMERCIAL_GT_THRESHOLD || commercialStatus === "unknown_gt_review" || commercialStatus === "target_vessel"));
 }
 
+function canonicalOperatorValue(record = {}) {
+  return firstNonEmpty(
+    record.operator_display,
+    record.operator,
+    record.operator_name,
+    record.operator_normalized,
+    record.shipping_company,
+    record.company,
+    record.company_name,
+    record.owner_operator,
+    record.technical_manager,
+    record.manager,
+    record.manager_name,
+    record.owner,
+    record.owner_name
+  );
+}
+
+function canonicalOperatorSource(record = {}) {
+  if (hasValue(record.operator_display)) return record.operator_source || "operator_display";
+  if (hasValue(record.operator) || hasValue(record.operator_name) || hasValue(record.operator_normalized)) return record.operator_source || "operator";
+  if (hasValue(record.shipping_company)) return "shipping_company";
+  if (hasValue(record.company) || hasValue(record.company_name)) return "company";
+  if (hasValue(record.owner_operator)) return "owner_operator";
+  if (hasValue(record.technical_manager)) return "technical_manager";
+  if (hasValue(record.manager) || hasValue(record.manager_name)) return "manager";
+  if (hasValue(record.owner) || hasValue(record.owner_name)) return "owner";
+  return "";
+}
+
+function normalizeExplicitImo(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const match = text.replace(/[^\d]/g, "").match(/\d{7}/);
+  return match ? match[0] : "";
+}
+
+function normalizeExplicitMmsi(value) {
+  const digits = String(value || "").replace(/[^\d]/g, "");
+  return digits.length >= 6 && digits.length <= 10 ? digits : "";
+}
+
+function applyIdentityAndCommercialFallbacks(record = {}) {
+  const imoAliases = [
+    "imo",
+    "imo_no",
+    "imoNumber",
+    "imo_number",
+    "ship_imo",
+    "vessel_imo",
+    "vsslImoNo",
+    "imoNo"
+  ];
+  const mmsiAliases = [
+    "mmsi",
+    "mmsi_no",
+    "mmsiNumber",
+    "mmsi_number",
+    "ship_mmsi",
+    "vessel_mmsi",
+    "vsslMmsi",
+    "ais_mmsi"
+  ];
+  let imo = normalizeExplicitImo(record.imo);
+  let imoSource = record.identity_source || "";
+  if (!imo) {
+    for (const key of imoAliases) {
+      const value = normalizeExplicitImo(record[key]);
+      if (value) {
+        imo = value;
+        imoSource = key === "imo" ? (record.identity_source || "source_record") : key;
+        break;
+      }
+    }
+  }
+  let mmsi = normalizeExplicitMmsi(record.mmsi);
+  let mmsiSource = record.identity_source || "";
+  if (!mmsi) {
+    for (const key of mmsiAliases) {
+      const value = normalizeExplicitMmsi(record[key]);
+      if (value) {
+        mmsi = value;
+        mmsiSource = key === "mmsi" ? (record.identity_source || "source_record") : key;
+        break;
+      }
+    }
+  }
+  const callSign = firstNonEmpty(record.call_sign, record.callsign, record.clsgn, record.callSign, record.call_sign_raw);
+  const operatorDisplay = canonicalOperatorValue(record);
+  const operatorSource = canonicalOperatorSource(record);
+  const identitySource = firstNonEmpty(
+    record.identity_source,
+    record.imo_recovery_source,
+    record.recovery_source,
+    record.vessel_master_cache_match && (imo || mmsi) ? "vessel_master" : "",
+    record.vessel_master_seed_match && (imo || mmsi) ? "vessel_master_seed" : "",
+    imoSource,
+    mmsiSource
+  );
+  const identityMatchType = firstNonEmpty(
+    record.identity_match_type,
+    record.identity_match_strategy,
+    imo ? "imo_exact" : "",
+    mmsi ? "mmsi_exact" : "",
+    callSign ? "call_sign_exact" : ""
+  );
+  const identityConfidence = firstFiniteNumber(
+    record.identity_confidence,
+    imo ? 100 : undefined,
+    mmsi ? 90 : undefined,
+    callSign ? 82 : undefined,
+    0
+  );
+  return {
+    ...record,
+    imo: record.imo || imo,
+    mmsi: record.mmsi || mmsi,
+    call_sign: record.call_sign || callSign,
+    operator_display: operatorDisplay || "",
+    operator_source: record.operator_source || operatorSource,
+    operator_confidence: firstFiniteNumber(record.operator_confidence, operatorDisplay ? (operatorSource === "operator" ? 90 : 70) : 0, 0),
+    identity_source: identitySource || "",
+    identity_confidence: identityConfidence || 0,
+    identity_match_type: identityMatchType || "",
+    identity_conflict: record.identity_conflict || record.identity_conflicts || null
+  };
+}
+
+function stayDurationSignals(record = {}) {
+  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.port_stay_hours, record.berth_hours, 0) || 0;
+  const anchorageHours = firstFiniteNumber(record.anchorage_hours, record.waiting_hours, record.estimated_waiting_time, 0) || 0;
+  const stayDays = firstFiniteNumber(record.stay_days, stayHours ? stayHours / 24 : undefined, 0) || 0;
+  const repeatedSameArea = Number(record.observation_count || record.sighting_count || record.same_area_sightings || record.snapshot_count || 0) > 1 && hasPortSignal(record) && !record.atd;
+  return {
+    stayHours,
+    anchorageHours,
+    stayDays,
+    repeatedSameArea,
+    source: stayHours > 0 ? "stay_hours" : anchorageHours > 0 ? "anchorage_hours" : repeatedSameArea ? "repeated_same_area" : ""
+  };
+}
+
+function longStayRiskSignal(record = {}) {
+  const duration = stayDurationSignals(record);
+  const risk = recordRiskScore(record);
+  const highWaiting = duration.anchorageHours >= 48 || Number(record.waiting_score || record.dwell_score || 0) >= 60;
+  const longStay = duration.stayDays >= 3 || duration.stayHours >= 72 || duration.anchorageHours >= 48;
+  const repeated = duration.repeatedSameArea && (duration.stayHours >= 24 || duration.anchorageHours >= 24 || hasAnchorageWaitingSignal(record));
+  const percentile = Number(record.port_stay_percentile || record.stay_percentile || 0) >= 80;
+  if (longStay || highWaiting || repeated || percentile) {
+    const hours = Math.max(duration.stayHours, duration.anchorageHours);
+    return {
+      detected: true,
+      reason: longStay
+        ? `체류 시간이 ${Math.round(hours)}시간으로 길게 확인됩니다.`
+        : highWaiting
+          ? "묘박/대기 시간이 길거나 대기 점수가 높습니다."
+          : repeated
+            ? "동일 항만/해역 반복 체류가 확인됩니다."
+            : "항만 내 체류시간이 상위 구간입니다.",
+      source: duration.source || (percentile ? "stay_percentile" : "derived"),
+      confidence: Math.min(100, Math.max(risk, hours >= 72 ? 80 : highWaiting ? 70 : repeated ? 60 : 55))
+    };
+  }
+  return { detected: false, reason: "", source: duration.source, confidence: 0 };
+}
+
+function targetCommercialSignals(v = {}) {
+  const score = Math.max(
+    Number(v.commercial_value_score || 0),
+    Number(v.total_sales_priority_score || 0),
+    Number(v.cleaning_candidate_score || 0),
+    Number(v.opportunity_score || 0),
+    Number(salesPriorityScore(v) || 0)
+  );
+  const risk = recordRiskScore(v);
+  const gt = Number(v.gt || v.grtg || v.intrlGrtg || v.gross_tonnage || 0);
+  const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
+  const longStay = longStayRiskSignal(v);
+  const signals = [];
+  const add = (code, strength, reason) => signals.push({ code, strength, reason });
+  if (score >= SALES_CANDIDATE_THRESHOLD || salesPriorityScore(v) >= 60) add("high_opportunity_score", score, "기회 점수가 기준 이상입니다.");
+  if (hasCurrentOrNearTermWorkFeasibility(v) || hasArrivalPipelineSignal(v) || hasPortSignal(v)) add("korea_port_or_eta", 40, "현재 한국 항만 또는 입항 예정 신호가 있습니다.");
+  if (hasAnchorageWaitingSignal(v) || longStay.detected) add("anchorage_or_long_stay", longStay.confidence || 60, longStay.reason || "묘박/대기 또는 장기 체류 신호가 있습니다.");
+  if (risk >= 60 || regulatedRouteSignal(v) || Number(v.compliance_score || v.compliance_exposure_score || 0) >= 55) add("risk_or_compliance", Math.max(risk, 60), "리스크 또는 compliance 노출 신호가 있습니다.");
+  if (gt >= 30000 || (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 50 || risk >= 45))) add("large_or_relevant_vessel", gt >= 30000 ? 70 : 55, "선종 또는 선박 크기가 서비스 대상군입니다.");
+  if (repeatCallerVisitCount(v, 90) >= 2 || Number(v.repeat_caller_score || v.korea_presence_score || 0) >= 70) add("repeat_korea_caller", 55, "한국 반복 기항 신호가 있습니다.");
+  if (canonicalOperatorValue(v)) add("operator_known", 35, "운영사/회사 정보가 확인됩니다.");
+  if (Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0) >= 50) add("cleaning_window", 60, "클리닝 적기 신호가 있습니다.");
+  return signals;
+}
+
+function targetQuality(record = {}) {
+  if (!hasUsefulVesselIdentity(record)) {
+    return {
+      is_sales_target: false,
+      is_monitor: false,
+      target_reason_count: 0,
+      target_strength: "hold",
+      target_reasons: [],
+      disqualification_reason: "invalid_identity"
+    };
+  }
+  if (isHardCandidateExcluded(record) || isDepartedRecord(record)) {
+    return {
+      is_sales_target: false,
+      is_monitor: false,
+      target_reason_count: 0,
+      target_strength: "hold",
+      target_reasons: [],
+      disqualification_reason: commercialExclusionReason(record) || "excluded_or_departed"
+    };
+  }
+  const signals = targetCommercialSignals(record);
+  const strongSignals = signals.filter(signal => signal.strength >= 50);
+  const coreSignals = strongSignals.filter(signal => !["korea_port_or_eta", "operator_known"].includes(signal.code));
+  const contextSignalCount = signals.filter(signal => ["korea_port_or_eta", "operator_known"].includes(signal.code)).length;
+  const score = Math.max(Number(record.commercial_value_score || 0), Number(record.total_sales_priority_score || 0), Number(record.cleaning_candidate_score || 0), Number(salesPriorityScore(record) || 0));
+  const isTarget = coreSignals.length >= 2 || (coreSignals.length >= 1 && contextSignalCount >= 1 && score >= IMMEDIATE_TARGET_THRESHOLD);
+  const isImmediate = isTarget && (score >= IMMEDIATE_TARGET_THRESHOLD || coreSignals.some(signal => ["anchorage_or_long_stay", "risk_or_compliance", "cleaning_window"].includes(signal.code)) && score >= 60);
+  return {
+    is_sales_target: isTarget,
+    is_immediate_target: isImmediate,
+    is_monitor: !isTarget && signals.length > 0,
+    target_reason_count: strongSignals.length,
+    target_strength: isImmediate ? "immediate" : isTarget ? (strongSignals.length >= 3 ? "strong" : "qualified") : signals.length ? "monitor" : "low",
+    target_reasons: strongSignals.map(signal => signal.reason),
+    monitor_reason: !isTarget && signals.length ? signals.map(signal => signal.reason).slice(0, 2).join(" / ") : "",
+    disqualification_reason: !isTarget && !signals.length ? "no_strong_commercial_signal" : "",
+    target_signal_codes: signals.map(signal => signal.code)
+  };
+}
+
+function isQualifiedSalesTarget(v = {}) {
+  return targetQuality(v).is_sales_target;
+}
+
 function isSalesCandidate(v = {}) {
-  const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
-  return !isDepartedRecord(v) &&
-    !isHardCandidateExcluded(v) &&
-    hasUsefulVesselIdentity(v) &&
-    (score >= SALES_CANDIDATE_THRESHOLD || hasSalesRelevantSignal(v));
+  return isQualifiedSalesTarget(v);
 }
 
 function isImmediateTarget(v = {}) {
@@ -2169,6 +2403,7 @@ function isImmediateTarget(v = {}) {
   const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
   const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
   const priorityLabel = String(v.priority_label || v.sales_priority_band || "").toUpperCase();
+  const quality = targetQuality(v);
   const strongTrigger =
     priorityLabel === "HOT" ||
     score >= IMMEDIATE_TARGET_THRESHOLD ||
@@ -2179,11 +2414,12 @@ function isImmediateTarget(v = {}) {
     (gt >= 30000 && score >= 45) ||
     (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && score >= 45) ||
     (regulatedRouteSignal(v) && score >= 45) ||
-    (Boolean(v.operator || v.operator_name || v.owner || v.owner_name || v.manager || v.manager_name) && score >= 55) ||
+    (Boolean(canonicalOperatorValue(v) || v.owner || v.owner_name || v.manager || v.manager_name) && score >= 55) ||
     (Number(v.korea_call_count || v.repeat_korea_call_count || v.visit_count || 0) >= 2 && score >= 50);
   return !isDepartedRecord(v) &&
     !isHardCandidateExcluded(v) &&
     hasUsefulVesselIdentity(v) &&
+    quality.is_sales_target &&
     strongTrigger &&
     (hasCurrentOrNearTermWorkFeasibility(v) || hasAnchorageWaitingSignal(v) || hasArrivalPipelineSignal(v) || stayHours >= 72 || score >= IMMEDIATE_TARGET_THRESHOLD) &&
     v.commercial_relevance_status !== "excluded_departure_only";
@@ -2197,9 +2433,12 @@ function isWatchlistVessel(v = {}) {
 function annotateTargetClassification(records = []) {
   annotateCommercialRanks(records);
   for (const vessel of records) {
+    Object.assign(vessel, applyIdentityAndCommercialFallbacks(vessel));
     const score = Number(vessel.commercial_value_score || vessel.total_sales_priority_score || vessel.cleaning_candidate_score || 0);
     const priorityScore = salesPriorityScore(vessel);
-    const salesCandidateFlag = isSalesCandidate(vessel) || hasSalesRelevantSignal(vessel) || isMainCommercialVessel(vessel);
+    const quality = targetQuality(vessel);
+    const longStay = longStayRiskSignal(vessel);
+    const salesCandidateFlag = quality.is_sales_target;
     const immediateFlag = isImmediateTarget(vessel);
     vessel.is_cleaning_candidate = salesCandidateFlag;
     vessel.is_immediate_candidate = immediateFlag;
@@ -2216,6 +2455,15 @@ function annotateTargetClassification(records = []) {
             : "general";
     vessel.priority_label = salesPriorityBand(priorityScore);
     vessel.sales_priority_band = vessel.priority_label;
+    vessel.target_reason_count = quality.target_reason_count;
+    vessel.target_strength = quality.target_strength;
+    vessel.target_reasons = quality.target_reasons;
+    vessel.monitor_reason = quality.monitor_reason;
+    vessel.disqualification_reason = quality.disqualification_reason || vessel.disqualification_reason;
+    vessel.target_signal_codes = quality.target_signal_codes;
+    vessel.long_stay_reason = longStay.reason || vessel.long_stay_reason || "";
+    vessel.stay_duration_source = longStay.source || vessel.stay_duration_source || "";
+    vessel.long_stay_confidence = longStay.confidence || vessel.long_stay_confidence || 0;
     vessel.vessel_display = vesselDisplay(vessel);
   }
   return records;
@@ -3167,24 +3415,40 @@ function candidateBandFromScore(value = 0) {
 
 function ensureOutputContractFields(records = [], { runId = "", generatedAt = "", dataSourceUsed = "static_json_snapshot" } = {}) {
   return records.map((record = {}, index) => {
-    const portCode = String(record.port_code || portCodeFromName(record.port || record.port_name) || "unknown");
-    const vesselName = record.vessel_name || record.name || record.ship_name || record.normalized_vessel_name || "UNKNOWN";
-    const commercialValueScore = Number(record.commercial_value_score ?? record.total_sales_priority_score ?? record.cleaning_candidate_score ?? 0);
-    const fallbackPortCallId = normalizeIdentityToken(candidateDedupeKey({ ...record, port_code: portCode, vessel_name: vesselName }) || `ROW-${index}`);
-    const masterVesselId = record.master_vessel_id || record.hybrid_entity_key || record.vessel_id || record.imo || record.mmsi || record.call_sign || normalizeIdentityToken(vesselName);
+    const enriched = applyIdentityAndCommercialFallbacks(record);
+    const quality = targetQuality(enriched);
+    const longStay = longStayRiskSignal(enriched);
+    const portCode = String(enriched.port_code || portCodeFromName(enriched.port || enriched.port_name) || "unknown");
+    const vesselName = enriched.vessel_name || enriched.name || enriched.ship_name || enriched.normalized_vessel_name || "UNKNOWN";
+    const commercialValueScore = Number(enriched.commercial_value_score ?? enriched.total_sales_priority_score ?? enriched.cleaning_candidate_score ?? 0);
+    const fallbackPortCallId = normalizeIdentityToken(candidateDedupeKey({ ...enriched, port_code: portCode, vessel_name: vesselName }) || `ROW-${index}`);
+    const masterVesselId = enriched.master_vessel_id || enriched.hybrid_entity_key || enriched.vessel_id || enriched.imo || enriched.mmsi || enriched.call_sign || normalizeIdentityToken(vesselName);
     return {
-      ...record,
-      run_id: record.run_id || runId,
-      generated_at: record.generated_at || record.collected_at || generatedAt,
-      data_source_used: record.data_source_used || record.source_name || record.source || dataSourceUsed,
-      port_call_id: record.port_call_id || fallbackPortCallId,
+      ...enriched,
+      run_id: enriched.run_id || runId,
+      generated_at: enriched.generated_at || enriched.collected_at || generatedAt,
+      data_source_used: enriched.data_source_used || enriched.source_name || enriched.source || dataSourceUsed,
+      port_call_id: enriched.port_call_id || fallbackPortCallId,
       master_vessel_id: masterVesselId,
       vessel_name: vesselName,
       port_code: portCode,
-      port_name: record.port_name || record.port || portCode,
-      candidate_band: record.candidate_band || record.sales_priority_band || candidateBandFromScore(commercialValueScore),
+      port_name: enriched.port_name || enriched.port || portCode,
+      candidate_band: quality.is_sales_target
+        ? (enriched.candidate_band || enriched.sales_priority_band || candidateBandFromScore(commercialValueScore))
+        : quality.is_monitor
+          ? "monitor"
+          : enriched.candidate_band || "general",
       commercial_value_score: commercialValueScore,
-      data_confidence_score: Number(record.data_confidence_score ?? record.confidence_score ?? 0)
+      data_confidence_score: Number(enriched.data_confidence_score ?? enriched.confidence_score ?? 0),
+      target_reason_count: quality.target_reason_count,
+      target_strength: quality.target_strength,
+      target_reasons: quality.target_reasons,
+      monitor_reason: quality.monitor_reason,
+      disqualification_reason: quality.disqualification_reason || enriched.disqualification_reason,
+      target_signal_codes: quality.target_signal_codes,
+      long_stay_reason: longStay.reason || enriched.long_stay_reason || "",
+      stay_duration_source: longStay.source || enriched.stay_duration_source || "",
+      long_stay_confidence: longStay.confidence || enriched.long_stay_confidence || 0
     };
   });
 }
@@ -3503,7 +3767,7 @@ function buildAgentFollowupQueue(records = []) {
     .filter(v => {
       const score = Number(v.commercial_value_score || v.total_sales_priority_score || v.cleaning_candidate_score || 0);
       const hasAgent = Boolean(v.agent || v.agent_name || v.satmntEntrpsNm || v.entrpsCdNm);
-      const missingDecisionPath = !v.operator || !v.imo || (v.data_confidence_score || 0) < 70;
+      const missingDecisionPath = !canonicalOperatorValue(v) || !v.imo || (v.data_confidence_score || 0) < 70;
       const commerciallyRelevant = score >= REVIEW_TARGET_THRESHOLD || v.is_cleaning_candidate || v.is_immediate_candidate;
       return commerciallyRelevant && (hasAgent || missingDecisionPath);
     })
@@ -3512,8 +3776,8 @@ function buildAgentFollowupQueue(records = []) {
       port: v.port,
       port_code: v.port_code,
       agent: v.agent || v.agent_name || v.satmntEntrpsNm || v.entrpsCdNm || "",
-      operator: v.operator || "",
-      company: v.operator || v.operator_name || v.agent || v.agent_name || "",
+      operator: canonicalOperatorValue(v) || "",
+      company: canonicalOperatorValue(v) || v.agent || v.agent_name || "",
       imo: v.imo || "",
       call_sign: v.call_sign || "",
       commercial_value_score: v.commercial_value_score || 0,
@@ -3539,7 +3803,7 @@ function hasContactValue(value) {
 
 function missingContactFields(record = {}) {
   const fields = [];
-  if (!hasContactValue(firstNonEmpty(record.operator, record.operator_name, record.operator_normalized))) fields.push("operator");
+  if (!hasContactValue(canonicalOperatorValue(record))) fields.push("operator");
   if (!hasContactValue(firstNonEmpty(record.owner, record.owner_name, record.ship_owner, record.registered_owner))) fields.push("owner");
   if (!hasContactValue(firstNonEmpty(record.manager, record.manager_name, record.ship_manager, record.technical_manager))) fields.push("manager");
   if (!hasContactValue(firstNonEmpty(record.agent, record.agent_name, record.local_agent, record.satmntEntrpsNm, record.entrpsCdNm))) fields.push("local_agent");
@@ -3557,6 +3821,7 @@ function verificationTypeForMissingFields(fields = []) {
 
 function knownCompanyForVerification(record = {}) {
   return firstNonEmpty(
+    canonicalOperatorValue(record),
     record.company,
     record.company_name,
     record.shipping_company,
@@ -3697,6 +3962,7 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
   const confidence = targetCategoryConfidence(record);
   const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunity || risk))).toUpperCase();
   const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.anchorage_hours, 0) || 0;
+  const longStay = longStayRiskSignal(record);
   const visits90 = repeatCallerVisitCount(record, 90);
   const repeatScore = firstFiniteNumber(record.repeat_caller_score, 0) || 0;
   const operatorVesselCount = firstFiniteNumber(record.operator_vessel_count, record.repeat_operator_count, record.operator_call_count, 0) || 0;
@@ -3715,8 +3981,9 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
   if (hasAnchorageWaitingSignal(record)) {
     categories.push(targetCategoryItem("ANCHORAGE_OPPORTUNITY", Math.max(confidence, firstFiniteNumber(record.anchorage_probability, 50) || 50), anchorageWaitingReason(record), "묘박/정박 상태와 작업 가능 시간을 확인"));
   }
-  if (stayHours >= 72 && risk >= 50) {
-    categories.push(targetCategoryItem("LONG_STAY_RISK", Math.max(risk, confidence), `체류 ${Math.round((stayHours / 24) * 10) / 10}일 및 리스크 ${Math.round(risk)}점 신호가 있습니다.`, "장기 체류 원인과 선저 리스크를 함께 확인"));
+  if (longStay.detected || (stayHours >= 72 && risk >= 50)) {
+    const reason = longStay.reason || `체류 ${Math.round((stayHours / 24) * 10) / 10}일 및 리스크 ${Math.round(risk)}점 신호가 있습니다.`;
+    categories.push(targetCategoryItem("LONG_STAY_RISK", Math.max(risk, confidence, longStay.confidence), reason, "장기 체류 원인과 선저 리스크를 함께 확인"));
   }
   if (complianceSignal && risk >= 45) {
     categories.push(targetCategoryItem("BIOFOULING_COMPLIANCE", Math.max(risk, opportunity), "규제 목적지/항로 또는 compliance 태그와 biofouling 리스크가 함께 확인됩니다.", "Brazil/Australia/NZ 등 목적지와 biofouling 대응 필요 여부 확인"));
@@ -4202,7 +4469,7 @@ function salesPriorityReasonCodes(v = {}) {
   if (Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.anchorage_hours || 0) >= 72) reasons.push("LONG_STAY_72H_PLUS");
   if (regulatedRouteSignal(v)) reasons.push("BRAZIL_AU_NZ_COMPLIANCE_ROUTE");
   if (v.predicted_arrival_pipeline || v.status_bucket === "arriving_soon") reasons.push("ARRIVAL_PIPELINE");
-  if (v.contact_path_available || v.agent || v.agent_name || v.operator || v.operator_name) reasons.push("CONTACT_PATH_AVAILABLE");
+  if (v.contact_path_available || v.agent || v.agent_name || canonicalOperatorValue(v)) reasons.push("CONTACT_PATH_AVAILABLE");
   return [...new Set([...(v.reason_codes || []), ...reasons])].slice(0, 8);
 }
 
@@ -4243,6 +4510,7 @@ function vesselDisplay(record = {}) {
   const hullGrowthIndex = firstFiniteNumber(record.hullGrowthIndex, record.hull_growth_index);
   const cleaningOpportunityScore = firstFiniteNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score, record.predicted_cleaning_opportunity_score, record.hull_cleaning_candidate_score);
   const riskReasons = mergeHullRiskReasons(record, { riskReasons: record.riskReasons || record.risk_reasons });
+  const operatorDisplay = canonicalOperatorValue(record);
   return {
     vessel_name: displayText(firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요")),
     imo: displayText(firstNonEmpty(record.imo, record.imo_no)),
@@ -4252,7 +4520,10 @@ function vesselDisplay(record = {}) {
     vessel_type: displayText(firstNonEmpty(record.vessel_type, record.vsslKndNm, record.vessel_type_group, record.commercial_segment)),
     gt: displayNumber(firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, record.grossTonnage)),
     dwt: displayNumber(firstFiniteNumber(record.dwt, record.deadweight, record.deadweight_tonnage)),
-    operator: displayText(firstNonEmpty(record.operator_name, record.operator, record.operator_normalized)),
+    operator: displayText(operatorDisplay),
+    operator_display: displayText(operatorDisplay),
+    operator_source: displayText(firstNonEmpty(record.operator_source, canonicalOperatorSource(record))),
+    operator_confidence: displayNumber(firstFiniteNumber(record.operator_confidence, operatorDisplay ? 70 : 0)),
     company: displayText(firstNonEmpty(record.company, record.company_name, record.shipping_company, record.operator_name, record.operator, record.agent_name, record.agent)),
     owner: displayText(firstNonEmpty(record.owner_name, record.owner, record.ship_owner, record.registered_owner)),
     manager: displayText(firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager)),
@@ -4274,6 +4545,10 @@ function vesselDisplay(record = {}) {
     waiting_score: displayNumber(waitingScore),
     last_seen_at: displayText(firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.first_seen_at, record.generated_at)),
     data_source: displayText(firstNonEmpty(record.source_label, record.data_source_used, record.source, record.source_mode, record.agent_source)),
+    identity_source: displayText(firstNonEmpty(record.identity_source, record.imo_recovery_source, record.recovery_source)),
+    identity_confidence: displayNumber(firstFiniteNumber(record.identity_confidence, 0)),
+    identity_match_type: displayText(firstNonEmpty(record.identity_match_type, record.identity_match_strategy, record.identification_method)),
+    identity_conflict: record.identity_conflict || record.identity_conflicts || null,
     confidence_score: displayNumber(confidenceScore),
     opportunity_score: displayNumber(opportunityScore),
     risk_score: displayNumber(riskScore),
@@ -4325,6 +4600,9 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "nationality",
   "operator_name",
   "operator",
+  "operator_display",
+  "operator_source",
+  "operator_confidence",
   "company",
   "company_name",
   "shipping_company",
@@ -4337,6 +4615,10 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "ship_manager",
   "technical_manager",
   "contact_readiness_score",
+  "identity_source",
+  "identity_confidence",
+  "identity_match_type",
+  "identity_conflict",
   "agent_name",
   "agent",
   "local_agent",
@@ -4628,6 +4910,15 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "primary_category_code",
   "primary_category_label",
   "target_categories",
+  "target_reason_count",
+  "target_strength",
+  "target_reasons",
+  "monitor_reason",
+  "disqualification_reason",
+  "target_signal_codes",
+  "long_stay_reason",
+  "stay_duration_source",
+  "long_stay_confidence",
   "action_type",
   "action_label",
   "reason_codes",
@@ -4726,8 +5017,14 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     imo: row.imo || "",
     mmsi: row.mmsi || "",
     call_sign: row.call_sign || row.callsign || row.clsgn || "",
+    identity_source: row.identity_source || row.imo_recovery_source || "",
+    identity_confidence: firstFiniteNumber(row.identity_confidence, 0) || 0,
+    identity_match_type: row.identity_match_type || row.identity_match_strategy || "",
     port_code: row.port_code || "",
     port_name: row.port_name || row.port || "",
+    operator_display: canonicalOperatorValue(row) || "",
+    operator_source: row.operator_source || canonicalOperatorSource(row) || "",
+    operator_confidence: firstFiniteNumber(row.operator_confidence, canonicalOperatorValue(row) ? 70 : 0, 0) || 0,
     ...hullCleaningPublicFields(row),
     vessel_display: vesselDisplay(row)
   })) : [];
@@ -6035,7 +6332,7 @@ function buildSalesPriorityIntelligenceSummary({
 }
 
 function operatorDisplayName(record = {}) {
-  return firstNonEmpty(record.operator_name, record.operator, record.operator_normalized, record.company, record.shipping_company, record.manager_name, record.manager, "운영사 확인 필요");
+  return firstNonEmpty(canonicalOperatorValue(record), "운영사 확인 필요");
 }
 
 function recordPortName(record = {}) {
@@ -12343,7 +12640,7 @@ try {
       }
     )
   );
-  const targetVesselsRaw = allCollectedVessels.filter(v => isMainCommercialVessel(v) || isSalesCandidate(v) || hasSalesRelevantSignal(v));
+  const targetVesselsRaw = allCollectedVessels.filter(v => isQualifiedSalesTarget(v));
   annotateTargetClassification(targetVesselsRaw);
   const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
   const anchorageWaiting = buildAnchorageWaiting(allCollectedVessels);
@@ -12379,7 +12676,7 @@ try {
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
-  let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v) || hasSalesRelevantSignal(v)))));
+  let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v)))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
   const targetCategorySummary = buildTargetCategorySummary(salesCandidates, { generatedAt: completedAt });
   salesCandidates = targetCategorySummary.items;

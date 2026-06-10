@@ -79,11 +79,46 @@ const FEATURE_CATALOG = [
     needles: ["revenue-forecast.json", "revenueOpportunityBlock", "revenueRadar"]
   },
   {
+    feature: "Compliance exposure",
+    source: "risk_history, route_snapshot_daily, opportunity_master, explainability_snapshots",
+    endpoint: "dashboard/api/intelligence/compliance-exposure.json",
+    section: "Risk / Compliance",
+    needles: ["compliance-exposure.json", "riskComplianceBlock", "complianceExposure"]
+  },
+  {
+    feature: "Cleaning window",
+    source: "staying-vessels, anchorage-waiting, risk_history, opportunity_master",
+    endpoint: "dashboard/api/intelligence/cleaning-window.json",
+    section: "Risk / Compliance",
+    needles: ["cleaning-window.json", "riskComplianceBlock", "cleaningWindow"]
+  },
+  {
+    feature: "Opportunity memory",
+    source: "opportunity_master, commercial_opportunity_daily, sales_candidates_current",
+    endpoint: "dashboard/api/intelligence/opportunity-memory.json",
+    section: "Vessel Intelligence / Revenue",
+    needles: ["opportunity-memory.json", "opportunityMemory"]
+  },
+  {
+    feature: "Opportunity decay",
+    source: "opportunity-memory, sales-pipeline, opportunity_master",
+    endpoint: "dashboard/api/intelligence/opportunity-decay.json",
+    section: "Revenue / Opportunity",
+    needles: ["opportunity-decay.json", "opportunityDecay"]
+  },
+  {
     feature: "Vessel pages",
     source: "latest successful vessel snapshot",
     endpoint: "dashboard/api/vessels/index.json",
     section: "Full Vessel List",
     needles: ["vessels/index.json", "loadStaticVesselPage", "ensureVesselIndex"]
+  },
+  {
+    feature: "Vessel page 1",
+    source: "latest successful vessel snapshot",
+    endpoint: "dashboard/api/vessels/page-1.json",
+    section: "Full Vessel List",
+    needles: ["loadStaticVesselPage", "renderRows"]
   },
   {
     feature: "Data quality",
@@ -105,7 +140,12 @@ const EXPECTED_ENDPOINTS = [
   ["insight:portDna", "/api/intelligence/port-dna.json"],
   ["insight:fleet", "/api/intelligence/fleet-intelligence.json"],
   ["insight:revenueForecast", "/api/intelligence/revenue-forecast.json"],
-  ["vessels:index", "/api/vessels/index.json"]
+  ["insight:complianceExposure", "/api/intelligence/compliance-exposure.json"],
+  ["insight:cleaningWindow", "/api/intelligence/cleaning-window.json"],
+  ["insight:opportunityMemory", "/api/intelligence/opportunity-memory.json"],
+  ["insight:opportunityDecay", "/api/intelligence/opportunity-decay.json"],
+  ["vessels:index", "/api/vessels/index.json"],
+  ["vessels:page-1", "/api/vessels/page-1.json"]
 ];
 
 const SOURCE_KEYS = [
@@ -241,12 +281,14 @@ function schemaValid(payload, endpoint) {
   return Boolean(payload.generated_at || Array.isArray(payload) || Object.keys(payload).length);
 }
 
-function statusFor({ exists, error, schemaOk, recordCount, visible, stale, mismatch }) {
-  if (!exists || error || !schemaOk) return "BROKEN";
-  if (mismatch) return "MISMATCH";
+function integrationStatus({ exists, error, schemaOk, recordCount, visible, stale, mismatch }) {
+  if (!exists) return "MISSING_ENDPOINT";
+  if (error) return "INVALID_JSON";
+  if (!schemaOk) return "SCHEMA_MISMATCH";
+  if (mismatch) return "SCHEMA_MISMATCH";
   if (stale) return "STALE";
-  if (recordCount === 0) return "EMPTY";
-  if (!visible) return "HIDDEN";
+  if (recordCount === 0) return "EMPTY_VALID";
+  if (!visible) return "HIDDEN_UI";
   return "ACTIVE";
 }
 
@@ -335,7 +377,7 @@ function main() {
       jsonOk: result.exists && !result.error,
       recordCount: count,
       schemaOk,
-      status: !result.exists ? "MISSING" : result.error ? "INVALID_JSON" : !schemaOk ? "SCHEMA_MISMATCH" : count === 0 ? "EMPTY" : "OK",
+      status: integrationStatus({ exists: result.exists, error: result.error, schemaOk, recordCount: count, visible: true, stale: false, mismatch: false }),
       problem: !result.exists ? "file missing" : result.error ? result.error : !schemaOk ? "schema contract mismatch" : "-"
     };
   });
@@ -350,7 +392,7 @@ function main() {
     const mismatch =
       feature.endpoint.endsWith("bootstrap.json") &&
       Number(bootstrap.kpis?.total_vessels) !== Number(vesselIndex.total_count);
-    const status = statusFor({ exists: result.exists, error: result.error, schemaOk, recordCount: count, visible, stale, mismatch });
+    const status = integrationStatus({ exists: result.exists, error: result.error, schemaOk, recordCount: count, visible, stale, mismatch });
     return {
       feature: feature.feature,
       source: feature.source,
@@ -365,9 +407,9 @@ function main() {
 
   const sourceRows = SOURCE_KEYS.map(key => sourceStatus(key, statusPayload, sourceHealth, datasetAudit, bootstrap));
   const hiddenJsonWithData = endpointRows.filter(row => row.recordCount > 0 && !row.key.includes("insight:") && !row.key.includes("watchlist") && !row.key.includes("bootstrap"));
-  const brokenEndpoints = endpointRows.filter(row => ["MISSING", "INVALID_JSON", "SCHEMA_MISMATCH"].includes(row.status));
+  const brokenEndpoints = endpointRows.filter(row => ["MISSING_ENDPOINT", "INVALID_JSON", "SCHEMA_MISMATCH"].includes(row.status));
   const activeFeatures = featureRows.filter(row => ["ACTIVE", "STALE"].includes(row.status) && row.visible === "yes" && row.recordCount > 0);
-  const hiddenFeatures = featureRows.filter(row => row.status === "HIDDEN");
+  const hiddenFeatures = featureRows.filter(row => row.status === "HIDDEN_UI");
   const uiGaps = featureRows.filter(row => row.status === "BROKEN" || row.status === "MISMATCH" || row.visible === "no");
 
   const mismatches = [];
@@ -449,6 +491,12 @@ function main() {
 
   console.log("UI/Data/API Integration Audit");
   console.log("=============================");
+  console.log("Feature | Endpoint | Exists | Valid JSON | Record Count | UI mapped | Status");
+  for (const row of featureRows) {
+    const endpoint = readJson(row.endpoint);
+    console.log(`${row.feature} | ${row.endpoint} | ${endpoint.exists ? "yes" : "no"} | ${endpoint.exists && !endpoint.error ? "yes" : "no"} | ${row.recordCount} | ${row.visible} | ${row.status}`);
+  }
+  console.log("");
   console.log(`Active features: ${activeFeatures.length}`);
   for (const row of activeFeatures) console.log(`- ${row.feature}: ${row.recordCount} records`);
   console.log("");
