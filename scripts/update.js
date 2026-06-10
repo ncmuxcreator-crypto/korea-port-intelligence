@@ -2388,7 +2388,7 @@ function targetCommercialSignals(v = {}) {
   const cleaningWindowScore = Number(v.cleaning_window_score || v.window_score || v.predicted_cleaning_opportunity_score || 0);
   const signals = [];
   const add = (code, strength, reason) => signals.push({ code, strength, reason });
-  if (score >= IMMEDIATE_TARGET_THRESHOLD ||
+  if (score >= SALES_CANDIDATE_THRESHOLD ||
     (score >= 70 && (risk >= 60 || regulatedRouteSignal(v) || cleaningWindowScore >= 65))) {
     add("high_opportunity_score", score, "기회 점수와 추가 상업 신호가 함께 확인됩니다.");
   }
@@ -3523,7 +3523,11 @@ function ensureOutputContractFields(records = [], { runId = "", generatedAt = ""
         ? (enriched.candidate_band || enriched.sales_priority_band || candidateBandFromScore(commercialValueScore))
         : quality.is_monitor
           ? "monitor"
-          : enriched.candidate_band || "general",
+          : "general",
+      is_cleaning_candidate: Boolean(quality.is_sales_target),
+      is_operating_candidate: Boolean(quality.is_sales_target),
+      is_immediate_candidate: Boolean(quality.is_immediate_target),
+      is_monitor: Boolean(quality.is_monitor),
       commercial_value_score: commercialValueScore,
       data_confidence_score: Number(enriched.data_confidence_score ?? enriched.confidence_score ?? 0),
       target_reason_count: quality.target_reason_count,
@@ -12767,7 +12771,7 @@ try {
   const candidateList = buildCandidateList(vessels).slice(0, MAX_CANDIDATES);
 
   const scoredVessels = vessels.filter(v => typeof v.commercial_value_score === "number");
-  let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(v => v.is_cleaning_candidate || isSalesCandidate(v)))));
+  let salesCandidates = assignSalesPriorityTiers(sortCommercialPriority(dedupeCandidateRows(vessels.filter(isSalesCandidate))));
   const immediateTargets = sortCommercialPriority(dedupeCandidateRows(vessels.filter(isImmediateTarget)));
   const directLongStayRiskRows = allCollectedVessels.filter(v => {
     const stayHours = Number(v.stay_hours || v.current_call_stay_hours || v.cumulative_stay_hours || v.port_stay_hours || v.berth_hours || 0);

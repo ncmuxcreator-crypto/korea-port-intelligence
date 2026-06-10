@@ -109,6 +109,76 @@ function hasCurrentOrNearTermWorkFeasibility(record = {}) {
     (Number(record.stay_hours || record.cumulative_stay_hours || 0) > 0 && !record.atd);
 }
 
+function riskScore(record = {}) {
+  return scoreNumber(record.risk_score) ||
+    scoreNumber(record.biofouling_exposure_score) ||
+    scoreNumber(record.biofouling_risk_score) ||
+    scoreNumber(record.biofouling_score) ||
+    scoreNumber(record.operational_risk_score);
+}
+
+function stayDurationHours(record = {}) {
+  const stayDays = scoreNumber(record.stay_days || record.dwell_days);
+  return Math.max(
+    scoreNumber(record.stay_hours),
+    scoreNumber(record.current_call_stay_hours),
+    scoreNumber(record.cumulative_stay_hours),
+    scoreNumber(record.port_stay_hours),
+    scoreNumber(record.berth_hours),
+    stayDays > 0 ? stayDays * 24 : 0
+  );
+}
+
+function anchorageDurationHours(record = {}) {
+  return Math.max(
+    scoreNumber(record.anchorage_hours),
+    scoreNumber(record.waiting_hours),
+    scoreNumber(record.estimated_waiting_time)
+  );
+}
+
+function hasLongStayRiskRecord(record = {}) {
+  const stayThresholdHours = Number(process.env.LONG_STAY_RISK_HOURS || 72);
+  const anchorageThresholdHours = Number(process.env.LONG_STAY_ANCHORAGE_RISK_HOURS || 48);
+  const stayDays = scoreNumber(record.stay_days || record.dwell_days);
+  const stayHours = stayDurationHours(record);
+  const anchorageHours = anchorageDurationHours(record);
+  return stayDays >= Math.max(1, stayThresholdHours / 24) ||
+    stayHours >= stayThresholdHours ||
+    anchorageHours >= anchorageThresholdHours ||
+    scoreNumber(record.waiting_score || record.dwell_score) >= 60;
+}
+
+function repeatCallerStrength(record = {}) {
+  return Math.max(
+    scoreNumber(record.visit_count_90d),
+    scoreNumber(record.korea_call_count),
+    scoreNumber(record.repeat_korea_call_count),
+    scoreNumber(record.repeat_call_count),
+    scoreNumber(record.calls_last_3m),
+    scoreNumber(record.repeat_caller_score) >= 70 ? 2 : 0,
+    scoreNumber(record.korea_presence_score) >= 70 ? 2 : 0
+  );
+}
+
+function strongCommercialSignalCodes(record = {}) {
+  const score = commercialScore(record);
+  const risk = riskScore(record);
+  const gt = scoreNumber(record.gt || record.grtg || record.intrlGrtg || record.gross_tonnage);
+  const typeText = String(record.vessel_type || record.vessel_type_group || record.commercial_segment || "").toLowerCase();
+  const cleaningWindowScore = scoreNumber(record.cleaning_window_score || record.window_score || record.predicted_cleaning_opportunity_score);
+  const signals = [];
+  if (score >= 65 || (score >= 70 && (risk >= 60 || cleaningWindowScore >= 65 || scoreNumber(record.compliance_score || record.compliance_exposure_score) >= 55))) signals.push("HIGH_OPPORTUNITY");
+  if (hasLongStayRiskRecord(record)) signals.push("LONG_STAY");
+  if (risk >= 60 || scoreNumber(record.compliance_score || record.compliance_exposure_score) >= 55) signals.push("RISK_OR_COMPLIANCE");
+  if (cleaningWindowScore >= 60) signals.push("CLEANING_WINDOW");
+  if (repeatCallerStrength(record) >= 2) signals.push("REPEAT_CALLER");
+  if ((gt >= 80000 && (score >= 75 || risk >= 60 || cleaningWindowScore >= 65)) ||
+    (gt >= 30000 && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70)) ||
+    (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70))) signals.push("LARGE_HIGH_VALUE");
+  return [...new Set(signals)];
+}
+
 function withinCommercialPercentile(record = {}, limit) {
   const global = Number(record.global_percentile);
   const port = Number(record.port_percentile);
@@ -186,8 +256,8 @@ function buildCandidateFunnelDiagnostics(records = [], context = {}) {
   const warmRows = records.filter(record => commercialScore(record) >= 65);
   const notHardExcludedRows = warmRows.filter(record => !isHardCandidateExcluded(record));
   const notDepartedRows = notHardExcludedRows.filter(record => !isDepartedRecord(record));
-  const rankedRows = notDepartedRows.filter(hasCommercialRank);
-  const salesPercentileRows = rankedRows.filter(record => withinCommercialPercentile(record, 20));
+  const strongSignalRows = notDepartedRows.filter(record => strongCommercialSignalCodes(record).length >= 2);
+  const feasibleRows = strongSignalRows.filter(hasCurrentOrNearTermWorkFeasibility);
   const currentSalesRows = records.filter(isSalesTargetRecord);
   const currentImmediateRows = records.filter(isImmediateTargetRecord);
 
@@ -217,22 +287,22 @@ function buildCandidateFunnelDiagnostics(records = [], context = {}) {
       removed_count: Math.max(0, notHardExcludedRows.length - notDepartedRows.length)
     },
     {
-      filter: "hasCommercialRank(record)",
+      filter: "strongCommercialSignalCodes(record).length >= 2",
       before_count: notDepartedRows.length,
-      after_count: rankedRows.length,
-      removed_count: Math.max(0, notDepartedRows.length - rankedRows.length)
+      after_count: strongSignalRows.length,
+      removed_count: Math.max(0, notDepartedRows.length - strongSignalRows.length)
     },
     {
-      filter: "withinCommercialPercentile(record, 20)",
-      before_count: rankedRows.length,
-      after_count: salesPercentileRows.length,
-      removed_count: Math.max(0, rankedRows.length - salesPercentileRows.length)
+      filter: "hasCurrentOrNearTermWorkFeasibility(record)",
+      before_count: strongSignalRows.length,
+      after_count: feasibleRows.length,
+      removed_count: Math.max(0, strongSignalRows.length - feasibleRows.length)
     },
     {
       filter: "isSalesTargetRecord(record)",
-      before_count: salesPercentileRows.length,
+      before_count: feasibleRows.length,
       after_count: currentSalesRows.length,
-      removed_count: Math.max(0, salesPercentileRows.length - currentSalesRows.length)
+      removed_count: Math.max(0, feasibleRows.length - currentSalesRows.length)
     }
   ];
 
@@ -326,26 +396,24 @@ function summaryPortUnit(record = {}) {
 
 function isImmediateTargetRecord(record = {}) {
   if (isHardCandidateExcluded(record) || isDepartedRecord(record)) return false;
-  if (record.is_immediate_candidate === true || ["critical", "immediate_target"].includes(record.candidate_band)) return true;
-  return commercialScore(record) >= 75 && withinCommercialPercentile(record, 10) && hasCurrentOrNearTermWorkFeasibility(record);
+  const score = commercialScore(record);
+  const signals = strongCommercialSignalCodes(record);
+  return signals.length >= 2 &&
+    score >= 80 &&
+    hasCurrentOrNearTermWorkFeasibility(record) &&
+    (signals.includes("LONG_STAY") || signals.includes("RISK_OR_COMPLIANCE") || signals.includes("CLEANING_WINDOW"));
 }
 
 function isSalesTargetRecord(record = {}) {
   if (isHardCandidateExcluded(record) || isDepartedRecord(record)) return false;
   if (isImmediateTargetRecord(record)) return true;
-  if (record.is_cleaning_candidate === true || record.is_operating_candidate === true) return true;
-  if (["sales_target"].includes(record.candidate_band)) return true;
-  return commercialScore(record) >= 65 && withinCommercialPercentile(record, 20);
+  return strongCommercialSignalCodes(record).length >= 2 &&
+    hasCurrentOrNearTermWorkFeasibility(record);
 }
 
 function isQualifiedTargetRecord(record = {}) {
   if (isHardCandidateExcluded(record) || isDepartedRecord(record)) return false;
-  return ["target_vessel", "unknown_gt_review"].includes(record.commercial_relevance_status) ||
-    record.is_cleaning_candidate === true ||
-    record.is_operating_candidate === true ||
-    ["critical", "immediate_target", "sales_target"].includes(record.candidate_band) ||
-    isSalesTargetRecord(record) ||
-    isImmediateTargetRecord(record);
+  return isSalesTargetRecord(record) || isImmediateTargetRecord(record);
 }
 
 function isWatchlistRecord(record = {}) {
@@ -953,7 +1021,7 @@ function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {
     sales_targets: rows.filter(isSalesTargetRecord).length,
     immediate_targets: rows.filter(isImmediateTargetRecord).length,
     anchorage_vessels: rows.filter(row => row.is_anchorage_waiting || scoreNumber(row.anchorage_hours) > 0).length,
-    long_stay_vessels: rows.filter(row => scoreNumber(row.stay_hours) >= 168 || scoreNumber(row.anchorage_hours) >= 168).length,
+    long_stay_vessels: rows.filter(hasLongStayRiskRecord).length,
     port_opportunity_score: Math.min(100, Math.round(average(rows.map(commercialScore)) + rows.filter(isImmediateTargetRecord).length * 5))
   })).sort((a, b) => b.port_opportunity_score - a.port_opportunity_score || b.target_vessels - a.target_vessels);
   const detailedPortSummary = aggregatePortSummaryRows(portUnitSummary);
@@ -990,7 +1058,7 @@ function buildDashboardSummarySnapshot(records = [], runId, now, diagnostics = {
     congestion_summary: {
       ports: portSummary.filter(port => port.anchorage_vessels || port.long_stay_vessels).slice(0, 20),
       anchorage_vessels: usefulRecords.filter(row => row.is_anchorage_waiting || scoreNumber(row.anchorage_hours) > 0).length,
-      long_stay_vessels: usefulRecords.filter(row => scoreNumber(row.stay_hours) >= 168 || scoreNumber(row.anchorage_hours) >= 168).length
+      long_stay_vessels: usefulRecords.filter(hasLongStayRiskRecord).length
     },
     data_quality_summary: {
       imo_coverage: coverageRatio(usefulRecords, record => record.imo),
@@ -2505,7 +2573,7 @@ function buildLifecycleEvents(records = [], previousMap = new Map(), runId, now)
     if (currentAnchorage && !previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_START", record.ata || record.eta || now, 75, "Anchorage state appeared", previous));
     if (!currentAnchorage && previousAnchorage) rows.push(eventRow(record, runId, now, "ANCHORAGE_END", record.atb || record.ata || now, 70, "Anchorage state ended", previous));
     if (currentAnchorage && anchorageHours >= 120 && scoreNumber(previous?.anchorage_hours) < 120) rows.push(eventRow(record, runId, now, "ANCHORAGE_EXTENDED", now, 70, "Anchorage duration crossed 5 days", previous));
-    if ((stayHours >= 72 || anchorageHours >= 72) && (!previous || scoreNumber(previous.stay_hours) < 72 && scoreNumber(previous.anchorage_hours) < 72)) rows.push(eventRow(record, runId, now, "LONG_STAY_DETECTED", now, 70, "Stay or anchorage crossed 72 hours", previous));
+    if ((stayHours >= 72 || anchorageHours >= 48) && (!previous || scoreNumber(previous.stay_hours) < 72 && scoreNumber(previous.anchorage_hours) < 48)) rows.push(eventRow(record, runId, now, "LONG_STAY_DETECTED", now, 70, "Stay crossed 72 hours or anchorage crossed 48 hours", previous));
     if (congestionScore >= 60 && scoreNumber(previous?.congestion_score || previous?.port_congestion_score) < 60) rows.push(eventRow(record, runId, now, "CONGESTION_DETECTED", now, 70, "Congestion score crossed operational threshold", previous));
     if ((record.pilot_time || record.movement_time) && isOutboundPilot(record) && !isOutboundPilot(previous || {})) rows.push(eventRow(record, runId, now, "PILOT_OUTBOUND", record.pilot_time || record.movement_time, 75, "Outbound pilot schedule detected", previous));
     if (record.etd && !previous?.etd) rows.push(eventRow(record, runId, now, "DEPARTURE_PLANNED", record.etd, 70, "ETD or planned departure appeared", previous));
@@ -2598,7 +2666,7 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
       open_opportunities: opportunityRecords.filter(row => !["won", "lost", "closed"].includes(opportunityState(row))).length,
       closed_opportunities: opportunityRecords.filter(row => ["won", "lost", "closed"].includes(opportunityState(row))).length,
       anchorage_vessels: rows.filter(row => row.is_anchorage_waiting || scoreNumber(row.anchorage_hours) > 0).length,
-      long_stay_vessels: rows.filter(row => scoreNumber(row.stay_hours) >= 72 || scoreNumber(row.anchorage_hours) >= 72).length,
+      long_stay_vessels: rows.filter(hasLongStayRiskRecord).length,
       avg_stay_hours: average(rows.map(row => row.stay_hours)),
       avg_anchorage_hours: average(rows.map(row => row.anchorage_hours)),
       avg_congestion_score: average(congestionScores),
