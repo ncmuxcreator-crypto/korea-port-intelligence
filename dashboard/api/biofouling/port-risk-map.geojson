@@ -1,8 +1,8 @@
 {
   "type": "FeatureCollection",
-  "generated_at": "2026-06-10T07:31:11.742Z",
+  "generated_at": "2026-06-10T07:59:17.618Z",
   "properties": {
-    "generated_at": "2026-06-10T07:31:11.742Z",
+    "generated_at": "2026-06-10T07:59:17.618Z",
     "model_version": "biofouling_sst_dwell_salinity_v1",
     "layer": "port_biofouling_risk_map"
   },
@@ -22,7 +22,7 @@
         "display_name": "부산",
         "lat": 35.1,
         "lon": 129.04,
-        "vessel_count": 346,
+        "vessel_count": 351,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 20,
@@ -58,7 +58,7 @@
         "display_name": "대산",
         "lat": 37.01,
         "lon": 126.35,
-        "vessel_count": 90,
+        "vessel_count": 91,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 18,
@@ -84,42 +84,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          128.57,
-          35.18
-        ]
-      },
-      "properties": {
-        "port_code": "622",
-        "port_name": "마산/창원",
-        "display_name": "마산/창원",
-        "lat": 35.18,
-        "lon": 128.57,
-        "vessel_count": 81,
-        "high_risk_count": 0,
-        "hot_candidate_count": 0,
-        "average_biofouling_risk_score": 18,
-        "average_sst_anomaly": 0.8,
-        "average_salinity_proxy": 0.86,
-        "hotspot_score": 12,
-        "risk_level": "LOW",
-        "opportunity_score": 12,
-        "map_status": "observed",
-        "source_status": "port_summary_current",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "port_summary_current"
-        ],
-        "reason_summary": "마산/창원: 평균 리스크 18점, 고위험 0척, Hull Cleaning 후보 0척",
-        "recommended_action": "항만 체류/수온 신호를 모니터링",
-        "rank": 3
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           127.74,
           34.74
         ]
@@ -130,7 +94,7 @@
         "display_name": "여수",
         "lat": 34.74,
         "lon": 127.74,
-        "vessel_count": 61,
+        "vessel_count": 62,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 18,
@@ -148,7 +112,7 @@
         ],
         "reason_summary": "여수: 평균 리스크 18점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
-        "rank": 4
+        "rank": 3
       }
     },
     {
@@ -183,6 +147,42 @@
           "port_summary_current"
         ],
         "reason_summary": "울산: 평균 리스크 17점, 고위험 0척, Hull Cleaning 후보 0척",
+        "recommended_action": "항만 체류/수온 신호를 모니터링",
+        "rank": 4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.57,
+          35.18
+        ]
+      },
+      "properties": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "lat": 35.18,
+        "lon": 128.57,
+        "vessel_count": 83,
+        "high_risk_count": 0,
+        "hot_candidate_count": 0,
+        "average_biofouling_risk_score": 17,
+        "average_sst_anomaly": 0.8,
+        "average_salinity_proxy": 0.86,
+        "hotspot_score": 11,
+        "risk_level": "LOW",
+        "opportunity_score": 11,
+        "map_status": "observed",
+        "source_status": "port_summary_current",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "port_summary_current"
+        ],
+        "reason_summary": "마산/창원: 평균 리스크 17점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
         "rank": 5
       }
@@ -228,6 +228,42 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.84,
+          36.98
+        ]
+      },
+      "properties": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "lat": 36.98,
+        "lon": 126.84,
+        "vessel_count": 68,
+        "high_risk_count": 0,
+        "hot_candidate_count": 0,
+        "average_biofouling_risk_score": 15,
+        "average_sst_anomaly": 0.6,
+        "average_salinity_proxy": 0.81,
+        "hotspot_score": 10,
+        "risk_level": "LOW",
+        "opportunity_score": 10,
+        "map_status": "observed",
+        "source_status": "port_summary_current",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "port_summary_current"
+        ],
+        "reason_summary": "평택·당진: 평균 리스크 15점, 고위험 0척, Hull Cleaning 후보 0척",
+        "recommended_action": "항만 체류/수온 신호를 모니터링",
+        "rank": 7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           129.4,
           36.03
         ]
@@ -255,42 +291,6 @@
           "port_summary_current"
         ],
         "reason_summary": "포항: 평균 리스크 16점, 고위험 0척, Hull Cleaning 후보 0척",
-        "recommended_action": "항만 체류/수온 신호를 모니터링",
-        "rank": 7
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.84,
-          36.98
-        ]
-      },
-      "properties": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "lat": 36.98,
-        "lon": 126.84,
-        "vessel_count": 66,
-        "high_risk_count": 0,
-        "hot_candidate_count": 0,
-        "average_biofouling_risk_score": 14,
-        "average_sst_anomaly": 0.6,
-        "average_salinity_proxy": 0.81,
-        "hotspot_score": 9,
-        "risk_level": "LOW",
-        "opportunity_score": 9,
-        "map_status": "observed",
-        "source_status": "port_summary_current",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "port_summary_current"
-        ],
-        "reason_summary": "평택·당진: 평균 리스크 14점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
         "rank": 8
       }

@@ -4412,7 +4412,7 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
     .filter(item => item.primary_category_code !== "HOLD")
     .map((item, index) => ({
       rank: index + 1,
-      vessel_display: item.vessel_display || vesselDisplay(item),
+      vessel_display: buildVesselDisplay(item),
       vessel_name: item.vessel_name,
       imo: item.imo || "",
       port: firstNonEmpty(item.port_name, item.port, item.current_port, item.destination_port),
@@ -4583,7 +4583,7 @@ function buildLeadConversionPipelinePayload({ summary = {}, generatedAt = new Da
       const priorityLabel = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore))).toUpperCase();
       return withVesselDisplay({
         rank: index + 1,
-        vessel_display: record.vessel_display || vesselDisplay(record),
+        vessel_display: buildVesselDisplay(record),
         vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name),
         imo: firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo) || null,
         mmsi: firstNonEmpty(record.mmsi, record.vessel_display?.mmsi) || null,
@@ -4811,98 +4811,412 @@ function contractDataMode(mode = "", report = {}) {
   return "live";
 }
 
-function vesselDisplay(record = {}) {
+const VESSEL_DISPLAY_MISSING_TEXT = new Set([
+  "",
+  "-",
+  "--",
+  "0",
+  "unknown",
+  "null",
+  "undefined",
+  "n/a",
+  "na",
+  "none",
+  "확인 불가",
+  "확인 필요",
+  "미확인",
+  "정보 없음"
+]);
+
+const VESSEL_DISPLAY_PORT_NAME_BY_CODE = new Map([
+  ["020", "부산"],
+  ["BUSAN", "부산"],
+  ["820", "울산"],
+  ["ULSAN", "울산"],
+  ["620-YEOSU", "여수"],
+  ["YEOSU", "여수"],
+  ["620-GWANGYANG", "광양"],
+  ["GWANGYANG", "광양"],
+  ["030", "인천"],
+  ["INCHEON", "인천"],
+  ["031", "평택·당진"],
+  ["PYEONGTAEK_DANGJIN", "평택·당진"],
+  ["810", "포항"],
+  ["POHANG", "포항"],
+  ["622", "마산/창원"],
+  ["MASAN", "마산/창원"],
+  ["070", "목포"],
+  ["MOKPO", "목포"],
+  ["080", "군산"],
+  ["GUNSAN", "군산"],
+  ["621", "대산"],
+  ["DAESAN", "대산"],
+  ["120", "동해/묵호"],
+  ["DONGHAE", "동해/묵호"],
+  ["940", "제주"],
+  ["JEJU", "제주"],
+  ["UNKNOWN", "미확인 항만"]
+]);
+
+function vesselDisplayPathValue(record = {}, path = "") {
+  if (!record || typeof record !== "object") return undefined;
+  return String(path).split(".").reduce((current, part) => {
+    if (current === undefined || current === null) return undefined;
+    return current[part];
+  }, record);
+}
+
+function vesselDisplayHasText(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "number") return Number.isFinite(value);
+  const text = String(value).normalize("NFKC").trim();
+  if (!text) return false;
+  return !VESSEL_DISPLAY_MISSING_TEXT.has(text.toLowerCase());
+}
+
+function firstDisplayText(...values) {
+  for (const value of values) {
+    if (vesselDisplayHasText(value)) return String(value).normalize("NFKC").trim();
+  }
+  return "";
+}
+
+function vesselDisplayText(record = {}, aliases = [], fallback = "-") {
+  const values = aliases.map(alias => vesselDisplayPathValue(record, alias));
+  const text = firstDisplayText(...values);
+  return text || fallback;
+}
+
+function nullableDisplayNumber(...values) {
+  for (const value of values) {
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string" && !value.trim()) continue;
+    if (typeof value === "string" && VESSEL_DISPLAY_MISSING_TEXT.has(value.trim().toLowerCase())) continue;
+    const number = Number(String(value).replace(/,/g, ""));
+    if (Number.isFinite(number)) return number;
+  }
+  return null;
+}
+
+function roundedDisplayNumber(value, digits = 1) {
+  const number = nullableDisplayNumber(value);
+  if (number === null) return null;
+  const scale = 10 ** digits;
+  return Math.round(number * scale) / scale;
+}
+
+function vesselDisplayNumber(record = {}, aliases = [], reasonFallback = null) {
+  return nullableDisplayNumber(...aliases.map(alias => vesselDisplayPathValue(record, alias)), reasonFallback);
+}
+
+function vesselDisplayArray(record = {}, aliases = []) {
+  const values = aliases.flatMap(alias => {
+    const value = vesselDisplayPathValue(record, alias);
+    return Array.isArray(value) ? value : value ? [value] : [];
+  });
+  return [...new Set(values.map(value => String(value).trim()).filter(Boolean))];
+}
+
+function vesselDisplayOperatorValue(record = {}) {
+  return firstDisplayText(
+    record.operator,
+    record.shipping_company,
+    record.company,
+    record.company_name,
+    record.owner_operator,
+    record.technical_manager,
+    record.manager,
+    record.owner,
+    record.vessel_display?.operator,
+    record.vessel_display?.operator_display,
+    record.vessel_display?.company,
+    record.vessel_display?.manager,
+    record.vessel_display?.owner
+  );
+}
+
+function vesselDisplayOperatorSource(record = {}) {
+  if (vesselDisplayHasText(record.operator)) return record.operator_source || "operator";
+  if (vesselDisplayHasText(record.shipping_company)) return "shipping_company";
+  if (vesselDisplayHasText(record.company) || vesselDisplayHasText(record.company_name)) return "company";
+  if (vesselDisplayHasText(record.owner_operator)) return "owner_operator";
+  if (vesselDisplayHasText(record.technical_manager)) return "technical_manager";
+  if (vesselDisplayHasText(record.manager)) return "manager";
+  if (vesselDisplayHasText(record.owner)) return "owner";
+  if (vesselDisplayHasText(record.vessel_display?.operator_display)) return "vessel_display";
+  return "";
+}
+
+function vesselDisplayReasonSummary(record = {}) {
+  return firstDisplayText(
+    record.reason_summary,
+    record.why_scored_high,
+    record.why_now,
+    record.candidate_summary_ko,
+    record.opportunity_summary,
+    record.sales_reason,
+    record.quote_reason_summary,
+    record.vessel_display?.reason_summary
+  ) || compactReasonSummary(record);
+}
+
+function vesselDisplayRecommendedAction(record = {}) {
+  return firstDisplayText(
+    record.recommended_action,
+    record.recommended_next_action,
+    record.candidate_next_action,
+    record.next_action,
+    record.recommendedAction,
+    record.vessel_display?.recommended_action,
+    record.vessel_display?.recommendedAction
+  ) || compactRecommendedAction(record);
+}
+
+function numberFromReasonSummary(record = {}, patterns = []) {
+  const reason = vesselDisplayReasonSummary(record);
+  for (const pattern of patterns) {
+    const match = reason.match(pattern);
+    if (match?.[1]) {
+      const number = nullableDisplayNumber(match[1]);
+      if (number !== null) return number;
+    }
+  }
+  return null;
+}
+
+function textFromReasonSummary(record = {}, patterns = []) {
+  const reason = vesselDisplayReasonSummary(record);
+  for (const pattern of patterns) {
+    const match = reason.match(pattern);
+    if (match?.[1]) return String(match[1]).trim();
+  }
+  return "";
+}
+
+function portNameFromText(value = "") {
+  const text = String(value || "").normalize("NFKC").trim();
+  const compact = text.toUpperCase().replace(/[\s._-]+/g, "");
+  if (!text) return "";
+  if (/BUSAN|PUSAN|KRPUS/.test(compact) || /부산/.test(text)) return "부산";
+  if (/ULSAN|KRUSN/.test(compact) || /울산/.test(text)) return "울산";
+  if (/YEOSU|KRYOS/.test(compact) || /여수/.test(text)) return "여수";
+  if (/GWANGYANG|KRKAN/.test(compact) || /광양/.test(text)) return "광양";
+  if (/INCHEON|KRICN/.test(compact) || /인천/.test(text)) return "인천";
+  if (/PYEONGTAEK|PYONGTAEK|DANGJIN|KRPTK|KRDJN/.test(compact) || /평택|당진/.test(text)) return "평택·당진";
+  if (/POHANG|KRKPO/.test(compact) || /포항/.test(text)) return "포항";
+  if (/MASAN|CHANGWON|JINHAE|KRMAS|KRCHF/.test(compact) || /마산|창원|진해/.test(text)) return "마산/창원";
+  if (/MOKPO|KRMOK/.test(compact) || /목포/.test(text)) return "목포";
+  if (/GUNSAN|KRKUV/.test(compact) || /군산/.test(text)) return "군산";
+  if (/DAESAN|KRTSN/.test(compact) || /대산/.test(text)) return "대산";
+  if (/DONGHAE|MUKHO|KRTGH/.test(compact) || /동해|묵호/.test(text)) return "동해/묵호";
+  if (/JEJU|KRCJU/.test(compact) || /제주/.test(text)) return "제주";
+  return "";
+}
+
+function vesselDisplayPortName(record = {}, rawPort = "") {
+  const direct = portNameFromText(rawPort);
+  if (direct) return direct;
+  try {
+    const normalized = normalizeRecordPort({ ...record, current_port: rawPort });
+    const code = String(normalized?.port?.port_code || "").toUpperCase();
+    const byCode = VESSEL_DISPLAY_PORT_NAME_BY_CODE.get(code);
+    if (byCode) return byCode;
+    const normalizedName = portNameFromText(normalized?.port?.port_name || normalized?.port?.display_name || "");
+    if (normalizedName) return normalizedName;
+  } catch {
+    // Keep display mapping resilient; port normalization must never block JSON generation.
+  }
+  return rawPort ? "미확인 항만" : "-";
+}
+
+function buildVesselDisplay(record = {}) {
+  const existingDisplay = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
+  const source = { ...record, vessel_display: existingDisplay };
   const congestionSignal = record.congestion_signal && typeof record.congestion_signal === "object" ? record.congestion_signal : {};
-  const stayHours = firstFiniteNumber(record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours, record.port_stay_hours, record.portStayHours, record.anchorage_hours, record.anchorageHours, record.berth_hours);
-  const waitingHours = firstFiniteNumber(congestionSignal.waiting_hours, record.waiting_hours, record.estimated_waiting_time, record.anchorage_hours, record.anchorageHours);
-  const stayDays = firstFiniteNumber(record.stay_days, record.dwell_days, Number.isFinite(Number(stayHours)) ? Number(stayHours) / 24 : undefined);
-  const waitingScore = firstFiniteNumber(congestionSignal.waiting_score, record.waiting_score, record.dwell_score, record.stay_score);
-  const congestionScore = firstFiniteNumber(congestionSignal.congestion_score, record.congestion_score, record.port_congestion_score, record.port_congestion_index);
-  const opportunityScore = firstFiniteNumber(
+  const gtFromReason = numberFromReasonSummary(record, [/\bGT\s*[:=]?\s*([0-9][0-9,]*(?:\.\d+)?)/i]);
+  const stayDaysFromReason = numberFromReasonSummary(record, [
+    /(?:체류|stay|dwell)[^0-9]{0,16}([0-9]+(?:\.[0-9]+)?)\s*(?:일째|일|d|days?)/i,
+    /(?:묘박|정박|대기|waiting|anchorage)[^0-9]{0,16}([0-9]+(?:\.[0-9]+)?)\s*(?:일째|일|d|days?)/i
+  ]);
+  const stayHoursFromReason = numberFromReasonSummary(record, [
+    /(?:항만\s*체류|port\s*stay|stay|dwell)[^0-9]{0,16}([0-9]+(?:\.[0-9]+)?)\s*(?:시간|h|hours?)/i
+  ]);
+  const waitingHoursFromReason = numberFromReasonSummary(record, [
+    /(?:묘박|정박|대기|waiting|anchorage)[^0-9]{0,16}([0-9]+(?:\.[0-9]+)?)\s*(?:시간|h|hours?)/i
+  ]);
+  const berthFromReason = textFromReasonSummary(record, [
+    /([A-Za-z0-9가-힣·._-]{1,30}(?:부두|터미널|선석|berth)[A-Za-z0-9가-힣·._-]{0,30})/i
+  ]);
+  const anchorageFromReason = textFromReasonSummary(record, [
+    /([A-Za-z0-9가-힣·._-]{1,30}(?:묘박지|정박지|대기지|anchorage)[A-Za-z0-9가-힣·._-]{0,30})/i
+  ]);
+  const stayHours = vesselDisplayNumber(source, [
+    "stay_hours",
+    "current_call_stay_hours",
+    "cumulative_stay_hours",
+    "port_stay_hours",
+    "portStayHours",
+    "anchorage_hours",
+    "anchorageHours",
+    "berth_hours",
+    "vessel_display.stay_hours",
+    "vessel_display.port_stay_hours",
+    "vessel_display.portStayHours"
+  ], stayHoursFromReason);
+  const waitingHours = vesselDisplayNumber({ ...source, congestion_signal: congestionSignal }, [
+    "congestion_signal.waiting_hours",
+    "waiting_hours",
+    "estimated_waiting_time",
+    "anchorage_hours",
+    "anchorageHours",
+    "vessel_display.waiting_hours",
+    "vessel_display.anchorageHours"
+  ], waitingHoursFromReason);
+  const portStayHours = vesselDisplayNumber(source, [
+    "port_stay_hours",
+    "portStayHours",
+    "stay_hours",
+    "current_call_stay_hours",
+    "cumulative_stay_hours",
+    "vessel_display.port_stay_hours",
+    "vessel_display.portStayHours"
+  ], stayHours);
+  const anchorageHours = vesselDisplayNumber(source, [
+    "anchorage_hours",
+    "anchorageHours",
+    "waiting_hours",
+    "vessel_display.anchorageHours",
+    "vessel_display.waiting_hours"
+  ], waitingHours);
+  const stayDays = vesselDisplayNumber(source, [
+    "stay_days",
+    "dwell_days",
+    "vessel_display.stay_days"
+  ], stayDaysFromReason ?? (stayHours !== null ? stayHours / 24 : null));
+  const waitingScore = vesselDisplayNumber({ ...source, congestion_signal: congestionSignal }, [
+    "congestion_signal.waiting_score",
+    "waiting_score",
+    "dwell_score",
+    "stay_score",
+    "vessel_display.waiting_score"
+  ]);
+  const congestionScore = vesselDisplayNumber({ ...source, congestion_signal: congestionSignal }, [
+    "congestion_signal.congestion_score",
+    "congestion_score",
+    "port_congestion_score",
+    "port_congestion_index",
+    "vessel_display.congestion_score"
+  ]);
+  const opportunityScore = nullableDisplayNumber(
     record.opportunity_score,
     record.sales_priority_score,
     record.commercial_value_score,
     record.total_sales_priority_score,
     record.cleaning_candidate_score,
-    record.sales_score
+    record.sales_score,
+    record.vessel_display?.opportunity_score
   );
-  const riskScore = firstFiniteNumber(
+  const riskScore = nullableDisplayNumber(
     record.risk_score,
     record.biofouling_exposure_score,
     record.biofouling_risk_score,
     record.biofouling_score,
-    record.operational_risk_score
+    record.operational_risk_score,
+    record.vessel_display?.risk_score
   );
-  const confidenceScore = firstFiniteNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.identity_confidence, record.match_score);
-  const biofoulingRiskScore = firstFiniteNumber(record.biofoulingRiskScore, record.biofouling_risk_score, record.biofouling_exposure_score, record.biofouling_score, record.risk_score);
-  const hullGrowthIndex = firstFiniteNumber(record.hullGrowthIndex, record.hull_growth_index);
-  const cleaningOpportunityScore = firstFiniteNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score, record.predicted_cleaning_opportunity_score, record.hull_cleaning_candidate_score);
+  const confidenceScore = nullableDisplayNumber(record.data_confidence_score, record.confidence_score, record.candidate_confidence, record.match_score, record.vessel_display?.confidence_score);
+  const identityConfidence = nullableDisplayNumber(record.identity_confidence, record.vessel_display?.identity_confidence);
+  const biofoulingRiskScore = nullableDisplayNumber(record.biofoulingRiskScore, record.biofouling_risk_score, record.biofouling_exposure_score, record.biofouling_score, record.risk_score, record.vessel_display?.biofouling_score);
+  const hullGrowthIndex = nullableDisplayNumber(record.hullGrowthIndex, record.hull_growth_index, record.vessel_display?.hullGrowthIndex);
+  const cleaningOpportunityScore = nullableDisplayNumber(record.cleaningOpportunityScore, record.cleaning_opportunity_score, record.hull_cleaning_opportunity_score, record.predicted_cleaning_opportunity_score, record.hull_cleaning_candidate_score, record.vessel_display?.cleaningOpportunityScore);
   const riskReasons = mergeHullRiskReasons(record, { riskReasons: record.riskReasons || record.risk_reasons });
-  const operatorDisplay = canonicalOperatorValue(record);
+  const operatorDisplay = vesselDisplayOperatorValue(record);
+  const currentPort = vesselDisplayText(source, [
+    "current_port",
+    "port_name",
+    "port",
+    "arrival_port",
+    "destination_port",
+    "destination",
+    "next_port",
+    "vessel_display.current_port"
+  ]);
+  const currentPortKorean = vesselDisplayPortName(record, currentPort === "-" ? "" : currentPort);
+  const reasonSummary = vesselDisplayReasonSummary(record);
+  const recommendedAction = vesselDisplayRecommendedAction(record);
   return {
-    vessel_name: displayText(firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요")),
-    imo: displayText(firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo)),
-    mmsi: displayText(firstNonEmpty(record.mmsi, record.mmsi_no, record.vessel_display?.mmsi)),
-    call_sign: displayText(firstNonEmpty(record.call_sign, record.callsign, record.clsgn)),
-    flag: displayText(firstNonEmpty(record.flag, record.vsslNltyNm, record.vsslNltyCd, record.nationality)),
-    vessel_type: displayText(firstNonEmpty(record.vessel_type, record.vsslKndNm, record.vessel_type_group, record.commercial_segment)),
-    gt: displayNumber(firstFiniteNumber(record.gt, record.grtg, record.intrlGrtg, record.gross_tonnage, record.grossTonnage)),
-    dwt: displayNumber(firstFiniteNumber(record.dwt, record.deadweight, record.deadweight_tonnage)),
+    vessel_name: vesselDisplayText(source, ["vessel_name", "name", "ship_name", "vsslNm", "vessel_display.vessel_name"], "선명 확인 필요"),
+    imo: vesselDisplayText(source, ["imo", "imo_no", "imoNo", "vessel_imo", "recovered_imo", "vessel_display.imo"]),
+    mmsi: vesselDisplayText(source, ["mmsi", "mmsi_no", "mmsiNo", "vessel_mmsi", "recovered_mmsi", "vessel_display.mmsi"]),
+    call_sign: vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn", "vsslCallSgn", "vessel_display.call_sign"]),
+    flag: vesselDisplayText(source, ["flag", "vsslNltyNm", "vsslNltyCd", "nationality", "country", "vessel_display.flag"]),
+    vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_type_group", "commercial_segment", "vessel_display.vessel_type"]),
+    gt: vesselDisplayNumber(source, ["gt", "grtg", "intrlGrtg", "gross_tonnage", "grossTonnage", "vessel_display.gt"], gtFromReason),
+    dwt: vesselDisplayNumber(source, ["dwt", "deadweight", "deadweight_tonnage", "vessel_display.dwt"]),
     operator: displayText(operatorDisplay),
     operator_display: displayText(operatorDisplay),
-    operator_source: displayText(firstNonEmpty(record.operator_source, canonicalOperatorSource(record))),
-    operator_confidence: displayNumber(firstFiniteNumber(record.operator_confidence, operatorDisplay ? 70 : 0)),
-    company: displayText(firstNonEmpty(record.company, record.company_name, record.shipping_company, record.operator_name, record.operator, record.agent_name, record.agent)),
-    owner: displayText(firstNonEmpty(record.owner_name, record.owner, record.ship_owner, record.registered_owner)),
-    manager: displayText(firstNonEmpty(record.manager_name, record.manager, record.ship_manager, record.technical_manager)),
-    technical_manager: displayText(firstNonEmpty(record.technical_manager, record.ship_manager, record.manager_name, record.manager)),
-    agent: displayText(firstNonEmpty(record.agent_name, record.agent, record.local_agent, record.shipping_agent)),
-    current_port: displayText(firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination)),
-    berth: displayText(firstNonEmpty(record.berth, record.berth_name, record.berth_no, record.berth_code, record.laidupFcltyNm)),
-    anchorage: displayText(firstNonEmpty(record.anchorage, record.anchorage_name, record.anchorage_zone, record.anchorage_area)),
-    eta: displayText(firstNonEmpty(record.eta, record.predicted_arrival_time)),
-    etb: displayText(firstNonEmpty(record.etb, record.estimated_berth)),
-    ata: displayText(firstNonEmpty(record.ata, record.actual_arrival, record.arrival_time)),
-    atb: displayText(firstNonEmpty(record.atb, record.actual_berth)),
-    etd: displayText(firstNonEmpty(record.etd, record.estimated_departure, record.departure_prediction_eta)),
-    atd: displayText(firstNonEmpty(record.atd, record.actual_departure)),
-    stay_days: Number.isFinite(Number(stayDays)) ? Math.round(Number(stayDays) * 10) / 10 : "-",
-    stay_hours: displayNumber(stayHours),
-    waiting_hours: displayNumber(waitingHours),
-    congestion_score: displayNumber(congestionScore),
-    waiting_score: displayNumber(waitingScore),
-    last_seen_at: displayText(firstNonEmpty(record.last_seen_at, record.updated_at, record.collected_at, record.first_seen_at, record.generated_at)),
-    data_source: displayText(firstNonEmpty(record.source_label, record.data_source_used, record.source, record.source_mode, record.agent_source)),
-    identity_source: displayText(firstNonEmpty(record.identity_source, record.imo_recovery_source, record.recovery_source)),
-    identity_confidence: displayNumber(firstFiniteNumber(record.identity_confidence, 0)),
-    identity_match_type: displayText(firstNonEmpty(record.identity_match_type, record.identity_match_strategy, record.identification_method)),
+    operator_source: displayText(firstDisplayText(record.operator_source, vesselDisplayOperatorSource(record))),
+    operator_confidence: nullableDisplayNumber(record.operator_confidence, operatorDisplay ? 70 : null),
+    company: vesselDisplayText(source, ["company", "company_name", "shipping_company", "operator_name", "operator", "agent_name", "agent", "vessel_display.company"]),
+    owner: vesselDisplayText(source, ["owner_name", "owner", "ship_owner", "registered_owner", "vessel_display.owner"]),
+    manager: vesselDisplayText(source, ["manager_name", "manager", "ship_manager", "technical_manager", "vessel_display.manager"]),
+    technical_manager: vesselDisplayText(source, ["technical_manager", "ship_manager", "manager_name", "manager", "vessel_display.technical_manager"]),
+    agent: vesselDisplayText(source, ["agent_name", "agent", "local_agent", "shipping_agent", "vessel_display.agent"]),
+    current_port: currentPort,
+    current_port_korean: currentPortKorean,
+    berth: vesselDisplayText(source, ["berth", "berth_name", "berth_no", "berth_code", "laidupFcltyNm", "terminal_name", "vessel_display.berth"], berthFromReason || "-"),
+    anchorage: vesselDisplayText(source, ["anchorage", "anchorage_name", "anchorage_zone", "anchorage_area", "vessel_display.anchorage"], anchorageFromReason || "-"),
+    eta: vesselDisplayText(source, ["eta", "estimated_arrival", "arrival_eta", "predicted_arrival_time", "next_eta", "vessel_display.eta"]),
+    etb: vesselDisplayText(source, ["etb", "estimated_berth", "vessel_display.etb"]),
+    ata: vesselDisplayText(source, ["ata", "actual_arrival", "arrival_time", "vessel_display.ata"]),
+    atb: vesselDisplayText(source, ["atb", "actual_berth", "vessel_display.atb"]),
+    etd: vesselDisplayText(source, ["etd", "estimated_departure", "departure_prediction_eta", "vessel_display.etd"]),
+    atd: vesselDisplayText(source, ["atd", "actual_departure", "vessel_display.atd"]),
+    stay_days: roundedDisplayNumber(stayDays),
+    stay_hours: roundedDisplayNumber(stayHours),
+    waiting_hours: roundedDisplayNumber(waitingHours),
+    port_stay_hours: roundedDisplayNumber(portStayHours),
+    congestion_score: roundedDisplayNumber(congestionScore),
+    waiting_score: roundedDisplayNumber(waitingScore),
+    last_seen_at: vesselDisplayText(source, ["last_seen_at", "updated_at", "collected_at", "first_seen_at", "generated_at", "vessel_display.last_seen_at"]),
+    data_source: vesselDisplayText(source, ["source_label", "data_source_used", "source", "source_mode", "agent_source", "vessel_display.data_source"]),
+    identity_source: vesselDisplayText(source, ["identity_source", "imo_recovery_source", "recovery_source", "vessel_display.identity_source"]),
+    identity_confidence: identityConfidence,
+    identity_match_type: vesselDisplayText(source, ["identity_match_type", "identity_match_strategy", "identification_method", "vessel_display.identity_match_type"]),
     identity_conflict: record.identity_conflict || record.identity_conflicts || null,
-    confidence_score: displayNumber(confidenceScore),
-    opportunity_score: displayNumber(opportunityScore),
-    risk_score: displayNumber(riskScore),
-    biofouling_score: displayNumber(biofoulingRiskScore),
-    compliance_score: displayNumber(firstFiniteNumber(record.compliance_score, record.biosecurity_compliance_score, record.compliance_exposure_score)),
-    biofoulingRiskScore: displayNumber(biofoulingRiskScore),
-    hullGrowthIndex: displayNumber(hullGrowthIndex),
-    cleaningOpportunityScore: displayNumber(cleaningOpportunityScore),
-    anchorageHours: displayNumber(firstFiniteNumber(record.anchorageHours, record.anchorage_hours, record.waiting_hours)),
-    portStayHours: displayNumber(firstFiniteNumber(record.portStayHours, record.port_stay_hours, record.stay_hours, record.current_call_stay_hours, record.cumulative_stay_hours)),
-    sstCelsius: displayNumber(firstFiniteNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg)),
-    sstAnomalyCelsius: displayNumber(firstFiniteNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly, record.noaa_sst_anomaly)),
-    salinityPsu: displayNumber(firstFiniteNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy)),
-    tropicalExposureDays: displayNumber(firstFiniteNumber(record.tropicalExposureDays, record.tropical_exposure_days)),
-    slowSteamingHours: displayNumber(firstFiniteNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours)),
+    confidence_score: roundedDisplayNumber(confidenceScore),
+    opportunity_score: roundedDisplayNumber(opportunityScore),
+    risk_score: roundedDisplayNumber(riskScore),
+    biofouling_score: roundedDisplayNumber(biofoulingRiskScore),
+    compliance_score: roundedDisplayNumber(nullableDisplayNumber(record.compliance_score, record.biosecurity_compliance_score, record.compliance_exposure_score, record.vessel_display?.compliance_score)),
+    biofoulingRiskScore: roundedDisplayNumber(biofoulingRiskScore),
+    hullGrowthIndex: roundedDisplayNumber(hullGrowthIndex),
+    cleaningOpportunityScore: roundedDisplayNumber(cleaningOpportunityScore),
+    anchorageHours: roundedDisplayNumber(anchorageHours),
+    portStayHours: roundedDisplayNumber(portStayHours),
+    sstCelsius: roundedDisplayNumber(nullableDisplayNumber(record.sstCelsius, record.sst_celsius, record.sst_72h_c_avg, record.sst_7d_c_avg, record.vessel_display?.sstCelsius)),
+    sstAnomalyCelsius: roundedDisplayNumber(nullableDisplayNumber(record.sstAnomalyCelsius, record.sst_anomaly_celsius, record.sst_anomaly, record.noaa_sst_anomaly, record.vessel_display?.sstAnomalyCelsius)),
+    salinityPsu: roundedDisplayNumber(nullableDisplayNumber(record.salinityPsu, record.salinity_psu, record.salinity, record.salinity_proxy, record.vessel_display?.salinityPsu)),
+    tropicalExposureDays: roundedDisplayNumber(nullableDisplayNumber(record.tropicalExposureDays, record.tropical_exposure_days, record.vessel_display?.tropicalExposureDays)),
+    slowSteamingHours: roundedDisplayNumber(nullableDisplayNumber(record.slowSteamingHours, record.slow_steaming_hours, record.low_speed_hours, record.loitering_hours, record.vessel_display?.slowSteamingHours)),
     riskReasons,
-    recommendedAction: displayText(firstNonEmpty(record.recommendedAction, record.recommended_action, record.recommended_next_action, record.candidate_next_action)),
-    confidence: displayText(firstNonEmpty(record.confidence, record.confidence_label)),
-    contact_readiness_score: displayNumber(firstFiniteNumber(record.contact_readiness_score, record.sales_accessibility_score)),
+    recommendedAction: recommendedAction,
+    confidence: vesselDisplayText(source, ["confidence", "confidence_label", "vessel_display.confidence"]),
+    contact_readiness_score: roundedDisplayNumber(nullableDisplayNumber(record.contact_readiness_score, record.sales_accessibility_score, record.vessel_display?.contact_readiness_score)),
     priority_label: displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0))),
-    target_categories: Array.isArray(record.target_categories) ? record.target_categories : [],
-    reason_summary: compactReasonSummary(record),
-    recommended_action: compactRecommendedAction(record),
-    data_sources: displaySources(record),
-    enrichment_sources: Array.isArray(record.enrichment_sources) ? record.enrichment_sources : []
+    target_categories: Array.isArray(record.target_categories) ? record.target_categories : Array.isArray(existingDisplay.target_categories) ? existingDisplay.target_categories : [],
+    reason_summary: reasonSummary,
+    recommended_action: recommendedAction,
+    data_sources: [...new Set([...displaySources(record), ...vesselDisplayArray(record, ["vessel_display.data_sources"])])],
+    enrichment_sources: [...new Set([
+      ...vesselDisplayArray(record, ["enrichment_sources", "vessel_display.enrichment_sources"]),
+      ...[record.enrichment_source, record.identity_source, record.imo_recovery_source, record.recovery_source].filter(vesselDisplayHasText).map(value => String(value).trim())
+    ])]
   };
+}
+
+function vesselDisplay(record = {}) {
+  return buildVesselDisplay(record);
 }
 
 function buildTargetSplitCounts(records = []) {
@@ -5433,7 +5747,7 @@ function compactItems(value) {
 }
 
 function compactBootstrapVesselItem(item = {}, index = 0) {
-  const display = item.vessel_display || vesselDisplay(item);
+  const display = buildVesselDisplay(item);
   return {
     rank: Number(item.rank || index + 1),
     vessel_display: display,
@@ -8204,7 +8518,7 @@ function quoteKnown(value) {
 }
 
 function quoteRecordValue(record = {}, ...keys) {
-  const display = record.vessel_display || {};
+  const display = buildVesselDisplay(record);
   for (const key of keys) {
     const value = record[key] ?? display[key];
     if (quoteKnown(value)) return value;
@@ -8590,7 +8904,7 @@ function firstContactCoverageValue(...values) {
 
 function contactCoverageValues(record = {}) {
   const existingDisplay = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
-  const display = { ...vesselDisplay(record), ...existingDisplay };
+  const display = { ...existingDisplay, ...buildVesselDisplay(record) };
   const operatorDisplay = firstNonEmpty(
     display.operator_display,
     display.operator,
@@ -10217,7 +10531,7 @@ function buildOpportunityMemoryIntelligenceSummary({ records = [], generatedAt, 
     .map((item, index) => ({ ...item, rank: index + 1 }));
   const byOperator = new Map();
   for (const item of allVesselItems) {
-    const operator = operatorFleetName({ ...item, ...(item.vessel_display || {}) });
+    const operator = operatorFleetName({ ...(item.vessel_display || {}), ...item });
     const current = byOperator.get(operator) || { operator_name: operator, hot_vessels_90d: 0, target_vessels_90d: 0, repeat_target_count: 0, score_total: 0 };
     current.hot_vessels_90d += Number(item.hot_count_90d || 0) > 0 ? 1 : 0;
     current.target_vessels_90d += Number(item.target_count_90d || 0) > 0 ? 1 : 0;
@@ -10268,7 +10582,7 @@ function upgradeOpportunityMemoryPayloadContract(payload = {}) {
   const generatedAt = payload.generated_at || new Date().toISOString();
   const sourceTable = "opportunity_master,commercial_opportunity_daily,sales_candidates_current,immediate_targets_current,risk_history,vessel_snapshot_daily,vessel_visits,opportunity_memory,sales-pipeline";
   const items = payload.items.map((item = {}, index) => {
-    const record = { ...item, ...(item.vessel_display || {}) };
+    const record = { ...(item.vessel_display || {}), ...item };
     const identity = item.identity_key
       ? {
         key: item.identity_key,
@@ -10288,7 +10602,7 @@ function upgradeOpportunityMemoryPayloadContract(payload = {}) {
     return {
       ...item,
       rank: firstFiniteNumber(item.rank, index + 1),
-      vessel_display: item.vessel_display || vesselDisplay(record),
+      vessel_display: buildVesselDisplay(record),
       identity_key: identity.key,
       identity_match_type: identity.match_type,
       identity_confidence: identity.confidence,
@@ -10313,7 +10627,7 @@ function upgradeOpportunityMemoryPayloadContract(payload = {}) {
     : Array.isArray(payload.summary?.operators)
       ? payload.summary.operators
       : [...items.reduce((map, item) => {
-        const operator = operatorFleetName({ ...item, ...(item.vessel_display || {}) });
+        const operator = operatorFleetName({ ...(item.vessel_display || {}), ...item });
         const current = map.get(operator) || { operator_name: operator, hot_vessels_90d: 0, target_vessels_90d: 0, repeat_target_count: 0, score_total: 0 };
         current.hot_vessels_90d += Number(item.hot_count_90d || 0) > 0 ? 1 : 0;
         current.target_vessels_90d += Number(item.target_count_90d || 0) > 0 ? 1 : 0;
