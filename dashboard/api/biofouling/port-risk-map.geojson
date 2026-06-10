@@ -1,8 +1,8 @@
 {
   "type": "FeatureCollection",
-  "generated_at": "2026-06-10T07:59:17.618Z",
+  "generated_at": "2026-06-10T08:58:56.229Z",
   "properties": {
-    "generated_at": "2026-06-10T07:59:17.618Z",
+    "generated_at": "2026-06-10T08:58:56.229Z",
     "model_version": "biofouling_sst_dwell_salinity_v1",
     "layer": "port_biofouling_risk_map"
   },
@@ -22,7 +22,7 @@
         "display_name": "부산",
         "lat": 35.1,
         "lon": 129.04,
-        "vessel_count": 351,
+        "vessel_count": 355,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 20,
@@ -58,10 +58,10 @@
         "display_name": "대산",
         "lat": 37.01,
         "lon": 126.35,
-        "vessel_count": 91,
+        "vessel_count": 90,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
-        "average_biofouling_risk_score": 18,
+        "average_biofouling_risk_score": 19,
         "average_sst_anomaly": 0.6,
         "average_salinity_proxy": 0.82,
         "hotspot_score": 12,
@@ -74,7 +74,7 @@
           "AIS dwell time",
           "port_summary_current"
         ],
-        "reason_summary": "대산: 평균 리스크 18점, 고위험 0척, Hull Cleaning 후보 0척",
+        "reason_summary": "대산: 평균 리스크 19점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
         "rank": 2
       }
@@ -94,10 +94,10 @@
         "display_name": "여수",
         "lat": 34.74,
         "lon": 127.74,
-        "vessel_count": 62,
+        "vessel_count": 63,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
-        "average_biofouling_risk_score": 18,
+        "average_biofouling_risk_score": 19,
         "average_sst_anomaly": 0.9,
         "average_salinity_proxy": 0.88,
         "hotspot_score": 12,
@@ -110,7 +110,7 @@
           "AIS dwell time",
           "port_summary_current"
         ],
-        "reason_summary": "여수: 평균 리스크 18점, 고위험 0척, Hull Cleaning 후보 0척",
+        "reason_summary": "여수: 평균 리스크 19점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
         "rank": 3
       }
@@ -130,7 +130,7 @@
         "display_name": "울산",
         "lat": 35.5,
         "lon": 129.39,
-        "vessel_count": 141,
+        "vessel_count": 142,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 17,
@@ -156,6 +156,42 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          126.6,
+          37.45
+        ]
+      },
+      "properties": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "lat": 37.45,
+        "lon": 126.6,
+        "vessel_count": 93,
+        "high_risk_count": 0,
+        "hot_candidate_count": 0,
+        "average_biofouling_risk_score": 17,
+        "average_sst_anomaly": 0.6,
+        "average_salinity_proxy": 0.82,
+        "hotspot_score": 11,
+        "risk_level": "LOW",
+        "opportunity_score": 11,
+        "map_status": "observed",
+        "source_status": "port_summary_current",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "port_summary_current"
+        ],
+        "reason_summary": "인천: 평균 리스크 17점, 고위험 0척, Hull Cleaning 후보 0척",
+        "recommended_action": "항만 체류/수온 신호를 모니터링",
+        "rank": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           128.57,
           35.18
         ]
@@ -166,7 +202,7 @@
         "display_name": "마산/창원",
         "lat": 35.18,
         "lon": 128.57,
-        "vessel_count": 83,
+        "vessel_count": 81,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 17,
@@ -183,42 +219,6 @@
           "port_summary_current"
         ],
         "reason_summary": "마산/창원: 평균 리스크 17점, 고위험 0척, Hull Cleaning 후보 0척",
-        "recommended_action": "항만 체류/수온 신호를 모니터링",
-        "rank": 5
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          126.6,
-          37.45
-        ]
-      },
-      "properties": {
-        "port_code": "030",
-        "port_name": "인천",
-        "display_name": "인천",
-        "lat": 37.45,
-        "lon": 126.6,
-        "vessel_count": 95,
-        "high_risk_count": 0,
-        "hot_candidate_count": 0,
-        "average_biofouling_risk_score": 16,
-        "average_sst_anomaly": 0.6,
-        "average_salinity_proxy": 0.82,
-        "hotspot_score": 10,
-        "risk_level": "LOW",
-        "opportunity_score": 10,
-        "map_status": "observed",
-        "source_status": "port_summary_current",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "port_summary_current"
-        ],
-        "reason_summary": "인천: 평균 리스크 16점, 고위험 0척, Hull Cleaning 후보 0척",
         "recommended_action": "항만 체류/수온 신호를 모니터링",
         "rank": 6
       }
@@ -238,7 +238,7 @@
         "display_name": "평택·당진",
         "lat": 36.98,
         "lon": 126.84,
-        "vessel_count": 68,
+        "vessel_count": 70,
         "high_risk_count": 0,
         "hot_candidate_count": 0,
         "average_biofouling_risk_score": 15,

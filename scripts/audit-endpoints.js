@@ -40,7 +40,8 @@ const CRITICAL_ENDPOINTS = new Set([
   "dashboard/api/sales/actions.json",
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/watchlist/current.json",
-  "dashboard/api/vessels/index.json"
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/vessels/page-1.json"
 ]);
 
 const WRAPPER_PATTERNS = [
