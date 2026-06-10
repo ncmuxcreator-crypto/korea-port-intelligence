@@ -1,164 +1,160 @@
 {
-  "generated_at": "2026-06-07T02:14:41.019Z",
+  "generated_at": "2026-06-10T05:19:49.050Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 10,
+  "record_count": 2,
   "source_table": "operator_snapshot_daily,fleet-memory,operator-opportunities,vessel_visits,repeat-callers,commercial_opportunity_daily",
   "items": [
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
       "operator": "미확인 운영사",
-      "average_stay_days": 6.3,
-      "repeat_caller_count": 1216,
+      "average_stay_days": 8.9,
+      "repeat_caller_count": 21,
       "korea_presence_score": 100,
-      "fleet_size_korea": 1216,
-      "vessel_count": 1216,
-      "hot_count": 80,
-      "warm_count": 366,
+      "fleet_size_korea": 21,
+      "vessel_count": 21,
+      "hot_count": 1,
+      "warm_count": 20,
       "high_risk_count": 0,
-      "compliance_exposure_count": 26,
+      "compliance_exposure_count": 2,
       "fleet_dna": {
         "preferred_ports": [
           {
+            "port_name": "대산",
+            "count": 7
+          },
+          {
             "port_name": "부산",
-            "count": 422
+            "count": 5
+          },
+          {
+            "port_name": "미확인 항만",
+            "count": 3
           },
           {
             "port_name": "울산",
-            "count": 214
+            "count": 2
           },
           {
-            "port_name": "인천",
-            "count": 126
-          },
-          {
-            "port_name": "대산",
-            "count": 116
-          },
-          {
-            "port_name": "평택·당진",
-            "count": 104
+            "port_name": "여수",
+            "count": 2
           }
         ],
-        "average_stay_days": 6.3,
+        "average_stay_days": 8.9,
         "repeat_visit_frequency": 1.1,
         "common_vessel_types": [
           {
+            "vessel_type": "bulk_carrier",
+            "count": 10
+          },
+          {
             "vessel_type": "tanker",
-            "count": 248
+            "count": 5
           },
           {
-            "vessel_type": "container",
-            "count": 247
+            "vessel_type": "crude_tanker",
+            "count": 4
           },
           {
-            "vessel_type": "general_cargo",
-            "count": 211
-          },
-          {
-            "vessel_type": "unknown",
-            "count": 207
+            "vessel_type": "기타선",
+            "count": 1
           }
         ],
         "compliance_exposure_tags": [
-          "compliance_route_signal",
-          "Canada",
-          "California",
-          "New Zealand"
+          "Australia",
+          "compliance_route_signal"
         ],
         "relationship_status": "contact_verification_needed",
         "commercial_tendency": [
-          "HOT 후보 집중",
           "WARM 후보 풀",
           "반복입항형",
           "Compliance 노출형",
           "장기체류형",
-          "다항만 활동"
+          "다항만 활동",
+          "고기회 선대"
         ]
       },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
+      "fleet_profile": "WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동, 고기회 선대",
       "repeat_visit_frequency": 1.1,
       "common_vessel_types": [
         {
+          "vessel_type": "bulk_carrier",
+          "count": 10
+        },
+        {
           "vessel_type": "tanker",
-          "count": 248
+          "count": 5
         },
         {
-          "vessel_type": "container",
-          "count": 247
+          "vessel_type": "crude_tanker",
+          "count": 4
         },
         {
-          "vessel_type": "general_cargo",
-          "count": 211
-        },
-        {
-          "vessel_type": "unknown",
-          "count": 207
+          "vessel_type": "기타선",
+          "count": 1
         }
       ],
       "compliance_exposure_tags": [
-        "compliance_route_signal",
-        "Canada",
-        "California",
-        "New Zealand"
+        "Australia",
+        "compliance_route_signal"
       ],
-      "congestion_exposure": 3,
-      "commercial_tendency": "HOT 후보 집중",
+      "congestion_exposure": 34,
+      "commercial_tendency": "WARM 후보 풀",
       "estimated_revenue": {
         "currency": "USD",
-        "estimated_revenue_low": 4452000,
-        "estimated_revenue_high": 13802000,
+        "estimated_revenue_low": 146500,
+        "estimated_revenue_high": 460500,
         "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
       },
-      "average_opportunity_score": 34,
+      "average_opportunity_score": 62,
       "top_ports": [
         {
+          "port_name": "대산",
+          "count": 7
+        },
+        {
           "port_name": "부산",
-          "count": 422
+          "count": 5
+        },
+        {
+          "port_name": "미확인 항만",
+          "count": 3
         },
         {
           "port_name": "울산",
-          "count": 214
+          "count": 2
         },
         {
-          "port_name": "인천",
-          "count": 126
-        },
-        {
-          "port_name": "대산",
-          "count": 116
-        },
-        {
-          "port_name": "평택·당진",
-          "count": 104
+          "port_name": "여수",
+          "count": 2
         }
       ],
       "top_vessels": [
         {
-          "vessel_name": "스텔라 벤쳐",
+          "vessel_name": "GELBRAY EXPRESS",
           "imo": null,
           "mmsi": null,
-          "port": "미확인 항만",
-          "opportunity_score": 80,
+          "port": "부산",
+          "opportunity_score": 71,
           "risk_score": 45,
-          "priority_label": "HOT"
+          "priority_label": "WARM"
         },
         {
-          "vessel_name": "SPRING SKY",
+          "vessel_name": "VITUS BERING",
           "imo": null,
           "mmsi": null,
-          "port": "울산",
+          "port": "여수",
           "opportunity_score": 70,
           "risk_score": 45,
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "SANMAR SAROD",
+          "vessel_name": "YUAN JU WAN",
           "imo": null,
           "mmsi": null,
           "port": "대산",
-          "opportunity_score": 70,
+          "opportunity_score": 69,
           "risk_score": 45,
           "priority_label": "WARM"
         },
@@ -172,29 +168,29 @@
           "priority_label": "WARM"
         },
         {
-          "vessel_name": "SUN PLUS",
+          "vessel_name": "AMIS VICTORY",
           "imo": null,
           "mmsi": null,
-          "port": "울산",
+          "port": "부산",
           "opportunity_score": 67,
           "risk_score": 45,
           "priority_label": "WARM"
         }
       ],
       "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 4452000,
-      "estimated_revenue_high": 13802000,
-      "missing_contact_count": 1216,
-      "opportunity_score": 100,
+      "estimated_revenue_low": 146500,
+      "estimated_revenue_high": 460500,
+      "missing_contact_count": 21,
+      "opportunity_score": 69,
       "top_factors": [
-        "HOT 후보 집중",
         "WARM 후보 풀",
         "반복입항형",
         "Compliance 노출형",
         "장기체류형",
-        "다항만 활동"
+        "다항만 활동",
+        "고기회 선대"
       ],
-      "reason_summary": "미확인 운영사 관련 1216척, HOT 80척, 반복입항 1216척, Compliance 26척",
+      "reason_summary": "미확인 운영사 관련 21척, HOT 1척, 반복입항 21척, Compliance 2척",
       "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
@@ -206,21 +202,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "미확인 운영사",
+        "operator_display": "미확인 운영사",
+        "operator_source": "operator",
+        "operator_confidence": 70,
         "company": "미확인 운영사",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "-",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 100,
+        "opportunity_score": 69,
         "risk_score": 0,
+        "biofouling_score": 0,
+        "compliance_score": 0,
         "biofoulingRiskScore": 0,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -232,598 +246,102 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
-          "HOT 후보 집중",
           "WARM 후보 풀",
           "반복입항형",
           "Compliance 노출형",
           "장기체류형",
-          "다항만 활동"
+          "다항만 활동",
+          "고기회 선대"
         ],
         "recommendedAction": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
         "confidence": "-",
         "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "미확인 운영사 관련 1216척, HOT 80척, 반복입항 1216척, Compliance 26척",
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "미확인 운영사 관련 21척, HOT 1척, 반복입항 21척, Compliance 2척",
         "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
       "rank": 2,
-      "operator_name": "MSC",
-      "operator": "MSC",
-      "average_stay_days": 3.8,
-      "repeat_caller_count": 25,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 25,
-      "vessel_count": 25,
-      "hot_count": 11,
-      "warm_count": 11,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 2,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 20
-          },
-          {
-            "port_name": "여수",
-            "count": 3
-          },
-          {
-            "port_name": "미확인 항만",
-            "count": 2
-          }
-        ],
-        "average_stay_days": 3.8,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 25
-          }
-        ],
-        "compliance_exposure_tags": [
-          "compliance_route_signal",
-          "New Zealand"
-        ],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ]
-      },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 25
-        }
-      ],
-      "compliance_exposure_tags": [
-        "compliance_route_signal",
-        "New Zealand"
-      ],
-      "congestion_exposure": 1,
-      "commercial_tendency": "HOT 후보 집중",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 197500,
-        "estimated_revenue_high": 614500,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 40,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 20
-        },
-        {
-          "port_name": "여수",
-          "count": 3
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 2
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "MSC IRIS",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 51,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MSC TERESA",
-          "imo": null,
-          "mmsi": null,
-          "port": "여수",
-          "opportunity_score": 50,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MSC DILETTA",
-          "imo": null,
-          "mmsi": null,
-          "port": "여수",
-          "opportunity_score": 49,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MSC RAVENNA",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 48,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MSC CARMELITA",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 48,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 197500,
-      "estimated_revenue_high": 614500,
-      "missing_contact_count": 0,
-      "opportunity_score": 98,
-      "top_factors": [
-        "HOT 후보 집중",
-        "WARM 후보 풀",
-        "반복입항형",
-        "Compliance 노출형",
-        "장기체류형",
-        "다항만 활동"
-      ],
-      "reason_summary": "MSC 선사는 현재 한국 항만에 25척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 38점이며 평균 바이오파울링 노출 32점, 평균 체선노출 1점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "MSC",
-        "company": "MSC",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 98,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "MSC 선사는 현재 한국 항만에 25척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 38점이며 평균 바이오파울링 노출 32점, 평균 체선노출 1점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 3,
-      "operator_name": "HMM",
-      "operator": "HMM",
-      "average_stay_days": 4.6,
-      "repeat_caller_count": 11,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 11,
-      "vessel_count": 11,
-      "hot_count": 6,
-      "warm_count": 5,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 4,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 9
-          },
-          {
-            "port_name": "평택·당진",
-            "count": 1
-          },
-          {
-            "port_name": "미확인 항만",
-            "count": 1
-          }
-        ],
-        "average_stay_days": 4.6,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 10
-          },
-          {
-            "vessel_type": "bulk_carrier",
-            "count": 1
-          }
-        ],
-        "compliance_exposure_tags": [
-          "compliance_route_signal",
-          "California"
-        ],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ]
-      },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 10
-        },
-        {
-          "vessel_type": "bulk_carrier",
-          "count": 1
-        }
-      ],
-      "compliance_exposure_tags": [
-        "compliance_route_signal",
-        "California"
-      ],
-      "congestion_exposure": 5,
-      "commercial_tendency": "HOT 후보 집중",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 107500,
-        "estimated_revenue_high": 333500,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 49,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 9
-        },
-        {
-          "port_name": "평택·당진",
-          "count": 1
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "HYUNDAI DANGJIN",
-          "imo": null,
-          "mmsi": null,
-          "port": "평택·당진",
-          "opportunity_score": 80,
-          "risk_score": 45,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HYUNDAI SHANGHAI",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 60,
-          "risk_score": 45,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "HMM BLESSING",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 51,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "HMM RUBY",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 50,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "HYUNDAI FORCE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 47,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 107500,
-      "estimated_revenue_high": 333500,
-      "missing_contact_count": 0,
-      "opportunity_score": 87,
-      "top_factors": [
-        "HOT 후보 집중",
-        "WARM 후보 풀",
-        "반복입항형",
-        "Compliance 노출형",
-        "장기체류형",
-        "다항만 활동"
-      ],
-      "reason_summary": "HMM 선사는 현재 한국 항만에 11척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 44점이며 평균 바이오파울링 노출 32점, 평균 체선노출 5점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "HMM",
-        "company": "HMM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 87,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "HMM 선사는 현재 한국 항만에 11척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 44점이며 평균 바이오파울링 노출 32점, 평균 체선노출 5점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 4,
       "operator_name": "PAN OCEAN",
       "operator": "PAN OCEAN",
-      "average_stay_days": 2.7,
-      "repeat_caller_count": 9,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 9,
-      "vessel_count": 9,
-      "hot_count": 3,
-      "warm_count": 6,
+      "average_stay_days": 6.4,
+      "repeat_caller_count": 1,
+      "korea_presence_score": 25,
+      "fleet_size_korea": 1,
+      "vessel_count": 1,
+      "hot_count": 1,
+      "warm_count": 1,
       "high_risk_count": 0,
       "compliance_exposure_count": 0,
       "fleet_dna": {
         "preferred_ports": [
           {
-            "port_name": "미확인 항만",
-            "count": 4
-          },
-          {
-            "port_name": "부산",
-            "count": 2
-          },
-          {
             "port_name": "평택·당진",
-            "count": 1
-          },
-          {
-            "port_name": "여수",
-            "count": 1
-          },
-          {
-            "port_name": "인천",
             "count": 1
           }
         ],
-        "average_stay_days": 2.7,
+        "average_stay_days": 6.4,
         "repeat_visit_frequency": 1,
         "common_vessel_types": [
           {
             "vessel_type": "bulk_carrier",
-            "count": 7
-          },
-          {
-            "vessel_type": "container",
-            "count": 1
-          },
-          {
-            "vessel_type": "unknown",
             "count": 1
           }
         ],
         "compliance_exposure_tags": [],
         "relationship_status": "repeat_relationship_signal",
         "commercial_tendency": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "장기체류형",
-          "다항만 활동"
+          "장기체류형"
         ]
       },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, 장기체류형, 다항만 활동",
+      "fleet_profile": "장기체류형",
       "repeat_visit_frequency": 1,
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
-          "count": 7
-        },
-        {
-          "vessel_type": "container",
-          "count": 1
-        },
-        {
-          "vessel_type": "unknown",
           "count": 1
         }
       ],
       "compliance_exposure_tags": [],
-      "congestion_exposure": 5,
-      "commercial_tendency": "HOT 후보 집중",
+      "congestion_exposure": 36,
+      "commercial_tendency": "장기체류형",
       "estimated_revenue": {
         "currency": "USD",
-        "estimated_revenue_low": 70500,
-        "estimated_revenue_high": 220500,
+        "estimated_revenue_low": 15500,
+        "estimated_revenue_high": 48500,
         "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
       },
-      "average_opportunity_score": 48,
+      "average_opportunity_score": 23,
       "top_ports": [
         {
-          "port_name": "미확인 항만",
-          "count": 4
-        },
-        {
-          "port_name": "부산",
-          "count": 2
-        },
-        {
           "port_name": "평택·당진",
-          "count": 1
-        },
-        {
-          "port_name": "여수",
-          "count": 1
-        },
-        {
-          "port_name": "인천",
           "count": 1
         }
       ],
       "top_vessels": [
         {
-          "vessel_name": "PAN BONA",
-          "imo": null,
-          "mmsi": null,
-          "port": "미확인 항만",
-          "opportunity_score": 56,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "PAN UNIVERSAL",
-          "imo": null,
-          "mmsi": null,
-          "port": "여수",
-          "opportunity_score": 45,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
           "vessel_name": "PAN HOPE",
           "imo": null,
           "mmsi": null,
           "port": "평택·당진",
-          "opportunity_score": 43,
+          "opportunity_score": 61,
           "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "PAN RUBY",
-          "imo": null,
-          "mmsi": null,
-          "port": "미확인 항만",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "PAN REGINA",
-          "imo": null,
-          "mmsi": null,
-          "port": "미확인 항만",
-          "opportunity_score": 41,
-          "risk_score": 45,
-          "priority_label": "LOW"
+          "priority_label": "WARM"
         }
       ],
       "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 70500,
-      "estimated_revenue_high": 220500,
+      "estimated_revenue_low": 15500,
+      "estimated_revenue_high": 48500,
       "missing_contact_count": 0,
-      "opportunity_score": 66,
+      "opportunity_score": 23,
       "top_factors": [
-        "HOT 후보 집중",
-        "WARM 후보 풀",
-        "반복입항형",
-        "장기체류형",
-        "다항만 활동"
+        "장기체류형"
       ],
-      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 27점, 평균 체선노출 5점입니다.",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
       "recommended_action": "운영선사 선대 담당팀 접촉",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
@@ -835,21 +353,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "PAN OCEAN",
+        "operator_display": "PAN OCEAN",
+        "operator_source": "operator",
+        "operator_confidence": 70,
         "company": "PAN OCEAN",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "-",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 66,
+        "opportunity_score": 23,
         "risk_score": 0,
+        "biofouling_score": 0,
+        "compliance_score": 0,
         "biofoulingRiskScore": 0,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -861,1060 +397,22 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "장기체류형",
-          "다항만 활동"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 9척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 27점, 평균 체선노출 5점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 5,
-      "operator_name": "ONE / 일본계 선사군",
-      "operator": "ONE / 일본계 선사군",
-      "average_stay_days": 3,
-      "repeat_caller_count": 13,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 13,
-      "vessel_count": 13,
-      "hot_count": 2,
-      "warm_count": 9,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 2,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 13
-          }
-        ],
-        "average_stay_days": 3,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 13
-          }
-        ],
-        "compliance_exposure_tags": [
-          "California",
-          "New Zealand"
-        ],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형"
-        ]
-      },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 13
-        }
-      ],
-      "compliance_exposure_tags": [
-        "California",
-        "New Zealand"
-      ],
-      "congestion_exposure": 0,
-      "commercial_tendency": "HOT 후보 집중",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 88500,
-        "estimated_revenue_high": 276500,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 39,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 13
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "ONE FRIENDSHIP",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "ONE SPHERE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "ONE MANCHESTER",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 42,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "ONE COMPETENCE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 42,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "ONE OWL",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 41,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 88500,
-      "estimated_revenue_high": 276500,
-      "missing_contact_count": 0,
-      "opportunity_score": 62,
-      "top_factors": [
-        "HOT 후보 집중",
-        "WARM 후보 풀",
-        "반복입항형",
-        "Compliance 노출형",
-        "장기체류형"
-      ],
-      "reason_summary": "ONE / 일본계 선사군 선사는 현재 한국 항만에 13척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 31점이며 평균 바이오파울링 노출 26점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "ONE / 일본계 선사군",
-        "company": "ONE / 일본계 선사군",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 62,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "ONE / 일본계 선사군 선사는 현재 한국 항만에 13척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 31점이며 평균 바이오파울링 노출 26점, 평균 체선노출 0점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 6,
-      "operator_name": "CMA CGM",
-      "operator": "CMA CGM",
-      "average_stay_days": 3.2,
-      "repeat_caller_count": 11,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 11,
-      "vessel_count": 11,
-      "hot_count": 2,
-      "warm_count": 8,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 1,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 8
-          },
-          {
-            "port_name": "미확인 항만",
-            "count": 2
-          },
-          {
-            "port_name": "울산",
-            "count": 1
-          }
-        ],
-        "average_stay_days": 3.2,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 10
-          },
-          {
-            "vessel_type": "pctc",
-            "count": 1
-          }
-        ],
-        "compliance_exposure_tags": [
-          "California"
-        ],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ]
-      },
-      "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 장기체류형, 다항만 활동",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 10
-        },
-        {
-          "vessel_type": "pctc",
-          "count": 1
-        }
-      ],
-      "compliance_exposure_tags": [
-        "California"
-      ],
-      "congestion_exposure": 0,
-      "commercial_tendency": "HOT 후보 집중",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 77500,
-        "estimated_revenue_high": 242500,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 40,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 8
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 2
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "CMA CGM HERMES",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 44,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "CMA CGM TAGE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "APL RAFFLES",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 42,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "CMA CGM PLATINUM",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 40,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "APL QINGDAO",
-          "imo": null,
-          "mmsi": null,
-          "port": "미확인 항만",
-          "opportunity_score": 40,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 77500,
-      "estimated_revenue_high": 242500,
-      "missing_contact_count": 0,
-      "opportunity_score": 60,
-      "top_factors": [
-        "HOT 후보 집중",
-        "WARM 후보 풀",
-        "반복입항형",
-        "Compliance 노출형",
-        "장기체류형",
-        "다항만 활동"
-      ],
-      "reason_summary": "CMA CGM 선사는 현재 한국 항만에 11척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 25점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "CMA CGM",
-        "company": "CMA CGM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 60,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "HOT 후보 집중",
-          "WARM 후보 풀",
-          "반복입항형",
-          "Compliance 노출형",
-          "장기체류형",
-          "다항만 활동"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "CMA CGM 선사는 현재 한국 항만에 11척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 25점, 평균 체선노출 0점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 7,
-      "operator_name": "KMTC",
-      "operator": "KMTC",
-      "average_stay_days": 2.8,
-      "repeat_caller_count": 12,
-      "korea_presence_score": 100,
-      "fleet_size_korea": 12,
-      "vessel_count": 12,
-      "hot_count": 0,
-      "warm_count": 7,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 0,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 12
-          }
-        ],
-        "average_stay_days": 2.8,
-        "repeat_visit_frequency": 1.1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 12
-          }
-        ],
-        "compliance_exposure_tags": [],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "WARM 후보 풀",
-          "반복입항형",
-          "장기체류형"
-        ]
-      },
-      "fleet_profile": "WARM 후보 풀, 반복입항형, 장기체류형",
-      "repeat_visit_frequency": 1.1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 12
-        }
-      ],
-      "compliance_exposure_tags": [],
-      "congestion_exposure": 0,
-      "commercial_tendency": "WARM 후보 풀",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 53000,
-        "estimated_revenue_high": 166000,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 39,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 12
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "KMTC NAGOYA",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 38,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "KMTC PUSAN",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 38,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "KMTC QINGDAO",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 38,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "KMTC PENANG",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 38,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "KMTC ULSAN",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 36,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "반복 입항 이력을 근거로 관계 구축",
-      "estimated_revenue_low": 53000,
-      "estimated_revenue_high": 166000,
-      "missing_contact_count": 0,
-      "opportunity_score": 50,
-      "top_factors": [
-        "WARM 후보 풀",
-        "반복입항형",
-        "장기체류형"
-      ],
-      "reason_summary": "KMTC 선사는 현재 한국 항만에 12척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 29점이며 평균 바이오파울링 노출 19점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "KMTC",
-        "company": "KMTC",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 50,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "WARM 후보 풀",
-          "반복입항형",
           "장기체류형"
         ],
         "recommendedAction": "운영선사 선대 담당팀 접촉",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "LOW",
-        "reason_summary": "KMTC 선사는 현재 한국 항만에 12척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 29점이며 평균 바이오파울링 노출 19점, 평균 체선노출 0점입니다.",
+        "target_categories": [],
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
         "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 8,
-      "operator_name": "MAERSK",
-      "operator": "MAERSK",
-      "average_stay_days": 3.9,
-      "repeat_caller_count": 4,
-      "korea_presence_score": 90,
-      "fleet_size_korea": 4,
-      "vessel_count": 4,
-      "hot_count": 1,
-      "warm_count": 2,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 0,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 3
-          },
-          {
-            "port_name": "인천",
-            "count": 1
-          }
-        ],
-        "average_stay_days": 3.9,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 4
-          }
-        ],
-        "compliance_exposure_tags": [],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "반복입항형",
-          "장기체류형"
-        ]
-      },
-      "fleet_profile": "반복입항형, 장기체류형",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 4
-        }
-      ],
-      "compliance_exposure_tags": [],
-      "congestion_exposure": 0,
-      "commercial_tendency": "반복입항형",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 25000,
-        "estimated_revenue_high": 78000,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 32,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 3
-        },
-        {
-          "port_name": "인천",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "MAERSK EL BOSQUE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MAERSK EUREKA",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 43,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MAERSK SAN CHRISTOBAL",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 42,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "MAERSK BERMUDA",
-          "imo": null,
-          "mmsi": null,
-          "port": "인천",
-          "opportunity_score": 31,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 25000,
-      "estimated_revenue_high": 78000,
-      "missing_contact_count": 0,
-      "opportunity_score": 47,
-      "top_factors": [
-        "반복입항형",
-        "장기체류형"
-      ],
-      "reason_summary": "MAERSK 선사는 현재 한국 항만에 4척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 31점이며 평균 바이오파울링 노출 29점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "MAERSK",
-        "company": "MAERSK",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 47,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "반복입항형",
-          "장기체류형"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "MAERSK 선사는 현재 한국 항만에 4척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 31점이며 평균 바이오파울링 노출 29점, 평균 체선노출 0점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 9,
-      "operator_name": "WAN HAI",
-      "operator": "WAN HAI",
-      "average_stay_days": 3.9,
-      "repeat_caller_count": 4,
-      "korea_presence_score": 90,
-      "fleet_size_korea": 4,
-      "vessel_count": 4,
-      "hot_count": 0,
-      "warm_count": 1,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 0,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 3
-          },
-          {
-            "port_name": "울산",
-            "count": 1
-          }
-        ],
-        "average_stay_days": 3.9,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 4
-          }
-        ],
-        "compliance_exposure_tags": [],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "반복입항형",
-          "장기체류형"
-        ]
-      },
-      "fleet_profile": "반복입항형, 장기체류형",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 4
-        }
-      ],
-      "compliance_exposure_tags": [],
-      "congestion_exposure": 0,
-      "commercial_tendency": "반복입항형",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 11000,
-        "estimated_revenue_high": 34000,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 34,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 3
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "WAN HAI 722",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 41,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 521",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 38,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 288",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 34,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 360",
-          "imo": null,
-          "mmsi": null,
-          "port": "울산",
-          "opportunity_score": 30,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "반복 입항 이력을 근거로 관계 구축",
-      "estimated_revenue_low": 11000,
-      "estimated_revenue_high": 34000,
-      "missing_contact_count": 0,
-      "opportunity_score": 44,
-      "top_factors": [
-        "반복입항형",
-        "장기체류형"
-      ],
-      "reason_summary": "WAN HAI 선사는 현재 한국 항만에 4척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 30점이며 평균 바이오파울링 노출 21점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "WAN HAI",
-        "company": "WAN HAI",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 44,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "반복입항형",
-          "장기체류형"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "WAN HAI 선사는 현재 한국 항만에 4척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 30점이며 평균 바이오파울링 노출 21점, 평균 체선노출 0점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 10,
-      "operator_name": "EVERGREEN",
-      "operator": "EVERGREEN",
-      "average_stay_days": 5,
-      "repeat_caller_count": 3,
-      "korea_presence_score": 70,
-      "fleet_size_korea": 3,
-      "vessel_count": 3,
-      "hot_count": 0,
-      "warm_count": 0,
-      "high_risk_count": 0,
-      "compliance_exposure_count": 0,
-      "fleet_dna": {
-        "preferred_ports": [
-          {
-            "port_name": "부산",
-            "count": 2
-          },
-          {
-            "port_name": "울산",
-            "count": 1
-          }
-        ],
-        "average_stay_days": 5,
-        "repeat_visit_frequency": 1,
-        "common_vessel_types": [
-          {
-            "vessel_type": "container",
-            "count": 3
-          }
-        ],
-        "compliance_exposure_tags": [],
-        "relationship_status": "repeat_relationship_signal",
-        "commercial_tendency": [
-          "반복입항형",
-          "장기체류형"
-        ]
-      },
-      "fleet_profile": "반복입항형, 장기체류형",
-      "repeat_visit_frequency": 1,
-      "common_vessel_types": [
-        {
-          "vessel_type": "container",
-          "count": 3
-        }
-      ],
-      "compliance_exposure_tags": [],
-      "congestion_exposure": 0,
-      "commercial_tendency": "반복입항형",
-      "estimated_revenue": {
-        "currency": "USD",
-        "estimated_revenue_low": 4500,
-        "estimated_revenue_high": 13500,
-        "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
-      },
-      "average_opportunity_score": 28,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 2
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "EVER FOREVER",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 40,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "EVER VERSE",
-          "imo": null,
-          "mmsi": null,
-          "port": "부산",
-          "opportunity_score": 39,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "EVER CONCISE",
-          "imo": null,
-          "mmsi": null,
-          "port": "울산",
-          "opportunity_score": 35,
-          "risk_score": 45,
-          "priority_label": "LOW"
-        }
-      ],
-      "recommended_sales_angle": "반복 입항 이력을 근거로 관계 구축",
-      "estimated_revenue_low": 4500,
-      "estimated_revenue_high": 13500,
-      "missing_contact_count": 0,
-      "opportunity_score": 35,
-      "top_factors": [
-        "반복입항형",
-        "장기체류형"
-      ],
-      "reason_summary": "EVERGREEN 선사는 현재 한국 항만에 3척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 27점이며 평균 바이오파울링 노출 23점, 평균 체선노출 0점입니다.",
-      "recommended_action": "운영선사 선대 담당팀 접촉",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "EVERGREEN",
-        "company": "EVERGREEN",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 35,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "반복입항형",
-          "장기체류형"
-        ],
-        "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "EVERGREEN 선사는 현재 한국 항만에 3척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 27점이며 평균 바이오파울링 노출 23점, 평균 체선노출 0점입니다.",
-        "recommended_action": "운영선사 선대 담당팀 접촉",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     }
   ],
   "summary": {
-    "operator_count": 12,
+    "operator_count": 2,
     "source_hint": "operator_snapshot_daily / fleet-memory / operator-opportunities / repeat-callers"
   }
 }

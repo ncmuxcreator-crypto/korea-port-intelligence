@@ -1,225 +1,41 @@
 {
-  "generated_at": "2026-06-07T02:14:41.019Z",
+  "generated_at": "2026-06-10T05:19:49.050Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
   "source_table": "vessel_visits,vessel_snapshot_daily,route_snapshot_daily,risk_history,opportunity_master",
   "items": [
     {
-      "rank": 1,
-      "vessel_name": "스텔라 벤쳐",
-      "port": "South Gyeongsang",
+      "rank": 21,
+      "vessel_name": "GELBRAY EXPRESS",
+      "port": "Busan",
       "ports_visited": [
-        "미확인 항만"
+        "부산"
       ],
-      "last_seen": "2026-06-02T07:09:17.921Z",
-      "first_seen": "2026-06-02T07:09:17.921Z",
+      "last_seen": "2026-06-01T23:30:27.534Z",
+      "first_seen": "2026-06-01T23:30:27.534Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-02T07:09:17.921Z",
-          "port": "미확인 항만",
+          "seen_at": "2026-06-01T23:30:27.534Z",
+          "port": "부산",
           "status": "arriving_soon",
           "eta": null
         }
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-02T07:09:17.921Z",
+          "seen_at": "2026-06-01T23:30:27.534Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-02T07:09:17.921Z",
-          "opportunity_score": 80,
-          "priority_label": "HOT"
-        }
-      ],
-      "opportunity_score": 80,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER"
-      ],
-      "reason_summary": "스텔라 벤쳐 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "스텔라 벤쳐",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "South Gyeongsang",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 80,
-        "risk_score": 45,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "EXTENDED_IDLE_PERIOD",
-          "HIGH_GT_VESSEL",
-          "HIGH_VALUE_GT_30000_PLUS",
-          "BULK_OR_TANKER"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "스텔라 벤쳐 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 11,
-      "vessel_name": "HYUNDAI DANGJIN",
-      "port": "Pyeongtaek-Dangjin",
-      "ports_visited": [
-        "평택·당진"
-      ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "port": "평택·당진",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "opportunity_score": 80,
-          "priority_label": "HOT"
-        }
-      ],
-      "opportunity_score": 80,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "EXTENDED_IDLE_PERIOD",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER"
-      ],
-      "reason_summary": "HYUNDAI DANGJIN 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "HYUNDAI DANGJIN",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Pyeongtaek-Dangjin",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 80,
-        "risk_score": 45,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "EXTENDED_IDLE_PERIOD",
-          "HIGH_GT_VESSEL",
-          "HIGH_VALUE_GT_30000_PLUS",
-          "BULK_OR_TANKER"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "HYUNDAI DANGJIN 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 5,
-      "vessel_name": "SPRING SKY",
-      "port": "Ulsan",
-      "ports_visited": [
-        "울산"
-      ],
-      "last_seen": "2026-06-04T04:40:58.802Z",
-      "first_seen": "2026-06-04T04:40:58.802Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-04T04:40:58.802Z",
-          "port": "울산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-04T04:40:58.802Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-04T04:40:58.802Z",
-          "opportunity_score": 70,
+          "seen_at": "2026-06-01T23:30:27.534Z",
+          "opportunity_score": 71,
           "priority_label": "WARM"
         }
       ],
-      "opportunity_score": 70,
+      "opportunity_score": 71,
       "risk_score": 45,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -228,10 +44,10 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "SPRING SKY 이력: 항만 1곳, 방문 신호 1건",
+      "reason_summary": "GELBRAY EXPRESS 이력: 항만 1곳, 방문 신호 1건",
       "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
       "vessel_display": {
-        "vessel_name": "SPRING SKY",
+        "vessel_name": "GELBRAY EXPRESS",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -240,21 +56,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
-        "current_port": "Ulsan",
+        "agent": "-",
+        "current_port": "Busan",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 70,
+        "opportunity_score": 71,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -276,14 +110,128 @@
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
-        "reason_summary": "SPRING SKY 이력: 항만 1곳, 방문 신호 1건",
+        "target_categories": [],
+        "reason_summary": "GELBRAY EXPRESS 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
-      "rank": 23,
-      "vessel_name": "SANMAR SAROD",
+      "rank": 5,
+      "vessel_name": "VITUS BERING",
+      "port": "Yeosu",
+      "ports_visited": [
+        "여수"
+      ],
+      "last_seen": "2026-06-02T05:11:01.912Z",
+      "first_seen": "2026-06-02T05:11:01.912Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-02T05:11:01.912Z",
+          "port": "여수",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-02T05:11:01.912Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-02T05:11:01.912Z",
+          "opportunity_score": 70,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 70,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL"
+      ],
+      "reason_summary": "VITUS BERING 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "VITUS BERING",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Yeosu",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 70,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "VITUS BERING 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 16,
+      "vessel_name": "YUAN JU WAN",
       "port": "Daesan",
       "ports_visited": [
         "대산"
@@ -307,11 +255,11 @@
       "opportunity_history": [
         {
           "seen_at": "2026-06-02T05:11:01.912Z",
-          "opportunity_score": 70,
+          "opportunity_score": 69,
           "priority_label": "WARM"
         }
       ],
-      "opportunity_score": 70,
+      "opportunity_score": 69,
       "risk_score": 45,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -320,10 +268,10 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "SANMAR SAROD 이력: 항만 1곳, 방문 신호 1건",
+      "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
       "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
       "vessel_display": {
-        "vessel_name": "SANMAR SAROD",
+        "vessel_name": "YUAN JU WAN",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -332,21 +280,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "Daesan",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 70,
+        "opportunity_score": 69,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -368,13 +334,15 @@
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
-        "reason_summary": "SANMAR SAROD 이력: 항만 1곳, 방문 신호 1건",
+        "target_categories": [],
+        "reason_summary": "YUAN JU WAN 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
-      "rank": 2,
+      "rank": 1,
       "vessel_name": "ADMIRAL SCHMIDT",
       "port": "Busan",
       "ports_visited": [
@@ -424,21 +392,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "Busan",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
         "opportunity_score": 67,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -460,24 +446,250 @@
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
+        "target_categories": [],
         "reason_summary": "ADMIRAL SCHMIDT 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
-      "rank": 4,
-      "vessel_name": "SUN PLUS",
-      "port": "Ulsan",
+      "rank": 2,
+      "vessel_name": "AMIS VICTORY",
+      "port": "Busan",
       "ports_visited": [
-        "울산"
+        "부산"
+      ],
+      "last_seen": "2026-06-10T05:16:21.991Z",
+      "first_seen": "2026-06-10T05:16:21.991Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "port": "부산",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "opportunity_score": 67,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 67,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL"
+      ],
+      "reason_summary": "AMIS VICTORY 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "AMIS VICTORY",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Busan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 67,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "AMIS VICTORY 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 15,
+      "vessel_name": "PROTEUS RONG NA",
+      "port": "Daesan",
+      "ports_visited": [
+        "대산"
+      ],
+      "last_seen": "2026-06-10T05:16:21.991Z",
+      "first_seen": "2026-06-10T05:16:21.991Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "port": "대산",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-10T05:16:21.991Z",
+          "opportunity_score": 67,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 67,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL"
+      ],
+      "reason_summary": "PROTEUS RONG NA 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "PROTEUS RONG NA",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Daesan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 67,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "PROTEUS RONG NA 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 17,
+      "vessel_name": "디엘 루비",
+      "port": "Busan",
+      "ports_visited": [
+        "부산"
       ],
       "last_seen": "2026-06-05T07:35:52.082Z",
       "first_seen": "2026-06-05T07:35:52.082Z",
       "visit_history": [
         {
           "seen_at": "2026-06-05T07:35:52.082Z",
-          "port": "울산",
+          "port": "부산",
           "status": "arriving_soon",
           "eta": null
         }
@@ -504,10 +716,10 @@
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "SUN PLUS 이력: 항만 1곳, 방문 신호 1건",
+      "reason_summary": "디엘 루비 이력: 항만 1곳, 방문 신호 1건",
       "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
       "vessel_display": {
-        "vessel_name": "SUN PLUS",
+        "vessel_name": "디엘 루비",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -516,21 +728,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
-        "current_port": "Ulsan",
+        "agent": "-",
+        "current_port": "Busan",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
         "opportunity_score": 67,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -552,37 +782,151 @@
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
-        "reason_summary": "SUN PLUS 이력: 항만 1곳, 방문 신호 1건",
+        "target_categories": [],
+        "reason_summary": "디엘 루비 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
-      "rank": 34,
-      "vessel_name": "세양글로리",
-      "port": "Ulsan",
+      "rank": 18,
+      "vessel_name": "HAFNIA BEIJING",
+      "port": "Daesan",
       "ports_visited": [
-        "울산"
+        "대산"
       ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
+      "last_seen": "2026-06-04T08:10:12.127Z",
+      "first_seen": "2026-06-04T08:10:12.127Z",
       "visit_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "port": "울산",
+          "seen_at": "2026-06-04T08:10:12.127Z",
+          "port": "대산",
           "status": "arriving_soon",
           "eta": null
         }
       ],
       "risk_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-04T08:10:12.127Z",
           "risk_score": 45
         }
       ],
       "opportunity_history": [
         {
-          "seen_at": "2026-06-02T05:11:01.912Z",
+          "seen_at": "2026-06-04T08:10:12.127Z",
+          "opportunity_score": 67,
+          "priority_label": "WARM"
+        }
+      ],
+      "opportunity_score": 67,
+      "risk_score": 45,
+      "top_factors": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET"
+      ],
+      "reason_summary": "HAFNIA BEIJING 이력: 항만 1곳, 방문 신호 1건",
+      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+      "vessel_display": {
+        "vessel_name": "HAFNIA BEIJING",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 0,
+        "dwt": 0,
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "Daesan",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 0,
+        "opportunity_score": 67,
+        "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
+        "biofoulingRiskScore": 45,
+        "hullGrowthIndex": 0,
+        "cleaningOpportunityScore": 0,
+        "anchorageHours": 0,
+        "portStayHours": 0,
+        "sstCelsius": 0,
+        "sstAnomalyCelsius": 0,
+        "salinityPsu": 0,
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET"
+        ],
+        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "confidence": "-",
+        "contact_readiness_score": 0,
+        "priority_label": "WARM",
+        "target_categories": [],
+        "reason_summary": "HAFNIA BEIJING 이력: 항만 1곳, 방문 신호 1건",
+        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
+        "data_sources": [],
+        "enrichment_sources": []
+      }
+    },
+    {
+      "rank": 10,
+      "vessel_name": "GLOBAL PROSPERITY",
+      "port": "South Gyeongsang",
+      "ports_visited": [
+        "미확인 항만"
+      ],
+      "last_seen": "2026-06-05T23:56:18.250Z",
+      "first_seen": "2026-06-05T23:56:18.250Z",
+      "visit_history": [
+        {
+          "seen_at": "2026-06-05T23:56:18.250Z",
+          "port": "미확인 항만",
+          "status": "arriving_soon",
+          "eta": null
+        }
+      ],
+      "risk_history": [
+        {
+          "seen_at": "2026-06-05T23:56:18.250Z",
+          "risk_score": 45
+        }
+      ],
+      "opportunity_history": [
+        {
+          "seen_at": "2026-06-05T23:56:18.250Z",
           "opportunity_score": 64,
           "priority_label": "WARM"
         }
@@ -594,12 +938,12 @@
         "LONG_ANCHORAGE_WAIT",
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN",
-        "BULK_OR_TANKER"
+        "HIGH_GT_VESSEL"
       ],
-      "reason_summary": "세양글로리 이력: 항만 1곳, 방문 신호 1건",
+      "reason_summary": "GLOBAL PROSPERITY 이력: 항만 1곳, 방문 신호 1건",
       "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
       "vessel_display": {
-        "vessel_name": "세양글로리",
+        "vessel_name": "GLOBAL PROSPERITY",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
@@ -608,21 +952,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
-        "current_port": "Ulsan",
+        "agent": "-",
+        "current_port": "South Gyeongsang",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
         "opportunity_score": 64,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -638,19 +1000,21 @@
           "LONG_ANCHORAGE_WAIT",
           "EXTENDED_IDLE_PERIOD",
           "LOW_SPEED_CONGESTION_PATTERN",
-          "BULK_OR_TANKER"
+          "HIGH_GT_VESSEL"
         ],
         "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
-        "reason_summary": "세양글로리 이력: 항만 1곳, 방문 신호 1건",
+        "target_categories": [],
+        "reason_summary": "GLOBAL PROSPERITY 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     },
     {
-      "rank": 10,
+      "rank": 6,
       "vessel_name": "C. DIGNITY",
       "port": "Yeosu",
       "ports_visited": [
@@ -700,21 +1064,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": 0,
         "company": "-",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "Yeosu",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
         "opportunity_score": 63,
         "risk_score": 45,
+        "biofouling_score": 45,
+        "compliance_score": 0,
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -736,193 +1118,11 @@
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "WARM",
+        "target_categories": [],
         "reason_summary": "C. DIGNITY 이력: 항만 1곳, 방문 신호 1건",
         "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 27,
-      "vessel_name": "NORTH SEA",
-      "port": "Daesan",
-      "ports_visited": [
-        "대산"
-      ],
-      "last_seen": "2026-06-02T05:11:01.912Z",
-      "first_seen": "2026-06-02T05:11:01.912Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "port": "대산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-02T05:11:01.912Z",
-          "opportunity_score": 63,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 63,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL"
-      ],
-      "reason_summary": "NORTH SEA 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "NORTH SEA",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Daesan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 63,
-        "risk_score": 45,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "NORTH SEA 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
-      }
-    },
-    {
-      "rank": 38,
-      "vessel_name": "YU ZHENG 1",
-      "port": "Ulsan",
-      "ports_visited": [
-        "울산"
-      ],
-      "last_seen": "2026-06-07T00:02:30.907Z",
-      "first_seen": "2026-06-07T00:02:30.907Z",
-      "visit_history": [
-        {
-          "seen_at": "2026-06-07T00:02:30.907Z",
-          "port": "울산",
-          "status": "arriving_soon",
-          "eta": null
-        }
-      ],
-      "risk_history": [
-        {
-          "seen_at": "2026-06-07T00:02:30.907Z",
-          "risk_score": 45
-        }
-      ],
-      "opportunity_history": [
-        {
-          "seen_at": "2026-06-07T00:02:30.907Z",
-          "opportunity_score": 63,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 63,
-      "risk_score": 45,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL"
-      ],
-      "reason_summary": "YU ZHENG 1 이력: 항만 1곳, 방문 신호 1건",
-      "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-      "vessel_display": {
-        "vessel_name": "YU ZHENG 1",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "-",
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "Ulsan",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 63,
-        "risk_score": 45,
-        "biofoulingRiskScore": 45,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LONG_ANCHORAGE_WAIT",
-          "EXTENDED_IDLE_PERIOD",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL"
-        ],
-        "recommendedAction": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "YU ZHENG 1 이력: 항만 1곳, 방문 신호 1건",
-        "recommended_action": "방문 이력, 리스크 변화, 기회 점수 추이를 함께 확인",
-        "data_sources": []
+        "data_sources": [],
+        "enrichment_sources": []
       }
     }
   ],

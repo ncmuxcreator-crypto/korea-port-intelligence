@@ -1,89 +1,94 @@
 {
-  "generated_at": "2026-06-09T08:39:00.178Z",
+  "generated_at": "2026-06-10T05:19:49.050Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 10,
+  "record_count": 2,
   "source_table": "fleet-intelligence,fleet-memory,operator_snapshot_daily,relationship-intelligence,customer-memory,commercial_leads,sales-pipeline,operator_contact_history,vessel_visits,opportunity_memory",
   "items": [
     {
       "rank": 1,
-      "operator_name": "MSC",
-      "targeted_vessels": 29,
+      "operator_name": "미확인 운영사",
+      "targeted_vessels": 21,
       "won_vessels": 0,
       "captured_vessels": 0,
       "penetration_rate": 0,
-      "opportunity_gap": 29,
-      "estimated_remaining_revenue": 83520,
-      "fleet_size_korea": 29,
-      "average_opportunity_score": 38,
+      "opportunity_gap": 21,
+      "estimated_remaining_revenue": 60480,
+      "fleet_size_korea": 21,
+      "average_opportunity_score": 62,
       "top_ports": [
         {
-          "port_name": "부산",
-          "count": 23
+          "port_name": "대산",
+          "count": 7
         },
         {
-          "port_name": "여수",
-          "count": 4
+          "port_name": "부산",
+          "count": 5
         },
         {
           "port_name": "미확인 항만",
-          "count": 1
+          "count": 3
         },
         {
-          "port_name": "인천",
-          "count": 1
+          "port_name": "울산",
+          "count": 2
+        },
+        {
+          "port_name": "여수",
+          "count": 2
         }
       ],
       "top_vessels": [
         {
-          "vessel_name": "MSC MIRJAM",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 47,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MSC SUSANNA",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 47,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MSC SHAY",
-          "imo": "-",
+          "vessel_name": "GELBRAY EXPRESS",
+          "imo": "",
           "port": "부산",
-          "opportunity_score": 44,
+          "opportunity_score": 71,
+          "priority_label": "LOW"
+        },
+        {
+          "vessel_name": "VITUS BERING",
+          "imo": "",
+          "port": "여수",
+          "opportunity_score": 70,
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "MSC OLIVER",
-          "imo": "-",
+          "vessel_name": "YUAN JU WAN",
+          "imo": "",
+          "port": "대산",
+          "opportunity_score": 69,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "ADMIRAL SCHMIDT",
+          "imo": "",
           "port": "부산",
-          "opportunity_score": 42,
-          "priority_label": "HOT"
+          "opportunity_score": 67,
+          "priority_label": "LOW"
         },
         {
-          "vessel_name": "MSC IERANTO",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 41,
-          "priority_label": "HOT"
+          "vessel_name": "AMIS VICTORY",
+          "imo": "",
+          "port": "부산",
+          "opportunity_score": 67,
+          "priority_label": "LOW"
         }
       ],
       "opportunity_score": 100,
-      "reason_summary": "MSC: 한국 확인 선대 29척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+      "reason_summary": "미확인 운영사: 한국 확인 선대 21척 중 영업대상 21척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
+      "recommended_next_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "data_sources": [
         "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
         "fleet-memory",
+        "operator_snapshot_daily",
         "relationship-intelligence",
         "customer-memory",
+        "commercial_leads",
         "sales-pipeline",
         "operator_contact_history",
+        "vessel_visits",
         "opportunity_memory"
       ],
       "vessel_display": {
@@ -95,22 +100,40 @@
         "vessel_type": "-",
         "gt": 0,
         "dwt": 0,
-        "operator": "MSC",
-        "company": "MSC",
+        "operator": "미확인 운영사",
+        "operator_display": "미확인 운영사",
+        "operator_source": "operator",
+        "operator_confidence": 70,
+        "company": "미확인 운영사",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "-",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
         "opportunity_score": 100,
         "risk_score": 0,
+        "biofouling_score": 0,
+        "compliance_score": 0,
         "biofoulingRiskScore": 0,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -122,20 +145,28 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+        "recommendedAction": "운영사 확인 후 선대 단위 커버리지 산정",
         "confidence": "-",
         "contact_readiness_score": 0,
         "priority_label": "HOT",
-        "reason_summary": "MSC: 한국 확인 선대 29척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+        "target_categories": [],
+        "reason_summary": "미확인 운영사: 한국 확인 선대 21척 중 영업대상 21척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
         "data_sources": [
           "fleet-intelligence",
-          "vessel_visits",
+          "fleet-memory",
           "operator_snapshot_daily",
-          "commercial_leads"
-        ]
+          "relationship-intelligence",
+          "customer-memory",
+          "commercial_leads",
+          "sales-pipeline",
+          "operator_contact_history",
+          "vessel_visits",
+          "opportunity_memory"
+        ],
+        "enrichment_sources": []
       },
-      "observed_vessels": 29,
+      "observed_vessels": 21,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
       "lost_vessels": 0,
@@ -143,643 +174,84 @@
       "quote_rate": 0,
       "win_rate": 0,
       "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
       "top_gap_vessels": [
         {
-          "vessel_name": "MSC MIRJAM",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 47,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MSC SUSANNA",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 47,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MSC SHAY",
-          "imo": "-",
+          "vessel_name": "GELBRAY EXPRESS",
+          "imo": "",
           "port": "부산",
-          "opportunity_score": 44,
+          "opportunity_score": 71,
+          "priority_label": "LOW"
+        },
+        {
+          "vessel_name": "VITUS BERING",
+          "imo": "",
+          "port": "여수",
+          "opportunity_score": 70,
           "priority_label": "HOT"
         },
         {
-          "vessel_name": "MSC OLIVER",
-          "imo": "-",
+          "vessel_name": "YUAN JU WAN",
+          "imo": "",
+          "port": "대산",
+          "opportunity_score": 69,
+          "priority_label": "WARM"
+        },
+        {
+          "vessel_name": "ADMIRAL SCHMIDT",
+          "imo": "",
           "port": "부산",
-          "opportunity_score": 42,
-          "priority_label": "HOT"
+          "opportunity_score": 67,
+          "priority_label": "LOW"
         },
         {
-          "vessel_name": "MSC IERANTO",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 41,
-          "priority_label": "HOT"
+          "vessel_name": "AMIS VICTORY",
+          "imo": "",
+          "port": "부산",
+          "opportunity_score": 67,
+          "priority_label": "LOW"
         }
       ]
     },
     {
       "rank": 2,
-      "operator_name": "ONE / 일본계 선사군",
-      "targeted_vessels": 13,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 13,
-      "estimated_remaining_revenue": 37440,
-      "fleet_size_korea": 13,
-      "average_opportunity_score": 34,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 13
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "ONE FRIENDSHIP",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ONE SPHERE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "ONE FRUITION",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ONE TREASURE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MOL CELEBRATION",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 100,
-      "reason_summary": "ONE / 일본계 선사군: 한국 확인 선대 13척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "ONE / 일본계 선사군",
-        "company": "ONE / 일본계 선사군",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 100,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "ONE / 일본계 선사군: 한국 확인 선대 13척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 13,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "ONE FRIENDSHIP",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ONE SPHERE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "ONE FRUITION",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "ONE TREASURE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MOL CELEBRATION",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        }
-      ]
-    },
-    {
-      "rank": 3,
-      "operator_name": "HMM",
-      "targeted_vessels": 11,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 11,
-      "estimated_remaining_revenue": 31680,
-      "fleet_size_korea": 11,
-      "average_opportunity_score": 42,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 7
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 2
-        },
-        {
-          "port_name": "평택·당진",
-          "count": 1
-        },
-        {
-          "port_name": "포항",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "HYUNDAI DANGJIN",
-          "imo": "-",
-          "port": "평택·당진",
-          "opportunity_score": 73,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM TOPAZ",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 57,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM TURQUOISE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 44,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM EMERALD",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 40,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM BLESSING",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 40,
-          "priority_label": "HOT"
-        }
-      ],
-      "opportunity_score": 95,
-      "reason_summary": "HMM: 한국 확인 선대 11척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "HMM",
-        "company": "HMM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 95,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "HMM: 한국 확인 선대 11척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 11,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "HYUNDAI DANGJIN",
-          "imo": "-",
-          "port": "평택·당진",
-          "opportunity_score": 73,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM TOPAZ",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 57,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM TURQUOISE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 44,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM EMERALD",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 40,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "HMM BLESSING",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 40,
-          "priority_label": "HOT"
-        }
-      ]
-    },
-    {
-      "rank": 4,
-      "operator_name": "CMA CGM",
-      "targeted_vessels": 11,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 11,
-      "estimated_remaining_revenue": 31680,
-      "fleet_size_korea": 11,
-      "average_opportunity_score": 34,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 8
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 2
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "CMA CGM HOPE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "CMA CGM SAO PAULO",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM PLATINUM",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM MONACO",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM TAGE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 36,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 92,
-      "reason_summary": "CMA CGM: 한국 확인 선대 11척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "CMA CGM",
-        "company": "CMA CGM",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 92,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "CMA CGM: 한국 확인 선대 11척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 11,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "CMA CGM HOPE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "CMA CGM SAO PAULO",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM PLATINUM",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM MONACO",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 37,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "CMA CGM TAGE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 36,
-          "priority_label": "WARM"
-        }
-      ]
-    },
-    {
-      "rank": 5,
       "operator_name": "PAN OCEAN",
-      "targeted_vessels": 10,
+      "targeted_vessels": 1,
       "won_vessels": 0,
       "captured_vessels": 0,
       "penetration_rate": 0,
-      "opportunity_gap": 10,
-      "estimated_remaining_revenue": 28800,
-      "fleet_size_korea": 10,
-      "average_opportunity_score": 42,
+      "opportunity_gap": 1,
+      "estimated_remaining_revenue": 2880,
+      "fleet_size_korea": 1,
+      "average_opportunity_score": 61,
       "top_ports": [
         {
-          "port_name": "미확인 항만",
-          "count": 4
-        },
-        {
-          "port_name": "인천",
-          "count": 2
-        },
-        {
-          "port_name": "부산",
-          "count": 2
-        },
-        {
           "port_name": "평택·당진",
-          "count": 1
-        },
-        {
-          "port_name": "여수",
           "count": 1
         }
       ],
       "top_vessels": [
         {
           "vessel_name": "PAN HOPE",
-          "imo": "-",
+          "imo": "",
           "port": "평택·당진",
-          "opportunity_score": 62,
+          "opportunity_score": 61,
           "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN BONA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 55,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN RUBY",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 44,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "PAN REGINA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 43,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN UNIVERSAL",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 43,
-          "priority_label": "WARM"
         }
       ],
-      "opportunity_score": 90,
-      "reason_summary": "PAN OCEAN: 한국 확인 선대 10척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+      "opportunity_score": 51,
+      "reason_summary": "PAN OCEAN: 한국 확인 선대 1척 중 영업대상 1척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "recommended_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
+      "recommended_next_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
       "data_sources": [
         "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
         "fleet-memory",
+        "operator_snapshot_daily",
         "relationship-intelligence",
         "customer-memory",
+        "commercial_leads",
         "sales-pipeline",
         "operator_contact_history",
+        "vessel_visits",
         "opportunity_memory"
       ],
       "vessel_display": {
@@ -792,21 +264,39 @@
         "gt": 0,
         "dwt": 0,
         "operator": "PAN OCEAN",
+        "operator_display": "PAN OCEAN",
+        "operator_source": "operator",
+        "operator_confidence": 70,
         "company": "PAN OCEAN",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
+        "agent": "-",
         "current_port": "-",
+        "berth": "-",
+        "anchorage": "-",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
+        "etd": "-",
+        "atd": "-",
         "stay_days": 0,
+        "stay_hours": 0,
+        "waiting_hours": 0,
+        "congestion_score": 0,
+        "waiting_score": 0,
         "last_seen_at": "-",
         "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": 0,
+        "identity_match_type": "-",
+        "identity_conflict": null,
         "confidence_score": 0,
-        "opportunity_score": 90,
+        "opportunity_score": 51,
         "risk_score": 0,
+        "biofouling_score": 0,
+        "compliance_score": 0,
         "biofoulingRiskScore": 0,
         "hullGrowthIndex": 0,
         "cleaningOpportunityScore": 0,
@@ -818,20 +308,28 @@
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+        "recommendedAction": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
         "confidence": "-",
         "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "PAN OCEAN: 한국 확인 선대 10척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
+        "priority_label": "LOW",
+        "target_categories": [],
+        "reason_summary": "PAN OCEAN: 한국 확인 선대 1척 중 영업대상 1척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "recommended_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
         "data_sources": [
           "fleet-intelligence",
-          "vessel_visits",
+          "fleet-memory",
           "operator_snapshot_daily",
-          "commercial_leads"
-        ]
+          "relationship-intelligence",
+          "customer-memory",
+          "commercial_leads",
+          "sales-pipeline",
+          "operator_contact_history",
+          "vessel_visits",
+          "opportunity_memory"
+        ],
+        "enrichment_sources": []
       },
-      "observed_vessels": 10,
+      "observed_vessels": 1,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
       "lost_vessels": 0,
@@ -839,837 +337,19 @@
       "quote_rate": 0,
       "win_rate": 0,
       "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
       "top_gap_vessels": [
         {
           "vessel_name": "PAN HOPE",
-          "imo": "-",
+          "imo": "",
           "port": "평택·당진",
-          "opportunity_score": 62,
+          "opportunity_score": 61,
           "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN BONA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 55,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN RUBY",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 44,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "PAN REGINA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 43,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "PAN UNIVERSAL",
-          "imo": "-",
-          "port": "여수",
-          "opportunity_score": 43,
-          "priority_label": "WARM"
-        }
-      ]
-    },
-    {
-      "rank": 6,
-      "operator_name": "KMTC",
-      "targeted_vessels": 10,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 10,
-      "estimated_remaining_revenue": 28800,
-      "fleet_size_korea": 10,
-      "average_opportunity_score": 33,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 9
-        },
-        {
-          "port_name": "인천",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "KMTC NAGOYA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC PUSAN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC QINGDAO",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC PENANG",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC ULSAN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        }
-      ],
-      "opportunity_score": 87,
-      "reason_summary": "KMTC: 한국 확인 선대 10척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "KMTC",
-        "company": "KMTC",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 87,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "HOT",
-        "reason_summary": "KMTC: 한국 확인 선대 10척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 10,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "KMTC NAGOYA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC PUSAN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC QINGDAO",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC PENANG",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "KMTC ULSAN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 35,
-          "priority_label": "WARM"
-        }
-      ]
-    },
-    {
-      "rank": 7,
-      "operator_name": "MAERSK",
-      "targeted_vessels": 5,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 5,
-      "estimated_remaining_revenue": 14400,
-      "fleet_size_korea": 5,
-      "average_opportunity_score": 37,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 4
-        },
-        {
-          "port_name": "인천",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "MAERSK SARNIA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 45,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MAERSK EMDEN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 41,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MAERSK EUREKA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "MAERSK EL BOSQUE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "MAERSK BERMUDA",
-          "imo": "-",
-          "port": "인천",
-          "opportunity_score": 27,
-          "priority_label": "LOW"
-        }
-      ],
-      "opportunity_score": 63,
-      "reason_summary": "MAERSK: 한국 확인 선대 5척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "MAERSK",
-        "company": "MAERSK",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 63,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "WARM",
-        "reason_summary": "MAERSK: 한국 확인 선대 5척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 5,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "MAERSK SARNIA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 45,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MAERSK EMDEN",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 41,
-          "priority_label": "HOT"
-        },
-        {
-          "vessel_name": "MAERSK EUREKA",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "MAERSK EL BOSQUE",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "MAERSK BERMUDA",
-          "imo": "-",
-          "port": "인천",
-          "opportunity_score": 27,
-          "priority_label": "LOW"
-        }
-      ]
-    },
-    {
-      "rank": 8,
-      "operator_name": "WAN HAI",
-      "targeted_vessels": 4,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 4,
-      "estimated_remaining_revenue": 11520,
-      "fleet_size_korea": 4,
-      "average_opportunity_score": 30,
-      "top_ports": [
-        {
-          "port_name": "부산",
-          "count": 4
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "WAN HAI 901",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "WAN HAI 521",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 31,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 722",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 29,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 288",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 27,
-          "priority_label": "LOW"
-        }
-      ],
-      "opportunity_score": 56,
-      "reason_summary": "WAN HAI: 한국 확인 선대 4척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "WAN HAI",
-        "company": "WAN HAI",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 56,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "WAN HAI: 한국 확인 선대 4척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 4,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "WAN HAI 901",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "WAN HAI 521",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 31,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 722",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 29,
-          "priority_label": "LOW"
-        },
-        {
-          "vessel_name": "WAN HAI 288",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 27,
-          "priority_label": "LOW"
-        }
-      ]
-    },
-    {
-      "rank": 9,
-      "operator_name": "EVERGREEN",
-      "targeted_vessels": 4,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 4,
-      "estimated_remaining_revenue": 11520,
-      "fleet_size_korea": 4,
-      "average_opportunity_score": 30,
-      "top_ports": [
-        {
-          "port_name": "울산",
-          "count": 2
-        },
-        {
-          "port_name": "부산",
-          "count": 1
-        },
-        {
-          "port_name": "미확인 항만",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "EVER FOREVER",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER CALM",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 32,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER VISTA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 31,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER CONCISE",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 24,
-          "priority_label": "LOW"
-        }
-      ],
-      "opportunity_score": 56,
-      "reason_summary": "EVERGREEN: 한국 확인 선대 4척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "EVERGREEN",
-        "company": "EVERGREEN",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 56,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "EVERGREEN: 한국 확인 선대 4척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 4,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "EVER FOREVER",
-          "imo": "-",
-          "port": "부산",
-          "opportunity_score": 34,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER CALM",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 32,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER VISTA",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 31,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "EVER CONCISE",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 24,
-          "priority_label": "LOW"
-        }
-      ]
-    },
-    {
-      "rank": 10,
-      "operator_name": "HYUNDAI GLOVIS",
-      "targeted_vessels": 3,
-      "won_vessels": 0,
-      "captured_vessels": 0,
-      "penetration_rate": 0,
-      "opportunity_gap": 3,
-      "estimated_remaining_revenue": 8640,
-      "fleet_size_korea": 3,
-      "average_opportunity_score": 38,
-      "top_ports": [
-        {
-          "port_name": "미확인 항만",
-          "count": 2
-        },
-        {
-          "port_name": "울산",
-          "count": 1
-        }
-      ],
-      "top_vessels": [
-        {
-          "vessel_name": "GLOVIS COMET",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 43,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "GLOVIS TWILIGHT",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "GLOVIS TRINITY",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 32,
-          "priority_label": "LOW"
-        }
-      ],
-      "opportunity_score": 53,
-      "reason_summary": "HYUNDAI GLOVIS: 한국 확인 선대 3척 중 수주/작업 포착 0척, 침투율 0%",
-      "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "data_sources": [
-        "fleet-intelligence",
-        "vessel_visits",
-        "operator_snapshot_daily",
-        "commercial_leads",
-        "fleet-memory",
-        "relationship-intelligence",
-        "customer-memory",
-        "sales-pipeline",
-        "operator_contact_history",
-        "opportunity_memory"
-      ],
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 0,
-        "dwt": 0,
-        "operator": "HYUNDAI GLOVIS",
-        "company": "HYUNDAI GLOVIS",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "current_port": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "stay_days": 0,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "confidence_score": 0,
-        "opportunity_score": 53,
-        "risk_score": 0,
-        "biofoulingRiskScore": 0,
-        "hullGrowthIndex": 0,
-        "cleaningOpportunityScore": 0,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 0,
-        "sstAnomalyCelsius": 0,
-        "salinityPsu": 0,
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [],
-        "recommendedAction": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "confidence": "-",
-        "contact_readiness_score": 0,
-        "priority_label": "LOW",
-        "reason_summary": "HYUNDAI GLOVIS: 한국 확인 선대 3척 중 수주/작업 포착 0척, 침투율 0%",
-        "recommended_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-        "data_sources": [
-          "fleet-intelligence",
-          "vessel_visits",
-          "operator_snapshot_daily",
-          "commercial_leads"
-        ]
-      },
-      "observed_vessels": 3,
-      "contacted_vessels": 0,
-      "quoted_vessels": 0,
-      "lost_vessels": 0,
-      "target_coverage_rate": 100,
-      "quote_rate": 0,
-      "win_rate": 0,
-      "currency": "USD",
-      "recommended_next_action": "미포착 선박을 확인해 선대 단위 후속 제안과 관계 확장을 준비",
-      "top_gap_vessels": [
-        {
-          "vessel_name": "GLOVIS COMET",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 43,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "GLOVIS TWILIGHT",
-          "imo": "-",
-          "port": "울산",
-          "opportunity_score": 39,
-          "priority_label": "WARM"
-        },
-        {
-          "vessel_name": "GLOVIS TRINITY",
-          "imo": "-",
-          "port": "미확인 항만",
-          "opportunity_score": 32,
-          "priority_label": "LOW"
         }
       ]
     }
   ],
   "summary": {
-    "operator_count": 10,
+    "operator_count": 2,
     "assumptions": {
       "currency": "USD",
       "average_cleaning_price": 18000,
