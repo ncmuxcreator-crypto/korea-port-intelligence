@@ -2595,6 +2595,7 @@ function annotateTargetClassification(records = []) {
     vessel.long_stay_reason = longStay.reason || vessel.long_stay_reason || "";
     vessel.stay_duration_source = longStay.source || vessel.stay_duration_source || "";
     vessel.long_stay_confidence = longStay.confidence || vessel.long_stay_confidence || 0;
+    Object.assign(vessel, salesActionability(vessel));
     vessel.vessel_display = vesselDisplay(vessel);
   }
   return records;
@@ -4435,11 +4436,188 @@ function missingContactFields(record = {}) {
   return fields;
 }
 
+const ACTIONABILITY_LABELS = {
+  CONTACT_NOW: "즉시 연락",
+  VERIFY_CONTACT: "연락처 확인 필요",
+  MONITOR: "모니터링",
+  HOLD: "보류"
+};
+
+function actionabilityLabel(code = "MONITOR") {
+  return ACTIONABILITY_LABELS[String(code || "MONITOR").toUpperCase()] || ACTIONABILITY_LABELS.MONITOR;
+}
+
+function actionabilityIdentityValues(record = {}) {
+  const display = record.vessel_display || {};
+  return {
+    imo: firstNonEmpty(record.imo, display.imo),
+    mmsi: firstNonEmpty(record.mmsi, display.mmsi),
+    call_sign: firstNonEmpty(record.call_sign, record.callsign, record.clsgn, display.call_sign)
+  };
+}
+
+function missingActionFields(record = {}) {
+  const display = record.vessel_display || {};
+  const identity = actionabilityIdentityValues(record);
+  const fields = [];
+  if (!hasContactValue(canonicalOperatorValue(record) || display.operator_display || display.operator)) fields.push("operator_display");
+  if (!hasContactValue(firstNonEmpty(record.agent, record.agent_name, record.local_agent, record.shipping_agent, record.satmntEntrpsNm, record.entrpsCdNm, display.agent))) fields.push("local_agent");
+  if (!hasContactValue(firstNonEmpty(record.contact_person, record.contact_name, record.superintendent, record.technical_superintendent, record.email, record.phone))) fields.push("contact_person");
+  if (!hasContactValue(identity.imo)) fields.push("imo");
+  if (!hasContactValue(identity.call_sign)) fields.push("call_sign");
+  if (!hasContactValue(identity.mmsi)) fields.push("mmsi");
+  return [...new Set(fields)];
+}
+
+function hasActionableIdentity(record = {}) {
+  const identity = actionabilityIdentityValues(record);
+  return hasContactValue(identity.imo) || hasContactValue(identity.call_sign) || hasContactValue(identity.mmsi);
+}
+
+function hasActionableContactPath(record = {}) {
+  const display = record.vessel_display || {};
+  const operatorReady = hasContactValue(canonicalOperatorValue(record) || display.operator_display || display.operator);
+  const directPath = hasContactValue(firstNonEmpty(
+    record.agent,
+    record.agent_name,
+    record.local_agent,
+    record.shipping_agent,
+    record.satmntEntrpsNm,
+    record.entrpsCdNm,
+    record.contact_person,
+    record.contact_name,
+    record.superintendent,
+    record.technical_superintendent,
+    record.manager,
+    record.manager_name,
+    record.owner,
+    record.owner_name,
+    display.agent,
+    display.manager,
+    display.owner
+  ));
+  return operatorReady && directPath;
+}
+
+function actionabilityTimingSignal(record = {}) {
+  const longStay = longStayRiskSignal(record);
+  return Boolean(
+    hasCurrentOrNearTermWorkFeasibility(record) ||
+    hasCurrentKoreaWorkSignal(record) ||
+    hasAnchorageWaitingSignal(record) ||
+    hasArrivalPipelineSignal(record) ||
+    longStay.detected ||
+    firstNonEmpty(record.eta, record.etb, record.ata, record.atb, record.arrival_time, record.estimated_arrival)
+  );
+}
+
+function actionabilityStrongSignal(record = {}) {
+  const score = targetCategoryScore(record);
+  const risk = targetCategoryRisk(record);
+  const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score || risk))).toUpperCase();
+  return Boolean(
+    ["HOT", "WARM"].includes(priority) ||
+    score >= SALES_CANDIDATE_THRESHOLD ||
+    risk >= 60 ||
+    longStayRiskSignal(record).detected ||
+    regulatedRouteSignal(record) ||
+    cleaningWindowOpportunityScore(record) >= 60
+  );
+}
+
+function actionabilityRecommendedAction(record = {}) {
+  return firstNonEmpty(record.recommended_action, record.recommended_next_action, record.candidate_next_action, record.next_action);
+}
+
+function actionabilityScore(record = {}) {
+  const score = targetCategoryScore(record);
+  const risk = targetCategoryRisk(record);
+  const confidence = targetCategoryConfidence(record);
+  const base = Math.max(score, risk * 0.9);
+  const timing = actionabilityTimingSignal(record) ? 20 : 0;
+  const contact = hasActionableContactPath(record) ? 15 : 0;
+  const identity = hasActionableIdentity(record) ? 10 : 0;
+  const action = actionabilityRecommendedAction(record) ? 5 : 0;
+  return Math.max(0, Math.min(100, Math.round(base * 0.5 + confidence * 0.15 + timing + contact + identity + action)));
+}
+
+function salesActionability(record = {}) {
+  const missing = missingActionFields(record);
+  const score = targetCategoryScore(record);
+  const risk = targetCategoryRisk(record);
+  const priority = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(score || risk))).toUpperCase();
+  const strong = actionabilityStrongSignal(record);
+  const timing = actionabilityTimingSignal(record);
+  const identityReady = hasActionableIdentity(record);
+  const contactReady = hasActionableContactPath(record);
+  const recommended = actionabilityRecommendedAction(record);
+  const actionableScore = actionabilityScore(record);
+  const invalid = !hasUsefulVesselIdentity(record) || isHardCandidateExcluded(record) || (isDepartedRecord(record) && score < SALES_CANDIDATE_THRESHOLD);
+  let category = "MONITOR";
+  let reason = "";
+  if (invalid) {
+    category = "HOLD";
+    reason = !hasUsefulVesselIdentity(record)
+      ? "선박 식별 정보가 부족해 영업 실행 대상에서 보류합니다."
+      : "출항 완료 또는 상업 제외 조건으로 보류합니다.";
+  } else if (strong && timing && contactReady && identityReady && recommended) {
+    category = "CONTACT_NOW";
+    reason = "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.";
+  } else if (strong && (timing || score >= SALES_CANDIDATE_THRESHOLD || risk >= 60) && missing.length) {
+    category = "VERIFY_CONTACT";
+    reason = `${missing.map(actionabilityMissingFieldKo).join(", ")} 확인 후 연락 가능한 후보입니다.`;
+  } else if (strong || timing || score >= REVIEW_TARGET_THRESHOLD || risk >= 45) {
+    category = "MONITOR";
+    reason = timing
+      ? "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다."
+      : "상업 신호는 있으나 현재 즉시 실행할 타이밍은 제한적입니다.";
+  } else {
+    category = "HOLD";
+    reason = "상업 신호와 타이밍 신호가 약해 현재는 보류합니다.";
+  }
+  return {
+    actionability_category: category,
+    actionability_label: actionabilityLabel(category),
+    actionability_score: actionableScore,
+    actionability_reason: reason,
+    missing_action_fields: missing,
+    actionability_blockers: category === "CONTACT_NOW" ? [] : contactNowBlockers(record, { missing, strong, timing, contactReady, identityReady, recommended })
+  };
+}
+
+function actionabilityMissingFieldKo(field = "") {
+  return {
+    operator_display: "운영사/회사",
+    local_agent: "대리점",
+    contact_person: "담당자",
+    imo: "IMO",
+    call_sign: "콜사인",
+    mmsi: "MMSI"
+  }[field] || field;
+}
+
+function contactNowBlockers(record = {}, state = {}) {
+  const missing = Array.isArray(state.missing) ? state.missing : missingActionFields(record);
+  const strong = state.strong ?? actionabilityStrongSignal(record);
+  const timing = state.timing ?? actionabilityTimingSignal(record);
+  const contactReady = state.contactReady ?? hasActionableContactPath(record);
+  const identityReady = state.identityReady ?? hasActionableIdentity(record);
+  const recommended = state.recommended ?? actionabilityRecommendedAction(record);
+  const blockers = [];
+  if (!strong) blockers.push("strong_signal_missing");
+  if (!timing) blockers.push("timing_signal_missing");
+  if (!contactReady) blockers.push("contact_path_missing");
+  if (!identityReady) blockers.push("identity_missing");
+  if (!recommended) blockers.push("recommended_action_missing");
+  for (const field of missing) blockers.push(`missing_${field}`);
+  return [...new Set(blockers)];
+}
+
 function verificationTypeForMissingFields(fields = []) {
-  if (fields.includes("operator")) return "OPERATOR";
+  if (fields.includes("operator") || fields.includes("operator_display")) return "OPERATOR";
   if (fields.includes("owner")) return "OWNER";
   if (fields.includes("manager")) return "MANAGER";
-  if (fields.includes("local_agent")) return "LOCAL_AGENT";
+  if (fields.includes("local_agent") || fields.includes("agent")) return "LOCAL_AGENT";
   return "CONTACT_PERSON";
 }
 
@@ -4465,15 +4643,16 @@ function knownCompanyForVerification(record = {}) {
 function buildVerificationQueue(records = []) {
   return sortCommercialPriority(records)
     .map(record => {
-      const missing = missingContactFields(record);
-      return { record, missing, priorityScore: salesPriorityScore(record), priorityLabel: salesPriorityBand(salesPriorityScore(record)) };
+      const actionability = salesActionability(record);
+      const missing = [...new Set([...missingContactFields(record), ...missingActionFields(record)])];
+      return { record, missing, actionability, priorityScore: salesPriorityScore(record), priorityLabel: salesPriorityBand(salesPriorityScore(record)) };
     })
-    .filter(({ record, missing, priorityScore, priorityLabel }) => {
+    .filter(({ record, missing, actionability, priorityScore, priorityLabel }) => {
       const commerciallyRelevant = priorityScore >= 55 || record.is_cleaning_candidate || record.is_immediate_candidate || Number(record.commercial_value_score || record.total_sales_priority_score || 0) >= REVIEW_TARGET_THRESHOLD;
-      const priorityContactGap = ["HOT", "WARM"].includes(priorityLabel) && (missing.includes("operator") || missing.includes("local_agent"));
-      return commerciallyRelevant && missing.length && (priorityContactGap || missing.length >= 2);
+      const priorityContactGap = ["HOT", "WARM"].includes(priorityLabel) && (missing.includes("operator") || missing.includes("operator_display") || missing.includes("local_agent"));
+      return missing.length && (actionability.actionability_category === "VERIFY_CONTACT" || (actionability.actionability_category !== "CONTACT_NOW" && commerciallyRelevant && priorityContactGap));
     })
-    .map(({ record, missing, priorityScore, priorityLabel }, index) => withVesselDisplay({
+    .map(({ record, missing, actionability, priorityScore, priorityLabel }, index) => withVesselDisplay({
       rank: index + 1,
       vessel_name: record.vessel_name,
       port: firstNonEmpty(record.port_name, record.port, record.destination_port, record.destination),
@@ -4488,6 +4667,11 @@ function buildVerificationQueue(records = []) {
       verification_type: verificationTypeForMissingFields(missing),
       known_company: knownCompanyForVerification(record),
       missing_fields: missing,
+      missing_action_fields: actionability.missing_action_fields,
+      actionability_category: actionability.actionability_category,
+      actionability_label: actionability.actionability_label,
+      actionability_score: actionability.actionability_score,
+      actionability_reason: actionability.actionability_reason,
       confidence_score: Number(record.contact_readiness_score || record.data_confidence_score || record.confidence_score || 0),
       priority_label: priorityLabel,
       commercial_value_score: Number(record.commercial_value_score || record.total_sales_priority_score || priorityScore || 0),
@@ -4596,11 +4780,12 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
   const missingContact = missingContactFields(record);
   const complianceSignal = regulatedRouteSignal(record) || complianceCountry(record) || record.compliance_watch || record.compliance_tag || String(record.compliance_band || "").toLowerCase().includes("biosecurity");
   const holdReason = categoryHoldReason(record, generatedAt);
+  const actionability = salesActionability(record);
   if (holdReason && priority !== "HOT" && opportunity < 75) {
     return [targetCategoryItem("HOLD", confidence, holdReason, "데이터 보강 후 다시 검토")];
   }
-  if ((priority === "HOT" || isImmediateTarget(record) || opportunity >= IMMEDIATE_TARGET_THRESHOLD) && hasCurrentKoreaWorkSignal(record) && confidence >= 25) {
-    categories.push(targetCategoryItem("CONTACT_NOW", Math.max(confidence, opportunity), "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.", "기술감독 또는 에이전트에 즉시 연락"));
+  if (actionability.actionability_category === "CONTACT_NOW") {
+    categories.push(targetCategoryItem("CONTACT_NOW", Math.max(confidence, opportunity, actionability.actionability_score), actionability.actionability_reason || "HOT/고점수 신호와 현재 한국 항만 또는 묘박 작업 가능성이 함께 확인됩니다.", "기술감독 또는 에이전트에 즉시 연락"));
   }
   if (hasArrivalPipelineSignal(record) && !isBerthedOrArrived(record)) {
     categories.push(targetCategoryItem("PRE_ARRIVAL", firstFiniteNumber(record.arrival_prediction_confidence, confidence, opportunity, 50), arrivalPipelineReason(record), "입항 전 선사/대리점에 작업 가능 시간과 담당자를 선제 확인"));
@@ -4621,11 +4806,13 @@ function buildTargetCategoriesForRecord(record = {}, { generatedAt = new Date().
   if (operatorVesselCount >= 2 || firstFiniteNumber(record.operator_opportunity_score, record.fleet_opportunity_score, 0) >= 55) {
     categories.push(targetCategoryItem("FLEET_EXPANSION", firstFiniteNumber(record.operator_opportunity_score, record.fleet_opportunity_score, opportunity, 50), "동일 운영사/선대의 한국 기항 선박이 복수 확인됩니다.", "선사 단위로 추가 선박 기회를 함께 검토"));
   }
-  if (["HOT", "WARM"].includes(priority) && missingContact.length) {
-    categories.push(targetCategoryItem("VERIFY_CONTACT", confidence, `영업 후보이나 ${missingContact.join(", ")} 정보 확인이 필요합니다.`, "선사/에이전트 확인 후 영업 연락 준비"));
+  if (actionability.actionability_category === "VERIFY_CONTACT") {
+    const missing = actionability.missing_action_fields?.length ? actionability.missing_action_fields.map(actionabilityMissingFieldKo) : missingContact;
+    categories.push(targetCategoryItem("VERIFY_CONTACT", Math.max(confidence, actionability.actionability_score), actionability.actionability_reason || `영업 후보이나 ${missing.join(", ")} 정보 확인이 필요합니다.`, "선사/에이전트 확인 후 영업 연락 준비"));
   }
   if (!categories.length) {
-    categories.push(targetCategoryItem("MONITOR", confidence, priority === "LOW" ? "상업 신호는 있으나 즉시 연락 긴급도는 낮습니다." : "후보 신호는 있으나 우선순위 카테고리 조건은 제한적입니다.", "다음 업데이트까지 모니터링"));
+    const code = actionability.actionability_category === "HOLD" ? "HOLD" : "MONITOR";
+    categories.push(targetCategoryItem(code, confidence, actionability.actionability_reason || (priority === "LOW" ? "상업 신호는 있으나 즉시 연락 긴급도는 낮습니다." : "후보 신호는 있으나 우선순위 카테고리 조건은 제한적입니다."), code === "HOLD" ? "데이터 보강 후 다시 검토" : "다음 업데이트까지 모니터링"));
   } else if (["LOW", "WARM"].includes(priority) && !categories.some(category => ["CONTACT_NOW", "PRE_ARRIVAL", "ANCHORAGE_OPPORTUNITY"].includes(category.code))) {
     categories.push(targetCategoryItem("MONITOR", confidence, "즉시 실행 조건은 아니지만 추적 가치가 있습니다.", "다음 업데이트까지 모니터링"));
   }
@@ -4637,10 +4824,12 @@ function annotateTargetCategories(record = {}, options = {}) {
   const riskScore = targetCategoryRisk(record);
   const confidenceScore = targetCategoryConfidence(record);
   const priorityLabel = String(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore))).toUpperCase();
+  const actionability = salesActionability({ ...record, priority_label: priorityLabel });
   const targetCategories = buildTargetCategoriesForRecord(record, options);
   const primary = targetCategories[0] || targetCategoryItem("MONITOR", confidenceScore, "모니터링 대상입니다.", "다음 업데이트까지 모니터링");
   return withVesselDisplay({
     ...record,
+    ...actionability,
     priority_label: priorityLabel,
     sales_priority_band: priorityLabel,
     opportunity_score: opportunityScore,
@@ -4669,7 +4858,14 @@ function buildTargetCategorySummary(records = [], { generatedAt = new Date().toI
     };
   });
   const counts = Object.fromEntries(categories.map(category => [category.code, category.count]));
-  const kpis = Object.fromEntries(TARGET_CATEGORY_DEFINITIONS.map(definition => [definition.kpi_key, counts[definition.code] || 0]));
+  const actionabilityCounts = ["CONTACT_NOW", "VERIFY_CONTACT", "MONITOR", "HOLD"].reduce((acc, code) => {
+    acc[code] = items.filter(item => item.actionability_category === code).length;
+    return acc;
+  }, {});
+  const kpis = Object.fromEntries(TARGET_CATEGORY_DEFINITIONS.map(definition => {
+    const value = actionabilityCounts[definition.code] ?? counts[definition.code] ?? 0;
+    return [definition.kpi_key, value];
+  }));
   const overlap_matrix = {};
   for (const left of TARGET_CATEGORY_DEFINITIONS) {
     overlap_matrix[left.code] = {};
@@ -4685,7 +4881,31 @@ function buildTargetCategorySummary(records = [], { generatedAt = new Date().toI
     const reason = (item.target_categories || []).find(category => category.code === "HOLD")?.reason || "unknown";
     hold_reasons[reason] = (hold_reasons[reason] || 0) + 1;
   }
-  return { items, categories, counts, kpis, overlap_matrix, hold_reasons };
+  return { items, categories, counts, kpis, actionability_counts: actionabilityCounts, overlap_matrix, hold_reasons };
+}
+
+function refreshTargetCategoryActionabilityCounts(summary = {}) {
+  const unique = new Map();
+  for (const item of [
+    ...(summary.items || []),
+    ...(summary.categories || []).flatMap(category => category.items || [])
+  ]) {
+    const key = candidateDedupeKey(item);
+    if (!unique.has(key)) unique.set(key, item);
+  }
+  const actionabilityCounts = ["CONTACT_NOW", "VERIFY_CONTACT", "MONITOR", "HOLD"].reduce((acc, code) => {
+    acc[code] = [...unique.values()].filter(item => (item.actionability_category || salesActionability(item).actionability_category) === code).length;
+    return acc;
+  }, {});
+  summary.actionability_counts = actionabilityCounts;
+  summary.kpis = {
+    ...(summary.kpis || {}),
+    contact_now_count: actionabilityCounts.CONTACT_NOW || 0,
+    verify_contact_count: actionabilityCounts.VERIFY_CONTACT || 0,
+    monitor_count: actionabilityCounts.MONITOR || 0,
+    hold_count: actionabilityCounts.HOLD || 0
+  };
+  return summary;
 }
 
 function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
@@ -4697,6 +4917,7 @@ function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().t
     record_count: Array.isArray(summary.items) ? summary.items.length : 0,
     source_table: "sales_candidates_current,opportunity_master,risk_history,rule_evaluations,explainability_snapshots,agent-followup-queue,arrival-pipeline,anchorage-waiting,staying-vessels",
     item_limit: itemLimit,
+    actionability_counts: summary.actionability_counts || {},
     categories: (summary.categories || []).map(category => ({
       code: category.code,
       label: category.label,
@@ -4710,7 +4931,11 @@ function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().t
 }
 
 function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
-  const items = (summary.items || [])
+  const actionItems = dedupeCandidateRows([
+    ...(summary.items || []),
+    ...(summary.categories || []).flatMap(category => category.items || [])
+  ]);
+  const items = actionItems
     .filter(item => item.primary_category_code !== "HOLD")
     .map((item, index) => ({
       rank: index + 1,
@@ -4720,16 +4945,23 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
       port: normalizedPortObject(item).display_name,
       port_name: normalizedPortObject(item).display_name,
       normalized_port: normalizedPortObject(item),
-      action_type: item.primary_category_code,
-      action_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+      action_type: item.actionability_category || item.primary_category_code,
+      action_label: item.actionability_label || businessLabelForCode(item.primary_category_code) || item.primary_category_label,
       category_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
       korean_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+      actionability_category: item.actionability_category,
+      actionability_label: item.actionability_label,
+      actionability_score: item.actionability_score,
+      actionability_reason: item.actionability_reason,
+      missing_action_fields: item.missing_action_fields || [],
       priority_label: item.priority_label,
       opportunity_score: item.opportunity_score,
       risk_score: item.risk_score,
       confidence_score: item.confidence_score,
-      reason_summary: item.primary_category?.reason || item.reason_summary || item.why_now || "",
-      recommended_action: item.primary_category?.recommended_action || item.recommended_action || "영업 연락 가능 여부 확인",
+      reason_summary: item.actionability_reason || item.primary_category?.reason || item.reason_summary || item.why_now || "",
+      recommended_action: item.actionability_category === "VERIFY_CONTACT"
+        ? "선사/에이전트 확인 후 영업 연락 준비"
+        : item.primary_category?.recommended_action || item.recommended_action || "영업 연락 가능 여부 확인",
       target_categories: item.target_categories || []
     }));
   return publicItemsEnvelope({
@@ -5729,6 +5961,12 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "risk_reasons",
   "environmental_source",
   "environmental_quality",
+  "actionability_category",
+  "actionability_label",
+  "actionability_score",
+  "actionability_reason",
+  "missing_action_fields",
+  "actionability_blockers",
   "ocean_port_code",
   "ocean_port_name_ko",
   "ocean_risk_score",
@@ -6326,8 +6564,10 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
         stayHours >= 72 ? "장기 체류 또는 묘박 신호가 있습니다." : null,
         Number(v.biofouling_exposure_score || v.biofouling_score || v.risk_score || 0) >= 65 ? "Biofouling 위험 신호가 높습니다." : null
       ].filter(Boolean).join(" ") || "상업 점수와 항만 체류 신호를 확인하세요.";
+      const actionability = salesActionability({ ...v, priority_label: String(v.priority_label || v.sales_priority_band || "").toUpperCase() || salesPriorityBand(priorityScore) });
       return {
         ...v,
+        ...actionability,
         port: v.port_name || v.port,
         vessel_type: firstNonEmpty(v.vessel_type, v.vsslKndNm, v.vessel_type_group, v.commercial_segment) || null,
         stay_hours: stayHours,
@@ -12010,6 +12250,7 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
       const complianceScore = watchlistComplianceScore(record);
       const changeEvents = watchlistChangeEvents(record, generatedAt);
       const band = salesPriorityBand(opportunityScore);
+      const actionability = salesActionability({ ...record, priority_label: band });
       return {
         rank: index + 1,
         watch_type: "VESSEL",
@@ -12022,6 +12263,11 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
         opportunity_score: opportunityScore,
         risk_score: riskScore,
         compliance_score: complianceScore,
+        actionability_category: actionability.actionability_category,
+        actionability_label: actionability.actionability_label,
+        actionability_score: actionability.actionability_score,
+        actionability_reason: actionability.actionability_reason,
+        missing_action_fields: actionability.missing_action_fields,
         last_seen_at: watchlistLastSeen(record, generatedAt),
         change_events: changeEvents,
         reason_summary: compactReasonSummary(record),
@@ -14489,6 +14735,7 @@ try {
       ...longStayRiskVessels.slice(0, 50)
     ])).slice(0, 50);
   }
+  refreshTargetCategoryActionabilityCounts(targetCategorySummary);
   salesCandidates = targetCategorySummary.items;
   const targetSplitCounts = buildTargetSplitCounts(allCollectedVessels);
 
@@ -15021,7 +15268,11 @@ try {
   const candidateChangesPayload = buildCandidateChangesPayload(snapshotOutputs.candidateChanges, completedAt);
   const candidateSummaryPayload = buildCandidateSummary(vessels);
   const agentFollowupQueue = buildAgentFollowupQueue(vessels);
-  const verificationQueue = buildVerificationQueue(vessels);
+  const verificationQueue = buildVerificationQueue(dedupeCandidateRows([
+    ...vessels,
+    ...salesCandidates,
+    ...longStayRiskVessels
+  ]));
   const agentFollowupPriorityPayload = buildAgentFollowupPriority({
     records: vessels,
     generatedAt: completedAt,
