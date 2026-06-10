@@ -9456,12 +9456,57 @@ function ensureFleetPenetrationStaticContract(filePath = "dashboard/api/intellig
   return { status: "upgraded", path: filePath, rows: rowCountFromPayload(upgraded) };
 }
 
+function opportunityMemoryIdentityMeta(record = {}) {
+  const imo = firstNonEmpty(record.imo, record.imo_no, record.vessel_display?.imo);
+  const mmsi = firstNonEmpty(record.mmsi, record.vessel_display?.mmsi);
+  const callSign = firstNonEmpty(record.call_sign, record.callsign, record.callSign, record.vessel_display?.call_sign);
+  if (imo) {
+    return { key: `IMO|${imo}`, match_type: "IMO", confidence: "high", missing_identity: false };
+  }
+  if (mmsi) {
+    return { key: `MMSI|${mmsi}`, match_type: "MMSI", confidence: "high", missing_identity: false };
+  }
+  const name = normalizeVesselName(firstNonEmpty(record.vessel_name, record.name, record.ship_name, record.vessel_display?.vessel_name));
+  const operator = normalizeVesselName(operatorFleetName(record));
+  const port = normalizeVesselName(recordPortName(record));
+  const normalizedCallSign = normalizeVesselName(callSign);
+  const confidence = name && normalizedCallSign ? "medium" : "low";
+  return {
+    key: `NAME_CALLSIGN_OPERATOR_PORT|${name}|${normalizedCallSign}|${operator}|${port}`,
+    match_type: normalizedCallSign ? "NAME_CALLSIGN_OPERATOR_PORT" : "NAME_OPERATOR_PORT",
+    confidence,
+    missing_identity: !name || (!imo && !mmsi && !normalizedCallSign)
+  };
+}
+
 function opportunityMemoryIdentityKey(record = {}) {
-  const imo = firstNonEmpty(record.imo, record.imo_no);
-  const mmsi = firstNonEmpty(record.mmsi);
-  if (imo) return `IMO|${imo}`;
-  if (mmsi) return `MMSI|${mmsi}`;
-  return `NAME_OPERATOR_PORT|${normalizeVesselName(firstNonEmpty(record.vessel_name, record.name, record.ship_name))}|${normalizeVesselName(operatorFleetName(record))}|${normalizeVesselName(recordPortName(record))}`;
+  return opportunityMemoryIdentityMeta(record).key;
+}
+
+function opportunityMemoryTargetTimestamp(record = {}, generatedAt = new Date().toISOString()) {
+  return firstNonEmpty(
+    record.last_seen_as_target_at,
+    record.first_seen_as_target_at,
+    record.target_seen_at,
+    record.last_seen_at,
+    record.updated_at,
+    record.collected_at,
+    record.generated_at,
+    generatedAt
+  ) || generatedAt;
+}
+
+function opportunityMemoryRunKey(record = {}, generatedAt = new Date().toISOString()) {
+  return firstNonEmpty(
+    record.run_id,
+    record.status_run_id,
+    record.collection_run_id,
+    record.dataset_run_id,
+    record.snapshot_run_id,
+    record.snapshot_id,
+    record.generated_at,
+    generatedAt
+  ) || generatedAt;
 }
 
 function opportunityMemoryCounts(record = {}) {
@@ -9490,54 +9535,83 @@ function buildOpportunityMemoryIntelligenceSummary({ records = [], generatedAt, 
   for (const record of records) {
     const score = salesPriorityScore(record);
     if (score < 45 && !isSalesCandidate(record) && repeatCallerVisitCount(record, 90) < 1) continue;
-    const key = opportunityMemoryIdentityKey(record);
+    const identity = opportunityMemoryIdentityMeta(record);
+    const key = identity.key;
     const counts = opportunityMemoryCounts(record);
     const current = byVessel.get(key) || {
       key,
       record,
+      identity_match_type: identity.match_type,
+      identity_confidence: identity.confidence,
+      missing_identity: identity.missing_identity,
       labels: new Set(),
+      source_run_ids: new Set(),
       hot_count_30d: 0,
       hot_count_90d: 0,
       warm_count_90d: 0,
       target_count_90d: 0,
+      first_seen_as_target_at: null,
+      last_seen_as_target_at: null,
       last_hot_at: null,
-      best_score: 0
+      best_score: 0,
+      merged_record_count: 0
     };
+    const runKey = opportunityMemoryRunKey(record, generatedAt);
+    current.source_run_ids.add(runKey);
+    current.merged_record_count += 1;
     current.hot_count_30d = Math.max(current.hot_count_30d, counts.hot_count_30d);
     current.hot_count_90d = Math.max(current.hot_count_90d, counts.hot_count_90d);
     current.warm_count_90d = Math.max(current.warm_count_90d, counts.warm_count_90d);
     current.target_count_90d = Math.max(current.target_count_90d, counts.target_count_90d);
     current.labels.add(salesPriorityBand(score));
     for (const label of (Array.isArray(record.previous_priority_labels) ? record.previous_priority_labels : [])) current.labels.add(label);
+    const targetSeenAt = opportunityMemoryTargetTimestamp(record, generatedAt);
+    if (targetSeenAt && (!current.first_seen_as_target_at || String(targetSeenAt) < String(current.first_seen_as_target_at))) current.first_seen_as_target_at = targetSeenAt;
+    if (targetSeenAt && (!current.last_seen_as_target_at || String(targetSeenAt) > String(current.last_seen_as_target_at))) current.last_seen_as_target_at = targetSeenAt;
     const lastHot = opportunityMemoryLastHotAt(record, generatedAt);
     if (lastHot && (!current.last_hot_at || String(lastHot) > String(current.last_hot_at))) current.last_hot_at = lastHot;
     if (score > current.best_score) {
       current.best_score = score;
       current.record = record;
     }
+    if (identity.confidence === "high") current.identity_confidence = "high";
+    else if (identity.confidence === "medium" && current.identity_confidence === "low") current.identity_confidence = "medium";
+    current.missing_identity = current.missing_identity && identity.missing_identity;
     byVessel.set(key, current);
   }
-  const vesselItems = [...byVessel.values()]
+  const allVesselItems = [...byVessel.values()]
     .map(row => {
-      const repeatTargetScore = Math.min(100, Math.round(row.best_score * 0.55 + row.hot_count_90d * 14 + row.warm_count_90d * 7 + row.target_count_90d * 4 + repeatCallerVisitCount(row.record, 90) * 5));
+      const identityPenalty = row.identity_confidence === "high" ? 0 : row.identity_confidence === "medium" ? 6 : 14;
+      const repeatTargetScore = Math.max(0, Math.min(100, Math.round(row.best_score * 0.55 + row.hot_count_90d * 14 + row.warm_count_90d * 7 + row.target_count_90d * 4 + repeatCallerVisitCount(row.record, 90) * 5 - identityPenalty)));
       return compactVesselInsight(row.record, 0, {
+        vessel_display: vesselDisplay(row.record),
+        identity_key: row.key,
+        identity_match_type: row.identity_match_type,
+        identity_confidence: row.identity_confidence,
+        missing_identity: row.missing_identity,
+        duplicate_rows_merged: Math.max(0, row.merged_record_count - 1),
+        source_run_count: row.source_run_ids.size,
         hot_count_30d: row.hot_count_30d,
         hot_count_90d: row.hot_count_90d,
         warm_count_90d: row.warm_count_90d,
         target_count_90d: row.target_count_90d,
         previous_priority_labels: [...row.labels].filter(Boolean),
+        first_seen_as_target_at: row.first_seen_as_target_at,
+        last_seen_as_target_at: row.last_seen_as_target_at,
         last_hot_at: row.last_hot_at,
         repeat_target_score: repeatTargetScore,
         opportunity_score: row.best_score,
         reason_summary: `최근 90일 대상 신호 ${row.target_count_90d}회, HOT ${row.hot_count_90d}회, WARM ${row.warm_count_90d}회`,
         recommended_action: repeatTargetScore >= 70 ? "반복 영업 기회로 보고 선사/대리점 접점을 우선 재확인" : "다음 입항과 연락 가능성을 모니터링"
       });
-    })
-    .sort((a, b) => Number(b.repeat_target_score || 0) - Number(a.repeat_target_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    });
+  const rankedVesselItems = allVesselItems
+    .sort((a, b) => Number(b.repeat_target_score || 0) - Number(a.repeat_target_score || 0) || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0));
+  const vesselItems = rankedVesselItems
     .slice(0, 10)
     .map((item, index) => ({ ...item, rank: index + 1 }));
   const byOperator = new Map();
-  for (const item of vesselItems) {
+  for (const item of allVesselItems) {
     const operator = operatorFleetName({ ...item, ...(item.vessel_display || {}) });
     const current = byOperator.get(operator) || { operator_name: operator, hot_vessels_90d: 0, target_vessels_90d: 0, repeat_target_count: 0, score_total: 0 };
     current.hot_vessels_90d += Number(item.hot_count_90d || 0) > 0 ? 1 : 0;
@@ -9557,18 +9631,136 @@ function buildOpportunityMemoryIntelligenceSummary({ records = [], generatedAt, 
     }))
     .sort((a, b) => Number(b.repeat_opportunity_score || 0) - Number(a.repeat_opportunity_score || 0))
     .slice(0, 10);
+  const duplicateIdentityGroups = allVesselItems.filter(item => Number(item.duplicate_rows_merged || 0) > 0).length;
+  const duplicateRowsMerged = allVesselItems.reduce((sum, item) => sum + Number(item.duplicate_rows_merged || 0), 0);
   return intelligenceEnvelope({
     generatedAt,
     dataMode,
-    sourceTable: "opportunity_master,commercial_opportunity_daily,sales_candidates_current,immediate_targets_current,risk_history,vessel_snapshot_daily,vessel_visits",
+    sourceTable: "opportunity_master,commercial_opportunity_daily,sales_candidates_current,immediate_targets_current,risk_history,vessel_snapshot_daily,vessel_visits,opportunity_memory,sales-pipeline",
     items: vesselItems,
     summary: {
       vessels: vesselItems,
       operators: operatorItems,
-      operator_count: operatorItems.length
+      operator_count: operatorItems.length,
+      total_tracked_vessels: allVesselItems.length,
+      repeat_target_vessels: allVesselItems.filter(item => Number(item.target_count_90d || 0) >= 2).length,
+      repeated_hot_vessels: allVesselItems.filter(item => Number(item.hot_count_90d || 0) >= 2).length,
+      duplicate_identity_groups: duplicateIdentityGroups,
+      duplicate_rows_merged: duplicateRowsMerged,
+      identity_strategy: "IMO > MMSI > normalized vessel name + call sign + operator/port"
     },
-    extra: { operators: operatorItems }
+    extra: {
+      operators: operatorItems,
+      all_vessel_count: allVesselItems.length,
+      duplicate_identity_groups: duplicateIdentityGroups,
+      duplicate_rows_merged: duplicateRowsMerged
+    }
   });
+}
+
+function upgradeOpportunityMemoryPayloadContract(payload = {}) {
+  if (!payload || typeof payload !== "object" || !Array.isArray(payload.items)) return payload;
+  const generatedAt = payload.generated_at || new Date().toISOString();
+  const sourceTable = "opportunity_master,commercial_opportunity_daily,sales_candidates_current,immediate_targets_current,risk_history,vessel_snapshot_daily,vessel_visits,opportunity_memory,sales-pipeline";
+  const items = payload.items.map((item = {}, index) => {
+    const record = { ...item, ...(item.vessel_display || {}) };
+    const identity = item.identity_key
+      ? {
+        key: item.identity_key,
+        match_type: firstNonEmpty(item.identity_match_type, "STATIC_EXISTING"),
+        confidence: firstNonEmpty(item.identity_confidence, item.imo || item.mmsi || item.vessel_display?.imo || item.vessel_display?.mmsi ? "high" : "low"),
+        missing_identity: Boolean(item.missing_identity)
+      }
+      : opportunityMemoryIdentityMeta(record);
+    const hot30 = Math.max(0, Math.round(firstFiniteNumber(item.hot_count_30d, 0) || 0));
+    const hot90 = Math.max(0, Math.round(firstFiniteNumber(item.hot_count_90d, 0) || 0));
+    const warm90 = Math.max(0, Math.round(firstFiniteNumber(item.warm_count_90d, 0) || 0));
+    const target90 = Math.max(0, Math.round(firstFiniteNumber(item.target_count_90d, hot90 + warm90, 0) || 0));
+    const firstSeen = firstNonEmpty(item.first_seen_as_target_at, item.target_seen_at, item.last_seen_at, item.vessel_display?.last_seen_at, generatedAt) || null;
+    const lastSeen = firstNonEmpty(item.last_seen_as_target_at, item.target_seen_at, item.last_seen_at, item.vessel_display?.last_seen_at, generatedAt) || null;
+    const lastHot = firstNonEmpty(item.last_hot_at, hot90 > 0 ? lastSeen : null) || null;
+    const repeatScore = Math.max(0, Math.min(100, Math.round(firstFiniteNumber(item.repeat_target_score, item.opportunity_score, 0) || 0)));
+    return {
+      ...item,
+      rank: firstFiniteNumber(item.rank, index + 1),
+      vessel_display: item.vessel_display || vesselDisplay(record),
+      identity_key: identity.key,
+      identity_match_type: identity.match_type,
+      identity_confidence: identity.confidence,
+      missing_identity: identity.missing_identity,
+      duplicate_rows_merged: Math.max(0, Math.round(firstFiniteNumber(item.duplicate_rows_merged, 0) || 0)),
+      source_run_count: Math.max(1, Math.round(firstFiniteNumber(item.source_run_count, 1) || 1)),
+      hot_count_30d: hot30,
+      hot_count_90d: hot90,
+      warm_count_90d: warm90,
+      target_count_90d: target90,
+      previous_priority_labels: Array.isArray(item.previous_priority_labels) ? item.previous_priority_labels : [item.priority_label || item.vessel_display?.priority_label].filter(Boolean),
+      first_seen_as_target_at: firstSeen,
+      last_seen_as_target_at: lastSeen,
+      last_hot_at: lastHot,
+      repeat_target_score: repeatScore,
+      reason_summary: firstNonEmpty(item.reason_summary, `최근 90일 대상 신호 ${target90}회, HOT ${hot90}회, WARM ${warm90}회`),
+      recommended_action: firstNonEmpty(item.recommended_action, item.recommended_next_action, repeatScore >= 70 ? "반복 영업 기회로 보고 선사/대리점 접점을 우선 재확인" : "다음 입항과 연락 가능성을 모니터링")
+    };
+  });
+  const operators = Array.isArray(payload.extra?.operators)
+    ? payload.extra.operators
+    : Array.isArray(payload.summary?.operators)
+      ? payload.summary.operators
+      : [...items.reduce((map, item) => {
+        const operator = operatorFleetName({ ...item, ...(item.vessel_display || {}) });
+        const current = map.get(operator) || { operator_name: operator, hot_vessels_90d: 0, target_vessels_90d: 0, repeat_target_count: 0, score_total: 0 };
+        current.hot_vessels_90d += Number(item.hot_count_90d || 0) > 0 ? 1 : 0;
+        current.target_vessels_90d += Number(item.target_count_90d || 0) > 0 ? 1 : 0;
+        current.repeat_target_count += Number(item.target_count_90d || 0) >= 2 || Number(item.hot_count_90d || 0) > 0 ? 1 : 0;
+        current.score_total += Number(item.repeat_target_score || 0);
+        map.set(operator, current);
+        return map;
+      }, new Map()).values()].map(row => ({
+        operator_name: row.operator_name,
+        hot_vessels_90d: row.hot_vessels_90d,
+        target_vessels_90d: row.target_vessels_90d,
+        repeat_target_count: row.repeat_target_count,
+        repeat_opportunity_score: row.target_vessels_90d ? Math.round(row.score_total / row.target_vessels_90d) : 0,
+        recommended_sales_angle: row.hot_vessels_90d ? "반복 HOT 선박을 묶어 선대 단위 후속 연락" : "반복 대상 선박의 다음 입항 전 연락 경로 확인"
+      }));
+  const duplicateIdentityGroups = items.filter(item => Number(item.duplicate_rows_merged || 0) > 0).length;
+  const duplicateRowsMerged = items.reduce((sum, item) => sum + Number(item.duplicate_rows_merged || 0), 0);
+  return {
+    ...payload,
+    source_table: sourceTable,
+    record_count: Number(payload.record_count ?? items.length),
+    items,
+    summary: {
+      ...(payload.summary || {}),
+      vessels: items,
+      operators,
+      operator_count: operators.length,
+      total_tracked_vessels: firstFiniteNumber(payload.summary?.total_tracked_vessels, payload.extra?.all_vessel_count, items.length),
+      repeat_target_vessels: items.filter(item => Number(item.target_count_90d || 0) >= 2).length,
+      repeated_hot_vessels: items.filter(item => Number(item.hot_count_90d || 0) >= 2).length,
+      duplicate_identity_groups: duplicateIdentityGroups,
+      duplicate_rows_merged: duplicateRowsMerged,
+      identity_strategy: "IMO > MMSI > normalized vessel name + call sign + operator/port"
+    },
+    extra: {
+      ...(payload.extra || {}),
+      operators,
+      all_vessel_count: firstFiniteNumber(payload.extra?.all_vessel_count, payload.summary?.total_tracked_vessels, items.length),
+      duplicate_identity_groups: duplicateIdentityGroups,
+      duplicate_rows_merged: duplicateRowsMerged
+    }
+  };
+}
+
+function ensureOpportunityMemoryStaticContract(filePath = "dashboard/api/intelligence/opportunity-memory.json") {
+  const payload = readJsonSafe(filePath, null);
+  if (!payload?.items) return { status: "skipped", reason: "missing_or_invalid_payload" };
+  const upgraded = upgradeOpportunityMemoryPayloadContract(payload);
+  if (JSON.stringify(upgraded) === JSON.stringify(payload)) return { status: "not_needed" };
+  fs.mkdirSync(filePath.split("/").slice(0, -1).join("/"), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(upgraded, null, 2));
+  return { status: "upgraded", path: filePath, rows: rowCountFromPayload(upgraded) };
 }
 
 function buildFleetDnaIntelligenceSummary({ records = [], fleetOpportunities = [], generatedAt, dataMode } = {}) {
@@ -13792,6 +13984,7 @@ try {
     writeApiJson(`dashboard/api/intelligence/${name}.json`, payload, report);
   }
   report.fleet_penetration_contract_upgrade = ensureFleetPenetrationStaticContract();
+  report.opportunity_memory_contract_upgrade = ensureOpportunityMemoryStaticContract();
   for (const [filePath, payload] of Object.entries(biofoulingModule.outputs)) {
     writeApiJson(filePath, payload, report);
   }
