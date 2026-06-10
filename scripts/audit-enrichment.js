@@ -398,12 +398,20 @@ async function main() {
   console.log(`- records_missing_imo_before: ${identityResolution.records_missing_imo_before ?? "unknown"}`);
   console.log(`- records_missing_mmsi_before: ${identityResolution.records_missing_mmsi_before ?? "unknown"}`);
   console.log(`- candidates_created: ${identityResolution.candidates_created ?? "unknown"}`);
+  console.log(`- reference_rows_with_imo: ${identityResolution.reference_rows_with_imo ?? "unknown"}`);
+  console.log(`- reference_rows_with_mmsi: ${identityResolution.reference_rows_with_mmsi ?? "unknown"}`);
   console.log(`- candidates_resolved: ${identityResolution.candidates_resolved ?? "unknown"}`);
+  console.log(`- resolved_imo_count: ${identityResolution.resolved_imo_count ?? "unknown"}`);
+  console.log(`- resolved_mmsi_count: ${identityResolution.resolved_mmsi_count ?? "unknown"}`);
   console.log(`- applied_high_confidence: ${identityResolution.applied_high_confidence ?? "unknown"}`);
+  console.log(`- applied_imo_count: ${identityResolution.applied_imo_count ?? "unknown"}`);
+  console.log(`- applied_mmsi_count: ${identityResolution.applied_mmsi_count ?? "unknown"}`);
   console.log(`- needs_review: ${identityResolution.needs_review ?? "unknown"}`);
   console.log(`- conflicts: ${identityResolution.conflicts ?? "unknown"}`);
   console.log(`- recovered_imo_by_source: ${JSON.stringify(recoveredImoBySource)}`);
   console.log(`- recovered_mmsi_by_source: ${JSON.stringify(recoveredMmsiBySource)}`);
+  console.log(`- blockers_by_reason: ${JSON.stringify(identityResolution.blockers_by_reason || identityResolution.failed_recovery_reasons || {})}`);
+  console.log(`- reference_source_identifier_counts: ${JSON.stringify(identityResolution.reference_source_identifier_counts || {})}`);
   console.log(`- final_imo_coverage: ${identityResolution.final_imo_coverage ?? "unknown"}%`);
   console.log(`- final_mmsi_coverage: ${identityResolution.final_mmsi_coverage ?? "unknown"}%`);
   if (identityResolution.candidates_created > 0 && Number(identityResolution.candidates_resolved || 0) === 0) {

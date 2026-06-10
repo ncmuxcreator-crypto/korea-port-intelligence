@@ -916,6 +916,12 @@ function addReference(indexes, reference) {
   add(indexes.byMmsi, reference.mmsi);
   add(indexes.byCallSign, reference.call_sign);
   add(indexes.byName, reference.normalized_vessel_name);
+  const nameCallSignKey = `${reference.normalized_vessel_name || ""}|${reference.call_sign || ""}`;
+  add(indexes.byNameCallSign, nameCallSignKey);
+  const nameGtTypeKey = `${reference.normalized_vessel_name || ""}|${Number(reference.gt || 0)}|${normalizeTypeToken(reference.vessel_type_group || reference.vessel_type)}`;
+  if (reference.normalized_vessel_name && Number(reference.gt || 0) > 0 && normalizeTypeToken(reference.vessel_type_group || reference.vessel_type)) {
+    add(indexes.byNameGtType, nameGtTypeKey);
+  }
   const typeKey = `${reference.normalized_vessel_name || ""}|${normalizeTypeToken(reference.vessel_type_group || reference.vessel_type)}|${reference.port_code || ""}`;
   add(indexes.byNameTypePort, typeKey);
 }
@@ -936,6 +942,8 @@ function createIdentityReferenceIndexes() {
     byMmsi: new Map(),
     byCallSign: new Map(),
     byName: new Map(),
+    byNameCallSign: new Map(),
+    byNameGtType: new Map(),
     byNameTypePort: new Map(),
     source_counts: {}
   };
@@ -993,6 +1001,14 @@ function buildIdentityReferenceIndexes(records = [], additionalReferences = [], 
   diagnostics.reference_rows_with_imo = indexes.references.filter(row => row.imo).length;
   diagnostics.reference_rows_with_mmsi = indexes.references.filter(row => row.mmsi).length;
   diagnostics.reference_source_counts = indexes.source_counts;
+  diagnostics.reference_source_identifier_counts = indexes.references.reduce((acc, row) => {
+    const source = row.source || "unknown";
+    acc[source] = acc[source] || { rows: 0, with_imo: 0, with_mmsi: 0 };
+    acc[source].rows += 1;
+    if (row.imo) acc[source].with_imo += 1;
+    if (row.mmsi) acc[source].with_mmsi += 1;
+    return acc;
+  }, {});
   return indexes;
 }
 
@@ -1041,9 +1057,19 @@ function resolveRecordIdentity(record = {}, indexes = createIdentityReferenceInd
   const port = String(record.port_code || record.prtAgCd || "").trim();
   const attempts = [];
 
-  const evaluate = (matchType, candidates, confidence, reason, requireUnique = true) => {
+  const evaluate = (matchType, candidates, confidence, reason, requireUnique = true, options = {}) => {
     const refs = (candidates || []).filter(ref => ref?.imo || ref?.mmsi);
     if (!refs.length) return null;
+    const requiredFields = options.requiredFields || [];
+    if (requiredFields.length && !refs.some(ref => requiredFields.every(field => ref?.[field]))) {
+      return {
+        status: "unresolved",
+        recovery_confidence: 0,
+        recovery_match_type: matchType,
+        recovery_reason: `${reason}; reference missing required ${requiredFields.join("/")}`,
+        apply: false
+      };
+    }
     const conflict = candidateConflict(refs);
     if (conflict && requireUnique) {
       return {
@@ -1068,25 +1094,32 @@ function resolveRecordIdentity(record = {}, indexes = createIdentityReferenceInd
       recovery_reason: reason,
       conflict_values: conflict,
       reference: best,
-      apply: confidence >= 80 && !conflict && Boolean(recoveredImo || recoveredMmsi)
+      apply: confidence >= 80 && !conflict && Boolean(recoveredImo || recoveredMmsi) && options.autoApply !== false
     };
   };
 
   if (currentImo) attempts.push(evaluate("imo_exact", indexes.byImo.get(currentImo), 100, "exact IMO matched reference MMSI"));
   if (callSign) attempts.push(evaluate("call_sign_exact", indexes.byCallSign.get(callSign), 92, "exact call_sign matched reference identity"));
-  if (currentMmsi) attempts.push(evaluate("mmsi_exact", indexes.byMmsi.get(currentMmsi), 100, "exact MMSI matched reference IMO"));
-  if (name && Number(record.gt || record.grtg || record.intrlGrtg || 0) > 0) {
-    const gtMatches = (indexes.byName.get(name) || []).filter(ref => gtWithinPct(record.gt || record.grtg || record.intrlGrtg, ref.gt));
-    attempts.push(evaluate("normalized_name_gt_5pct", gtMatches, 88, "normalized vessel name and GT within 5% matched reference identity"));
+  if (name && callSign) {
+    attempts.push(evaluate("normalized_name_call_sign_exact", indexes.byNameCallSign.get(`${name}|${callSign}`), 90, "normalized vessel name and exact call_sign matched reference identity"));
+  }
+  if (currentMmsi) attempts.push(evaluate("mmsi_exact", indexes.byMmsi.get(currentMmsi), 100, "exact MMSI matched reference IMO", true, { requiredFields: ["imo"] }));
+  const recordGt = Number(record.gt || record.grtg || record.intrlGrtg || 0);
+  if (name && recordGt > 0 && type) {
+    const gtTypeMatches = (indexes.byNameGtType.get(`${name}|${recordGt}|${type}`) || [])
+      .filter(ref => gtWithinPct(recordGt, ref.gt) && normalizeTypeToken(ref.vessel_type_group || ref.vessel_type) === type);
+    const fallbackGtTypeMatches = gtTypeMatches.length ? gtTypeMatches : (indexes.byName.get(name) || [])
+      .filter(ref => gtWithinPct(recordGt, ref.gt) && normalizeTypeToken(ref.vessel_type_group || ref.vessel_type) === type);
+    attempts.push(evaluate("normalized_name_gt_5pct_type", fallbackGtTypeMatches, 88, "normalized vessel name, GT within 5%, and vessel type matched reference identity"));
   }
   if (name && type && port) {
-    attempts.push(evaluate("normalized_name_type_port", indexes.byNameTypePort.get(`${name}|${type}|${port}`), 82, "normalized vessel name, vessel type, and port matched reference identity"));
+    attempts.push(evaluate("normalized_name_type_port", indexes.byNameTypePort.get(`${name}|${type}|${port}`), 74, "normalized vessel name, vessel type, and port matched reference identity; manual review required", true, { autoApply: false }));
   }
   if (name || callSign) {
     const scoreMatches = indexes.references
       .map(reference => ({ reference, result: scoreMatch(record, reference, { timeWindowHours: 168, strongTimeMatchHours: 24 }) }))
       .filter(match => match.result.score >= 85 && (match.reference.imo || match.reference.mmsi));
-    attempts.push(evaluate("score_match_high_confidence", scoreMatches.map(match => match.reference), 85, "high-confidence scoreMatch result matched reference identity"));
+    attempts.push(evaluate("score_match_high_confidence", scoreMatches.map(match => match.reference), 79, "high-confidence scoreMatch result matched reference identity; manual review required", true, { autoApply: false }));
   }
 
   const usable = attempts.filter(Boolean).sort((left, right) => Number(right.recovery_confidence || 0) - Number(left.recovery_confidence || 0));
@@ -1116,6 +1149,11 @@ export async function resolveImoMmsiCandidates(records = [], options = {}) {
     recovered_imo_by_source: {},
     recovered_mmsi_by_source: {},
     failed_recovery_reasons: {},
+    blockers_by_reason: {},
+    resolved_imo_count: 0,
+    resolved_mmsi_count: 0,
+    applied_imo_count: 0,
+    applied_mmsi_count: 0,
     reference_rows_loaded: 0,
     reference_rows_with_imo: 0,
     reference_rows_with_mmsi: 0,
@@ -1127,7 +1165,7 @@ export async function resolveImoMmsiCandidates(records = [], options = {}) {
     current_dataset: records.some(record => normalizeExplicitImo(record.imo) || normalizeExplicitMmsi(record.mmsi)),
     vessel_master: Number(diagnostics.vessel_master_reference_rows || 0) > 0,
     vessel_master_seed: Number(diagnostics.local_seed_reference_rows || 0) > 0,
-    source_csv: indexes.references.some(ref => /source[_-]?csv|csv/i.test(ref.source)),
+    source_csv: indexes.references.some(ref => /source[_-]?csv|csv|vessel_master_seed/i.test(ref.source)),
     vessel_spec: indexes.references.some(ref => /vessel[_-]?spec|spec/i.test(ref.source)),
     mof_ais_info: indexes.references.some(ref => /mof[_-]?ais[_-]?info|ais[_-]?info/i.test(ref.source))
   };
@@ -1155,6 +1193,7 @@ export async function resolveImoMmsiCandidates(records = [], options = {}) {
     if (resolution.status === "unresolved") {
       const reason = resolution.recovery_reason || "unresolved";
       diagnostics.failed_recovery_reasons[reason] = (diagnostics.failed_recovery_reasons[reason] || 0) + 1;
+      diagnostics.blockers_by_reason[reason] = (diagnostics.blockers_by_reason[reason] || 0) + 1;
     }
     if (!resolution.apply) {
       return {
@@ -1165,10 +1204,14 @@ export async function resolveImoMmsiCandidates(records = [], options = {}) {
       };
     }
     diagnostics.applied_high_confidence += 1;
+    if (resolution.recovered_imo) diagnostics.resolved_imo_count += 1;
+    if (resolution.recovered_mmsi) diagnostics.resolved_mmsi_count += 1;
     if (resolution.recovered_imo && !record.imo) {
+      diagnostics.applied_imo_count += 1;
       diagnostics.recovered_imo_by_source[resolution.recovery_source] = (diagnostics.recovered_imo_by_source[resolution.recovery_source] || 0) + 1;
     }
     if (resolution.recovered_mmsi && !record.mmsi) {
+      diagnostics.applied_mmsi_count += 1;
       diagnostics.recovered_mmsi_by_source[resolution.recovery_source] = (diagnostics.recovered_mmsi_by_source[resolution.recovery_source] || 0) + 1;
     }
     return {

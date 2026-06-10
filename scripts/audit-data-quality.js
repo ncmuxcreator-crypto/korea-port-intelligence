@@ -270,11 +270,19 @@ function pipelineIdentityStats() {
     vessel_master_cache_imo_recovered: number(runtime.vessel_master_cache?.imo_recovered_count ?? runtime.imo_recovered_count, 0),
     candidates_created: number(identityResolution.candidates_created, 0),
     candidates_resolved: number(identityResolution.candidates_resolved ?? recovery.resolved_count, 0),
+    reference_rows_with_imo: number(identityResolution.reference_rows_with_imo, 0),
+    reference_rows_with_mmsi: number(identityResolution.reference_rows_with_mmsi, 0),
+    resolved_imo_count: number(identityResolution.resolved_imo_count, 0),
+    resolved_mmsi_count: number(identityResolution.resolved_mmsi_count, 0),
     applied_high_confidence: number(identityResolution.applied_high_confidence ?? recovery.applied_to_snapshots_count, 0),
+    applied_imo_count: number(identityResolution.applied_imo_count, 0),
+    applied_mmsi_count: number(identityResolution.applied_mmsi_count, 0),
     needs_review: number(identityResolution.needs_review ?? recovery.needs_review_count, 0),
     conflicts: number(identityResolution.conflicts ?? recovery.conflicts_count, 0),
     recovered_imo_count_by_source: identityResolution.recovered_imo_by_source || recovery.recovered_imo_count_by_source || runtime.vessel_master_cache?.recovered_imo_count_by_source || {},
     recovered_mmsi_count_by_source: identityResolution.recovered_mmsi_by_source || recovery.recovered_mmsi_count_by_source || {},
+    reference_source_identifier_counts: identityResolution.reference_source_identifier_counts || {},
+    blockers_by_reason: identityResolution.blockers_by_reason || identityResolution.failed_recovery_reasons || {},
     final_imo_coverage: number(identityResolution.final_imo_coverage, 0),
     final_mmsi_coverage: number(identityResolution.final_mmsi_coverage, 0),
     source_availability: identityResolution.source_availability || recovery.source_availability || {},
@@ -320,6 +328,7 @@ function topWarnings({ counts, coverageMap, startup, identity }) {
   if (counts.long_stay_risk_count === 0 && counts.staying_vessels_count > 0) add("long_stay_risk_count = 0 while staying_vessels_count > 0");
   if (identity.vessels_with_imo_or_mmsi === 0 && identity.call_sign_without_identity > 0) add(`call sign exists but no IMO/MMSI recovered (${identity.call_sign_without_identity} rows)`);
   if (identity.identity_candidates_saved > 0 && identity.recovered_imo_count_reported === 0) add("identity candidates are saved but no verified IMO recovery is reported");
+  if (identity.candidates_created > 0 && identity.reference_rows_with_imo === 0 && identity.reference_rows_with_mmsi === 0) add("IMO/MMSI recovery has candidates, but reference_rows_with_imo and reference_rows_with_mmsi are both 0");
   if (identity.imo_recovery_queue_rows_saved > 0 && identity.vessel_master_cache_imo_recovered === 0) add("IMO recovery queue rows are pending review; they did not produce recovered IMO/MMSI");
   if (identity.candidates_created > 0 && identity.candidates_resolved === 0) add("IMO/MMSI recovery resolver created candidates but resolved 0 records");
   if (identity.imo_recovery_queue_rows_saved > 0 && identity.imo_recovery_resolved_rows_saved === 0 && identity.candidates_resolved === 0) add("imo_recovery_queue appears to contain only pending/unresolved rows");
