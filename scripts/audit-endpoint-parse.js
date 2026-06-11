@@ -202,19 +202,21 @@ if (manifestMismatches.length) {
 }
 
 const invalid = entries.filter(entry => !entry.valid_json);
+const rootObjectFailures = entries.filter(entry => /root_object_required/.test(entry.problem || ""));
 const strictSchema = entries.filter(entry => STRICT_ENDPOINTS.has(entry.path) && !entry.schema_valid);
 const manifestWrong = manifestMismatches.filter(mismatch => /valid_json|parse|actual file|schema_valid|record_count|item_count|status/.test(mismatch.problem));
 const large = entries.filter(entry => entry.status === "TOO_LARGE");
 
-console.log(`\nSummary: files=${entries.length}, invalid_json=${invalid.length}, strict_schema_failures=${strictSchema.length}, too_large=${large.length}, manifest_mismatches=${manifestMismatches.length}`);
+console.log(`\nSummary: files=${entries.length}, invalid_json=${invalid.length}, root_object_failures=${rootObjectFailures.length}, strict_schema_failures=${strictSchema.length}, too_large=${large.length}, manifest_mismatches=${manifestMismatches.length}`);
 if (large.length) {
   console.log("Heavy endpoint warnings:");
   for (const entry of large.slice(0, 30)) console.log(`- ${entry.path}: ${Math.round(entry.bytes / 1024)}KB (summary/detail split recommended)`);
 }
 
-if (invalid.length || strictSchema.length || manifestWrong.length) {
+if (invalid.length || rootObjectFailures.length || strictSchema.length || manifestWrong.length) {
   console.error("\nEndpoint parse audit failed:");
   for (const entry of invalid) console.error(`- ${entry.path}: ${entry.problem}`);
+  for (const entry of rootObjectFailures) console.error(`- ${entry.path}: ${entry.problem}`);
   for (const entry of strictSchema) console.error(`- ${entry.path}: ${entry.problem}`);
   for (const mismatch of manifestWrong) console.error(`- ${mismatch.path}: ${mismatch.problem}`);
   process.exit(1);

@@ -110,7 +110,8 @@ function findBadValues(value, currentPath = "$", found = []) {
 function schemaProblems(relativePath, payload, firstChar) {
   const problems = [];
   const critical = CRITICAL_ENDPOINTS.has(relativePath);
-  if (!payload || typeof payload !== "object" || (critical && Array.isArray(payload))) {
+  if (firstChar !== "{") problems.push("first_char_not_object");
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     problems.push("root_object_required");
     return problems;
   }
@@ -182,7 +183,7 @@ for (const entry of entries) {
   ].join(" | "));
 }
 
-const failures = entries.filter(entry => !entry.parseOk || (CRITICAL_ENDPOINTS.has(entry.file) && !entry.schemaOk) || /leading_text_before_json_root|bad_values/.test(entry.problem));
+const failures = entries.filter(entry => !entry.parseOk || !entry.schemaOk || /leading_text_before_json_root|bad_values|root_object_required|first_char_not_object/.test(entry.problem));
 
 console.log(`\nSummary: files=${entries.length}, failures=${failures.length}`);
 if (failures.length) {

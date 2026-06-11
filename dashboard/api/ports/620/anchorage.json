@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T02:04:48.874Z",
-  "record_count": 34,
-  "item_count": 34,
+  "generated_at": "2026-06-11T02:24:24.066Z",
+  "record_count": 35,
+  "item_count": 35,
   "items": [
     {
       "vessel_id": "CALL-3E7083",
@@ -589,7 +589,7 @@
       "port_code": "620",
       "port_name": "여수",
       "anchorage_name": "D-2정박지",
-      "anchorage_hours": 1.6,
+      "anchorage_hours": 1.9,
       "anchorage_days": 0.1,
       "anchorage_density_score": 21,
       "idle_risk_score": 1,
@@ -1283,6 +1283,49 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "port_display_name": "여수",
+      "display_name": "여수"
+    },
+    {
+      "vessel_id": "CALL-240019",
+      "vessel_name": "천왕",
+      "port_code": "620",
+      "port_name": "여수",
+      "anchorage_name": "D-1정박지",
+      "anchorage_hours": 0,
+      "anchorage_days": 0,
+      "anchorage_density_score": 20,
+      "idle_risk_score": 0,
+      "total_sales_priority_score": 34,
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "REPEAT_CALLER_SIGNAL",
+        "REPEAT_CALLER",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "TANKER_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
       ],
       "normalized_port": {
         "port_code": "620",

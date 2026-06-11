@@ -2925,10 +2925,16 @@ function parseDashboardJsonDocument(filePath, text) {
   if (!["{", "["].includes(firstChar)) {
     throw new Error(`leading_text_before_json_root:first_char=${firstChar}`);
   }
+  if (normalized.startsWith("dashboard/api/") && normalized.endsWith(".json") && firstChar !== "{") {
+    throw new Error("dashboard_api_json_root_must_start_with_object");
+  }
   if (isCriticalDashboardJsonPath(normalized) && firstChar !== "{") {
     throw new Error("critical_endpoint_root_must_start_with_object");
   }
   const parsed = JSON.parse(text);
+  if (normalized.startsWith("dashboard/api/") && normalized.endsWith(".json") && (!parsed || typeof parsed !== "object" || Array.isArray(parsed))) {
+    throw new Error(`dashboard_api_json_root_object_required:${dashboardJsonRootType(parsed)}`);
+  }
   if (isCriticalDashboardJsonPath(normalized) && (!parsed || typeof parsed !== "object" || Array.isArray(parsed))) {
     throw new Error(`critical_endpoint_root_object_required:${dashboardJsonRootType(parsed)}`);
   }
@@ -3063,6 +3069,46 @@ function withEndpointItemCount(payload) {
 
 function dashboardRootObjectPayload(payload) {
   return Array.isArray(payload) ? withEndpointItemCount(payload) : payload;
+}
+
+function listDashboardApiJsonFiles(dir = "dashboard/api") {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = `${dir}/${entry.name}`.replace(/\\/g, "/");
+    if (entry.isDirectory()) out.push(...listDashboardApiJsonFiles(fullPath));
+    else if (entry.isFile() && entry.name.endsWith(".json")) out.push(fullPath);
+  }
+  return out;
+}
+
+function repairDashboardApiRootObjects({ generatedAt = new Date().toISOString() } = {}) {
+  const repaired = [];
+  for (const filePath of listDashboardApiJsonFiles("dashboard/api")) {
+    if (!fs.existsSync(filePath)) continue;
+    const text = fs.readFileSync(filePath, "utf8");
+    const firstChar = firstJsonCharacter(text);
+    if (firstChar === "{") continue;
+    if (firstChar !== "[") continue;
+    try {
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) continue;
+      const payload = {
+        schema_version: PUBLIC_API_SCHEMA_VERSION,
+        generated_at: generatedAt,
+        record_count: parsed.length,
+        item_count: parsed.length,
+        source_table: "legacy_array_root_repaired",
+        status: parsed.length ? "ok" : "empty",
+        items: parsed
+      };
+      writeDashboardJson(filePath, payload);
+      repaired.push(filePath);
+    } catch (error) {
+      recordDashboardJsonWriteError(filePath, error, null);
+    }
+  }
+  return repaired;
 }
 
 function sanitizeDashboardJsonValue(value, key = "") {
@@ -16536,6 +16582,15 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
+  const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
+  if (repairedJsonRoots.length) {
+    report.dashboard_json_root_repairs = {
+      status: "repaired",
+      record_count: repairedJsonRoots.length,
+      files: repairedJsonRoots
+    };
+    writeRuntimeDiagnosticJson("dashboard/api/json-root-repairs.json", report.dashboard_json_root_repairs, finalRunOrigin);
+  }
   writeEndpointManifest(completedAt);
   writeDashboardJson("data/pipeline-report.json", report);
   writeDashboardJson(`data/reports/${today}.json`, report);

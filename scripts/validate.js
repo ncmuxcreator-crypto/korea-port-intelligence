@@ -41,6 +41,17 @@ function readOutputJson(file) {
   return JSON.parse(fs.readFileSync(outputPath(file), "utf8"));
 }
 
+function firstJsonCharacter(text = "") {
+  const match = String(text || "").replace(/^\uFEFF/, "").match(/\S/);
+  return match ? match[0] : "";
+}
+
+function dashboardJsonRootType(value) {
+  if (Array.isArray(value)) return "array";
+  if (value === null) return "null";
+  return typeof value;
+}
+
 function usingDebugOutput(file) {
   return outputPath(file).replace(/\\/g, "/").startsWith(`${DEBUG_API_DIR}/`);
 }
@@ -264,10 +275,18 @@ function validateCriticalDashboardEndpoint(file, payload) {
 
 for (const file of listDashboardApiJson()) {
   let payload;
+  const rawText = fs.readFileSync(file, "utf8");
+  const firstChar = firstJsonCharacter(rawText);
+  if (firstChar !== "{") {
+    throw new Error(`Dashboard API JSON must start with object root: ${file}; first_char=${firstChar || "empty"}`);
+  }
   try {
-    payload = JSON.parse(fs.readFileSync(file, "utf8"));
+    payload = JSON.parse(rawText);
   } catch (error) {
     throw new Error(`Invalid dashboard API JSON: ${file}: ${error.message}`);
+  }
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error(`Dashboard API JSON must be object root: ${file}; root_type=${dashboardJsonRootType(payload)}`);
   }
   const undefinedLike = findUndefinedLikeJsonValue(payload);
   if (undefinedLike.length) {
@@ -354,13 +373,13 @@ function isProtectedFailedRun() {
 if (!Array.isArray(data)) {
   throw new Error("Invalid latest-lite.json");
 }
-if (!Array.isArray(vessels) && !Array.isArray(vessels?.data)) {
+if (!Array.isArray(vessels) && vesselRows.length === 0) {
   throw new Error("Invalid vessels.json");
 }
-if (!Array.isArray(allCollectedVessels) && !Array.isArray(allCollectedVessels?.data)) {
+if (!Array.isArray(allCollectedVessels) && allCollectedRows.length === 0) {
   throw new Error("Invalid all-collected-vessels.json");
 }
-if (!Array.isArray(targetVessels) && !Array.isArray(targetVessels?.data)) {
+if (!Array.isArray(targetVessels) && targetRows.length === 0) {
   throw new Error("Invalid target-vessels.json");
 }
 

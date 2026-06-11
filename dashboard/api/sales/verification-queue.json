@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T02:04:13.722Z",
+  "generated_at": "2026-06-11T02:23:42.482Z",
   "data_mode": "live",
-  "record_count": 103,
+  "record_count": 105,
   "source_table": "operator_contact_history,commercial_leads,agent-followup-queue,sales_candidates_current,opportunity_master",
   "items": [
     {
@@ -2350,219 +2350,6 @@
     },
     {
       "rank": 12,
-      "vessel_name": "KOBAYASHI MARU",
-      "call_sign": "V7A2046",
-      "company": "선양해운 주식회사",
-      "agent": "선양해운 주식회사",
-      "port": "대산",
-      "port_code": "621",
-      "port_name": "대산",
-      "port_display_name": "대산",
-      "normalized_port": {
-        "port_code": "621",
-        "port_name": "대산",
-        "display_name": "대산",
-        "raw_port": "Daesan",
-        "raw_aliases": [
-          "Daesan",
-          "대산"
-        ]
-      },
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 64,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "opportunity_score": 46,
-      "commercial_value_score": 46,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "BIOFOULING_EXPOSURE_HIGH"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "선양해운 주식회사",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person",
-        "operator_display",
-        "imo",
-        "mmsi"
-      ],
-      "source_names": [
-        "PORT-MIS VsslEtrynd5 Daesan I",
-        "port_operation_daesan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "data_sources": [
-        "PORT-MIS VsslEtrynd5 Daesan I",
-        "port_operation_daesan_i",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "vessel_display": {
-        "vessel_name": "KOBAYASHI MARU",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7A2046",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "operator": "선양해운 주식회사",
-        "operator_display": "선양해운 주식회사",
-        "operator_source": "company",
-        "operator_confidence": 70,
-        "company": "선양해운 주식회사",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "선양해운 주식회사",
-        "current_port": "대산",
-        "raw_current_port": "대산",
-        "current_port_korean": "대산",
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "Daesan",
-          "raw_aliases": [
-            "Daesan",
-            "대산"
-          ]
-        },
-        "port_display_name": "대산",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "opportunity_score": 46,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL",
-          "HIGH_VALUE_GT_30000_PLUS",
-          "BULK_OR_TANKER",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "ANCHORAGE_CLASSIFIED",
-          "AGENT_IDENTIFIED",
-          "CONTACT_PATH_AVAILABLE",
-          "PREDICTED_CONGESTION_RISK"
-        ],
-        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
-        "confidence": "-",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_sources": [
-          "PORT-MIS VsslEtrynd5 Daesan I",
-          "port_operation_daesan_i",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "621",
-        "port_name": "대산",
-        "display_name": "대산"
-      },
-      "display_name": "대산"
-    },
-    {
-      "rank": 13,
       "vessel_name": "BERGE DOI INTHANON",
       "call_sign": "HOYL",
       "company": "(주)협성상운",
@@ -2773,6 +2560,219 @@
         "display_name": "울산"
       },
       "display_name": "울산"
+    },
+    {
+      "rank": 13,
+      "vessel_name": "KOBAYASHI MARU",
+      "call_sign": "V7A2046",
+      "company": "선양해운 주식회사",
+      "agent": "선양해운 주식회사",
+      "port": "대산",
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan",
+          "대산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 64,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 46,
+      "commercial_value_score": 46,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "선양해운 주식회사",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "PORT-MIS VsslEtrynd5 Daesan I",
+        "port_operation_daesan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "PORT-MIS VsslEtrynd5 Daesan I",
+        "port_operation_daesan_i",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "KOBAYASHI MARU",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7A2046",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "선양해운 주식회사",
+        "operator_display": "선양해운 주식회사",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "선양해운 주식회사",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "선양해운 주식회사",
+        "current_port": "대산",
+        "raw_current_port": "대산",
+        "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "Daesan",
+          "raw_aliases": [
+            "Daesan",
+            "대산"
+          ]
+        },
+        "port_display_name": "대산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "opportunity_score": 46,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "HIGH_VALUE_GT_30000_PLUS",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_CONGESTION_RISK"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "PORT-MIS VsslEtrynd5 Daesan I",
+          "port_operation_daesan_i",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
     },
     {
       "rank": 14,
@@ -13000,6 +13000,219 @@
     },
     {
       "rank": 62,
+      "vessel_name": "GRAND WINNER 7",
+      "call_sign": "A8MR8",
+      "company": "삼진에이전시",
+      "agent": "삼진에이전시",
+      "port": "울산",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 62,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 32,
+      "commercial_value_score": 32,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LONG_PORT_STAY"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "삼진에이전시",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "GRAND WINNER 7",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "A8MR8",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "삼진에이전시",
+        "operator_display": "삼진에이전시",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "삼진에이전시",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "삼진에이전시",
+        "current_port": "울산",
+        "raw_current_port": "울산",
+        "current_port_korean": "울산",
+        "normalized_port": {
+          "port_code": "820",
+          "port_name": "울산",
+          "display_name": "울산",
+          "raw_port": "Ulsan",
+          "raw_aliases": [
+            "Ulsan",
+            "울산"
+          ]
+        },
+        "port_display_name": "울산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "opportunity_score": 32,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_CONGESTION_RISK",
+          "ANCHORAGE_PROBABILITY_HIGH"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산"
+      },
+      "display_name": "울산"
+    },
+    {
+      "rank": 63,
       "vessel_name": "청담",
       "call_sign": "200033",
       "company": "태진에너지",
@@ -13212,7 +13425,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 63,
+      "rank": 64,
       "vessel_name": "우원호",
       "call_sign": "200035",
       "company": "성은해운 주식회사",
@@ -13425,7 +13638,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 64,
+      "rank": 65,
       "vessel_name": "삼원골드",
       "call_sign": "030968",
       "company": "삼원해운(주)",
@@ -13638,7 +13851,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 65,
+      "rank": 66,
       "vessel_name": "HAINA PATRIOT",
       "call_sign": "WDM3306",
       "company": "동방선박(주)",
@@ -13851,7 +14064,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 66,
+      "rank": 67,
       "vessel_name": "코리아비전",
       "call_sign": "D7KV",
       "company": "(주)세바해운",
@@ -14064,7 +14277,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 67,
+      "rank": 68,
       "vessel_name": "VAST OCEAN",
       "call_sign": "5LFT9",
       "company": "(주)신성해운",
@@ -14277,7 +14490,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 68,
+      "rank": 69,
       "vessel_name": "ULTRA KUROSHIO",
       "call_sign": "HOA3374",
       "company": "코리아머천트쉬핑(주)",
@@ -14490,7 +14703,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 69,
+      "rank": 70,
       "vessel_name": "DS PROSPER",
       "call_sign": "3EEY7",
       "company": "씨레인보우인터내셔널(주)",
@@ -14703,7 +14916,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 70,
+      "rank": 71,
       "vessel_name": "제1한미르호",
       "call_sign": "DSNA3",
       "company": "(주)한미르해운",
@@ -14916,7 +15129,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 71,
+      "rank": 72,
       "vessel_name": "HUA YUN 1",
       "call_sign": "3EWQ4",
       "company": "씨레인보우인터내셔널(주)",
@@ -15129,7 +15342,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 72,
+      "rank": 73,
       "vessel_name": "VOYAGER NO.1",
       "call_sign": "3E4643",
       "company": "주식회사 유엠에스",
@@ -15342,7 +15555,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 73,
+      "rank": 74,
       "vessel_name": "PACIFIC TIANJIN",
       "call_sign": "9V8011",
       "company": "흥아라인(주)",
@@ -15555,7 +15768,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 74,
+      "rank": 75,
       "vessel_name": "뉴 챌린지호",
       "call_sign": "DSQA4",
       "company": "(주)세바해운",
@@ -15768,7 +15981,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 75,
+      "rank": 76,
       "vessel_name": "우찬",
       "call_sign": "161008",
       "company": "우림해운(주)",
@@ -15981,7 +16194,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 76,
+      "rank": 77,
       "vessel_name": "인트란스 에디",
       "call_sign": "141033",
       "company": "(주)인트란스",
@@ -16194,7 +16407,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 77,
+      "rank": 78,
       "vessel_name": "정성",
       "call_sign": "240008",
       "company": "정성해운 주식회사",
@@ -16407,7 +16620,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 78,
+      "rank": 79,
       "vessel_name": "V GALAXY",
       "call_sign": "3EHM9",
       "company": "엘에스해운(주)",
@@ -16620,7 +16833,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 79,
+      "rank": 80,
       "vessel_name": "ANGELIC ANNA",
       "call_sign": "5LJZ4",
       "company": "윌헴슨협운포트서비스 주식회사",
@@ -16833,7 +17046,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 80,
+      "rank": 81,
       "vessel_name": "이에스 로즈",
       "call_sign": "088443",
       "company": "에스토라해운(주)",
@@ -17046,7 +17259,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 81,
+      "rank": 82,
       "vessel_name": "EN JI 17",
       "call_sign": "9LU2835",
       "company": "씨레인보우인터내셔널(주)",
@@ -17259,7 +17472,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 82,
+      "rank": 83,
       "vessel_name": "MPV THALIA",
       "call_sign": "D7OK",
       "company": "에이치엠엠(주)",
@@ -17472,7 +17685,7 @@
       "display_name": "포항"
     },
     {
-      "rank": 83,
+      "rank": 84,
       "vessel_name": "해누리",
       "call_sign": "D7YA",
       "company": "비에스해운 주식회사",
@@ -17685,7 +17898,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 84,
+      "rank": 85,
       "vessel_name": "엠에스클린",
       "call_sign": "224814",
       "company": "명신해운주식회사",
@@ -17898,7 +18111,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 85,
+      "rank": 86,
       "vessel_name": "모닝캄",
       "call_sign": "DSFU9",
       "company": "수성해운(주)",
@@ -18111,7 +18324,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 86,
+      "rank": 87,
       "vessel_name": "GOLDEN WINGS",
       "call_sign": "DSQJ3",
       "company": "신양상선(주)",
@@ -18324,7 +18537,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 87,
+      "rank": 88,
       "vessel_name": "OC GRANDE",
       "call_sign": "V7EX8",
       "company": "현대글로비스주식회사",
@@ -18537,7 +18750,220 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 88,
+      "rank": 89,
+      "vessel_name": "코리아 빅토리",
+      "call_sign": "D7TJ",
+      "company": "(주)세바해운",
+      "agent": "(주)세바해운",
+      "port": "대산",
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan",
+          "대산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 26,
+      "commercial_value_score": 26,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "ETA_24_72H_WINDOW",
+        "LONG_PORT_STAY",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "STAY_48H_PLUS"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "(주)세바해운",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "코리아 빅토리",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "D7TJ",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "(주)세바해운",
+        "operator_display": "(주)세바해운",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "(주)세바해운",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "(주)세바해운",
+        "current_port": "대산",
+        "raw_current_port": "대산",
+        "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "Daesan",
+          "raw_aliases": [
+            "Daesan",
+            "대산"
+          ]
+        },
+        "port_display_name": "대산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "opportunity_score": 26,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY",
+          "ETA_24_72H_WINDOW",
+          "LONG_PORT_STAY",
+          "BERTH_WINDOW_AVAILABLE",
+          "Low-speed or waiting condition",
+          "Workable UWC window available"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
+    },
+    {
+      "rank": 90,
       "vessel_name": "한유 프론티어",
       "call_sign": "D7HF",
       "company": "(주)한유",
@@ -18750,7 +19176,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 89,
+      "rank": 91,
       "vessel_name": "미라클 알파",
       "call_sign": "151058",
       "company": "가나해운(주)",
@@ -18963,7 +19389,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 90,
+      "rank": 92,
       "vessel_name": "화정에이스",
       "call_sign": "202813",
       "company": "와이앤지쉽핑",
@@ -19176,7 +19602,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 91,
+      "rank": 93,
       "vessel_name": "NDL SIX",
       "call_sign": "TYG18",
       "company": "금진해운(주)",
@@ -19389,7 +19815,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 92,
+      "rank": 94,
       "vessel_name": "HALLA NO.2",
       "call_sign": "050601",
       "company": "한라시멘트(주)광양",
@@ -19602,7 +20028,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 93,
+      "rank": 95,
       "vessel_name": "202대림호",
       "call_sign": "962456",
       "company": "대림예선사",
@@ -19815,7 +20241,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 94,
+      "rank": 96,
       "vessel_name": "20청우호",
       "call_sign": "202823",
       "company": "아시아해상급유 주식회사",
@@ -20028,7 +20454,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 95,
+      "rank": 97,
       "vessel_name": "백령 153호",
       "call_sign": "171825",
       "company": "백령해운",
@@ -20241,7 +20667,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 96,
+      "rank": 98,
       "vessel_name": "SHENG HONG 12",
       "call_sign": "3E5348",
       "company": "(주)원해운",
@@ -20453,7 +20879,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 97,
+      "rank": 99,
       "vessel_name": "삼성호",
       "call_sign": "120039",
       "company": "보림해운 주식회사",
@@ -20666,7 +21092,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 98,
+      "rank": 100,
       "vessel_name": "아라온(ARAON)",
       "call_sign": "DSQL7",
       "company": "(주)팬스코",
@@ -20879,7 +21305,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 99,
+      "rank": 101,
       "vessel_name": "넘버원 바론",
       "call_sign": "3FMM7",
       "company": "(주)가나마린",
@@ -21091,7 +21517,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 100,
+      "rank": 102,
       "vessel_name": "SHOSHUN",
       "call_sign": "H3NF",
       "company": "(주)협성상운",
@@ -21304,7 +21730,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 101,
+      "rank": 103,
       "vessel_name": "대한1호",
       "call_sign": "DSOD5",
       "company": "대한시멘트주식회사",
@@ -21515,7 +21941,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 102,
+      "rank": 104,
       "vessel_name": "수성5",
       "call_sign": "DSFJ4",
       "company": "삼표해운 주식회사",
@@ -21728,7 +22154,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 103,
+      "rank": 105,
       "vessel_name": "성호갤럭시호",
       "call_sign": "D8QR",
       "company": "남해해상(주)",
@@ -21937,7 +22363,7 @@
       "display_name": "대산"
     }
   ],
-  "total_count": 103,
-  "returned_count": 103,
-  "item_count": 103
+  "total_count": 105,
+  "returned_count": 105,
+  "item_count": 105
 }
