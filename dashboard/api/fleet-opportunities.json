@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T09:41:01.414Z",
-  "record_count": 1,
-  "item_count": 1,
+  "generated_at": "2026-06-11T01:07:47.947Z",
+  "record_count": 2,
+  "item_count": 2,
   "items": [
     {
       "operator_name": "PAN OCEAN",
@@ -30,12 +30,70 @@
       "top_vessels": [
         {
           "vessel_name": "PAN HOPE",
-          "port_name": "Pyeongtaek-Dangjin",
+          "port_name": "평택·당진",
           "commercial_value_score": 68,
-          "candidate_band": "sales_target"
+          "candidate_band": "sales_target",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "Pyeongtaek-Dangjin",
+            "raw_aliases": [
+              "Pyeongtaek-Dangjin"
+            ]
+          },
+          "port_code": "031",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         }
       ],
       "why_now": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉"
+    },
+    {
+      "operator_name": "HMM",
+      "operator_normalized": "HMM",
+      "current_vessel_count": 1,
+      "target_vessel_count": 0,
+      "immediate_target_count": 0,
+      "operator_call_count": 2,
+      "operator_vessel_count": 1,
+      "operator_port_count": 1,
+      "repeat_operator_score": 18,
+      "fleet_opportunity_score": 20,
+      "fleet_cleaning_probability": 36,
+      "fleet_cleaning_probability_band": "LOW",
+      "forecast_window_days": 30,
+      "average_commercial_value": 59,
+      "average_biofouling_exposure": 56,
+      "average_congestion_exposure": 33,
+      "route_exposure_score": 30,
+      "operator_quality_score": 95,
+      "fleet_alerts": [],
+      "fleet_alert": "",
+      "contact_ready_count": 1,
+      "route_concentration_count": 1,
+      "top_vessels": [
+        {
+          "vessel_name": "HMM TOPAZ",
+          "port_name": "부산",
+          "commercial_value_score": 59,
+          "candidate_band": "sales_target",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "Busan",
+            "raw_aliases": [
+              "Busan"
+            ]
+          },
+          "port_code": "020",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        }
+      ],
+      "why_now": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 56점, 평균 체선노출 33점입니다.",
       "recommended_action": "운영선사 선대 담당팀 접촉"
     }
   ]

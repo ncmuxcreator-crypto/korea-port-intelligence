@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T23:49:26.994Z",
+  "generated_at": "2026-06-11T01:07:04.801Z",
   "data_mode": "live",
   "record_count": 0,
   "source_table": "NOAA_SST,AIS_dwell_time,salinity_proxy,route_snapshot_daily,compliance-exposure",
@@ -9,7 +9,7 @@
     "model_version": "biofouling_sst_dwell_salinity_v1",
     "formula": "risk = 0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
     "sst_cache_status": "proxy",
-    "sst_cache_date": "2026-06-10",
+    "sst_cache_date": "2026-06-11",
     "ais_update_interval_hours": 6,
     "disclaimer": "Relative operational risk signal. Not a biological measurement or legal finding."
   },

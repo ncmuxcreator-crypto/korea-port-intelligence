@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-10T09:40:29.950Z",
+  "generated_at": "2026-06-11T01:07:04.801Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 1,
+  "record_count": 2,
   "source_table": "operator_snapshot_daily",
   "items": [
     {
@@ -12,15 +12,39 @@
       "top_vessels": [
         {
           "vessel_name": "PAN HOPE",
-          "port_name": "Pyeongtaek-Dangjin",
+          "port_name": "평택·당진",
           "commercial_value_score": 68,
-          "candidate_band": "sales_target"
+          "candidate_band": "sales_target",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "Pyeongtaek-Dangjin",
+            "raw_aliases": [
+              "Pyeongtaek-Dangjin"
+            ]
+          },
+          "port_code": "031",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         }
       ],
       "opportunity_score": 23,
       "top_factors": [],
       "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
       "recommended_action": "운영선사 선대 담당팀 접촉",
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -30,17 +54,38 @@
         "vessel_type": "-",
         "gt": null,
         "dwt": null,
-        "operator": "-",
-        "operator_display": "-",
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "PAN OCEAN",
+        "operator_display": "PAN OCEAN",
         "operator_source": "-",
-        "operator_confidence": null,
+        "operator_confidence": 70,
         "company": "PAN OCEAN",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "-",
-        "current_port_korean": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -66,6 +111,23 @@
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": null,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -74,6 +136,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [],
@@ -81,17 +150,183 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
         "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
         "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
         "recommended_action": "운영선사 선대 담당팀 접촉",
         "data_sources": [],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
+      },
+      "display_name": "미확인 항만"
+    },
+    {
+      "rank": 2,
+      "operator_name": "HMM",
+      "vessel_count": 1,
+      "top_vessels": [
+        {
+          "vessel_name": "HMM TOPAZ",
+          "port_name": "부산",
+          "commercial_value_score": 59,
+          "candidate_band": "sales_target",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "Busan",
+            "raw_aliases": [
+              "Busan"
+            ]
+          },
+          "port_code": "020",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        }
+      ],
+      "opportunity_score": 20,
+      "top_factors": [],
+      "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 56점, 평균 체선노출 33점입니다.",
+      "recommended_action": "운영선사 선대 담당팀 접촉",
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "HMM",
+        "operator_display": "HMM",
+        "operator_source": "-",
+        "operator_confidence": 70,
+        "company": "HMM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "opportunity_score": 20,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [],
+        "recommendedAction": "운영선사 선대 담당팀 접촉",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 56점, 평균 체선노출 33점입니다.",
+        "recommended_action": "운영선사 선대 담당팀 접촉",
+        "data_sources": [],
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
+      },
+      "display_name": "미확인 항만"
     }
   ],
   "summary": {
-    "operator_count": 1,
+    "operator_count": 2,
     "source_hint": "fleet_opportunities / operator_snapshot_daily"
   },
-  "item_count": 1
+  "item_count": 2
 }

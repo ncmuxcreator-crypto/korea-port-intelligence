@@ -1,4 +1,10 @@
 import fs from "fs";
+import {
+  buildOceanIntelligenceLayer,
+  buildOceanRiskGeoJson,
+  calculateOceanRiskScore,
+  oceanRiskLabelKo
+} from "../src/lib/oceanIntelligence.js";
 
 const failures = [];
 const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
@@ -27,6 +33,22 @@ function fail(message) {
 function assert(condition, message) {
   if (!condition) fail(message);
 }
+
+const oceanRiskFixture = calculateOceanRiskScore(
+  { stay_hours: 96, anchorage_hours: 48, destination: "Australia" },
+  { port_code: "BUSAN", sst_c: 24.6, sst_anomaly_c: 2.1, marine_heatwave_level: "HIGH" }
+);
+assert(oceanRiskFixture.biofouling_risk_score >= 0 && oceanRiskFixture.biofouling_risk_score <= 100, "Ocean biofouling risk score must stay within 0-100.");
+assert(oceanRiskLabelKo(85) === "매우 높음", "Ocean risk Korean label mapping must include VERY HIGH.");
+const oceanFallbackLayer = await buildOceanIntelligenceLayer({
+  records: [{ vessel_name: "TEST OCEAN", port_code: "BUSAN", stay_hours: 96 }],
+  generatedAt: "2026-06-10T00:00:00.000Z",
+  dataMode: "test"
+});
+const oceanFallbackGeoJson = buildOceanRiskGeoJson(oceanFallbackLayer);
+assert(oceanFallbackLayer.port_ocean_conditions.length >= 12, "Ocean fallback must cover major Korean ports.");
+assert(oceanFallbackGeoJson.type === "FeatureCollection", "Ocean risk output must be GeoJSON FeatureCollection.");
+assert(oceanFallbackGeoJson.features.every(feature => Number(feature.properties?.biofouling_risk_score) >= 0 && Number(feature.properties?.biofouling_risk_score) <= 100), "Ocean GeoJSON scores must be 0-100.");
 
 function hasWarning(payload, pattern) {
   const text = JSON.stringify(payload || {});
@@ -213,7 +235,8 @@ const targetRatio = Number(
   summary.target_ratio ||
   0
 );
-if (targetRatio > 0.3) {
+const targetRatioFraction = targetRatio > 1 ? targetRatio / 100 : targetRatio;
+if (targetRatioFraction > 0.3) {
   assert(
     hasWarning(status, /영업대상 기준이 너무 넓습니다|target qualification.*broad|target_ratio_too_high/i) ||
     hasWarning(report, /영업대상 기준이 너무 넓습니다|target qualification.*broad|target_ratio_too_high/i) ||

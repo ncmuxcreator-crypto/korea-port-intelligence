@@ -25,6 +25,25 @@ function scoreText(value) {
   return number <= 1 ? fmt(Math.round(number * 100), 0) : fmt(number);
 }
 
+function heatwaveKo(level) {
+  return {
+    NORMAL: "정상",
+    WATCH: "주의",
+    HIGH: "높음",
+    EXTREME: "극심"
+  }[String(level || "NORMAL").toUpperCase()] || "정상";
+}
+
+function oceanPopupHtml(props = {}) {
+  return `<div class="popup"><b>${esc(props.port_name_ko || props.port_code || "항만")}</b><br>
+    SST: ${fmt(props.sst_c)}℃<br>
+    평년 대비: +${fmt(props.sst_anomaly_c)}℃<br>
+    해양열파: ${esc(props.marine_heatwave_label_ko || heatwaveKo(props.marine_heatwave_level))}<br>
+    Biofouling 위험: ${fmt(props.biofouling_risk_score)} · ${esc(props.risk_label_ko || "-")}<br>
+    데이터: ${esc(/CMEMS|NOAA|KOEM/i.test(String(props.source || "")) ? "실측/위성" : "추정값")}<br>
+    업데이트: ${esc(props.updated_at || "-")}</div>`;
+}
+
 async function getJson(url) {
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error(`${url} ${response.status}`);
@@ -80,6 +99,16 @@ function next4dSummaryForPort(geojson, code) {
   };
 }
 
+function oceanFeatureForPort(geojson, code) {
+  const names = portNamesForCode(code);
+  const normalized = String(code || "").toUpperCase();
+  return (geojson?.features || []).find((feature) => {
+    const props = feature?.properties || {};
+    return String(props.port_code || "").toUpperCase() === normalized ||
+      names.some((name) => String(props.port_name_ko || "").includes(name));
+  })?.properties || null;
+}
+
 function healthPanel(meta, geo, next4d) {
   const health = geo?.properties?.data_health || meta?.data_health || {};
   const nextHealth = next4d?.properties?.data_health || {};
@@ -99,8 +128,9 @@ function healthPanel(meta, geo, next4d) {
     .join("")}</div></section>`;
 }
 
-function portCard(meta, next4d) {
+function portCard(meta, next4d, oceanRisk) {
   const summary = next4dSummaryForPort(next4d, meta.port_code);
+  const ocean = oceanFeatureForPort(oceanRisk, meta.port_code);
   return `<a class="card" href="${esc(meta.detail_url)}">
     <div class="row"><h2>${esc(meta.port_name_kr)}</h2><span class="chip ${scoreClass(meta.avg_combined_score)}">${fmt(meta.avg_combined_score)}</span></div>
     <div class="small">${esc(meta.port_name_en)}</div>
@@ -110,6 +140,7 @@ function portCard(meta, next4d) {
       <div class="metric"><span>최고 점수</span><b>${fmt(meta.max_combined_score)}</b></div>
       <div class="metric"><span>4일 위험</span><b class="${scoreClass(summary?.max_score)}">${summary ? scoreText(summary.max_score) : "-"}</b></div>
     </div>
+    ${ocean ? `<div class="health-row"><span class="small">해양환경</span><br><b>SST ${fmt(ocean.sst_c)}℃ · 이상 +${fmt(ocean.sst_anomaly_c)}℃ · ${esc(ocean.risk_label_ko || "-")}</b></div>` : ""}
   </a>`;
 }
 
@@ -123,9 +154,10 @@ function next4dCard(feature) {
 }
 
 async function renderIndex() {
-  const [index, next4d] = await Promise.all([
+  const [index, next4d, oceanRisk] = await Promise.all([
     getJson("/data/ports/index.json"),
-    getOptionalJson("/data/biofouling_next4d.geojson")
+    getOptionalJson("/data/biofouling_next4d.geojson"),
+    getOptionalJson("/api/ocean-risk.geojson")
   ]);
   const ports = [...(index.ports || [])].sort((a, b) => Number(b.avg_combined_score || 0) - Number(a.avg_combined_score || 0));
   const nextRows = [...(next4d?.features || [])].sort((a, b) => Number(b.properties?.combined_score || 0) - Number(a.properties?.combined_score || 0)).slice(0, 9);
@@ -134,7 +166,7 @@ async function renderIndex() {
       <div><h1>항만 리스크 지도</h1><p>주요 항만의 체류, 혼잡, 기회점수와 부산·여수·광양 부착생물 4일 위험 신호를 함께 봅니다.</p></div>
       <span class="chip">${esc(index.generated_at || next4d?.generated_at || "-")}</span>
     </section>
-    <section class="grid">${ports.map((port) => portCard(port, next4d)).join("")}</section>
+    <section class="grid">${ports.map((port) => portCard(port, next4d, oceanRisk)).join("")}</section>
     <section class="health"><h2>부착생물 4일 위험 후보</h2><div class="list">${nextRows.length ? nextRows.map(next4dCard).join("") : '<div class="empty">데이터 준비 중</div>'}</div></section>
     ${healthPanel(index, { features: [], properties: { data_health: index.data_health || {} } }, next4d)}
   </div>`;
@@ -162,11 +194,12 @@ function popupHtml(props) {
 
 async function renderDetail() {
   const code = location.pathname.split("/").filter(Boolean).pop()?.toUpperCase() || "BUSAN";
-  const [index, geo, config, next4d] = await Promise.all([
+  const [index, geo, config, next4d, oceanRisk] = await Promise.all([
     getJson("/data/ports/index.json"),
     getJson(`/data/ports/${code}/latest.geojson`),
     getJson("/data/ports/config.json").catch(() => ({})),
-    getOptionalJson("/data/biofouling_next4d.geojson")
+    getOptionalJson("/data/biofouling_next4d.geojson"),
+    getOptionalJson("/api/ocean-risk.geojson")
   ]);
   const meta = (index.ports || []).find((port) => port.port_code === code) || {};
   meta.mapbox_token = config.mapbox_token || "";
@@ -195,10 +228,10 @@ async function renderDetail() {
     </section>
     ${healthPanel(meta, geo, next4d)}
   </div>`;
-  drawMap(geo, meta, next4d, code);
+  drawMap(geo, meta, next4d, code, oceanRisk);
 }
 
-function drawMap(geo, meta, next4d, code) {
+function drawMap(geo, meta, next4d, code, oceanRisk) {
   const token = meta.mapbox_token;
   const mapNode = document.querySelector("#map");
   if (!token || !window.mapboxgl) {
@@ -243,6 +276,25 @@ function drawMap(geo, meta, next4d, code) {
         }
       });
       map.on("click", "biofouling-next4d-risk", (event) => new mapboxgl.Popup().setLngLat(event.lngLat).setHTML(popupHtml(event.features[0].properties || {})).addTo(map));
+    }
+    if (oceanRisk?.features?.length) {
+      map.addSource("ocean-risk", {
+        type: "geojson",
+        data: oceanRisk
+      });
+      map.addLayer({
+        id: "ocean-risk-layer",
+        type: "circle",
+        source: "ocean-risk",
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["get", "biofouling_risk_score"], 0, 8, 60, 18, 100, 30],
+          "circle-color": ["case", [">=", ["get", "biofouling_risk_score"], 81], "#dc2626", [">=", ["get", "biofouling_risk_score"], 61], "#f97316", [">=", ["get", "biofouling_risk_score"], 31], "#facc15", "#38bdf8"],
+          "circle-opacity": 0.32,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#a7f3d0"
+        }
+      });
+      map.on("click", "ocean-risk-layer", (event) => new mapboxgl.Popup().setLngLat(event.lngLat).setHTML(oceanPopupHtml(event.features[0].properties || {})).addTo(map));
     }
     map.on("click", "vessel-risk", (event) => new mapboxgl.Popup().setLngLat(event.lngLat).setHTML(popupHtml(event.features[0].properties || {})).addTo(map));
     map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 35, duration: 0 });

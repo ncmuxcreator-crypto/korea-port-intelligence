@@ -128,6 +128,8 @@ const required = [
   "dashboard/api/watchlist/current.json",
   "dashboard/api/sales/actions.json",
   "dashboard/api/sales/conversion-pipeline.json",
+  "dashboard/api/ocean-conditions.json",
+  "dashboard/api/ocean-risk.geojson",
   "dashboard/api/endpoint-manifest.json",
   "dashboard/api/quality/basic-info-coverage.json",
   "dashboard/api/quality/dataset-generation-audit.json",
@@ -160,6 +162,24 @@ for (const file of required) {
     } catch (error) {
       throw new Error(`Invalid JSON output: ${file}`);
     }
+  }
+}
+
+const oceanRiskGeoJson = JSON.parse(fs.readFileSync(outputPath("dashboard/api/ocean-risk.geojson"), "utf8"));
+if (oceanRiskGeoJson.type !== "FeatureCollection" || !Array.isArray(oceanRiskGeoJson.features)) {
+  throw new Error("ocean-risk.geojson must be a GeoJSON FeatureCollection.");
+}
+for (const feature of oceanRiskGeoJson.features) {
+  const coordinates = feature?.geometry?.coordinates || [];
+  const score = Number(feature?.properties?.biofouling_risk_score);
+  if (feature?.geometry?.type !== "Point" || coordinates.length !== 2) {
+    throw new Error("ocean-risk.geojson feature must be a Point with lon/lat coordinates.");
+  }
+  if (!Number.isFinite(score) || score < 0 || score > 100) {
+    throw new Error("ocean-risk.geojson biofouling_risk_score must be 0-100.");
+  }
+  if (!feature?.properties?.risk_label_ko) {
+    throw new Error("ocean-risk.geojson feature missing Korean risk label.");
   }
 }
 

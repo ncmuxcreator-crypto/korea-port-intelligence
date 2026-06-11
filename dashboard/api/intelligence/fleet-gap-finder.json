@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T09:40:29.950Z",
+  "generated_at": "2026-06-11T01:07:04.801Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 1,
@@ -8,11 +8,11 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "targeted_vessels": 4,
-      "opportunity_gap": 16,
-      "known_korea_vessels": 20,
-      "opportunity_score": 61,
-      "reason_summary": "미확인 운영사: 한국 관측 선대 20척 중 미타겟 기회 16척",
+      "targeted_vessels": 11,
+      "opportunity_gap": 15,
+      "known_korea_vessels": 26,
+      "opportunity_score": 67,
+      "reason_summary": "미확인 운영사: 한국 관측 선대 26척 중 미타겟 기회 15척",
       "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "recommended_next_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "data_sources": [
@@ -25,6 +25,18 @@
         "opportunity_memory",
         "revenue-forecast"
       ],
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -34,17 +46,38 @@
         "vessel_type": "-",
         "gt": null,
         "dwt": null,
-        "operator": "-",
-        "operator_display": "-",
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "미확인 운영사",
+        "operator_display": "미확인 운영사",
         "operator_source": "-",
-        "operator_confidence": null,
+        "operator_confidence": 70,
         "company": "미확인 운영사",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "-",
-        "current_port_korean": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -66,10 +99,27 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 61,
+        "opportunity_score": 67,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": null,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -78,6 +128,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [],
@@ -85,8 +142,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "미확인 운영사: 한국 관측 선대 20척 중 미타겟 기회 16척",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "미확인 운영사: 한국 관측 선대 26척 중 미타겟 기회 15척",
         "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
         "data_sources": [
           "fleet-intelligence",
@@ -98,14 +158,18 @@
           "opportunity_memory",
           "revenue-forecast"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
+      },
+      "display_name": "미확인 항만"
     }
   ],
   "summary": {
     "operator_count": 1,
-    "total_gap_vessels": 16,
-    "unknown_operator_gap": 16,
+    "total_gap_vessels": 15,
+    "unknown_operator_gap": 15,
     "assumptions": {
       "currency": "USD",
       "average_cleaning_price": 18000,

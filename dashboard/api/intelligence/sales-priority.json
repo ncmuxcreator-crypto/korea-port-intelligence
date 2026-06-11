@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T09:40:29.950Z",
+  "generated_at": "2026-06-11T01:07:04.801Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 10,
@@ -7,11 +7,11 @@
   "items": [
     {
       "rank": 1,
-      "master_vessel_id": "MASTER-CALLSIGN-OYCR2",
-      "vessel_name": "TORM SPLENDID",
-      "port": "Ulsan",
-      "opportunity_score": 76,
-      "risk_score": 45,
+      "master_vessel_id": "MASTER-CALLSIGN-5BMI6",
+      "vessel_name": "KONA TRADER",
+      "port": "부산",
+      "opportunity_score": 86,
+      "risk_score": 89,
       "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -19,7 +19,7 @@
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN"
       ],
-      "reason_summary": "Ulsan 정박지-E2에서 묘박/대기 5.2일째인 GT 28,877 탱커으로, 출항 전 약 359시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 32시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -29,16 +29,38 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산"
+        ]
+      },
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
       "vessel_display": {
-        "vessel_name": "TORM SPLENDID",
+        "vessel_name": "KONA TRADER",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
         "flag": "-",
         "vessel_type": "-",
-        "gt": 28877,
+        "gt": 39737,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 39737,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -48,8 +70,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Ulsan",
-        "current_port_korean": "울산",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -58,24 +91,41 @@
         "atb": "-",
         "etd": "-",
         "atd": "-",
-        "stay_days": 5.2,
+        "stay_days": 12,
         "stay_hours": null,
         "waiting_hours": null,
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 78,
-        "opportunity_score": 76,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "opportunity_score": 86,
+        "risk_score": 89,
+        "biofouling_score": 89,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 89,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -83,6 +133,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "매우 높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -94,9 +151,12 @@
         "recommendedAction": "운영선사 확인",
         "confidence": "-",
         "contact_readiness_score": null,
-        "priority_label": "WARM",
+        "priority_label": "HOT",
+        "priority_label_ko": "우선 연락",
         "target_categories": [],
-        "reason_summary": "Ulsan 정박지-E2에서 묘박/대기 5.2일째인 GT 28,877 탱커으로, 출항 전 약 359시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 32시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
@@ -106,16 +166,20 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
     },
     {
       "rank": 2,
       "master_vessel_id": "MASTER-CALLSIGN-CQ2021",
       "vessel_name": "GELBRAY EXPRESS",
-      "port": "Busan",
+      "port": "부산",
       "opportunity_score": 71,
-      "risk_score": 45,
+      "risk_score": 89,
       "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -133,7 +197,19 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산"
+        ]
+      },
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
       "vessel_display": {
         "vessel_name": "GELBRAY EXPRESS",
         "imo": "-",
@@ -143,6 +219,16 @@
         "vessel_type": "-",
         "gt": 10421,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 10421,
+          "dwt": null,
+          "size_class": "MEDIUM_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -152,8 +238,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Busan",
+        "current_port": "부산",
+        "raw_current_port": "부산",
         "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -168,7 +265,7 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -176,10 +273,27 @@
         "identity_conflict": null,
         "confidence_score": 78,
         "opportunity_score": 71,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "risk_score": 89,
+        "biofouling_score": 89,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": true,
+          "jurisdiction": "Australia",
+          "basis": "route",
+          "threshold_type": "commercial_vessels",
+          "confidence": 0.72,
+          "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
+        },
+        "compliance_exposure": {
+          "exposed": true,
+          "jurisdiction": "Australia",
+          "basis": "route",
+          "threshold_type": "commercial_vessels",
+          "confidence": 0.72,
+          "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
+        },
+        "biofoulingRiskScore": 89,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -187,6 +301,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "매우 높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -199,7 +320,10 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
         "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 7일째인 GT 10,421 unknown으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
@@ -210,16 +334,20 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
     },
     {
       "rank": 3,
       "master_vessel_id": "MASTER-CALLSIGN-8PSO2",
       "vessel_name": "VITUS BERING",
-      "port": "Yeosu",
-      "opportunity_score": 70,
-      "risk_score": 45,
+      "port": "여수",
+      "opportunity_score": 69,
+      "risk_score": 76,
       "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -227,7 +355,7 @@
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN"
       ],
-      "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 28시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 13시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -237,7 +365,19 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
       "vessel_display": {
         "vessel_name": "VITUS BERING",
         "imo": "-",
@@ -247,6 +387,16 @@
         "vessel_type": "-",
         "gt": 66291,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 66291,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -256,8 +406,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Yeosu",
+        "current_port": "여수",
+        "raw_current_port": "여수",
         "current_port_korean": "여수",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_display_name": "여수",
         "berth": "-",
         "anchorage": "D-1정박지에서",
         "eta": "-",
@@ -272,18 +433,35 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": 78,
-        "opportunity_score": 70,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "opportunity_score": 69,
+        "risk_score": 76,
+        "biofouling_score": 76,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 76,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -291,6 +469,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -303,8 +488,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 28시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 13시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
@@ -314,14 +502,18 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수"
+      },
+      "display_name": "여수"
     },
     {
       "rank": 4,
       "master_vessel_id": "MASTER-CALLSIGN-3EZL9",
       "vessel_name": "PAN HOPE",
-      "port": "Pyeongtaek-Dangjin",
+      "port": "평택·당진",
       "opportunity_score": 68,
       "risk_score": 45,
       "confidence_score": 66,
@@ -331,7 +523,7 @@
         "HIGH_VALUE_GT_30000_PLUS",
         "BULK_OR_TANKER"
       ],
-      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 28점, 평균 체선노출 9점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 118시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 29점, 평균 체선노출 9점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 103시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "대리점 확인 후 견적 제안",
       "data_sources": [
         "opportunity_master",
@@ -342,7 +534,20 @@
         "route_snapshot_daily",
         "operator_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "평택·당진"
+        ]
+      },
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
       "vessel_display": {
         "vessel_name": "PAN HOPE",
         "imo": "-",
@@ -352,6 +557,16 @@
         "vessel_type": "-",
         "gt": 92080,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 92080,
+          "dwt": null,
+          "size_class": "VERY_LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -361,8 +576,20 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Pyeongtaek-Dangjin",
+        "current_port": "평택·당진",
+        "raw_current_port": "평택·당진",
         "current_port_korean": "평택·당진",
+        "normalized_port": {
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "display_name": "평택·당진",
+          "raw_port": "Pyeongtaek-Dangjin",
+          "raw_aliases": [
+            "Pyeongtaek-Dangjin",
+            "평택·당진"
+          ]
+        },
+        "port_display_name": "평택·당진",
         "berth": "송악부두",
         "anchorage": "-",
         "eta": "-",
@@ -377,7 +604,7 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -388,6 +615,23 @@
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": null,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -396,6 +640,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "보통",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -408,8 +659,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 28점, 평균 체선노출 9점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 118시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 29점, 평균 체선노출 9점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 103시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "opportunity_master",
@@ -420,16 +674,20 @@
           "route_snapshot_daily",
           "operator_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진"
+      },
+      "display_name": "평택·당진"
     },
     {
       "rank": 5,
       "master_vessel_id": "MASTER-CALLSIGN-8PSO1",
       "vessel_name": "ADMIRAL SCHMIDT",
-      "port": "Busan",
+      "port": "부산",
       "opportunity_score": 67,
-      "risk_score": 45,
+      "risk_score": 69,
       "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -447,7 +705,19 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산"
+        ]
+      },
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
       "vessel_display": {
         "vessel_name": "ADMIRAL SCHMIDT",
         "imo": "-",
@@ -457,6 +727,16 @@
         "vessel_type": "-",
         "gt": 66291,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 66291,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -466,8 +746,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Busan",
+        "current_port": "부산",
+        "raw_current_port": "부산",
         "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -482,7 +773,7 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -490,10 +781,27 @@
         "identity_conflict": null,
         "confidence_score": 78,
         "opportunity_score": 67,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "risk_score": 69,
+        "biofouling_score": 69,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 69,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -501,6 +809,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -513,7 +828,10 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
         "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 14.4일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
@@ -524,14 +842,18 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
     },
     {
       "rank": 6,
       "master_vessel_id": "MASTER-CALLSIGN-9V8635",
       "vessel_name": "PROTEUS RONG NA",
-      "port": "Daesan",
+      "port": "대산",
       "opportunity_score": 67,
       "risk_score": 45,
       "confidence_score": 78,
@@ -551,7 +873,19 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
       "vessel_display": {
         "vessel_name": "PROTEUS RONG NA",
         "imo": "-",
@@ -561,6 +895,16 @@
         "vessel_type": "-",
         "gt": 66970,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 66970,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -570,8 +914,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Daesan",
+        "current_port": "대산",
+        "raw_current_port": "대산",
         "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산"
+          ]
+        },
+        "port_display_name": "대산",
         "berth": "-",
         "anchorage": "D-1정박지에서",
         "eta": "-",
@@ -586,7 +941,7 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -597,6 +952,23 @@
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": null,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -605,6 +977,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "보통",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -617,7 +996,10 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
         "reason_summary": "Daesan D-1정박지에서 묘박/대기 14.6일째인 GT 66,970 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
@@ -628,14 +1010,18 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
     },
     {
       "rank": 7,
       "master_vessel_id": "MASTER-CALLSIGN-BONH2",
       "vessel_name": "YUAN JU WAN",
-      "port": "Daesan",
+      "port": "대산",
       "opportunity_score": 67,
       "risk_score": 45,
       "confidence_score": 78,
@@ -645,7 +1031,7 @@
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN"
       ],
-      "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 497시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 482시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -655,7 +1041,19 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
       "vessel_display": {
         "vessel_name": "YUAN JU WAN",
         "imo": "-",
@@ -665,6 +1063,16 @@
         "vessel_type": "-",
         "gt": 64572,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 64572,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -674,8 +1082,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Daesan",
+        "current_port": "대산",
+        "raw_current_port": "대산",
         "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산"
+          ]
+        },
+        "port_display_name": "대산",
         "berth": "-",
         "anchorage": "D-1정박지에서",
         "eta": "-",
@@ -690,7 +1109,7 @@
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -701,6 +1120,23 @@
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": null,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -709,6 +1145,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "보통",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -721,8 +1164,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 497시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 482시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
@@ -732,24 +1178,28 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
     },
     {
       "rank": 8,
-      "master_vessel_id": "MASTER-CALLSIGN-V7A3508",
-      "vessel_name": "스키야토스",
-      "port": "South Gyeongsang",
-      "opportunity_score": 65,
-      "risk_score": 45,
-      "confidence_score": 66,
+      "master_vessel_id": "MASTER-CALLSIGN-H3UD",
+      "vessel_name": "AKANE",
+      "port": "부산",
+      "opportunity_score": 66,
+      "risk_score": 69,
+      "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER"
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN"
       ],
-      "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 182시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 464시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -759,16 +1209,38 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산"
+        ]
+      },
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
       "vessel_display": {
-        "vessel_name": "스키야토스",
+        "vessel_name": "AKANE",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
         "flag": "-",
         "vessel_type": "-",
-        "gt": 109299,
+        "gt": 28777,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 28777,
+          "dwt": null,
+          "size_class": "MEDIUM_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -778,9 +1250,20 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "South Gyeongsang",
-        "current_port_korean": "미확인 항만",
-        "berth": "원료부두",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
+        "berth": "-",
         "anchorage": "-",
         "eta": "-",
         "etb": "-",
@@ -788,24 +1271,41 @@
         "atb": "-",
         "etd": "-",
         "atd": "-",
-        "stay_days": 5.9,
+        "stay_days": 22.3,
         "stay_hours": null,
         "waiting_hours": null,
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
         "identity_match_type": "-",
         "identity_conflict": null,
-        "confidence_score": 66,
-        "opportunity_score": 65,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "confidence_score": 78,
+        "opportunity_score": 66,
+        "risk_score": 69,
+        "biofouling_score": 69,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 69,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -813,20 +1313,30 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
           "MASTER_DB_MATCH_FOUND",
-          "HIGH_GT_VESSEL",
-          "HIGH_VALUE_GT_30000_PLUS",
-          "BULK_OR_TANKER"
+          "LONG_ANCHORAGE_WAIT",
+          "EXTENDED_IDLE_PERIOD",
+          "LOW_SPEED_CONGESTION_PATTERN"
         ],
         "recommendedAction": "운영선사 확인",
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 182시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 464시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
@@ -836,16 +1346,20 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
     },
     {
       "rank": 9,
-      "master_vessel_id": "MASTER-CALLSIGN-V7A4617",
-      "vessel_name": "에이치엘 오셔닉",
-      "port": "Pyeongtaek-Dangjin",
+      "master_vessel_id": "MASTER-CALLSIGN-3FXA5",
+      "vessel_name": "C. DIGNITY",
+      "port": "여수",
       "opportunity_score": 65,
-      "risk_score": 45,
+      "risk_score": 68,
       "confidence_score": 66,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -853,7 +1367,7 @@
         "HIGH_GT_VESSEL",
         "HIGH_VALUE_GT_30000_PLUS"
       ],
-      "reason_summary": "Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 9.2일째인 GT 97,574 벌크선으로, 출항 전 약 170시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Yeosu C구역에서 체류 9.7일째인 GT 162,180 원유운반선으로, 출항 전 약 98시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -863,16 +1377,39 @@
         "commercial_opportunity_daily",
         "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu",
+          "여수"
+        ]
+      },
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
       "vessel_display": {
-        "vessel_name": "에이치엘 오셔닉",
+        "vessel_name": "C. DIGNITY",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
         "flag": "-",
         "vessel_type": "-",
-        "gt": 97574,
+        "gt": 162180,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 162180,
+          "dwt": null,
+          "size_class": "VERY_LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -882,9 +1419,21 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Pyeongtaek-Dangjin",
-        "current_port_korean": "평택·당진",
-        "berth": "송악부두",
+        "current_port": "여수",
+        "raw_current_port": "여수",
+        "current_port_korean": "여수",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "Yeosu",
+          "raw_aliases": [
+            "Yeosu",
+            "여수"
+          ]
+        },
+        "port_display_name": "여수",
+        "berth": "-",
         "anchorage": "-",
         "eta": "-",
         "etb": "-",
@@ -892,13 +1441,13 @@
         "atb": "-",
         "etd": "-",
         "atd": "-",
-        "stay_days": 9.2,
+        "stay_days": 9.7,
         "stay_hours": null,
         "waiting_hours": null,
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -906,10 +1455,27 @@
         "identity_conflict": null,
         "confidence_score": 66,
         "opportunity_score": 65,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "risk_score": 68,
+        "biofouling_score": 68,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 68,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -917,6 +1483,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -929,8 +1502,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 9.2일째인 GT 97,574 벌크선으로, 출항 전 약 170시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Yeosu C구역에서 체류 9.7일째인 GT 162,180 원유운반선으로, 출항 전 약 98시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
@@ -940,16 +1516,20 @@
           "commercial_opportunity_daily",
           "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수"
+      },
+      "display_name": "여수"
     },
     {
       "rank": 10,
-      "master_vessel_id": "MASTER-CALLSIGN-5LMN3",
-      "vessel_name": "BOYM",
-      "port": "Ulsan",
+      "master_vessel_id": "MASTER-CALLSIGN-3E7083",
+      "vessel_name": "FLORA MARIS",
+      "port": "여수",
       "opportunity_score": 65,
-      "risk_score": 45,
+      "risk_score": 68,
       "confidence_score": 78,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
@@ -957,25 +1537,49 @@
         "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN"
       ],
-      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 3.7일째인 GT 39,171 벌크선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 287시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+      "reason_summary": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 153시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
         "risk_history",
         "explainability_snapshots",
         "rule_evaluations",
-        "commercial_opportunity_daily"
+        "commercial_opportunity_daily",
+        "route_snapshot_daily"
       ],
-      "last_seen_at": "2026-06-10T09:37:28.348Z",
+      "last_seen_at": "2026-06-11T01:02:59.991Z",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu",
+          "여수"
+        ]
+      },
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
       "vessel_display": {
-        "vessel_name": "BOYM",
+        "vessel_name": "FLORA MARIS",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
         "flag": "-",
         "vessel_type": "-",
-        "gt": 39171,
+        "gt": 30964,
         "dwt": null,
+        "tonnage_summary": {
+          "gt": 30964,
+          "dwt": null,
+          "size_class": "LARGE_COMMERCIAL",
+          "gt_source": "vessel_display.gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 65
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -985,23 +1589,35 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "Ulsan",
-        "current_port_korean": "울산",
+        "current_port": "여수",
+        "raw_current_port": "여수",
+        "current_port_korean": "여수",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "Yeosu",
+          "raw_aliases": [
+            "Yeosu",
+            "여수"
+          ]
+        },
+        "port_display_name": "여수",
         "berth": "-",
-        "anchorage": "-",
+        "anchorage": "D-2정박지에서",
         "eta": "-",
         "etb": "-",
         "ata": "-",
         "atb": "-",
         "etd": "-",
         "atd": "-",
-        "stay_days": 3.7,
+        "stay_days": 3,
         "stay_hours": null,
         "waiting_hours": null,
         "port_stay_hours": null,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-10T09:37:28.348Z",
+        "last_seen_at": "2026-06-11T01:02:59.991Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -1009,10 +1625,27 @@
         "identity_conflict": null,
         "confidence_score": 78,
         "opportunity_score": 65,
-        "risk_score": 45,
-        "biofouling_score": 45,
+        "risk_score": 68,
+        "biofouling_score": 68,
         "compliance_score": null,
-        "biofoulingRiskScore": 45,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 68,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -1020,6 +1653,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "높음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
@@ -1032,18 +1672,26 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 3.7일째인 GT 39,171 벌크선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 287시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 153시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots",
           "rule_evaluations",
-          "commercial_opportunity_daily"
+          "commercial_opportunity_daily",
+          "route_snapshot_daily"
         ],
-        "enrichment_sources": []
-      }
+        "enrichment_sources": [],
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수"
+      },
+      "display_name": "여수"
     }
   ],
   "summary": {

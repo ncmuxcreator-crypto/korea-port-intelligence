@@ -69,11 +69,11 @@ export function buildScoreReasonKo(record = {}, score = record.combined_score) {
   const fragments = [];
   if (residence >= 48) fragments.push(`최근 96시간 중 항만 체류가 ${residence}시간으로 깁니다`);
   else if (residence > 0) fragments.push(`최근 96시간 체류가 ${residence}시간입니다`);
-  if (anomaly >= 0.8) fragments.push(`최근 수온이 7일 평균보다 ${anomaly}℃ 높습니다`);
-  else if (anomaly > 0) fragments.push(`수온 이상치가 +${anomaly}℃로 관찰됩니다`);
-  if (record.portmis_last_ts) fragments.push("Port-MIS 정보가 최근성 판단에 반영되었습니다");
-  if (!fragments.length) fragments.push("체류와 수온 신호가 제한적이어서 관찰 대상으로 분류됩니다");
-  return `${fragments.join(", ")}. 72시간 평균 수온 ${sst72}℃, 7일 평균 ${sst7}℃ 기준으로 부착생물 위험은 ${level} 수준입니다.`;
+  if (anomaly >= 0.8) fragments.push(`최근 수온이 7일 평균보다 ${anomaly}도 높습니다`);
+  else if (anomaly > 0) fragments.push(`수온 이상치가 +${anomaly}도로 관찰됩니다`);
+  if (record.portmis_last_ts) fragments.push("Port-MIS 최신성이 판단에 반영됐습니다");
+  if (!fragments.length) fragments.push("체류와 수온 신호가 제한적이어서 관찰 대상으로 분류합니다");
+  return `${fragments.join(", ")}. 72시간 평균 수온 ${sst72}도, 7일 평균 ${sst7}도 기준으로 부착생물 위험은 ${level} 수준입니다.`;
 }
 
 export function toBiofoulingNext4dRecord(input = {}, options = {}) {

@@ -295,14 +295,15 @@ for (const marker of ["loadDynamicAllVesselPage", "/api/vessels?group=all&page="
   assert(publicSource.includes(marker), `Public dashboard all-vessel tab must reuse existing paginated all-vessels API: ${marker}`);
 }
 for (const marker of [
-  "숨겨진 인사이트 / 고급 분석",
+  "추가 인사이트 / 심화 분석",
+  "overviewExtraInsights",
+  "salesExtraInsightsBlock",
   "데이터 준비 중",
   "/api/intelligence/explainability.json",
   "/api/intelligence/sales-priority.json",
-  "오늘의 영업 우선순위",
   "renderSalesPriority",
   "renderIntelligence",
-  "예측 신호 / 실험 기능"
+  "insightGroupAdvanced"
 ]) {
   assert(dashboardSource.includes(marker), `Dashboard hidden intelligence UI missing marker: ${marker}`);
   assert(publicSource.includes(marker), `Public dashboard hidden intelligence UI missing marker: ${marker}`);
@@ -569,8 +570,14 @@ for (const item of displayRows) {
   assert(Array.isArray(display.data_sources), "vessel_display.data_sources must be an array.");
 }
 const enrichmentIndex = updateSource.indexOf("enrichWithVesselMasterCache(referenceEnrichedRows)");
-const scoringIndex = updateSource.indexOf("enrichSalesSignals(annotateRepeatCallerIntelligence(cacheResult.records))");
-assert(enrichmentIndex >= 0 && scoringIndex > enrichmentIndex, "Enrichment must run before scoring.");
+const identityResolutionIndex = updateSource.indexOf("resolveImoMmsiCandidates(cacheResult.records");
+const scoringIndex = updateSource.indexOf("enrichSalesSignals(annotateRepeatCallerIntelligence(identityResolution.records))");
+assert(
+  enrichmentIndex >= 0 &&
+    identityResolutionIndex > enrichmentIndex &&
+    scoringIndex > identityResolutionIndex,
+  "Enrichment and identity resolution must run before scoring."
+);
 assert(workerSource.includes("payload") && workerSource.includes("compact.vessel_display = vesselDisplay(merged)"), "Worker vessel pages must preserve enriched payload fields in vessel_display.");
 
 for (const item of followups) {

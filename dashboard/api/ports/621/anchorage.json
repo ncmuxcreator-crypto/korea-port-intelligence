@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T09:41:02.151Z",
+  "generated_at": "2026-06-11T01:07:50.279Z",
   "record_count": 21,
   "item_count": 21,
   "items": [
@@ -40,7 +40,7 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -50,7 +50,18 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-9V8635",
@@ -86,7 +97,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -97,7 +108,18 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7A3317",
@@ -131,7 +153,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -142,7 +164,65 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
+    },
+    {
+      "vessel_id": "CALL-V7B2857",
+      "vessel_name": "FRONT SPEY",
+      "port_code": "621",
+      "port_name": "대산",
+      "anchorage_name": "D-1정박지",
+      "anchorage_hours": 0,
+      "anchorage_days": 0,
+      "anchorage_density_score": 20,
+      "idle_risk_score": 0,
+      "total_sales_priority_score": 49,
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "GT_80000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "TANKER_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-KLBO",
@@ -150,11 +230,11 @@
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 48.7,
-      "anchorage_days": 2,
-      "anchorage_density_score": 44,
-      "idle_risk_score": 37,
-      "total_sales_priority_score": 46,
+      "anchorage_hours": 64.1,
+      "anchorage_days": 2.7,
+      "anchorage_density_score": 52,
+      "idle_risk_score": 48,
+      "total_sales_priority_score": 47,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -167,6 +247,7 @@
         "CONTACT_PATH_AVAILABLE",
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
         "LONG_ANCHORAGE_EXPOSURE",
         "LOW_SPEED_EXPOSURE",
         "HIGH_CONGESTION_EXPOSURE",
@@ -175,7 +256,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -184,18 +265,29 @@
         "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
-      "vessel_id": "CALL-VTPZ",
-      "vessel_name": "SANMAR SAROD",
+      "vessel_id": "CALL-9V3663",
+      "vessel_name": "BLUEBIRD",
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 49,
-      "anchorage_days": 2,
-      "anchorage_density_score": 45,
-      "idle_risk_score": 37,
+      "anchorage_hours": 55.8,
+      "anchorage_days": 2.3,
+      "anchorage_density_score": 48,
+      "idle_risk_score": 42,
       "total_sales_priority_score": 46,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -209,6 +301,7 @@
         "CONTACT_PATH_AVAILABLE",
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
         "LONG_ANCHORAGE_EXPOSURE",
         "LOW_SPEED_EXPOSURE",
         "HIGH_CONGESTION_EXPOSURE",
@@ -217,7 +310,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -227,7 +320,18 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7A2046",
@@ -235,10 +339,63 @@
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 37.7,
-      "anchorage_days": 1.6,
-      "anchorage_density_score": 39,
-      "idle_risk_score": 28,
+      "anchorage_hours": 53.1,
+      "anchorage_days": 2.2,
+      "anchorage_density_score": 47,
+      "idle_risk_score": 40,
+      "total_sales_priority_score": 46,
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "LARGE_BULK_CARRIER",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
+    },
+    {
+      "vessel_id": "CALL-BUQZ",
+      "vessel_name": "CHANG HANG HU PO",
+      "port_code": "621",
+      "port_name": "대산",
+      "anchorage_name": "D-1정박지",
+      "anchorage_hours": 26.1,
+      "anchorage_days": 1.1,
+      "anchorage_density_score": 33,
+      "idle_risk_score": 20,
       "total_sales_priority_score": 45,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -252,57 +409,32 @@
         "CONTACT_PATH_AVAILABLE",
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
-        "LOW_SPEED_EXPOSURE",
         "HIGH_CONGESTION_EXPOSURE",
         "HIGH_GT_EXPOSURE",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "GT_30000_PLUS",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "LARGE_BULK_CARRIER",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "ANCHORAGE_24H_PLUS",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT"
-      ]
-    },
-    {
-      "vessel_id": "CALL-BUQZ",
-      "vessel_name": "CHANG HANG HU PO",
-      "port_code": "621",
-      "port_name": "대산",
-      "anchorage_name": "D-1정박지",
-      "anchorage_hours": 10.7,
-      "anchorage_days": 0.4,
-      "anchorage_density_score": 25,
-      "idle_risk_score": 8,
-      "total_sales_priority_score": 44,
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
+        "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-VRIK8",
@@ -330,14 +462,25 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-A8PL6",
@@ -365,14 +508,25 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7DJ7",
@@ -400,14 +554,25 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7KG7",
@@ -415,11 +580,11 @@
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 23.7,
-      "anchorage_days": 1,
-      "anchorage_density_score": 32,
-      "idle_risk_score": 18,
-      "total_sales_priority_score": 39,
+      "anchorage_hours": 39.1,
+      "anchorage_days": 1.6,
+      "anchorage_density_score": 40,
+      "idle_risk_score": 29,
+      "total_sales_priority_score": 40,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -429,17 +594,32 @@
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
+        "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7A3322",
@@ -447,10 +627,10 @@
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 0,
-      "anchorage_days": 0,
-      "anchorage_density_score": 20,
-      "idle_risk_score": 0,
+      "anchorage_hours": 2.1,
+      "anchorage_days": 0.1,
+      "anchorage_density_score": 21,
+      "idle_risk_score": 2,
       "total_sales_priority_score": 39,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -465,53 +645,23 @@
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
-    },
-    {
-      "vessel_id": "CALL-210016",
-      "vessel_name": "부광5호",
-      "port_code": "621",
-      "port_name": "대산",
-      "anchorage_name": "2정박지",
-      "anchorage_hours": 70,
-      "anchorage_days": 2.9,
-      "anchorage_density_score": 55,
-      "idle_risk_score": 53,
-      "total_sales_priority_score": 38,
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "LONG_ANCHORAGE_EXPOSURE",
-        "LOW_SPEED_EXPOSURE",
-        "HIGH_CONGESTION_EXPOSURE",
-        "REPEAT_CALLER_SIGNAL",
-        "REPEAT_CALLER",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "TANKER_TARGET",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "STAY_48H_PLUS",
-        "ANCHORAGE_24H_PLUS",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT",
-        "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-V7VF8",
@@ -537,13 +687,24 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-232813",
@@ -555,7 +716,7 @@
       "anchorage_days": 0.9,
       "anchorage_density_score": 31,
       "idle_risk_score": 17,
-      "total_sales_priority_score": 35,
+      "total_sales_priority_score": 34,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -573,12 +734,22 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-170009",
@@ -617,61 +788,71 @@
         "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
-      "vessel_id": "CALL-230025",
-      "vessel_name": "부광9호",
+      "vessel_id": "CALL-V3QM3",
+      "vessel_name": "CHANG DA 368",
       "port_code": "621",
       "port_name": "대산",
-      "anchorage_name": "2정박지",
-      "anchorage_hours": 24,
-      "anchorage_days": 1,
-      "anchorage_density_score": 32,
-      "idle_risk_score": 18,
-      "total_sales_priority_score": 33,
+      "anchorage_name": "D-1정박지",
+      "anchorage_hours": 0,
+      "anchorage_days": 0,
+      "anchorage_density_score": 20,
+      "idle_risk_score": 0,
+      "total_sales_priority_score": 32,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
-        "BULK_OR_TANKER",
+        "HIGH_GT_VESSEL",
         "VESSEL_TYPE_COMMERCIAL_TARGET",
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_ARRIVAL_OPPORTUNITY",
-        "ETA_24_72H_WINDOW",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "HIGH_CONGESTION_EXPOSURE",
-        "REPEAT_CALLER_SIGNAL",
-        "REPEAT_CALLER",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "TANKER_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "ANCHORAGE_WAITING_CLASSIFIED",
-        "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
-      "vessel_id": "CALL-020327",
-      "vessel_name": "101정동호",
+      "vessel_id": "CALL-202813",
+      "vessel_name": "화정에이스",
       "port_code": "621",
       "port_name": "대산",
       "anchorage_name": "7정박지",
-      "anchorage_hours": 77.9,
-      "anchorage_days": 3.2,
-      "anchorage_density_score": 59,
-      "idle_risk_score": 58,
-      "total_sales_priority_score": 27,
+      "anchorage_hours": 64,
+      "anchorage_days": 2.7,
+      "anchorage_density_score": 52,
+      "idle_risk_score": 48,
+      "total_sales_priority_score": 26,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
         "LOW_SPEED_CONGESTION_PATTERN",
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
@@ -679,19 +860,31 @@
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
         "LONG_ANCHORAGE_EXPOSURE",
-        "LONG_PORT_STAY",
         "LOW_SPEED_EXPOSURE",
         "HIGH_CONGESTION_EXPOSURE",
+        "REPEAT_CALLER_SIGNAL",
+        "REPEAT_CALLER",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
-        "NON_COMMERCIAL_VESSEL_TYPE_EXCLUDED",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "STAY_48H_PLUS",
         "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-3WPG",
@@ -714,11 +907,22 @@
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-LAYP4",
@@ -741,11 +945,22 @@
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_id": "CALL-191072",
@@ -757,7 +972,7 @@
       "anchorage_days": 0.3,
       "anchorage_density_score": 24,
       "idle_risk_score": 6,
-      "total_sales_priority_score": 18,
+      "total_sales_priority_score": 15,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -771,7 +986,18 @@
         "ANCHORAGE_WAITING_CLASSIFIED",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_display_name": "대산",
+      "display_name": "대산"
     }
   ]
 }

@@ -1,82 +1,207 @@
 {
-  "generated_at": "2026-06-10T09:40:29.950Z",
+  "generated_at": "2026-06-11T01:07:04.801Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 2,
+  "record_count": 3,
   "source_table": "fleet-intelligence,fleet-memory,operator_snapshot_daily,relationship-intelligence,customer-memory,commercial_leads,sales-pipeline,operator_contact_history,vessel_visits,opportunity_memory",
   "items": [
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "targeted_vessels": 20,
+      "targeted_vessels": 26,
       "won_vessels": 0,
       "captured_vessels": 0,
       "penetration_rate": 0,
-      "opportunity_gap": 20,
-      "estimated_remaining_revenue": 57600,
-      "fleet_size_korea": 20,
-      "average_opportunity_score": 62,
+      "opportunity_gap": 26,
+      "estimated_remaining_revenue": 74880,
+      "fleet_size_korea": 26,
+      "average_opportunity_score": 61,
       "top_ports": [
         {
-          "port_name": "대산",
-          "count": 5
-        },
-        {
           "port_name": "부산",
-          "count": 3
+          "count": 11,
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
-          "port_name": "울산",
-          "count": 3
+          "port_name": "대산",
+          "count": 5,
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_display_name": "대산",
+          "display_name": "대산"
         },
         {
           "port_name": "여수",
-          "count": 3
+          "count": 4,
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_display_name": "여수",
+          "display_name": "여수"
         },
         {
           "port_name": "미확인 항만",
-          "count": 3
+          "count": 3,
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        {
+          "port_name": "평택·당진",
+          "count": 2,
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         }
       ],
       "top_vessels": [
         {
-          "vessel_name": "TORM SPLENDID",
+          "vessel_name": "KONA TRADER",
           "imo": "",
-          "port": "울산",
-          "opportunity_score": 76,
-          "priority_label": "LOW"
+          "port": "부산",
+          "opportunity_score": 86,
+          "priority_label": "HOT",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "GELBRAY EXPRESS",
           "imo": "",
           "port": "부산",
           "opportunity_score": 71,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "VITUS BERING",
           "imo": "",
           "port": "여수",
-          "opportunity_score": 70,
-          "priority_label": "HOT"
+          "opportunity_score": 69,
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
         },
         {
           "vessel_name": "ADMIRAL SCHMIDT",
           "imo": "",
           "port": "부산",
           "opportunity_score": 67,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "PROTEUS RONG NA",
           "imo": "",
           "port": "대산",
           "opportunity_score": 67,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_name": "대산",
+          "port_display_name": "대산",
+          "display_name": "대산"
         }
       ],
       "opportunity_score": 100,
-      "reason_summary": "미확인 운영사: 한국 확인 선대 20척 중 영업대상 20척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "reason_summary": "미확인 운영사: 한국 확인 선대 26척 중 영업대상 26척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
       "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "recommended_next_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "data_sources": [
@@ -91,6 +216,18 @@
         "vessel_visits",
         "opportunity_memory"
       ],
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -100,17 +237,38 @@
         "vessel_type": "-",
         "gt": null,
         "dwt": null,
-        "operator": "-",
-        "operator_display": "-",
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "미확인 운영사",
+        "operator_display": "미확인 운영사",
         "operator_source": "-",
-        "operator_confidence": null,
+        "operator_confidence": 70,
         "company": "미확인 운영사",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "-",
-        "current_port_korean": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -136,6 +294,23 @@
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": null,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -144,6 +319,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [],
@@ -151,8 +333,11 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "HOT",
+        "priority_label_ko": "우선 연락",
         "target_categories": [],
-        "reason_summary": "미확인 운영사: 한국 확인 선대 20척 중 영업대상 20척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "미확인 운영사: 한국 확인 선대 26척 중 영업대상 26척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
         "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
         "data_sources": [
           "fleet-intelligence",
@@ -166,9 +351,13 @@
           "vessel_visits",
           "opportunity_memory"
         ],
-        "enrichment_sources": []
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
       },
-      "observed_vessels": 20,
+      "display_name": "미확인 항만",
+      "observed_vessels": 26,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
       "lost_vessels": 0,
@@ -178,39 +367,104 @@
       "currency": "USD",
       "top_gap_vessels": [
         {
-          "vessel_name": "TORM SPLENDID",
+          "vessel_name": "KONA TRADER",
           "imo": "",
-          "port": "울산",
-          "opportunity_score": 76,
-          "priority_label": "LOW"
+          "port": "부산",
+          "opportunity_score": 86,
+          "priority_label": "HOT",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "GELBRAY EXPRESS",
           "imo": "",
           "port": "부산",
           "opportunity_score": 71,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "VITUS BERING",
           "imo": "",
           "port": "여수",
-          "opportunity_score": 70,
-          "priority_label": "HOT"
+          "opportunity_score": 69,
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
         },
         {
           "vessel_name": "ADMIRAL SCHMIDT",
           "imo": "",
           "port": "부산",
           "opportunity_score": 67,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
           "vessel_name": "PROTEUS RONG NA",
           "imo": "",
           "port": "대산",
           "opportunity_score": 67,
-          "priority_label": "LOW"
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_name": "대산",
+          "port_display_name": "대산",
+          "display_name": "대산"
         }
       ]
     },
@@ -228,7 +482,19 @@
       "top_ports": [
         {
           "port_name": "평택·당진",
-          "count": 1
+          "count": 1,
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         }
       ],
       "top_vessels": [
@@ -237,7 +503,20 @@
           "imo": "",
           "port": "평택·당진",
           "opportunity_score": 61,
-          "priority_label": "HOT"
+          "priority_label": "HOT",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         }
       ],
       "opportunity_score": 51,
@@ -256,6 +535,18 @@
         "vessel_visits",
         "opportunity_memory"
       ],
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -265,17 +556,38 @@
         "vessel_type": "-",
         "gt": null,
         "dwt": null,
-        "operator": "-",
-        "operator_display": "-",
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "PAN OCEAN",
+        "operator_display": "PAN OCEAN",
         "operator_source": "-",
-        "operator_confidence": null,
+        "operator_confidence": 70,
         "company": "PAN OCEAN",
         "owner": "-",
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "-",
-        "current_port_korean": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -301,6 +613,23 @@
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
         "biofoulingRiskScore": null,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
@@ -309,6 +638,13 @@
         "sstCelsius": null,
         "sstAnomalyCelsius": null,
         "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [],
@@ -316,7 +652,10 @@
         "confidence": "-",
         "contact_readiness_score": null,
         "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
         "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
         "reason_summary": "PAN OCEAN: 한국 확인 선대 1척 중 영업대상 1척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
         "recommended_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
         "data_sources": [
@@ -331,8 +670,12 @@
           "vessel_visits",
           "opportunity_memory"
         ],
-        "enrichment_sources": []
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
       },
+      "display_name": "미확인 항만",
       "observed_vessels": 1,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
@@ -347,13 +690,265 @@
           "imo": "",
           "port": "평택·당진",
           "opportunity_score": 61,
-          "priority_label": "HOT"
+          "priority_label": "HOT",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "operator_name": "HMM",
+      "targeted_vessels": 1,
+      "won_vessels": 0,
+      "captured_vessels": 0,
+      "penetration_rate": 0,
+      "opportunity_gap": 1,
+      "estimated_remaining_revenue": 2880,
+      "fleet_size_korea": 1,
+      "average_opportunity_score": 57,
+      "top_ports": [
+        {
+          "port_name": "부산",
+          "count": 1,
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        }
+      ],
+      "top_vessels": [
+        {
+          "vessel_name": "HMM TOPAZ",
+          "imo": "",
+          "port": "부산",
+          "opportunity_score": 57,
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        }
+      ],
+      "opportunity_score": 50,
+      "reason_summary": "HMM: 한국 확인 선대 1척 중 영업대상 1척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "recommended_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
+      "recommended_next_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
+      "data_sources": [
+        "fleet-intelligence",
+        "fleet-memory",
+        "operator_snapshot_daily",
+        "relationship-intelligence",
+        "customer-memory",
+        "commercial_leads",
+        "sales-pipeline",
+        "operator_contact_history",
+        "vessel_visits",
+        "opportunity_memory"
+      ],
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "operator": "HMM",
+        "operator_display": "HMM",
+        "operator_source": "-",
+        "operator_confidence": 70,
+        "company": "HMM",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "opportunity_score": 50,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [],
+        "recommendedAction": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "HMM: 한국 확인 선대 1척 중 영업대상 1척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "recommended_action": "영업 후보 선박의 운영사/대리점 확인 후 첫 접촉 준비",
+        "data_sources": [
+          "fleet-intelligence",
+          "fleet-memory",
+          "operator_snapshot_daily",
+          "relationship-intelligence",
+          "customer-memory",
+          "commercial_leads",
+          "sales-pipeline",
+          "operator_contact_history",
+          "vessel_visits",
+          "opportunity_memory"
+        ],
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
+      },
+      "display_name": "미확인 항만",
+      "observed_vessels": 1,
+      "contacted_vessels": 0,
+      "quoted_vessels": 0,
+      "lost_vessels": 0,
+      "target_coverage_rate": 100,
+      "quote_rate": 0,
+      "win_rate": 0,
+      "currency": "USD",
+      "top_gap_vessels": [
+        {
+          "vessel_name": "HMM TOPAZ",
+          "imo": "",
+          "port": "부산",
+          "opportunity_score": 57,
+          "priority_label": "LOW",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         }
       ]
     }
   ],
   "summary": {
-    "operator_count": 2,
+    "operator_count": 3,
     "assumptions": {
       "currency": "USD",
       "average_cleaning_price": 18000,
@@ -364,5 +959,5 @@
     },
     "definition": "penetration_rate = contacted_or_deeper_vessels / fleet_size_korea; target_coverage_rate = targeted_vessels / fleet_size_korea; quote_rate = quoted_vessels / targeted_vessels; win_rate = won_vessels / quoted_vessels. 접촉/견적/수주/실주 이력은 실제 신호가 있을 때만 집계합니다."
   },
-  "item_count": 2
+  "item_count": 3
 }

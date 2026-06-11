@@ -1,12 +1,79 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-10T09:41:00.569Z",
-  "record_count": 21,
-  "item_count": 21,
+  "generated_at": "2026-06-11T01:07:45.925Z",
+  "record_count": 27,
+  "item_count": 27,
   "items": [
     {
+      "vessel_name": "KONA TRADER",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 39737,
+      "imo": "",
+      "call_sign": "5BMI6",
+      "vessel_type": "Bulk Carrier",
+      "vessel_type_group": "bulk_carrier",
+      "commercial_value_score": 70,
+      "commercial_value_band": "high_potential_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "PREDICTED_CLEANING_OPPORTUNITY",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "AUSTRALIA_ROUTE",
+        "HIGH_GT_EXPOSURE",
+        "HIGH_BIOSECURITY_PRESSURE",
+        "HIGH_ESG_PRESSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Biofouling-sensitive destination",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "High fouling / performance risk score",
+        "GT_30000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "LARGE_BULK_CARRIER",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
       "vessel_name": "PAN HOPE",
-      "port": "Pyeongtaek-Dangjin",
+      "port": "평택·당진",
       "port_code": "031",
       "gt": 92080,
       "imo": "",
@@ -37,7 +104,7 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "Operator identified for outreach",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -49,64 +116,23 @@
         "REPEAT_OPERATOR",
         "FLEET_OPPORTUNITY",
         "HIGH_OPERATOR_PRESENCE"
-      ]
-    },
-    {
-      "vessel_name": "VITUS BERING",
-      "port": "Yeosu",
-      "port_code": "620",
-      "gt": 66291,
-      "imo": "",
-      "call_sign": "8PSO2",
-      "vessel_type": "Bulk Carrier",
-      "vessel_type_group": "bulk_carrier",
-      "commercial_value_score": 65,
-      "commercial_value_band": "high_potential_target",
-      "data_confidence_score": 78,
-      "data_confidence_band": "medium",
-      "review_reason": "missing_imo",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "LONG_PORT_STAY",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "BIOFOULING_EXPOSURE_HIGH",
-        "LONG_ANCHORAGE_EXPOSURE",
-        "LOW_SPEED_EXPOSURE",
-        "HIGH_CONGESTION_EXPOSURE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "GT_30000_PLUS",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "LARGE_BULK_CARRIER",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "STAY_48H_PLUS",
-        "ANCHORAGE_24H_PLUS",
-        "CONGESTION_EXPOSED",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT",
-        "PREDICTED_ARRIVAL_OPPORTUNITY",
-        "PREDICTED_CLEANING_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin"
+        ]
+      },
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "vessel_name": "ERSOZ WEST",
-      "port": "Pyeongtaek-Dangjin",
+      "port": "평택·당진",
       "port_code": "031",
       "gt": 36332,
       "imo": "",
@@ -135,7 +161,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "LARGE_BULK_CARRIER",
@@ -143,11 +169,23 @@
         "CONGESTION_EXPOSED",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin"
+        ]
+      },
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "vessel_name": "C. DIGNITY",
-      "port": "Yeosu",
+      "port": "여수",
       "port_code": "620",
       "gt": 162180,
       "imo": "",
@@ -176,7 +214,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -185,11 +223,23 @@
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY",
         "BIOFOULING_EXPOSURE_HIGH"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu"
+        ]
+      },
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "vessel_name": "에이치엘 오셔닉",
-      "port": "Pyeongtaek-Dangjin",
+      "port": "평택·당진",
       "port_code": "031",
       "gt": 97574,
       "imo": "",
@@ -218,7 +268,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -226,11 +276,23 @@
         "STAY_48H_PLUS",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin"
+        ]
+      },
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "vessel_name": "GLOBAL PROSPERITY",
-      "port": "South Gyeongsang",
+      "port": "마산/창원",
       "port_code": "622",
       "gt": 119595,
       "imo": "",
@@ -266,7 +328,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -278,11 +340,23 @@
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY",
         "PREDICTED_CLEANING_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang"
+        ]
+      },
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
     },
     {
       "vessel_name": "스키야토스",
-      "port": "South Gyeongsang",
+      "port": "마산/창원",
       "port_code": "622",
       "gt": 109299,
       "imo": "",
@@ -310,7 +384,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -318,11 +392,23 @@
         "STAY_48H_PLUS",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang"
+        ]
+      },
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
     },
     {
       "vessel_name": "YUAN JU WAN",
-      "port": "Daesan",
+      "port": "대산",
       "port_code": "621",
       "gt": 64572,
       "imo": "",
@@ -359,7 +445,7 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -369,50 +455,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
-    },
-    {
-      "vessel_name": "NEW DEDICATION",
-      "port": "Incheon",
-      "port_code": "030",
-      "gt": 35832,
-      "imo": "",
-      "call_sign": "3EPP8",
-      "vessel_type": "Bulk Carrier",
-      "vessel_type_group": "bulk_carrier",
-      "commercial_value_score": 65,
-      "commercial_value_band": "high_potential_target",
-      "data_confidence_score": 66,
-      "data_confidence_band": "medium",
-      "review_reason": "missing_imo",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "LONG_PORT_STAY",
-        "LOW_SPEED_EXPOSURE",
-        "HIGH_CONGESTION_EXPOSURE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "GT_30000_PLUS",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "LARGE_BULK_CARRIER",
-        "STAY_48H_PLUS",
-        "KNOWN_COMMERCIAL_SEGMENT",
-        "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_name": "ICONSHIP",
-      "port": "South Gyeongsang",
+      "port": "마산/창원",
       "port_code": "622",
       "gt": 92752,
       "imo": "",
@@ -440,7 +499,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -448,60 +507,23 @@
         "STAY_48H_PLUS",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
-    },
-    {
-      "vessel_name": "BOYM",
-      "port": "Ulsan",
-      "port_code": "820",
-      "gt": 39171,
-      "imo": "",
-      "call_sign": "5LMN3",
-      "vessel_type": "Bulk Carrier",
-      "vessel_type_group": "bulk_carrier",
-      "commercial_value_score": 65,
-      "commercial_value_band": "high_potential_target",
-      "data_confidence_score": 78,
-      "data_confidence_band": "medium",
-      "review_reason": "missing_imo",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LONG_ANCHORAGE_WAIT",
-        "EXTENDED_IDLE_PERIOD",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "BIOFOULING_EXPOSURE_HIGH",
-        "LONG_ANCHORAGE_EXPOSURE",
-        "LONG_PORT_STAY",
-        "LOW_SPEED_EXPOSURE",
-        "HIGH_CONGESTION_EXPOSURE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Commercially relevant vessel type",
-        "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "GT_30000_PLUS",
-        "HIGH_VALUE_VESSEL_TYPE",
-        "LARGE_BULK_CARRIER",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "STAY_48H_PLUS",
-        "ANCHORAGE_24H_PLUS",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang"
+        ]
+      },
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
     },
     {
       "vessel_name": "FLORA MARIS",
-      "port": "Yeosu",
+      "port": "여수",
       "port_code": "620",
       "gt": 30964,
       "imo": "",
@@ -537,7 +559,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -547,11 +569,147 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu"
+        ]
+      },
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
+    },
+    {
+      "vessel_name": "KRUGER",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 55898,
+      "imo": "",
+      "call_sign": "3X2065",
+      "vessel_type": "Crude Tanker",
+      "vessel_type_group": "crude_tanker",
+      "commercial_value_score": 65,
+      "commercial_value_band": "high_potential_target",
+      "data_confidence_score": 86,
+      "data_confidence_band": "high",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "BERTH_ENRICHMENT_MATCHED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "TANKER_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "VITUS BERING",
+      "port": "여수",
+      "port_code": "620",
+      "gt": 66291,
+      "imo": "",
+      "call_sign": "8PSO2",
+      "vessel_type": "Bulk Carrier",
+      "vessel_type_group": "bulk_carrier",
+      "commercial_value_score": 65,
+      "commercial_value_band": "high_potential_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "HIGH_GT_EXPOSURE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "High fouling / performance risk score",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "LARGE_BULK_CARRIER",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "CONGESTION_EXPOSED",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu"
+        ]
+      },
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "vessel_name": "PROTEUS RONG NA",
-      "port": "Daesan",
+      "port": "대산",
       "port_code": "621",
       "gt": 66970,
       "imo": "",
@@ -586,7 +744,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
@@ -597,11 +755,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_name": "ADMIRAL SCHMIDT",
-      "port": "Busan",
+      "port": "부산",
       "port_code": "020",
       "gt": 66291,
       "imo": "",
@@ -636,7 +806,7 @@
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
         "High fouling / performance risk score",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "LARGE_BULK_CARRIER",
@@ -646,11 +816,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "vessel_name": "OCEAN  BREEZE",
-      "port": "Daesan",
+      "port": "대산",
       "port_code": "621",
       "gt": 30087,
       "imo": "",
@@ -676,18 +858,30 @@
         "HIGH_GT_EXPOSURE",
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "STAY_48H_PLUS",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "vessel_name": "G.FUTURE",
-      "port": "Daesan",
+      "port": "대산",
       "port_code": "621",
       "gt": 153841,
       "imo": "",
@@ -713,7 +907,7 @@
         "HIGH_GT_EXPOSURE",
         "Low-speed or waiting condition",
         "Commercially relevant vessel type",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "GT_30000_PLUS",
         "GT_80000_PLUS",
         "HIGH_VALUE_VESSEL_TYPE",
@@ -722,18 +916,87 @@
         "BERTH_CLASS_TANKER_ENERGY_BERTH",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
-      "vessel_name": "TORM SPLENDID",
-      "port": "Ulsan",
-      "port_code": "820",
-      "gt": 28877,
+      "vessel_name": "HMM TOPAZ",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 126943,
       "imo": "",
-      "call_sign": "OYCR2",
+      "call_sign": "5LSB8",
+      "vessel_type": "Container Ship",
+      "vessel_type_group": "container",
+      "commercial_value_score": 59,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 66,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "OPERATOR_IDENTIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "HIGH_GT_EXPOSURE",
+        "REPEAT_OPERATOR_CALL",
+        "NORTH_AMERICA_ROUTE",
+        "HIGH_ESG_PRESSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Biofouling-sensitive destination",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "Operator identified for outreach",
+        "GT_30000_PLUS",
+        "GT_80000_PLUS",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "MULTIPLE_ACTIVE_VESSELS",
+        "REPEAT_OPERATOR",
+        "HIGH_OPERATOR_PRESENCE"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "AKANE",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 28777,
+      "imo": "",
+      "call_sign": "H3UD",
       "vessel_type": "Tanker",
       "vessel_type_group": "tanker",
-      "commercial_value_score": 61,
+      "commercial_value_score": 56,
       "commercial_value_band": "review_target",
       "data_confidence_score": 78,
       "data_confidence_band": "medium",
@@ -749,24 +1012,19 @@
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
-        "AUSTRALIA_BRAZIL_EXPOSURE",
+        "LONG_PORT_STAY",
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
-        "PREDICTED_CLEANING_OPPORTUNITY",
         "BIOFOULING_EXPOSURE_HIGH",
         "LONG_ANCHORAGE_EXPOSURE",
-        "LONG_PORT_STAY",
         "LOW_SPEED_EXPOSURE",
         "HIGH_CONGESTION_EXPOSURE",
-        "AUSTRALIA_ROUTE",
-        "HIGH_BIOSECURITY_PRESSURE",
-        "HIGH_ESG_PRESSURE",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
-        "Biofouling-sensitive destination",
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "High fouling / performance risk score",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
@@ -775,11 +1033,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "vessel_name": "HAFNIA BEIJING",
-      "port": "Daesan",
+      "port": "대산",
       "port_code": "621",
       "gt": 43693,
       "imo": "",
@@ -818,13 +1088,83 @@
         "STAY_48H_PLUS",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
+    },
+    {
+      "vessel_name": "한유울산",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 1996,
+      "imo": "",
+      "call_sign": "210041",
+      "vessel_type": "Tanker",
+      "vessel_type_group": "tanker",
+      "commercial_value_score": 50,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "High fouling / performance risk score",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "TANKER_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "vessel_name": "스카이케미",
-      "port": "Ulsan",
+      "port": "울산",
       "port_code": "820",
-      "gt": 2170,
+      "gt": 1772,
       "imo": "",
       "call_sign": "160063",
       "vessel_type": "Tanker",
@@ -858,7 +1198,6 @@
         "Commercially relevant vessel type",
         "Workable UWC window available",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "HIGH_VALUE_VESSEL_TYPE",
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "STAY_48H_PLUS",
@@ -866,11 +1205,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan"
+        ]
+      },
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "vessel_name": "디엘 앰버",
-      "port": "Busan",
+      "port": "부산",
       "port_code": "020",
       "gt": 7333,
       "imo": "",
@@ -914,11 +1265,23 @@
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "vessel_name": "GELBRAY EXPRESS",
-      "port": "Busan",
+      "port": "부산",
       "port_code": "020",
       "gt": 10421,
       "imo": "",
@@ -951,14 +1314,226 @@
         "HIGH_ESG_PRESSURE",
         "Low-speed or waiting condition",
         "Biofouling-sensitive destination",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
         "ANCHORAGE_WAITING_CLASSIFIED",
         "STAY_48H_PLUS",
         "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
         "KNOWN_COMMERCIAL_SEGMENT",
         "PREDICTED_ARRIVAL_OPPORTUNITY"
-      ]
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "KOHSEI MARU",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 2987,
+      "imo": "",
+      "call_sign": "A8SJ3",
+      "vessel_type": "케미칼 운반선",
+      "vessel_type_group": "unknown",
+      "commercial_value_score": 37,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "설퍼 브레이브",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 3887,
+      "imo": "",
+      "call_sign": "3FEK7",
+      "vessel_type": "케미칼 운반선",
+      "vessel_type_group": "unknown",
+      "commercial_value_score": 37,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "BUENA DIOSA",
+      "port": "부산",
+      "port_code": "020",
+      "gt": 2999,
+      "imo": "",
+      "call_sign": "3EOE8",
+      "vessel_type": "Gas Carrier",
+      "vessel_type_group": "lng_lpg",
+      "commercial_value_score": 36,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 78,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LONG_ANCHORAGE_WAIT",
+        "EXTENDED_IDLE_PERIOD",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "BIOFOULING_EXPOSURE_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "Low-speed or waiting condition",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "STAY_48H_PLUS",
+        "CUMULATIVE_STAY_30D_PLUS",
+        "ANCHORAGE_24H_PLUS",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "vessel_name": "KITHNOS",
+      "port": "여수",
+      "port_code": "620",
+      "gt": 13794,
+      "imo": "",
+      "call_sign": "SVCH5",
+      "vessel_type": "Gas Carrier",
+      "vessel_type_group": "lng_lpg",
+      "commercial_value_score": 35,
+      "commercial_value_band": "review_target",
+      "data_confidence_score": 66,
+      "data_confidence_band": "medium",
+      "review_reason": "missing_imo",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "HIGH_GT_VESSEL",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "Low-speed or waiting condition",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu"
+        ]
+      },
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     }
   ]
 }
