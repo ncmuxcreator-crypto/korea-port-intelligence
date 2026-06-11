@@ -1308,8 +1308,13 @@ function mergePilotSchedule(record = {}, matches = []) {
   const direction = pilotDirection(pilot.pilot_direction || pilot.movement_type);
   const pilotTime = pilot.pilot_time || pilot.movement_time || "";
   const outboundSoon = direction === "outbound" && parseDateMs(pilotTime) && parseDateMs(pilotTime) > Date.now();
+  const pilotBerth = pilot.berth_name || pilot.berth || pilot.terminal_name || pilot.laidupFcltyNm || "";
+  const identitySafe = best.score >= 75 && (best.matched_fields?.call_sign || best.reasons?.includes("call_sign_exact"));
   const next = {
     ...record,
+    imo: record.imo || (identitySafe ? pilot.imo || "" : ""),
+    mmsi: record.mmsi || (identitySafe ? pilot.mmsi || "" : ""),
+    call_sign: record.call_sign || (identitySafe ? pilot.call_sign || "" : ""),
     pilot_schedule_matched: true,
     pilot_match_method: best.method,
     pilot_match_confidence: best.score,
@@ -1324,6 +1329,9 @@ function mergePilotSchedule(record = {}, matches = []) {
     pilot_time: record.pilot_time || pilotTime,
     pilot_direction: record.pilot_direction || direction,
     pilot_station: record.pilot_station || pilot.pilot_station,
+    berth_name: record.berth_name || record.berth || pilotBerth,
+    berth: record.berth || record.berth_name || pilotBerth,
+    berth_source: (record.berth_name || record.berth) ? record.berth_source : pilotBerth ? "pilot_schedule" : record.berth_source,
     movement_time: record.movement_time || pilotTime,
     movement_type: record.movement_type || direction,
     schedule_confidence: Math.max(Number(record.schedule_confidence || 0), best.score),
@@ -1339,6 +1347,14 @@ function mergePilotSchedule(record = {}, matches = []) {
     next.etb_candidate = next.etb_candidate || pilotTime;
     next.eta_source = next.eta_source || "pilot_schedule";
     next.etb_source = next.etb_source || "pilot_schedule";
+    next.arrival_window_source = next.arrival_window_source || "pilot_schedule";
+    next.arrival_window = next.arrival_window || {
+      basis: "pilotage_time",
+      time: pilotTime,
+      direction: "INBOUND",
+      source: "pilot_schedule",
+      confidence: best.score
+    };
     next.arrival_timing_confidence = Math.max(Number(next.arrival_timing_confidence || 0), best.score);
   }
   if (direction === "outbound" && pilotTime) {
@@ -2021,7 +2037,9 @@ async function collectRealRows() {
     };
     if (Date.now() > deadline) {
       diag.skipped = true;
-      diag.reason = "runtime_budget_exceeded";
+      diag.reason = collectorSkipReason("runtime_budget_exceeded");
+      diag.skip_reason = diag.reason;
+      diag.raw_skip_reason = "runtime_budget_exceeded";
       diagnostics.skipped_count += 1;
       diagnostics.sources.push(finishDiag("skipped"));
       continue;

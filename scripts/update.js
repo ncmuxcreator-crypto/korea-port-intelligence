@@ -1,6 +1,6 @@
 ﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
-import { createRunId, enrichWithVesselMasterCache, recordRawArchiveIndex, resolveImoMmsiCandidates, saveToSupabase } from "./lib/db.js";
+import { createRunId, enrichWithVesselMasterCache, getSupabase, recordRawArchiveIndex, resolveImoMmsiCandidates, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
 import { detectSecrets } from "./lib/secrets.js";
 import { writeSnapshotOutputs, buildBackendOpsReport } from "./lib/snapshot-store.js";
@@ -2982,6 +2982,7 @@ let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
 let vesselMasterCacheDiagnostics = {};
 let identityResolutionDiagnostics = {};
+let pilotageEnrichmentDiagnostics = { status: "not_run" };
 let startupConfigDiagnostics = configDiagnostics();
 let runtimeConfigAudit = buildRuntimeConfigAudit();
 
@@ -6120,6 +6121,7 @@ function buildPilotageSignal(record = {}) {
   const station = firstNonEmpty(record.pilot_station, record.pilotage_station, record.pilot_boarding_station);
   const status = firstNonEmpty(record.pilot_status, record.pilotage_status, record.pilot_order_status, record.pilot_schedule_status);
   const direction = pilotageKnownDirection(firstNonEmpty(record.pilot_direction, record.movement_type));
+  const berthName = firstNonEmpty(record.berth_name, record.berth, record.berth_no, record.berth_code, record.terminal_name, record.laidupFcltyNm);
   const sourceNames = pilotageSourceNames(record);
   const sourceIndicatesPilotage = pilotageSourceIndicatesSchedule(record);
   const matched = Boolean(record.pilot_schedule_matched || record.pilot_only_arrival_review || record.outbound_pilot_scheduled || record.source_origin === "pilot_schedule");
@@ -6145,9 +6147,17 @@ function buildPilotageSignal(record = {}) {
     pilotage_time: pilotageTime || null,
     pilotage_direction: direction || null,
     pilot_station: pilotageHasText(station) ? station : null,
+    berth_name: pilotageHasText(berthName) ? berthName : null,
     pilotage_port: normalizedPort.display_name || null,
     pilotage_source: source,
     pilotage_confidence: confidence,
+    arrival_window: hasPilotage && pilotageTime ? {
+      basis: "pilotage_time",
+      time: pilotageTime,
+      direction: direction || null,
+      source: source || "pilotage_signal",
+      confidence
+    } : null,
     reason: hasPilotage
       ? "도선 정보가 확인되어 입항/접안 타이밍 확인이 필요합니다."
       : ""
@@ -6160,6 +6170,332 @@ function hasPilotageSignal(record = {}) {
 
 function pilotageDetectedCount(records = []) {
   return Array.isArray(records) ? records.filter(hasPilotageSignal).length : 0;
+}
+
+function pilotageNormalizeIdentity(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
+
+function pilotageEventTime(record = {}) {
+  return firstNonEmpty(
+    record.pilot_time,
+    record.pilotage_time,
+    record.pilot_event_time,
+    record.pilot_boarding_time,
+    record.pilot_inbound_time,
+    record.pilot_outbound_time,
+    record.movement_time,
+    record.eta_candidate,
+    record.etb_candidate,
+    record.etd_candidate,
+    record.eta,
+    record.etb,
+    record.etd
+  );
+}
+
+function pilotageEventBerth(record = {}) {
+  return firstNonEmpty(
+    record.berth_name,
+    record.berth,
+    record.berth_no,
+    record.berth_code,
+    record.terminal_name,
+    record.laidupFcltyNm,
+    record.raw_payload?.berth_name,
+    record.raw_payload?.berth,
+    record.raw_payload?.terminal_name,
+    record.raw_payload?.laidupFcltyNm
+  );
+}
+
+function pilotageEventDirection(record = {}) {
+  return pilotageKnownDirection(firstNonEmpty(
+    record.pilot_direction,
+    record.movement_type,
+    record.raw_payload?.pilot_direction,
+    record.raw_payload?.movement_type
+  ));
+}
+
+function pilotagePortKey(record = {}) {
+  const normalized = normalizedPortObject(record);
+  return String(normalized.port_code || normalized.display_name || record.port_code || record.port_name || record.port || "").toUpperCase();
+}
+
+function pilotageTimeWindowScore(record = {}, event = {}) {
+  const eventTime = parseScheduleTime(pilotageEventTime(event));
+  if (!eventTime) return { score: 0, matched: false, diffHours: null };
+  const candidateTimes = [
+    record.eta,
+    record.etb,
+    record.ata,
+    record.atb,
+    record.etd,
+    record.atd,
+    record.eta_candidate,
+    record.etb_candidate,
+    record.etd_candidate,
+    record.pilot_time,
+    record.movement_time,
+    record.predicted_arrival_time,
+    record.departure_prediction_eta
+  ].map(parseScheduleTime).filter(Boolean);
+  if (!candidateTimes.length) return { score: 6, matched: false, diffHours: null };
+  const bestDiffHours = Math.min(...candidateTimes.map(value => Math.abs(value.getTime() - eventTime.getTime()) / 36e5));
+  if (bestDiffHours <= 6) return { score: 22, matched: true, diffHours: Math.round(bestDiffHours * 10) / 10 };
+  if (bestDiffHours <= 24) return { score: 16, matched: true, diffHours: Math.round(bestDiffHours * 10) / 10 };
+  if (bestDiffHours <= 48) return { score: 8, matched: true, diffHours: Math.round(bestDiffHours * 10) / 10 };
+  return { score: -18, matched: false, diffHours: Math.round(bestDiffHours * 10) / 10 };
+}
+
+function normalizePilotageEvent(row = {}, source = "current_batch") {
+  const raw = row.raw_payload && typeof row.raw_payload === "object" ? row.raw_payload : {};
+  const portName = firstNonEmpty(row.port_name, row.port, raw.port_name, raw.port);
+  const normalized = normalizedPortObject({ ...row, port_name: portName });
+  const direction = pilotageEventDirection(row) || pilotageKnownDirection(firstNonEmpty(raw.pilot_direction, raw.movement_type));
+  const pilotTime = pilotageEventTime(row);
+  return {
+    source,
+    run_id: row.run_id || null,
+    vessel_id: firstNonEmpty(row.matched_master_vessel_id, row.master_vessel_id, row.vessel_id, raw.master_vessel_id, raw.vessel_id),
+    vessel_name: firstNonEmpty(row.vessel_name, raw.vessel_name),
+    normalized_vessel_name: normalizeVesselName(firstNonEmpty(row.normalized_vessel_name, row.vessel_name, raw.normalized_vessel_name, raw.vessel_name)),
+    imo: firstNonEmpty(row.imo, raw.imo, raw.imo_no, raw.imoNo),
+    mmsi: firstNonEmpty(row.mmsi, raw.mmsi, raw.mmsi_no, raw.mmsiNo),
+    call_sign: firstNonEmpty(row.call_sign, raw.call_sign, raw.callsign, raw.clsgn, raw.vsslCallSgn),
+    port_code: normalized.port_code || row.port_code || raw.port_code || "",
+    port_name: normalized.display_name || portName || "",
+    pilot_time: pilotTime || null,
+    pilot_direction: direction || null,
+    pilot_station: firstNonEmpty(row.pilot_station, raw.pilot_station, raw.pilotage_station, raw.pilot_boarding_station),
+    berth_name: pilotageEventBerth(row) || null,
+    movement_type: firstNonEmpty(row.movement_type, raw.movement_type, row.pilot_direction, raw.pilot_direction),
+    status: firstNonEmpty(row.status, raw.status, row.pilot_schedule_status, raw.pilot_schedule_status),
+    confidence: Number(row.match_confidence || row.pilot_match_confidence || row.schedule_confidence || raw.pilot_match_confidence || raw.schedule_confidence || 0),
+    created_at: firstNonEmpty(row.created_at, row.updated_at, raw.updated_at),
+    raw_payload: raw
+  };
+}
+
+function isReliablePilotageReference(row = {}) {
+  return Boolean(
+    row.pilot_schedule_matched ||
+    row.pilot_only_arrival_review ||
+    row.outbound_pilot_scheduled ||
+    row.source_origin === "pilot_schedule" ||
+    pilotageHasText(row.pilot_time) ||
+    pilotageHasText(row.pilotage_time) ||
+    pilotageHasText(row.pilot_event_time) ||
+    pilotageHasText(row.movement_time) && pilotageSourceIndicatesSchedule(row)
+  );
+}
+
+async function loadRecentPilotScheduleEvents({ limit = 2000 } = {}) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { events: [], diagnostics: { status: "not_configured", loaded: 0 } };
+  }
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("pilot_schedule_events")
+      .select("run_id,port_code,port_name,vessel_name,normalized_vessel_name,call_sign,pilot_time,pilot_direction,pilot_station,berth_name,movement_type,status,match_confidence,matched_master_vessel_id,raw_payload,created_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return {
+      events: Array.isArray(data) ? data.map(row => normalizePilotageEvent(row, "pilot_schedule_events")) : [],
+      diagnostics: { status: "loaded", loaded: Array.isArray(data) ? data.length : 0 }
+    };
+  } catch (error) {
+    return {
+      events: [],
+      diagnostics: {
+        status: "failed",
+        loaded: 0,
+        error: error?.message || String(error)
+      }
+    };
+  }
+}
+
+function pilotageMatchRecordToEvent(record = {}, event = {}) {
+  const recordPort = pilotagePortKey(record);
+  const eventPort = pilotagePortKey(event);
+  const samePort = Boolean(recordPort && eventPort && recordPort === eventPort);
+  const portConflict = Boolean(recordPort && eventPort && recordPort !== eventPort);
+  const recordCallSign = pilotageNormalizeIdentity(firstNonEmpty(record.call_sign, record.callsign, record.clsgn));
+  const eventCallSign = pilotageNormalizeIdentity(event.call_sign);
+  const callSignMatch = Boolean(recordCallSign && eventCallSign && recordCallSign === eventCallSign);
+  const recordVesselId = pilotageNormalizeIdentity(firstNonEmpty(record.master_vessel_id, record.hybrid_entity_key, record.vessel_id));
+  const eventVesselId = pilotageNormalizeIdentity(event.vessel_id);
+  const vesselIdMatch = Boolean(recordVesselId && eventVesselId && recordVesselId === eventVesselId);
+  const recordName = normalizeVesselName(firstNonEmpty(record.normalized_vessel_name, record.vessel_name, record.name, record.ship_name));
+  const eventName = normalizeVesselName(firstNonEmpty(event.normalized_vessel_name, event.vessel_name));
+  const nameMatch = Boolean(recordName && eventName && recordName === eventName);
+  const recordBerth = pilotageNormalizeIdentity(firstNonEmpty(record.berth_name, record.berth, record.terminal_name, record.laidupFcltyNm));
+  const eventBerth = pilotageNormalizeIdentity(event.berth_name);
+  const berthMatch = Boolean(recordBerth && eventBerth && recordBerth === eventBerth);
+  const time = pilotageTimeWindowScore(record, event);
+  let score = 0;
+  const reasons = [];
+  if (vesselIdMatch) {
+    score += 55;
+    reasons.push("same_vessel_id");
+  }
+  if (callSignMatch) {
+    score += 45;
+    reasons.push("same_call_sign");
+  }
+  if (nameMatch) {
+    score += 22;
+    reasons.push("same_vessel_name");
+  }
+  if (samePort) {
+    score += 20;
+    reasons.push("same_port");
+  }
+  if (portConflict) {
+    score -= 30;
+    reasons.push("port_conflict");
+  }
+  if (berthMatch) {
+    score += 10;
+    reasons.push("same_berth");
+  }
+  score += time.score;
+  if (time.matched) reasons.push(`time_window_${time.diffHours}h`);
+  const strongIdentity = vesselIdMatch || callSignMatch;
+  const safeNameMatch = nameMatch && samePort && (time.matched || berthMatch);
+  const apply = score >= 70 && (strongIdentity || safeNameMatch);
+  return {
+    score: Math.max(0, Math.min(100, Math.round(score))),
+    apply,
+    match_type: strongIdentity ? (vesselIdMatch ? "vessel_id" : "call_sign_port") : safeNameMatch ? "vessel_name_port_time" : "weak",
+    reasons
+  };
+}
+
+function applyPilotageEventToRecord(record = {}, event = {}, match = {}) {
+  const next = record;
+  const direction = event.pilot_direction || pilotageEventDirection(event);
+  const pilotTime = event.pilot_time || pilotageEventTime(event);
+  const berth = event.berth_name || pilotageEventBerth(event);
+  const source = event.source || "pilot_schedule";
+  next.pilotage_enriched = true;
+  next.pilotage_enrichment_source = source;
+  next.pilotage_match_confidence = Math.max(Number(next.pilotage_match_confidence || 0), match.score || event.confidence || 0);
+  next.pilotage_match_type = match.match_type || next.pilotage_match_type || "";
+  next.pilotage_match_reasons = [...new Set([...(Array.isArray(next.pilotage_match_reasons) ? next.pilotage_match_reasons : []), ...(match.reasons || [])])];
+  next.pilot_schedule_matched = next.pilot_schedule_matched || match.score >= 80;
+  next.pilot_match_confidence = Math.max(Number(next.pilot_match_confidence || 0), match.score || Number(event.confidence || 0));
+  next.pilot_match_score = Math.max(Number(next.pilot_match_score || 0), match.score || Number(event.confidence || 0));
+  next.pilot_time = firstNonEmpty(next.pilot_time, pilotTime);
+  next.movement_time = firstNonEmpty(next.movement_time, pilotTime);
+  next.pilot_direction = firstNonEmpty(next.pilot_direction, direction);
+  next.movement_type = firstNonEmpty(next.movement_type, direction);
+  next.pilot_station = firstNonEmpty(next.pilot_station, event.pilot_station);
+  next.berth_name = firstNonEmpty(next.berth_name, next.berth, berth);
+  next.berth = firstNonEmpty(next.berth, next.berth_name, berth);
+  if (berth && !next.berth_source) next.berth_source = source;
+  if (direction === "INBOUND" || direction === "PILOTAGE") {
+    next.eta_candidate = firstNonEmpty(next.eta_candidate, next.eta, pilotTime);
+    next.etb_candidate = firstNonEmpty(next.etb_candidate, next.etb, pilotTime);
+    next.eta_source = firstNonEmpty(next.eta_source, pilotTime ? source : "");
+    next.etb_source = firstNonEmpty(next.etb_source, pilotTime ? source : "");
+    next.arrival_window_source = firstNonEmpty(next.arrival_window_source, source);
+    next.arrival_timing_confidence = Math.max(Number(next.arrival_timing_confidence || 0), match.score || 0);
+  }
+  if (direction === "OUTBOUND") {
+    next.etd_candidate = firstNonEmpty(next.etd_candidate, next.etd, pilotTime);
+    next.etd_source = firstNonEmpty(next.etd_source, pilotTime ? source : "");
+    next.departure_timing_confidence = Math.max(Number(next.departure_timing_confidence || 0), match.score || 0);
+    next.outbound_pilot_scheduled = true;
+  }
+  if (pilotTime) {
+    next.arrival_window = next.arrival_window || {
+      basis: "pilotage_time",
+      time: pilotTime,
+      direction: direction || null,
+      source,
+      confidence: match.score || event.confidence || null
+    };
+  }
+  if (!hasValue(next.imo) && hasValue(event.imo) && ["vessel_id", "call_sign_port"].includes(match.match_type)) {
+    next.imo = event.imo;
+    next.identity_source = firstNonEmpty(next.identity_source, source);
+    next.identity_confidence = Math.max(Number(next.identity_confidence || 0), match.score || 0);
+    next.identity_match_type = firstNonEmpty(next.identity_match_type, `pilotage_${match.match_type}`);
+  } else if (hasValue(next.imo) && hasValue(event.imo) && String(next.imo) !== String(event.imo)) {
+    next.identity_conflict = next.identity_conflict || { source, field: "imo", existing: next.imo, candidate: event.imo };
+  }
+  if (!hasValue(next.mmsi) && hasValue(event.mmsi) && ["vessel_id", "call_sign_port"].includes(match.match_type)) {
+    next.mmsi = event.mmsi;
+    next.identity_source = firstNonEmpty(next.identity_source, source);
+    next.identity_confidence = Math.max(Number(next.identity_confidence || 0), match.score || 0);
+    next.identity_match_type = firstNonEmpty(next.identity_match_type, `pilotage_${match.match_type}`);
+  } else if (hasValue(next.mmsi) && hasValue(event.mmsi) && String(next.mmsi) !== String(event.mmsi)) {
+    next.identity_conflict = next.identity_conflict || { source, field: "mmsi", existing: next.mmsi, candidate: event.mmsi };
+  }
+  next.reason_codes = [...new Set([...(Array.isArray(next.reason_codes) ? next.reason_codes : []), "PILOTAGE_EVENT_ENRICHED"])];
+  return next;
+}
+
+async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [] } = {}) {
+  const currentEvents = referenceRows
+    .filter(isReliablePilotageReference)
+    .map(row => normalizePilotageEvent(row, "current_batch_pilotage"));
+  const persisted = await loadRecentPilotScheduleEvents();
+  const events = [...currentEvents, ...persisted.events].filter(event =>
+    hasValue(event.pilot_time || event.berth_name || event.pilot_station || event.call_sign || event.vessel_name)
+  );
+  let applied = 0;
+  let identityApplied = 0;
+  let berthApplied = 0;
+  let arrivalApplied = 0;
+  const bySource = new Map();
+  const needsReview = [];
+  for (const record of records) {
+    const best = events
+      .map(event => ({ event, match: pilotageMatchRecordToEvent(record, event) }))
+      .sort((a, b) => b.match.score - a.match.score)[0];
+    if (!best || !best.match.apply) {
+      if (best?.match?.score >= 45) needsReview.push({ vessel_name: record.vessel_name, port: record.port_name || record.port, score: best.match.score, match_type: best.match.match_type });
+      continue;
+    }
+    const before = {
+      imo: record.imo,
+      mmsi: record.mmsi,
+      berth: record.berth_name || record.berth,
+      eta: record.eta_candidate || record.eta,
+      etb: record.etb_candidate || record.etb
+    };
+    applyPilotageEventToRecord(record, best.event, best.match);
+    applied += 1;
+    bySource.set(best.event.source, (bySource.get(best.event.source) || 0) + 1);
+    if ((!before.imo && record.imo) || (!before.mmsi && record.mmsi)) identityApplied += 1;
+    if (!before.berth && (record.berth_name || record.berth)) berthApplied += 1;
+    if ((!before.eta && (record.eta_candidate || record.eta)) || (!before.etb && (record.etb_candidate || record.etb))) arrivalApplied += 1;
+  }
+  return {
+    status: "completed",
+    current_batch_events: currentEvents.length,
+    persisted_events_loaded: persisted.diagnostics.loaded || 0,
+    persisted_events_status: persisted.diagnostics.status,
+    persisted_events_error: persisted.diagnostics.error || null,
+    reference_events_total: events.length,
+    applied_to_records: applied,
+    identity_applied_count: identityApplied,
+    berth_applied_count: berthApplied,
+    arrival_timing_applied_count: arrivalApplied,
+    needs_review_count: needsReview.length,
+    sample_needs_review: needsReview.slice(0, 10),
+    applied_by_source: Object.fromEntries([...bySource.entries()].sort((a, b) => b[1] - a[1]))
+  };
 }
 
 function buildVesselDisplay(record = {}) {
@@ -6332,6 +6668,9 @@ function buildVesselDisplay(record = {}) {
     atb: vesselDisplayText(source, ["atb", "actual_berth", "vessel_display.atb"]),
     etd: vesselDisplayText(source, ["etd", "estimated_departure", "departure_prediction_eta", "vessel_display.etd"]),
     atd: vesselDisplayText(source, ["atd", "actual_departure", "vessel_display.atd"]),
+    berth_source: vesselDisplayText(source, ["berth_source", "berth_data_source", "vessel_display.berth_source"]),
+    arrival_window: record.arrival_window || pilotageSignal.arrival_window || null,
+    arrival_window_source: vesselDisplayText(source, ["arrival_window_source", "eta_source", "etb_source", "vessel_display.arrival_window_source"], pilotageSignal.arrival_window?.source || "-"),
     stay_days: roundedDisplayNumber(stayDays),
     stay_hours: roundedDisplayNumber(stayHours),
     waiting_hours: roundedDisplayNumber(waitingHours),
@@ -6601,6 +6940,17 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "pilot_station",
   "pilot_status",
   "pilot_source_url",
+  "pilotage_enriched",
+  "pilotage_enrichment_source",
+  "pilotage_match_confidence",
+  "pilotage_match_type",
+  "pilotage_match_reasons",
+  "arrival_window",
+  "arrival_window_source",
+  "berth_source",
+  "eta_candidate",
+  "etb_candidate",
+  "etd_candidate",
   "hull_cleaning_candidate_score",
   "hotspot_score",
   "sst_anomaly",
@@ -15983,6 +16333,14 @@ try {
       }
     )
   );
+  pilotageEnrichmentDiagnostics = await enrichRecordsWithPilotageEvents(allCollectedVessels, {
+    referenceRows: [...collectedRows, ...snapshotOutputs.merged]
+  });
+  baseReport.pilotage_enrichment = pilotageEnrichmentDiagnostics;
+  baseReport.collector_diagnostics = {
+    ...(baseReport.collector_diagnostics || {}),
+    pilotage_enrichment: pilotageEnrichmentDiagnostics
+  };
   const oceanLayer = await buildOceanIntelligenceLayer({
     records: allCollectedVessels,
     generatedAt: completedAt,
@@ -16183,6 +16541,7 @@ try {
     operator_diagnostics: operatorDiagnostics,
     matching_diagnostics: matchingDiagnostics,
     prediction_diagnostics: predictionDiagnostics,
+    pilotage_enrichment: pilotageEnrichmentDiagnostics,
     data_quality_layer: dataQualityLayer,
     data_health_validation: dataHealthValidation,
     dataset_generation_audit: datasetGenerationAudit,
@@ -16203,7 +16562,7 @@ try {
     target_category_kpis: targetCategorySummary.kpis,
     target_split_counts: targetSplitCounts,
     backend_ops: snapshotOutputs.backendOps,
-    collector_diagnostics: { ...collectorDiagnosticsAfterCollection, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
+    collector_diagnostics: { ...collectorDiagnosticsAfterCollection, pilotage_enrichment: pilotageEnrichmentDiagnostics, actionable_row_count: collectorDiagnosticsAfterCollection.actionable_row_count ?? mergedActionableRows },
     vessel_master_cache: vesselMasterCacheDiagnostics,
     identity_resolution: identityResolutionDiagnostics,
     candidate_changes: snapshotOutputs.candidateChanges,

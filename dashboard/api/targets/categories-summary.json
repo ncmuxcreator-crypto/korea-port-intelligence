@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T04:01:06.981Z",
+  "generated_at": "2026-06-11T05:25:34.991Z",
   "data_mode": "live",
   "record_count": 29,
   "item_count": 10,
-  "summary_item_count": 31,
+  "summary_item_count": 32,
   "source_table": "sales_candidates_current,opportunity_master,risk_history,rule_evaluations,explainability_snapshots,agent-followup-queue,arrival-pipeline,anchorage-waiting,staying-vessels",
   "detail_endpoint": "dashboard/api/targets/categories.json",
   "actionability_counts": {
     "CONTACT_NOW": 32,
-    "VERIFY_CONTACT": 24,
+    "VERIFY_CONTACT": 25,
     "MONITOR": 1,
     "HOLD": 0
   },
@@ -444,7 +444,7 @@
       "korean_label": "묘박/정박 작업 가능",
       "category_label": "묘박/정박 작업 가능",
       "short_label": "묘박/정박",
-      "count": 18,
+      "count": 19,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -490,46 +490,6 @@
         },
         {
           "rank": 2,
-          "vessel_name": "SM NAVIGATOR",
-          "imo": "",
-          "mmsi": "",
-          "call_sign": "3EKY5",
-          "operator_display": "삼진에이전시",
-          "current_port": "울산",
-          "current_port_korean": "울산",
-          "normalized_port": {
-            "port_code": "820",
-            "port_name": "울산",
-            "display_name": "울산",
-            "raw_port": "Ulsan",
-            "raw_aliases": [
-              "Ulsan",
-              "SUBIC BAY",
-              "울산항",
-              "울산"
-            ]
-          },
-          "priority_label": "WARM",
-          "actionability_category": "CONTACT_NOW",
-          "actionability_label": "즉시 연락",
-          "opportunity_score": 69,
-          "risk_score": 64,
-          "confidence_score": 35,
-          "missing_fields": [
-            "contact_person",
-            "imo",
-            "mmsi"
-          ],
-          "known_company": "삼진에이전시",
-          "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-          "recommended_action": "운영선사 확인",
-          "port_code": "820",
-          "port_name": "울산",
-          "port_display_name": "울산",
-          "display_name": "울산"
-        },
-        {
-          "rank": 3,
           "vessel_name": "GLOBAL PROSPERITY",
           "imo": "",
           "mmsi": "",
@@ -569,7 +529,7 @@
           "display_name": "마산/창원"
         },
         {
-          "rank": 4,
+          "rank": 3,
           "vessel_name": "YUAN JU WAN",
           "imo": "",
           "mmsi": "",
@@ -609,7 +569,7 @@
           "display_name": "대산"
         },
         {
-          "rank": 5,
+          "rank": 4,
           "vessel_name": "FLORA MARIS",
           "imo": "",
           "mmsi": "",
@@ -647,6 +607,45 @@
           "port_name": "여수",
           "port_display_name": "여수",
           "display_name": "여수"
+        },
+        {
+          "rank": 5,
+          "vessel_name": "KRUGER",
+          "imo": "",
+          "mmsi": "",
+          "call_sign": "3X2065",
+          "operator_display": "케이앤제이오션(주)",
+          "current_port": "부산",
+          "current_port_korean": "부산",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "Busan",
+            "raw_aliases": [
+              "Busan",
+              "부산항",
+              "부산"
+            ]
+          },
+          "priority_label": "WARM",
+          "actionability_category": "CONTACT_NOW",
+          "actionability_label": "즉시 연락",
+          "opportunity_score": 65,
+          "risk_score": 50,
+          "confidence_score": 35,
+          "missing_fields": [
+            "contact_person",
+            "imo",
+            "mmsi"
+          ],
+          "known_company": "케이앤제이오션(주)",
+          "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
+          "recommended_action": "운영선사 확인",
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         }
       ]
     },
@@ -656,7 +655,7 @@
       "korean_label": "장기 체류 위험",
       "category_label": "장기 체류 위험",
       "short_label": "장기 체류",
-      "count": 303,
+      "count": 312,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -870,8 +869,8 @@
       "korean_label": "Compliance 대상",
       "category_label": "Compliance 대상",
       "short_label": "Compliance",
-      "count": 4,
-      "returned_count": 4,
+      "count": 5,
+      "returned_count": 5,
       "items_limited": false,
       "items": [
         {
@@ -996,6 +995,46 @@
         },
         {
           "rank": 4,
+          "vessel_name": "SAKURA CRESCENT",
+          "imo": "",
+          "mmsi": "",
+          "call_sign": "7KSY",
+          "operator_display": "남해해상(주)",
+          "current_port": "여수",
+          "current_port_korean": "여수",
+          "normalized_port": {
+            "port_code": "620",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "Yeosu",
+            "raw_aliases": [
+              "Yeosu",
+              "NEWCASTLE",
+              "여수·광양항",
+              "여수"
+            ]
+          },
+          "priority_label": "LOW",
+          "actionability_category": "CONTACT_NOW",
+          "actionability_label": "즉시 연락",
+          "opportunity_score": 56,
+          "risk_score": 46,
+          "confidence_score": 35,
+          "missing_fields": [
+            "contact_person",
+            "imo",
+            "mmsi"
+          ],
+          "known_company": "남해해상(주)",
+          "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
+          "recommended_action": "운영선사 확인",
+          "port_code": "620",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
+        },
+        {
+          "rank": 5,
           "vessel_name": "GELBRAY EXPRESS",
           "imo": "",
           "mmsi": "",
@@ -1390,13 +1429,13 @@
     {
       "severity": "INFO",
       "feature": "묘박/정박 작업 가능",
-      "message": "상세 18건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 19건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {
       "severity": "INFO",
       "feature": "장기 체류 위험",
-      "message": "상세 303건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 312건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {

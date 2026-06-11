@@ -65,6 +65,18 @@ function displayPilotSignal(row) {
   return signal && typeof signal === "object" && signal.has_pilotage === true;
 }
 
+function hasPilotageArrivalWindow(row) {
+  const display = row?.vessel_display && typeof row.vessel_display === "object" ? row.vessel_display : {};
+  const signal = display.pilotage_signal || row?.pilotage_signal || {};
+  return Boolean(display.arrival_window || row?.arrival_window || signal.arrival_window || field(row, "arrival_window_source"));
+}
+
+function hasPilotageBerth(row) {
+  const display = row?.vessel_display && typeof row.vessel_display === "object" ? row.vessel_display : {};
+  const signal = display.pilotage_signal || row?.pilotage_signal || {};
+  return Boolean(field(row, "berth", "berth_name") || signal.berth_name || field(row, "berth_source"));
+}
+
 function sourceName(row) {
   const signal = row?.vessel_display?.pilotage_signal || row?.pilotage_signal || {};
   return String(signal.pilotage_source || row.source_origin || row.source_name || "unknown");
@@ -88,6 +100,8 @@ function summarizeRows(rows) {
     total: rows.length,
     raw_reliable_count: rawReliable.length,
     display_count: displayReliable.length,
+    arrival_window_count: displayReliable.filter(hasPilotageArrivalWindow).length,
+    berth_count: displayReliable.filter(hasPilotageBerth).length,
     linked_by_call_sign: displayReliable.filter(row => identityMatchType(row) === "call_sign").length,
     linked_by_vessel_name: displayReliable.filter(row => identityMatchType(row) === "vessel_name").length,
     weak_matches: displayReliable.filter(row => identityMatchType(row) === "weak_or_missing_identity").length,
@@ -120,6 +134,7 @@ const endpointRows = {
 
 const report = latestReport();
 const summaries = Object.fromEntries(Object.entries(endpointRows).map(([name, rows]) => [name, summarizeRows(rows)]));
+const pilotageEnrichment = report?.pilotage_enrichment || report?.collector_diagnostics?.pilotage_enrichment || {};
 const bootstrap = readJson("dashboard/api/bootstrap.json", {});
 const bootstrapKpi = Number(bootstrap?.kpis?.pilotage_detected_count || 0);
 const raw = endpointRows.all_collected;
@@ -153,10 +168,16 @@ console.log(`raw_reliable_pilotage_count=${summaries.all_collected.raw_reliable_
 console.log(`source_url_only_not_counted=${sourceUrlOnly}`);
 console.log(`pilot_schedule_events_saved=${pipelineSaved}`);
 console.log(`bootstrap_kpi_pilotage_detected_count=${bootstrapKpi}`);
+console.log(`pilotage_enrichment_status=${pilotageEnrichment.status || "unknown"}`);
+console.log(`pilotage_reference_events_total=${pilotageEnrichment.reference_events_total || 0}`);
+console.log(`pilotage_applied_to_records=${pilotageEnrichment.applied_to_records || 0}`);
+console.log(`pilotage_berth_applied_count=${pilotageEnrichment.berth_applied_count || 0}`);
+console.log(`pilotage_arrival_timing_applied_count=${pilotageEnrichment.arrival_timing_applied_count || 0}`);
+console.log(`pilotage_identity_applied_count=${pilotageEnrichment.identity_applied_count || 0}`);
 console.log("");
 console.log("Endpoint coverage");
 for (const [name, summary] of Object.entries(summaries)) {
-  console.log(`- ${name}: total=${summary.total}, display=${summary.display_count}, raw_reliable=${summary.raw_reliable_count}, call_sign=${summary.linked_by_call_sign}, vessel_name=${summary.linked_by_vessel_name}, weak=${summary.weak_matches}`);
+  console.log(`- ${name}: total=${summary.total}, display=${summary.display_count}, raw_reliable=${summary.raw_reliable_count}, arrival_window=${summary.arrival_window_count}, berth=${summary.berth_count}, call_sign=${summary.linked_by_call_sign}, vessel_name=${summary.linked_by_vessel_name}, weak=${summary.weak_matches}`);
 }
 console.log("");
 console.log("Detected by source");
