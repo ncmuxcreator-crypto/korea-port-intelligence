@@ -15,6 +15,7 @@ import {
   printRuntimeConfigAudit
 } from "./lib/runtime-config-audit.js";
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
+import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
@@ -16398,6 +16399,7 @@ try {
     active_runtime_limits: startupConfigDiagnostics.active_runtime_limits
   }));
   printRuntimeConfigAudit(runtimeConfigAudit);
+  printSourceEnvDiagnostics();
   const apiSources = detectSecrets();
   console.log(`[HWK] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
   const dictionaries = loadReferenceDictionaries();
@@ -17199,6 +17201,12 @@ try {
     collectorDiagnostics: collectorDiagnosticsAfterCollection,
     generatedAt: completedAt
   });
+  const sourceCollectionStatusPayload = withRunOrigin(buildSourceCollectionStatus({
+    report,
+    collectorDiagnostics: collectorDiagnosticsAfterCollection,
+    generatedAt: completedAt
+  }), finalRunOrigin);
+  sourceHealthRuntimeReport.source_collection_status = sourceCollectionStatusPayload;
   const healthPayload = withRunOrigin({
     run_id: report.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -17669,6 +17677,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
+  writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
@@ -17814,6 +17823,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
+  writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

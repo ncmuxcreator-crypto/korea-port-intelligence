@@ -1,20 +1,20 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T08:53:35.297Z",
+  "generated_at": "2026-06-11T09:44:10.845Z",
   "data_mode": "live",
-  "record_count": 32,
+  "record_count": 31,
   "item_count": 0,
   "source_table": "status.json",
   "detail_endpoint": "dashboard/api/status.json",
   "status": "success",
   "health_status": "success",
-  "run_id": "run_20260611085053060_c44ab234",
-  "active_run_id": "run_20260611085053060_c44ab234",
-  "latest_successful_run_id": "run_20260611085053060_c44ab234",
-  "last_success_at": "2026-06-11T08:53:35.297Z",
-  "current_rows": 32,
-  "selected_dataset_count": 32,
-  "total_rows": 972,
+  "run_id": "run_20260611094049200_540e1000",
+  "active_run_id": "run_20260611094049200_540e1000",
+  "latest_successful_run_id": "run_20260611094049200_540e1000",
+  "last_success_at": "2026-06-11T09:44:10.845Z",
+  "current_rows": 31,
+  "selected_dataset_count": 31,
+  "total_rows": 968,
   "fallback_used": false,
   "supabase_write_status": "completed",
   "dataset_promotion_status": "promoted",
@@ -25,14 +25,14 @@
       "post_write_verification_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 972,
+        "vessel_snapshots": 968,
         "source_collection_logs": 34,
-        "vessel_entities": 972,
-        "vessel_master": 972,
-        "port_call_master": 972,
-        "opportunity_master": 972,
-        "risk_history": 324,
-        "vessel_events": 4004,
+        "vessel_entities": 968,
+        "vessel_master": 968,
+        "port_call_master": 968,
+        "opportunity_master": 968,
+        "risk_history": 322,
+        "vessel_events": 3980,
         "pilot_schedule_events": 0,
         "port_congestion_snapshots": 8,
         "enrichment_match_candidates": 0,
@@ -42,20 +42,20 @@
         "sales_candidates_current": 114,
         "immediate_targets_current": 0,
         "port_summary_current": 8,
-        "feature_store": 324,
-        "feature_snapshots": 324,
-        "rule_evaluations": 715,
-        "explainability_snapshots": 324,
-        "model_training_rows": 212,
-        "vessel_snapshot_daily": 972,
+        "feature_store": 322,
+        "feature_snapshots": 322,
+        "rule_evaluations": 709,
+        "explainability_snapshots": 322,
+        "model_training_rows": 211,
+        "vessel_snapshot_daily": 968,
         "port_snapshot_daily": 8,
         "operator_snapshot_daily": 11,
-        "route_snapshot_daily": 273,
+        "route_snapshot_daily": 265,
         "commercial_opportunity_daily": 31,
         "vessel_universe_audit": 1
       },
       "successful_dataset_bundle_status": "saved",
-      "successful_dataset_rows": 972,
+      "successful_dataset_rows": 968,
       "restore_status": "not_needed"
     },
     "fallback_order": [
@@ -63,42 +63,42 @@
         "step": 1,
         "source": "active_dataset_pointer",
         "status": "available",
-        "rows": 972
+        "rows": 968
       },
       {
         "step": 2,
         "source": "latest_successful_dataset_bundle",
         "status": "available",
-        "rows": 972,
-        "run_id": "run_20260611085053060_c44ab234"
+        "rows": 968,
+        "run_id": "run_20260611094049200_540e1000"
       },
       {
         "step": 3,
         "source": "latest_successful_dataset",
         "status": "available",
-        "rows": 963
+        "rows": 968
       },
       {
         "step": 4,
         "source": "latest_snapshot",
         "status": "available",
-        "rows": 963
+        "rows": 968
       },
       {
         "step": 5,
         "source": "static_backup",
         "status": "available",
-        "rows": 32
+        "rows": 31
       }
     ]
   },
   "warning_count": 0,
   "warning_summary": [],
-  "source_run_id": "run_20260611085053060_c44ab234",
+  "source_run_id": "run_20260611094049200_540e1000",
   "snapshot_context": {
-    "run_id": "run_20260611085053060_c44ab234",
-    "generated_at": "2026-06-11T08:53:35.297Z",
+    "run_id": "run_20260611094049200_540e1000",
+    "generated_at": "2026-06-11T09:44:10.845Z",
     "data_mode": "live",
-    "source_run_id": "run_20260611085053060_c44ab234"
+    "source_run_id": "run_20260611094049200_540e1000"
   }
 }

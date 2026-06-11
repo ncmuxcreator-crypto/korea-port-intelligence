@@ -1,0 +1,989 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "local",
+  "is_github_actions": false,
+  "validation_mode": "local",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": null,
+  "GITHUB_WORKFLOW": null,
+  "run_id": "run_20260611094049200_540e1000",
+  "generated_at": "2026-06-11T09:44:10.845Z",
+  "status_run_id": "run_20260611094049200_540e1000",
+  "data_mode": "static_snapshot",
+  "record_count": 13,
+  "item_count": 13,
+  "status_counts": {
+    "NOT_CONFIGURED": 12,
+    "ACTIVE": 1
+  },
+  "items": [
+    {
+      "source_key": "source_csv",
+      "source_label": "Source CSV",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "SOURCE_CSV_URL",
+        "ENABLE_SOURCE_CSV"
+      ],
+      "env_presence": {
+        "SOURCE_CSV_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ENABLE_SOURCE_CSV": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "SOURCE_CSV_URL",
+        "ENABLE_SOURCE_CSV"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_env",
+      "exact_fix_instruction": "Set SOURCE_CSV_URL and ENABLE_SOURCE_CSV=true.",
+      "fix_hint": "Set SOURCE_CSV_URL and ENABLE_SOURCE_CSV=true.",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "source_csv",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "unknown_error",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Identity, operator, and manually corrected vessel fields may not enrich generated snapshots."
+    },
+    {
+      "source_key": "vessel_spec",
+      "source_label": "Vessel specification",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "VESSEL_SPEC_SERVICE_KEY",
+        "VESSEL_SPEC_API_URL"
+      ],
+      "env_presence": {
+        "VESSEL_SPEC_SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "VESSEL_SPEC_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "VESSEL_SPEC_SERVICE_KEY",
+        "VESSEL_SPEC_API_URL"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL.",
+      "fix_hint": "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL.",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 0,
+      "diagnostics": [],
+      "business_impact": "Vessel particulars such as IMO, MMSI, GT, DWT, flag, and vessel type may remain incomplete."
+    },
+    {
+      "source_key": "pilot_sources",
+      "source_label": "Pilot schedule sources",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "PILOT_SOURCE_URLS"
+      ],
+      "env_presence": {
+        "PILOT_SOURCE_URLS": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "PILOT_SOURCE_URLS"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_env",
+      "exact_fix_instruction": "Set PILOT_SOURCE_URLS",
+      "fix_hint": "Set PILOT_SOURCE_URLS",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 0,
+      "diagnostics": [],
+      "business_impact": "Pilotage timing and berth-arrival confirmation signals are unavailable."
+    },
+    {
+      "source_key": "berth_sources",
+      "source_label": "Berth schedule sources",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "BERTH_SOURCE_URLS",
+        "PNC_SOURCE_URLS"
+      ],
+      "env_presence": {
+        "BERTH_SOURCE_URLS": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "PNC_SOURCE_URLS": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "BERTH_SOURCE_URLS",
+        "PNC_SOURCE_URLS"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_env",
+      "exact_fix_instruction": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS",
+      "fix_hint": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 0,
+      "diagnostics": [],
+      "business_impact": "Berth assignment and terminal schedule enrichment may be unavailable."
+    },
+    {
+      "source_key": "mof_ais_dynamic",
+      "source_label": "MOF AIS dynamic",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "MOF_AIS_DYNAMIC_API_URL",
+        "MOF_AIS_DYNAMIC_SERVICE_KEY"
+      ],
+      "env_presence": {
+        "MOF_AIS_DYNAMIC_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "MOF_AIS_DYNAMIC_SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "MOF_AIS_DYNAMIC_API_URL",
+        "MOF_AIS_DYNAMIC_SERVICE_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "fix_hint": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "mof_ais_dynamic",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Live AIS position, speed, slow-steaming, and dwell-time signals remain weak."
+    },
+    {
+      "source_key": "mof_ais_info",
+      "source_label": "MOF AIS info",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "MOF_AIS_INFO_API_URL",
+        "MOF_AIS_INFO_SERVICE_KEY"
+      ],
+      "env_presence": {
+        "MOF_AIS_INFO_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "MOF_AIS_INFO_SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "MOF_AIS_INFO_API_URL",
+        "MOF_AIS_INFO_SERVICE_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "fix_hint": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "mof_ais_info",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "AIS vessel identity and static particulars may not enrich vessel_display."
+    },
+    {
+      "source_key": "mof_ais_stat",
+      "source_label": "MOF AIS stat",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "MOF_AIS_STAT_API_URL",
+        "MOF_AIS_STAT_SERVICE_KEY"
+      ],
+      "env_presence": {
+        "MOF_AIS_STAT_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "MOF_AIS_STAT_SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "MOF_AIS_STAT_API_URL",
+        "MOF_AIS_STAT_SERVICE_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY.",
+      "fix_hint": "Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY.",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "mof_ais_stat",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "AIS trend, traffic statistics, and seasonality signals remain unavailable."
+    },
+    {
+      "source_key": "ulsan_core",
+      "source_label": "Ulsan core",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "ULSAN_API_URL",
+        "ULSAN_API_KEY",
+        "ULSAN_BERTH_DETAIL_API_KEY",
+        "ULSAN_CARGO_PLAN_API_KEY",
+        "ULSAN_BERTH_OPERATION_API_KEY",
+        "ULSAN_TERMINAL_PROCESS_API_KEY"
+      ],
+      "env_presence": {
+        "ULSAN_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_BERTH_DETAIL_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_CARGO_PLAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_BERTH_OPERATION_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_TERMINAL_PROCESS_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "ULSAN_API_URL",
+        "ULSAN_API_KEY",
+        "ULSAN_BERTH_DETAIL_API_KEY",
+        "ULSAN_CARGO_PLAN_API_KEY",
+        "ULSAN_BERTH_OPERATION_API_KEY",
+        "ULSAN_TERMINAL_PROCESS_API_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set matching ULSAN_*_API_URL",
+      "fix_hint": "Set matching ULSAN_*_API_URL",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "ulsan_core",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Ulsan-specific berth, cargo, and terminal process enrichment may not run."
+    },
+    {
+      "source_key": "ulsan_berth_detail",
+      "source_label": "Ulsan berth detail",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "ULSAN_BERTH_DETAIL_API_URL",
+        "ULSAN_BERTH_DETAIL_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "env_presence": {
+        "ULSAN_BERTH_DETAIL_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_BERTH_DETAIL_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "ULSAN_BERTH_DETAIL_API_URL",
+        "ULSAN_BERTH_DETAIL_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set matching ULSAN_*_API_URL",
+      "fix_hint": "Set matching ULSAN_*_API_URL",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "ulsan_berth_detail",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Ulsan berth-level detail enrichment may be skipped."
+    },
+    {
+      "source_key": "ulsan_cargo_plan",
+      "source_label": "Ulsan cargo plan",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "ULSAN_CARGO_PLAN_API_URL",
+        "ULSAN_CARGO_PLAN_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "env_presence": {
+        "ULSAN_CARGO_PLAN_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_CARGO_PLAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "ULSAN_CARGO_PLAN_API_URL",
+        "ULSAN_CARGO_PLAN_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set matching ULSAN_*_API_URL",
+      "fix_hint": "Set matching ULSAN_*_API_URL",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "ulsan_cargo_plan",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Ulsan cargo-plan signals may be unavailable."
+    },
+    {
+      "source_key": "ulsan_berth_operation",
+      "source_label": "Ulsan berth operation",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "ULSAN_BERTH_OPERATION_API_URL",
+        "ULSAN_BERTH_OPERATION_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "env_presence": {
+        "ULSAN_BERTH_OPERATION_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_BERTH_OPERATION_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "ULSAN_BERTH_OPERATION_API_URL",
+        "ULSAN_BERTH_OPERATION_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set matching ULSAN_*_API_URL",
+      "fix_hint": "Set matching ULSAN_*_API_URL",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "ulsan_berth_operation",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Ulsan berth operation status may not enrich current vessel state."
+    },
+    {
+      "source_key": "ulsan_terminal_process",
+      "source_label": "Ulsan terminal process",
+      "status": "NOT_CONFIGURED",
+      "expected_env_names": [
+        "ULSAN_TERMINAL_PROCESS_API_URL",
+        "ULSAN_TERMINAL_PROCESS_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "env_presence": {
+        "ULSAN_TERMINAL_PROCESS_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_TERMINAL_PROCESS_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "ULSAN_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [],
+      "missing_env": [
+        "ULSAN_TERMINAL_PROCESS_API_URL",
+        "ULSAN_TERMINAL_PROCESS_API_KEY",
+        "ULSAN_API_KEY"
+      ],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": false,
+      "collector_attempted": false,
+      "skip_reason": "missing_api_url",
+      "exact_fix_instruction": "Set matching ULSAN_*_API_URL",
+      "fix_hint": "Set matching ULSAN_*_API_URL",
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "diagnostics_count": 1,
+      "diagnostics": [
+        {
+          "key": "ulsan_terminal_process",
+          "status": "skipped",
+          "attempted": false,
+          "skipped": true,
+          "success": false,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": "missing_api_url",
+          "error_message": null,
+          "http_status": null
+        }
+      ],
+      "business_impact": "Ulsan terminal-process signals may be unavailable."
+    },
+    {
+      "source_key": "port_operation",
+      "source_label": "Port Operation",
+      "status": "ACTIVE",
+      "expected_env_names": [
+        "PORT_OPERATION_API_URL",
+        "PORT_OPERATION_SERVICE_KEY",
+        "PORT_OPERATION_API_KEY",
+        "DATA_GO_KR_API_KEY",
+        "SERVICE_KEY",
+        "SERVICEKEY",
+        "YGPA_SERVICE_KEY"
+      ],
+      "env_presence": {
+        "PORT_OPERATION_API_URL": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "PORT_OPERATION_SERVICE_KEY": {
+          "present": true,
+          "source_type": "runtime_env",
+          "value_origin": "secret_or_variable_not_distinguishable_at_runtime"
+        },
+        "PORT_OPERATION_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "DATA_GO_KR_API_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "SERVICEKEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        },
+        "YGPA_SERVICE_KEY": {
+          "present": false,
+          "source_type": "missing",
+          "value_origin": null
+        }
+      },
+      "present_env": [
+        "PORT_OPERATION_SERVICE_KEY"
+      ],
+      "missing_env": [],
+      "value_source": "GitHub secrets vs vars cannot be reliably distinguished from process.env at runtime",
+      "collector_enabled": true,
+      "collector_attempted": true,
+      "skip_reason": null,
+      "exact_fix_instruction": "Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint.",
+      "fix_hint": "Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint.",
+      "rows_collected": 7053,
+      "rows_normalized": 7053,
+      "diagnostics_count": 24,
+      "diagnostics": [
+        {
+          "key": "port_operation_busan_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 1174,
+          "rows_normalized": 1174,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_busan_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 1328,
+          "rows_normalized": 1328,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_ulsan_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 537,
+          "rows_normalized": 537,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_ulsan_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 582,
+          "rows_normalized": 582,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_yeosu_gwangyang_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 280,
+          "rows_normalized": 280,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_yeosu_gwangyang_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 296,
+          "rows_normalized": 296,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_pyeongtaek_dangjin_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 257,
+          "rows_normalized": 257,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_pyeongtaek_dangjin_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 252,
+          "rows_normalized": 252,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_incheon_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 355,
+          "rows_normalized": 355,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_incheon_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 402,
+          "rows_normalized": 402,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_pohang_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 153,
+          "rows_normalized": 153,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_pohang_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 172,
+          "rows_normalized": 172,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_south_gyeongsang_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 350,
+          "rows_normalized": 350,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_south_gyeongsang_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 360,
+          "rows_normalized": 360,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_daesan_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 271,
+          "rows_normalized": 271,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_daesan_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 284,
+          "rows_normalized": 284,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_mokpo_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_mokpo_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_gunsan_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_gunsan_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_donghae_mukho_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_donghae_mukho_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_jeju_i",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        },
+        {
+          "key": "port_operation_jeju_o",
+          "status": "success",
+          "attempted": true,
+          "skipped": false,
+          "success": true,
+          "rows_collected": 0,
+          "rows_normalized": 0,
+          "skip_reason": null,
+          "error_message": null,
+          "http_status": 200
+        }
+      ],
+      "business_impact": "Arrival/departure and port-call baseline data may not collect."
+    }
+  ],
+  "active_run_id": "run_20260611094049200_540e1000",
+  "stale_diagnostic": false,
+  "placeholder": false
+}

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { buildRunOrigin, buildRuntimeConfigAudit, portOperationApiUrlInfo, portOperationServiceKeyPresent } from "./lib/runtime-config-audit.js";
 import { baseDatasetFields, getBaseDatasetState, markDerivedReport } from "./lib/dataset-state.js";
+import { buildSourceCollectionStatus } from "./lib/source-activation.js";
 
 const tracked = [
   "SUPABASE_URL",
@@ -79,6 +80,7 @@ function normalizeServingMode(mode, fallback = "static_json") {
 const servingMode = normalizeServingMode(process.env.SERVING_MODE || status.serving_mode || status.output_mode || (diagnosticsOnly ? "local_diagnostics" : "static_json"), diagnosticsOnly ? "local_diagnostics" : "static_json");
 const runtimeConfigAudit = buildRuntimeConfigAudit();
 const portOperationApiUrl = portOperationApiUrlInfo();
+const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
 const missingPortOperationSecret = !portOperationServiceKeyPresent();
 const missingPortOperationUrl = !portOperationApiUrl.effective_present;
 const portOperationAttemptedCount = Number(diagnostics.coverage?.ports_attempted_count || diagnostics.ports_attempted_count || 0);
@@ -109,8 +111,8 @@ const report = markDerivedReport({
   serving_mode: servingMode,
   update_mode: process.env.UPDATE_MODE || status.update_mode || null,
   process_env_CI: process.env.CI || null,
-  is_github_actions: process.env.GITHUB_ACTIONS === "true",
-  is_local_build: process.env.GITHUB_ACTIONS !== "true",
+  is_github_actions: isGithubActionsRuntime,
+  is_local_build: !isGithubActionsRuntime,
   collection_mode: diagnosticsOnly ? "diagnostics_only" : status.data_mode === "no_live_data" ? "no_live_data" : "collection_result",
   generated_at: new Date().toISOString(),
   status_generated_at: status.completed_at || status.generated_at || null,
@@ -158,6 +160,12 @@ const report = markDerivedReport({
   realDataReady: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && Number(status.record_count || 0) > 0),
   note: "Current-run source health. If run_id differs from status.json, treat this file as stale."
 }, datasetState);
+
+report.source_collection_status = buildSourceCollectionStatus({
+  report: status,
+  collectorDiagnostics: diagnostics,
+  generatedAt: report.generated_at
+});
 
 fs.mkdirSync("dashboard/api", { recursive: true });
 if (diagnosticsOnly) fs.mkdirSync("dashboard/api/debug", { recursive: true });
