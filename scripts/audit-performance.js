@@ -31,14 +31,18 @@ const firstPaintSegment = loadSummaryBody.split("renderAll()")[0] || loadSummary
 const firstPaintApiNames = [...firstPaintSegment.matchAll(/api\("([^"]+)"/g)].map(match => match[1]);
 const firstPaintApiCalls = [...firstPaintSegment.matchAll(/api\("([^"]+)","([^"]+)"/g)].map(match => ({ key: match[1], url: match[2] }));
 const fallbackApiNames = firstPaintApiNames.filter(name => name !== "bootstrap");
-const startupApiCount = firstPaintApiNames.includes("bootstrap") ? 1 + Math.min(fallbackApiNames.length, 2) : fallbackApiNames.length;
+const normalStartupApiCalls = firstPaintApiCalls.some(call => call.key === "bootstrap")
+  ? firstPaintApiCalls.filter(call => call.key === "bootstrap")
+  : firstPaintApiCalls;
+const startupApiCount = normalStartupApiCalls.length;
+const fallbackApiCalls = firstPaintApiCalls.filter(call => !normalStartupApiCalls.includes(call));
 const bootstrapFile = path.join(API_DIR, "bootstrap.json");
 const vesselDir = path.join(API_DIR, "vessels");
 const vesselPages = fs.existsSync(vesselDir)
   ? fs.readdirSync(vesselDir).filter(name => /^page-\d+\.json$/.test(name))
   : [];
 const jsonFiles = listJsonFiles(API_DIR).map(file => ({ file, size: sizeOf(file) })).sort((a, b) => b.size - a.size);
-const startupJsonFiles = firstPaintApiCalls
+const startupJsonFiles = normalStartupApiCalls
   .map(call => {
     const relative = call.url.replace(/^\/api\//, "");
     const file = path.join(API_DIR, ...relative.split("/"));
@@ -49,7 +53,6 @@ const oversizedStartupJson = startupJsonFiles.filter(entry => entry.size > 500 *
 const heavyDiagnosticStartup = firstPaintApiCalls.filter(call => /imo-recovery-priority|debug|audit|vessels\/page-|all-collected-vessels/.test(call.url));
 const requiredStartupSnapshots = [
   "bootstrap.json",
-  "dashboard-summary.json",
   "status-summary.json",
   "targets/categories-summary.json",
   "sales/verification-queue-summary.json"
@@ -84,9 +87,21 @@ const summaryFiles = [
   "sales/verification-queue-summary.json"
 ].map(name => ({ name, file: path.join(API_DIR, ...name.split("/")) }));
 const oversizedSummaryFiles = summaryFiles.filter(entry => sizeOf(entry.file) > 100 * 1024);
+const manifestPath = path.join(API_DIR, "endpoint-manifest.json");
+let manifestEntries = [];
+try {
+  manifestEntries = JSON.parse(fs.readFileSync(manifestPath, "utf8")).endpoints || [];
+} catch {
+  manifestEntries = [];
+}
+const manifestByPath = new Map(manifestEntries.map(entry => [String(entry.path || "").replace(/^dashboard\/api\//, ""), entry]));
+const startupSafetyMismatches = requiredStartupSnapshots
+  .map(name => ({ name, manifest: manifestByPath.get(name) }))
+  .filter(entry => !entry.manifest || entry.manifest.startup_safe !== true);
 
 console.log("Performance audit:");
 console.log(`- startup API count: ${startupApiCount}`);
+console.log(`- fallback API count after bootstrap failure: ${fallbackApiCalls.length}`);
 console.log(`- bootstrap.json size: ${sizeOf(bootstrapFile)} bytes`);
 console.log(`- dashboard/api JSON file count: ${jsonFiles.length}`);
 console.log(`- vessel page count: ${vesselPages.length}`);
@@ -97,8 +112,14 @@ console.log(`- API health panel fetches all endpoints on startup: ${apiHealthBlo
 console.log(`- secondary intelligence auto-load on startup: ${secondaryAutoLoad ? "yes" : "no"}`);
 console.log(`- heavy diagnostic JSON on startup: ${heavyDiagnosticStartup.length ? heavyDiagnosticStartup.map(call => call.url).join(", ") : "none"}`);
 console.log(`- startup JSON > 500 KB: ${oversizedStartupJson.length ? oversizedStartupJson.map(entry => `${entry.url} (${entry.size} bytes)`).join(", ") : "none"}`);
+console.log(`- fallback endpoints after bootstrap failure: ${fallbackApiCalls.length ? fallbackApiCalls.map(call => call.url).join(", ") : "none"}`);
 console.log("- startup-safe summary files:");
 for (const entry of summaryFiles) console.log(`  - ${entry.name}: ${sizeOf(entry.file)} bytes`);
+console.log("- required startup-safe manifest entries:");
+for (const name of requiredStartupSnapshots) {
+  const entry = manifestByPath.get(name);
+  console.log(`  - ${name}: ${entry?.startup_safe === true ? "startup_safe" : "not startup_safe"}${entry ? ` (${entry.bytes || 0} bytes)` : " (missing from manifest)"}`);
+}
 console.log("- slow or missing API list:");
 if (!missingEndpoints.length) console.log("  - none detected from required static endpoints");
 for (const entry of missingEndpoints) console.log(`  - missing: dashboard/api/${entry.name}`);
@@ -122,6 +143,7 @@ if (heavyDiagnosticStartup.length) warnings.push("heavy diagnostic file loads du
 if (oversizedStartupJson.length) warnings.push("startup JSON > 500 KB");
 if (oversizedSummaryFiles.length) warnings.push(`summary endpoint > 100 KB: ${oversizedSummaryFiles.map(entry => entry.name).join(", ")}`);
 if (missingEndpoints.length) warnings.push("required static API endpoint missing");
+if (startupSafetyMismatches.length) warnings.push(`required startup endpoint not marked startup_safe: ${startupSafetyMismatches.map(entry => entry.name).join(", ")}`);
 
 if (warnings.length) {
   console.log("\nWarnings:");

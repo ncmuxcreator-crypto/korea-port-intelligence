@@ -3333,6 +3333,7 @@ function writeInternalJson(filePath, payload) {
 function shouldNormalizeBusinessOutput(filePath = "") {
   const normalized = String(filePath || "").replace(/\\/g, "/");
   if (!normalized.startsWith("dashboard/api/")) return false;
+  if (normalized === "dashboard/api/bootstrap.json") return false;
   if (normalized.startsWith(`${DEBUG_API_DIR}/`)) return false;
   if (/\/(?:debug|quality|review)\//.test(normalized)) return false;
   if (/endpoint-manifest|backend|health\/pipeline|source-health|readiness|snapshot|coverage|doctor|audit/i.test(normalized)) return false;
@@ -7857,12 +7858,48 @@ function compactItems(value) {
   return [];
 }
 
+function compactBootstrapVesselDisplay(display = {}, item = {}) {
+  const normalizedPort = normalizedPortObject({ ...item, current_port: display.current_port });
+  return {
+    vessel_name: display.vessel_name || item.vessel_name || "선명 확인 필요",
+    imo: display.imo || item.imo || "-",
+    mmsi: display.mmsi || item.mmsi || "-",
+    call_sign: display.call_sign || item.call_sign || "-",
+    vessel_type: display.vessel_type || item.vessel_type || "-",
+    gt: display.gt ?? item.gt ?? null,
+    dwt: display.dwt ?? item.dwt ?? null,
+    operator_display: display.operator_display || display.operator || item.operator_display || item.operator || item.company || "-",
+    company: display.company || item.company || "-",
+    current_port: display.current_port || item.current_port || item.port_name || item.port || "-",
+    current_port_korean: display.current_port_korean || normalizedPort.display_name || "미확인 항만",
+    normalized_port: normalizedPort,
+    berth: display.berth || item.berth || "-",
+    anchorage: display.anchorage || item.anchorage || "-",
+    eta: display.eta || item.eta || null,
+    ata: display.ata || item.ata || null,
+    stay_days: display.stay_days ?? item.stay_days ?? null,
+    stay_hours: display.stay_hours ?? item.stay_hours ?? null,
+    waiting_hours: display.waiting_hours ?? item.waiting_hours ?? null,
+    port_stay_hours: display.port_stay_hours ?? item.port_stay_hours ?? item.portStayHours ?? null,
+    opportunity_score: display.opportunity_score ?? item.opportunity_score ?? item.sales_priority_score ?? item.commercial_value_score ?? null,
+    risk_score: display.risk_score ?? item.risk_score ?? null,
+    confidence_score: display.confidence_score ?? item.confidence_score ?? item.data_confidence_score ?? null,
+    priority_label: display.priority_label || item.priority_label || item.sales_priority_band || "LOW",
+    priority_label_ko: display.priority_label_ko || item.priority_label_ko || salesPriorityLabelKo(item.priority_label || item.sales_priority_band || "LOW"),
+    reason_summary: display.reason_summary || item.reason_summary || compactReasonSummary(item),
+    recommended_action: display.recommended_action || item.recommended_action || compactRecommendedAction(item),
+    data_sources: displaySources(item).slice(0, 3),
+    last_seen_at: display.last_seen_at || item.last_seen_at || item.collected_at || null
+  };
+}
+
 function compactBootstrapVesselItem(item = {}, index = 0) {
   const display = buildVesselDisplay(item);
   const normalizedPort = normalizedPortObject({ ...item, current_port: display.current_port });
+  const vesselDisplay = compactBootstrapVesselDisplay(display, item);
   return {
     rank: Number(item.rank || index + 1),
-    vessel_display: display,
+    vessel_display: vesselDisplay,
     vessel_name: display.vessel_name || item.vessel_name || "선명 확인 필요",
     imo: display.imo || item.imo || "-",
     mmsi: display.mmsi || item.mmsi || "-",
