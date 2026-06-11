@@ -6196,6 +6196,17 @@ function pilotageText(value) {
   return String(value ?? "").normalize("NFKC").trim();
 }
 
+function pilotageIsTimeOnly(value) {
+  const text = pilotageText(value);
+  return /^(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(text);
+}
+
+function pilotageIsFullTimestamp(value) {
+  const text = pilotageText(value);
+  if (!text || pilotageIsTimeOnly(text) || !/^\d{4}-\d{2}-\d{2}/.test(text)) return false;
+  return Boolean(parseScheduleTime(text));
+}
+
 function pilotageHasText(value) {
   const text = pilotageText(value);
   return Boolean(text) && !/^(?:-|unknown|none|null|undefined|미확인|확인\s*필요)$/i.test(text);
@@ -6234,6 +6245,7 @@ function buildPilotageSignal(record = {}) {
     : {};
   if (existing.has_pilotage === true) return existing;
   const pilotTime = firstNonEmpty(
+    record.pilot_timestamp,
     record.pilot_time,
     record.pilotage_time,
     record.pilot_event_time,
@@ -6243,7 +6255,9 @@ function buildPilotageSignal(record = {}) {
     record.pilot_inbound,
     record.pilot_outbound
   );
+  const pilotTimeText = firstNonEmpty(record.pilot_time_text, record.raw_pilot_time, record.raw_payload?.pilot_time_text, record.raw_payload?.raw_pilot_time);
   const movementTime = firstNonEmpty(record.movement_time);
+  const parseStatus = firstNonEmpty(record.pilot_time_parse_status, record.parse_status, record.raw_payload?.pilot_time_parse_status);
   const station = firstNonEmpty(record.pilot_station, record.pilotage_station, record.pilot_boarding_station);
   const status = firstNonEmpty(record.pilot_status, record.pilotage_status, record.pilot_order_status, record.pilot_schedule_status);
   const direction = pilotageKnownDirection(firstNonEmpty(record.pilot_direction, record.movement_type));
@@ -6252,9 +6266,11 @@ function buildPilotageSignal(record = {}) {
   const sourceIndicatesPilotage = pilotageSourceIndicatesSchedule(record);
   const matched = Boolean(record.pilot_schedule_matched || record.pilot_only_arrival_review || record.outbound_pilot_scheduled || record.source_origin === "pilot_schedule");
   const explicitPilotTime = pilotageHasText(pilotTime);
+  const explicitPilotTimeText = pilotageHasText(pilotTimeText);
   const movementTimeWithPilotContext = pilotageHasText(movementTime) && (matched || sourceIndicatesPilotage || Boolean(direction));
   const stationOrStatus = pilotageHasText(station) || pilotageHasText(status);
-  const hasPilotage = matched || explicitPilotTime || movementTimeWithPilotContext || stationOrStatus || (Boolean(direction) && sourceIndicatesPilotage);
+  const timeOnly = !explicitPilotTime && explicitPilotTimeText && (parseStatus === "time_only_missing_date" || pilotageIsTimeOnly(pilotTimeText));
+  const hasPilotage = matched || explicitPilotTime || explicitPilotTimeText || movementTimeWithPilotContext || stationOrStatus || (Boolean(direction) && sourceIndicatesPilotage);
   const normalizedPort = normalizedPortObject(record);
   const confidence = hasPilotage
     ? matched ? 90
@@ -6267,16 +6283,24 @@ function buildPilotageSignal(record = {}) {
   const source = matched
     ? "pilot_schedule"
     : sourceNames.find(value => /pilot|pilotage|도선/i.test(value)) || null;
+  const pilotageStatus = hasPilotage
+    ? timeOnly ? "TIME_ONLY"
+      : matched && pilotageTime ? "CONFIRMED"
+        : pilotageTime ? "SCHEDULED"
+          : "DETECTED"
+    : "UNKNOWN";
   return {
     has_pilotage: Boolean(hasPilotage),
-    pilotage_status: hasPilotage ? (matched ? "CONFIRMED" : pilotageTime ? "SCHEDULED" : "DETECTED") : "UNKNOWN",
+    pilotage_status: pilotageStatus,
     pilotage_time: pilotageTime || null,
+    pilotage_time_text: pilotageHasText(pilotTimeText) ? pilotTimeText : pilotageTime || null,
     pilotage_direction: direction || null,
     pilot_station: pilotageHasText(station) ? station : null,
     berth_name: pilotageHasText(berthName) ? berthName : null,
     pilotage_port: normalizedPort.display_name || null,
     pilotage_source: source,
     pilotage_confidence: confidence,
+    match_type: record.pilotage_match_type || record.pilot_match_method || (timeOnly ? "time_only" : matched ? "pilot_schedule" : ""),
     arrival_window: hasPilotage && pilotageTime ? {
       basis: "pilotage_time",
       time: pilotageTime,
@@ -6308,6 +6332,8 @@ function pilotageNormalizeIdentity(value) {
 
 function pilotageEventTime(record = {}) {
   return firstNonEmpty(
+    record.pilot_timestamp,
+    record.pilot_time_at,
     record.pilot_time,
     record.pilotage_time,
     record.pilot_event_time,
@@ -6355,7 +6381,8 @@ function pilotagePortKey(record = {}) {
 
 function pilotageTimeWindowScore(record = {}, event = {}) {
   const eventTime = parseScheduleTime(pilotageEventTime(event));
-  if (!eventTime) return { score: 0, matched: false, diffHours: null };
+  const timeOnly = !eventTime && pilotageHasText(event.pilot_time_text || event.raw_pilot_time);
+  if (!eventTime) return { score: 0, matched: false, diffHours: null, timeOnly };
   const candidateTimes = [
     record.eta,
     record.etb,
@@ -6384,7 +6411,24 @@ function normalizePilotageEvent(row = {}, source = "current_batch") {
   const portName = firstNonEmpty(row.port_name, row.port, raw.port_name, raw.port);
   const normalized = normalizedPortObject({ ...row, port_name: portName });
   const direction = pilotageEventDirection(row) || pilotageKnownDirection(firstNonEmpty(raw.pilot_direction, raw.movement_type));
-  const pilotTime = pilotageEventTime(row);
+  const rawPilotTime = firstNonEmpty(row.pilot_time_raw, row.pilot_time_text, raw.raw_pilot_time, raw.pilot_time_text, row.pilot_time, raw.pilot_time);
+  const pilotTimestamp = firstNonEmpty(
+    row.pilot_time_at,
+    row.pilot_timestamp,
+    raw.pilot_timestamp,
+    raw.pilot_time_at,
+    pilotageIsFullTimestamp(row.pilot_time) ? row.pilot_time : "",
+    pilotageIsFullTimestamp(raw.pilot_time) ? raw.pilot_time : "",
+    pilotageIsFullTimestamp(row.movement_time) ? row.movement_time : "",
+    pilotageIsFullTimestamp(raw.movement_time) ? raw.movement_time : ""
+  );
+  const parseStatus = firstNonEmpty(
+    row.parse_status,
+    row.pilot_time_parse_status,
+    raw.parse_status,
+    raw.pilot_time_parse_status,
+    pilotTimestamp ? "parsed_full_timestamp" : rawPilotTime && pilotageIsTimeOnly(rawPilotTime) ? "time_only_missing_date" : rawPilotTime ? "invalid_date_time" : "missing"
+  );
   return {
     source,
     run_id: row.run_id || null,
@@ -6396,7 +6440,12 @@ function normalizePilotageEvent(row = {}, source = "current_batch") {
     call_sign: firstNonEmpty(row.call_sign, raw.call_sign, raw.callsign, raw.clsgn, raw.vsslCallSgn),
     port_code: normalized.port_code || row.port_code || raw.port_code || "",
     port_name: normalized.display_name || portName || "",
-    pilot_time: pilotTime || null,
+    pilot_time: pilotTimestamp || null,
+    pilot_timestamp: pilotTimestamp || null,
+    pilot_time_text: rawPilotTime || null,
+    pilot_time_local: firstNonEmpty(row.pilot_time_local, raw.pilot_time_local, pilotageIsTimeOnly(rawPilotTime) ? rawPilotTime : "") || null,
+    raw_pilot_time: rawPilotTime || null,
+    parse_status: parseStatus,
     pilot_direction: direction || null,
     pilot_station: firstNonEmpty(row.pilot_station, raw.pilot_station, raw.pilotage_station, raw.pilot_boarding_station),
     berth_name: pilotageEventBerth(row) || null,
@@ -6427,11 +6476,21 @@ async function loadRecentPilotScheduleEvents({ limit = 2000 } = {}) {
   }
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    const extendedSelect = "run_id,port_code,port_name,vessel_name,normalized_vessel_name,call_sign,pilot_time,pilot_time_raw,pilot_time_at,pilot_direction,pilot_station,berth_name,movement_type,status,match_confidence,matched_master_vessel_id,raw_payload,created_at";
+    const baseSelect = "run_id,port_code,port_name,vessel_name,normalized_vessel_name,call_sign,pilot_time,pilot_direction,pilot_station,berth_name,movement_type,status,match_confidence,matched_master_vessel_id,raw_payload,created_at";
+    let query = await supabase
       .from("pilot_schedule_events")
-      .select("run_id,port_code,port_name,vessel_name,normalized_vessel_name,call_sign,pilot_time,pilot_direction,pilot_station,berth_name,movement_type,status,match_confidence,matched_master_vessel_id,raw_payload,created_at")
+      .select(extendedSelect)
       .order("created_at", { ascending: false })
       .limit(limit);
+    if (query.error && /pilot_time_raw|pilot_time_at|column/i.test(query.error.message || "")) {
+      query = await supabase
+        .from("pilot_schedule_events")
+        .select(baseSelect)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+    }
+    const { data, error } = query;
     if (error) throw error;
     return {
       events: Array.isArray(data) ? data.map(row => normalizePilotageEvent(row, "pilot_schedule_events")) : [],
@@ -6495,13 +6554,19 @@ function pilotageMatchRecordToEvent(record = {}, event = {}) {
   }
   score += time.score;
   if (time.matched) reasons.push(`time_window_${time.diffHours}h`);
+  if (time.timeOnly) reasons.push("time_only_missing_date");
+  if (time.timeOnly && callSignMatch && samePort && !portConflict) {
+    score += 8;
+    reasons.push("time_only_exact_call_sign_port");
+  }
   const strongIdentity = vesselIdMatch || callSignMatch;
   const safeNameMatch = nameMatch && samePort && (time.matched || berthMatch);
-  const apply = score >= 70 && (strongIdentity || safeNameMatch);
+  const timeOnlyCallSignPort = Boolean(time.timeOnly && callSignMatch && samePort && !portConflict);
+  const apply = (score >= 70 && (strongIdentity || safeNameMatch)) || (timeOnlyCallSignPort && score >= 65);
   return {
     score: Math.max(0, Math.min(100, Math.round(score))),
     apply,
-    match_type: strongIdentity ? (vesselIdMatch ? "vessel_id" : "call_sign_port") : safeNameMatch ? "vessel_name_port_time" : "weak",
+    match_type: timeOnlyCallSignPort ? "call_sign_port_time_only" : strongIdentity ? (vesselIdMatch ? "vessel_id" : "call_sign_port") : safeNameMatch ? "vessel_name_port_time" : "weak",
     reasons
   };
 }
@@ -6509,7 +6574,8 @@ function pilotageMatchRecordToEvent(record = {}, event = {}) {
 function applyPilotageEventToRecord(record = {}, event = {}, match = {}) {
   const next = record;
   const direction = event.pilot_direction || pilotageEventDirection(event);
-  const pilotTime = event.pilot_time || pilotageEventTime(event);
+  const pilotTime = event.pilot_timestamp || event.pilot_time || pilotageEventTime(event);
+  const pilotTimeText = firstNonEmpty(event.pilot_time_text, event.raw_pilot_time, pilotTime);
   const berth = event.berth_name || pilotageEventBerth(event);
   const source = event.source || "pilot_schedule";
   next.pilotage_enriched = true;
@@ -6522,6 +6588,11 @@ function applyPilotageEventToRecord(record = {}, event = {}, match = {}) {
   next.pilot_match_score = Math.max(Number(next.pilot_match_score || 0), match.score || Number(event.confidence || 0));
   next.pilot_time = firstNonEmpty(next.pilot_time, pilotTime);
   next.movement_time = firstNonEmpty(next.movement_time, pilotTime);
+  next.pilot_time_text = firstNonEmpty(next.pilot_time_text, pilotTimeText);
+  next.pilot_time_local = firstNonEmpty(next.pilot_time_local, event.pilot_time_local);
+  next.raw_pilot_time = firstNonEmpty(next.raw_pilot_time, event.raw_pilot_time, pilotTimeText);
+  next.pilot_timestamp = firstNonEmpty(next.pilot_timestamp, event.pilot_timestamp, pilotTime);
+  next.pilot_time_parse_status = firstNonEmpty(next.pilot_time_parse_status, event.parse_status);
   next.pilot_direction = firstNonEmpty(next.pilot_direction, direction);
   next.movement_type = firstNonEmpty(next.movement_type, direction);
   next.pilot_station = firstNonEmpty(next.pilot_station, event.pilot_station);
@@ -6577,12 +6648,16 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
     .map(row => normalizePilotageEvent(row, "current_batch_pilotage"));
   const persisted = await loadRecentPilotScheduleEvents();
   const events = [...currentEvents, ...persisted.events].filter(event =>
-    hasValue(event.pilot_time || event.berth_name || event.pilot_station || event.call_sign || event.vessel_name)
+    hasValue(event.pilot_time || event.pilot_time_text || event.berth_name || event.pilot_station || event.call_sign || event.vessel_name)
   );
   let applied = 0;
   let identityApplied = 0;
   let berthApplied = 0;
   let arrivalApplied = 0;
+  let matchedByCallSign = 0;
+  let matchedByName = 0;
+  let matchedByPortOnly = 0;
+  let weakMatches = 0;
   const bySource = new Map();
   const needsReview = [];
   for (const record of records) {
@@ -6602,6 +6677,10 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
     };
     applyPilotageEventToRecord(record, best.event, best.match);
     applied += 1;
+    if (/call_sign/.test(best.match.match_type || "")) matchedByCallSign += 1;
+    else if (/vessel_name/.test(best.match.match_type || "")) matchedByName += 1;
+    else if (/port/.test(best.match.match_type || "")) matchedByPortOnly += 1;
+    if (best.match.match_type === "weak") weakMatches += 1;
     bySource.set(best.event.source, (bySource.get(best.event.source) || 0) + 1);
     if ((!before.imo && record.imo) || (!before.mmsi && record.mmsi)) identityApplied += 1;
     if (!before.berth && (record.berth_name || record.berth)) berthApplied += 1;
@@ -6614,7 +6693,15 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
     persisted_events_status: persisted.diagnostics.status,
     persisted_events_error: persisted.diagnostics.error || null,
     reference_events_total: events.length,
+    time_only_events: events.filter(event => event.parse_status === "time_only_missing_date").length,
+    invalid_time_events: events.filter(event => event.parse_status === "invalid_date_time").length,
     applied_to_records: applied,
+    matched_vessels: applied,
+    matched_by_call_sign: matchedByCallSign,
+    matched_by_name: matchedByName,
+    matched_by_port_only: matchedByPortOnly,
+    weak_matches: weakMatches,
+    unmatched_pilot_rows: Math.max(0, events.length - applied),
     identity_applied_count: identityApplied,
     berth_applied_count: berthApplied,
     arrival_timing_applied_count: arrivalApplied,

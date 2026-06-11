@@ -100,6 +100,12 @@ const CARGO_WORKLOAD_ALIASES = ["cargo_workload_proxy", "cargoQty", "cargoTon", 
 const PILOT_TIME_ALIASES = ["pilot_time", "pilotTime", "pilotDt", "pilotDate", "도선시간", "도선일시", "예정시간", "movement_time", "movementTime", "시간"];
 const PILOT_DIRECTION_ALIASES = ["pilot_direction", "direction", "inout", "inOut", "io", "입출항", "구분", "도선구분", "movement_type"];
 const PILOT_STATION_ALIASES = ["pilot_station", "station", "pilotStation", "도선점", "도선구", "승선지", "하선지"];
+const PILOT_DATE_ALIASES = ["pilot_date", "pilotDateOnly", "date", "schedule_date", "movement_date", "도선일자", "예정일자", "일자"];
+const ALL_PILOT_TIME_ALIASES = [...new Set([...PILOT_TIME_ALIASES, "도선시간", "도선일시", "예정시간", "movement_time", "movementTime", "시간"])];
+const ALL_PILOT_DIRECTION_ALIASES = [...new Set([...PILOT_DIRECTION_ALIASES, "입출항", "구분", "도선구분", "movement_type"])];
+const ALL_PILOT_STATION_ALIASES = [...new Set([...PILOT_STATION_ALIASES, "도선점", "도선구", "승선지", "하선지"])];
+const ALL_PILOT_DATE_ALIASES = [...new Set(PILOT_DATE_ALIASES)];
+
 function env(name) {
   return process.env[name] && String(process.env[name]).trim();
 }
@@ -494,6 +500,73 @@ function normalizeDate(value) {
   return text.replace("T", " ").replace(/:\d{2}\.\d{3}Z$/, "");
 }
 
+function isPilotTimeOnly(value) {
+  const text = String(value || "").trim();
+  return /^(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(text);
+}
+
+function pilotDatePart(value) {
+  const normalized = normalizeDate(value);
+  const match = String(normalized || "").match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : "";
+}
+
+function isParseablePilotTimestamp(value) {
+  const text = String(value || "").trim();
+  if (!text || isPilotTimeOnly(text) || !/^\d{4}-\d{2}-\d{2}/.test(text)) return false;
+  const parsed = new Date(text.replace(" ", "T"));
+  return Number.isFinite(parsed.getTime());
+}
+
+function normalizePilotTime(value, dateValue = "") {
+  const raw = String(value || "").trim();
+  const rawDate = String(dateValue || "").trim();
+  const fallback = {
+    raw_pilot_time: raw,
+    pilot_date: pilotDatePart(rawDate),
+    pilot_time_text: raw,
+    pilot_time_local: "",
+    pilot_timestamp: "",
+    parse_status: raw ? "invalid_date_time" : "missing"
+  };
+  if (!raw) return fallback;
+  const normalized = normalizeDate(raw);
+  const localTime = isPilotTimeOnly(normalized) ? normalized : "";
+  if (localTime) {
+    const datePart = pilotDatePart(rawDate);
+    if (datePart) {
+      const combined = `${datePart} ${localTime}`;
+      return {
+        raw_pilot_time: raw,
+        pilot_date: datePart,
+        pilot_time_text: raw,
+        pilot_time_local: localTime,
+        pilot_timestamp: combined,
+        parse_status: "parsed_date_time"
+      };
+    }
+    return {
+      raw_pilot_time: raw,
+      pilot_date: "",
+      pilot_time_text: raw,
+      pilot_time_local: localTime,
+      pilot_timestamp: "",
+      parse_status: "time_only_missing_date"
+    };
+  }
+  if (isParseablePilotTimestamp(normalized)) {
+    return {
+      raw_pilot_time: raw,
+      pilot_date: pilotDatePart(normalized),
+      pilot_time_text: raw,
+      pilot_time_local: "",
+      pilot_timestamp: normalized,
+      parse_status: "parsed_full_timestamp"
+    };
+  }
+  return fallback;
+}
+
 function toNumber(value) {
   const n = Number(String(value ?? "").replace(/,/g, ""));
   return Number.isFinite(n) ? n : 0;
@@ -511,7 +584,7 @@ function sourceType(source = {}) {
 }
 
 function hasScheduleSignal(record = {}) {
-  return Boolean(record.eta || record.etb || record.ata || record.atb || record.etd || record.atd || record.eta_candidate || record.etb_candidate || record.etd_candidate || record.pilot_time || record.berth);
+  return Boolean(record.eta || record.etb || record.ata || record.atb || record.etd || record.atd || record.eta_candidate || record.etb_candidate || record.etd_candidate || record.pilot_time || record.pilot_time_text || record.berth);
 }
 
 function isMovementOnlyRecord(record = {}) {
@@ -1327,6 +1400,11 @@ function mergePilotSchedule(record = {}, matches = []) {
     pilot_source_url: pilot.source_url || "",
     pilot_last_seen_at: pilot.updated_at || new Date().toISOString(),
     pilot_time: record.pilot_time || pilotTime,
+    pilot_time_text: record.pilot_time_text || pilot.pilot_time_text || pilot.raw_pilot_time || "",
+    pilot_time_local: record.pilot_time_local || pilot.pilot_time_local || "",
+    pilot_timestamp: record.pilot_timestamp || pilot.pilot_timestamp || pilotTime,
+    raw_pilot_time: record.raw_pilot_time || pilot.raw_pilot_time || "",
+    pilot_time_parse_status: record.pilot_time_parse_status || pilot.pilot_time_parse_status || pilot.parse_status || "",
     pilot_direction: record.pilot_direction || direction,
     pilot_station: record.pilot_station || pilot.pilot_station,
     berth_name: record.berth_name || record.berth || pilotBerth,
@@ -1369,16 +1447,17 @@ function mergePilotSchedule(record = {}, matches = []) {
 
 function makePilotOnlyRecord(record = {}) {
   const direction = pilotDirection(record.pilot_direction || record.movement_type);
+  const pilotTimestamp = record.pilot_timestamp || record.pilot_time || record.movement_time || "";
   return {
     ...record,
     source_origin: "pilot_schedule",
     ledger_status: "pilot_only_pending_port_operation",
     status_bucket: direction === "outbound" ? "unknown" : "arriving_soon",
     pilot_only_arrival_review: true,
-    eta_candidate: direction === "inbound" ? record.pilot_time || record.movement_time || record.eta_candidate : record.eta_candidate,
-    etb_candidate: direction === "inbound" ? record.etb_candidate || record.pilot_time || record.movement_time : record.etb_candidate,
-    eta_source: direction === "inbound" ? "pilot_schedule" : record.eta_source,
-    etb_source: direction === "inbound" ? "pilot_schedule" : record.etb_source,
+    eta_candidate: direction === "inbound" && pilotTimestamp ? pilotTimestamp : record.eta_candidate,
+    etb_candidate: direction === "inbound" && pilotTimestamp ? record.etb_candidate || pilotTimestamp : record.etb_candidate,
+    eta_source: direction === "inbound" && pilotTimestamp ? "pilot_schedule" : record.eta_source,
+    etb_source: direction === "inbound" && pilotTimestamp ? "pilot_schedule" : record.etb_source,
     schedule_confidence: Math.max(Number(record.schedule_confidence || 0), 45),
     data_confidence: "pilot_only_schedule_review",
     actionable_source_row: true,
@@ -1390,11 +1469,24 @@ function makePilotOnlyRecord(record = {}) {
 function buildPilotDiagnostics(pilotRows = [], matchedPilotKeys = new Set(), pilotOnlyRows = []) {
   const sources = new Set(pilotRows.map(row => row.source).filter(Boolean));
   const matchedCount = pilotRows.filter(row => matchedPilotKeys.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.pilot_time}`)).length;
+  const withValue = key => pilotRows.filter(row => String(row[key] || "").trim()).length;
+  const timeOnlyRows = pilotRows.filter(row => row.pilot_time_parse_status === "time_only_missing_date").length;
+  const invalidTimeRows = pilotRows.filter(row => row.pilot_time_parse_status === "invalid_date_time").length;
   return {
     pilot_sources_attempted: sources.size,
     pilot_sources_success: sources.size,
     pilot_rows_collected: pilotRows.length,
     pilot_rows_normalized: pilotRows.length,
+    pilot_rows_with_vessel_name: withValue("vessel_name"),
+    pilot_rows_with_call_sign: withValue("call_sign"),
+    pilot_rows_with_port: withValue("port"),
+    pilot_rows_with_pilot_date: withValue("pilot_date"),
+    pilot_rows_with_pilot_time: pilotRows.filter(row => String(row.pilot_time || row.pilot_time_text || "").trim()).length,
+    pilot_rows_with_pilot_station: withValue("pilot_station"),
+    pilot_rows_with_pilot_direction: withValue("pilot_direction"),
+    time_only_rows: timeOnlyRows,
+    invalid_time_rows: invalidTimeRows,
+    time_only_rows_discarded: 0,
     pilot_rows_matched_to_port_operation: matchedCount,
     pilot_only_rows: pilotOnlyRows.length,
     pilot_match_rate: pilotRows.length ? Math.round((matchedCount / pilotRows.length) * 100) : 0,
@@ -1579,6 +1671,9 @@ function normalizeRow(row, source, now) {
   const callSign = String(firstValue(adapted, FIELD_ALIASES.call_sign)).trim();
   const port = normalizePort(firstValue(adapted, FIELD_ALIASES.port), source.portCode);
   if (!vesselName && !imo && !mmsi && !callSign) return null;
+  const rawPilotDate = firstValue(adapted, ALL_PILOT_DATE_ALIASES);
+  const rawPilotTime = firstValue(adapted, ALL_PILOT_TIME_ALIASES);
+  const pilotTimeInfo = normalizePilotTime(rawPilotTime || rawPilotDate, rawPilotDate);
 
   const vsslKndCd = rawValue(adapted, ["vsslKndCd", "VSSL_KND_CD", "shipKindCode", "vesselKindCode", "선박종류코드"]);
   const vsslKndNm = rawValue(adapted, ["vsslKndNm", "VSSL_KND_NM", "shipKindName", "vesselKindName", "선박종류명"]);
@@ -1630,16 +1725,22 @@ function normalizeRow(row, source, now) {
       firstValue(adapted, FIELD_ALIASES.berth),
       rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"]),
       rawValue(adapted, TERMINAL_ALIASES),
-      rawValue(adapted, PILOT_STATION_ALIASES)
+      rawValue(adapted, ALL_PILOT_STATION_ALIASES)
     ].filter(Boolean).join(" ")),
     berth_status: rawValue(adapted, BERTH_STATUS_ALIASES),
     terminal_activity: rawValue(adapted, ["terminal_activity", "terminalActivity", "작업구분", "작업내용", "하역상태", ...BERTH_STATUS_ALIASES]),
     cargo_workload_proxy: toNumber(firstValue(adapted, CARGO_WORKLOAD_ALIASES)),
-    pilot_time: normalizeDate(firstValue(adapted, PILOT_TIME_ALIASES)),
-    movement_time: normalizeDate(firstValue(adapted, PILOT_TIME_ALIASES)),
-    pilot_direction: pilotDirection(firstValue(adapted, PILOT_DIRECTION_ALIASES)),
-    movement_type: pilotDirection(firstValue(adapted, PILOT_DIRECTION_ALIASES)),
-    pilot_station: rawValue(adapted, PILOT_STATION_ALIASES),
+    pilot_time: pilotTimeInfo.pilot_timestamp,
+    movement_time: pilotTimeInfo.pilot_timestamp,
+    pilot_date: pilotTimeInfo.pilot_date,
+    pilot_time_text: pilotTimeInfo.pilot_time_text,
+    pilot_time_local: pilotTimeInfo.pilot_time_local,
+    pilot_timestamp: pilotTimeInfo.pilot_timestamp,
+    raw_pilot_time: pilotTimeInfo.raw_pilot_time,
+    pilot_time_parse_status: pilotTimeInfo.parse_status,
+    pilot_direction: pilotDirection(firstValue(adapted, ALL_PILOT_DIRECTION_ALIASES)),
+    movement_type: pilotDirection(firstValue(adapted, ALL_PILOT_DIRECTION_ALIASES)),
+    pilot_station: rawValue(adapted, ALL_PILOT_STATION_ALIASES),
     pilot_source_url: source.url || "",
     eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.eta)),
     etb: normalizeDate(firstValue(adapted, FIELD_ALIASES.etb)),

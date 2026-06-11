@@ -1,6 +1,6 @@
 # Vessel Display Mapping Audit
 
-Generated at: 2026-06-11T05:27:01.972Z
+Generated at: 2026-06-11T08:56:30.367Z
 
 ## Scope
 
@@ -20,14 +20,14 @@ This audit checks whether generated dashboard JSON items expose the canonical `v
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | bootstrap.top_candidates | yes | yes | 20 | 20 | 50.0% | 100.0% | 100.0% | - |
 | candidates/top | yes | yes | 100 | 100 | 100.0% | 100.0% | 100.0% | - |
-| targets/current | yes | yes | 29 | 29 | 100.0% | 100.0% | 100.0% | - |
-| targets/categories | yes | yes | 162 | 162 | 100.0% | 100.0% | 100.0% | - |
-| sales/actions | yes | yes | 58 | 58 | 100.0% | 100.0% | 100.0% | - |
-| sales/conversion-pipeline | yes | yes | 29 | 29 | 100.0% | 100.0% | 100.0% | - |
-| sales/quote-opportunities | yes | yes | 31 | 31 | 96.8% | 100.0% | 100.0% | - |
+| targets/current | yes | yes | 32 | 32 | 100.0% | 100.0% | 100.0% | - |
+| targets/categories | yes | yes | 174 | 174 | 100.0% | 100.0% | 100.0% | - |
+| sales/actions | yes | yes | 60 | 60 | 100.0% | 100.0% | 100.0% | - |
+| sales/conversion-pipeline | yes | yes | 32 | 32 | 100.0% | 100.0% | 100.0% | - |
+| sales/quote-opportunities | yes | yes | 33 | 33 | 97.0% | 100.0% | 100.0% | - |
 | watchlist/current | yes | yes | 20 | 20 | 60.0% | 100.0% | 100.0% | - |
 | staying-vessels | yes | yes | 500 | 500 | 100.0% | 100.0% | 100.0% | - |
-| anchorage-waiting | yes | yes | 271 | 271 | 100.0% | 100.0% | 100.0% | - |
+| anchorage-waiting | yes | yes | 283 | 283 | 100.0% | 100.0% | 100.0% | - |
 | arrival-pipeline | yes | yes | 200 | 200 | 100.0% | 100.0% | 100.0% | - |
 | vessels/page-1 | yes | yes | 30 | 30 | 100.0% | 100.0% | 100.0% | - |
 

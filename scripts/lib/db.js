@@ -4467,31 +4467,108 @@ export async function saveToSupabase(records, options = {}) {
     if (error) throw error;
   }
 
+  function firstPilotValue(...values) {
+    return values.find(value => value !== null && value !== undefined && String(value).trim() !== "") || "";
+  }
+
+  function isPilotTimeOnly(value) {
+    const text = String(value || "").trim();
+    return /^(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(text);
+  }
+
+  function isPilotFullTimestamp(value) {
+    const text = String(value || "").trim();
+    if (!text || isPilotTimeOnly(text) || !/^\d{4}-\d{2}-\d{2}/.test(text)) return false;
+    const parsed = new Date(text.replace(" ", "T"));
+    return Number.isFinite(parsed.getTime());
+  }
+
+  function pilotStorageTime(record = {}) {
+    const raw = firstPilotValue(record.raw_pilot_time, record.pilot_time_text, record.pilot_time_local, record.pilot_time, record.movement_time, record.eta_candidate, record.etb_candidate);
+    const timestamp = firstPilotValue(
+      record.pilot_timestamp,
+      isPilotFullTimestamp(record.pilot_time) ? record.pilot_time : "",
+      isPilotFullTimestamp(record.movement_time) ? record.movement_time : "",
+      isPilotFullTimestamp(record.eta_candidate) ? record.eta_candidate : "",
+      isPilotFullTimestamp(record.etb_candidate) ? record.etb_candidate : ""
+    );
+    let parseStatus = firstPilotValue(record.pilot_time_parse_status, record.parse_status);
+    if (!parseStatus) {
+      parseStatus = timestamp ? "parsed_full_timestamp" : raw && isPilotTimeOnly(raw) ? "time_only_missing_date" : raw ? "invalid_date_time" : "missing";
+    }
+    return {
+      raw: raw || null,
+      text: firstPilotValue(record.pilot_time_text, raw) || null,
+      local: firstPilotValue(record.pilot_time_local, isPilotTimeOnly(raw) ? raw : "") || null,
+      timestamp: timestamp || null,
+      parse_status: parseStatus
+    };
+  }
+
   const pilotEvents = records
-    .filter(r => r.pilot_schedule_matched || r.pilot_only_arrival_review || r.source_origin === "pilot_schedule" || r.pilot_time)
-    .map(r => ({
+    .filter(r => r.pilot_schedule_matched || r.pilot_only_arrival_review || r.source_origin === "pilot_schedule" || r.pilot_time || r.pilot_time_text || r.pilot_station)
+    .map(r => {
+      const time = pilotStorageTime(r);
+      const payload = {
+        ...storagePayload(r),
+        pilot_time_text: time.text,
+        pilot_time_local: time.local,
+        pilot_timestamp: time.timestamp,
+        raw_pilot_time: time.raw,
+        pilot_time_parse_status: time.parse_status
+      };
+      return {
       run_id: runId,
       port_code: r.port_code || null,
       port_name: r.port_name || r.port || null,
       vessel_name: r.vessel_name || null,
       normalized_vessel_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
       call_sign: r.call_sign || null,
-      pilot_time: r.pilot_time || r.movement_time || r.eta_candidate || r.etb_candidate || null,
+      pilot_time: time.timestamp || time.raw || null,
+      pilot_time_raw: time.raw,
+      pilot_time_at: time.timestamp,
       pilot_direction: r.pilot_direction || r.movement_type || null,
       pilot_station: r.pilot_station || null,
       berth_name: r.berth_name || r.berth || null,
       movement_type: r.movement_type || r.pilot_direction || null,
       status: r.pilot_only_arrival_review ? "pilot_only_pending_port_operation" : "matched_to_port_operation",
-      raw_payload: storagePayload(r),
+      raw_payload: payload,
       matched_snapshot_id: null,
       matched_master_vessel_id: r.pilot_only_arrival_review ? null : fallbackMasterId(r),
       match_confidence: Number(r.pilot_match_confidence || r.schedule_confidence || 0)
-    }));
+    };
+  });
+
+  const pilotInsertDiagnostics = {
+    attempted: pilotEvents.length,
+    inserted: 0,
+    failed: 0,
+    time_only_rows: pilotEvents.filter(row => row.raw_payload?.pilot_time_parse_status === "time_only_missing_date").length,
+    invalid_time_rows: pilotEvents.filter(row => row.raw_payload?.pilot_time_parse_status === "invalid_date_time").length,
+    failure_reasons: [],
+    failed_samples: [],
+    migration_suggestion: null
+  };
 
   for (let index = 0; index < pilotEvents.length; index += batchSize) {
     const batch = pilotEvents.slice(index, index + batchSize);
     const { error } = await supabase.from("pilot_schedule_events").insert(batch);
-    if (error) throw error;
+    if (error) {
+      pilotInsertDiagnostics.failed += batch.length;
+      const message = error?.message || String(error);
+      pilotInsertDiagnostics.failure_reasons.push({
+        code: error?.code || null,
+        message,
+        batch_start: index
+      });
+      pilotInsertDiagnostics.failed_samples.push(batch[0]);
+      if (/timestamp with time zone|timestamptz|pilot_time_at|pilot_time/i.test(message)) {
+        pilotInsertDiagnostics.migration_suggestion = "Ensure pilot_schedule_events.pilot_time is text, pilot_time_raw is text, and pilot_time_at is nullable timestamptz. Time-only rows must store pilot_time_at=null.";
+      }
+      console.warn(`[HWK] pilot_schedule_events insert skipped for batch ${index / batchSize + 1}: ${message}`);
+      continue;
+    }
+    pilotInsertDiagnostics.inserted += batch.length;
   }
 
   const byPort = new Map();
@@ -5173,7 +5250,7 @@ export async function saveToSupabase(records, options = {}) {
     opportunity_master: opportunityRows.length,
     risk_history: riskRows.length,
     vessel_events: events.length,
-    pilot_schedule_events: pilotEvents.length,
+    pilot_schedule_events: pilotInsertDiagnostics.inserted,
     port_congestion_snapshots: congestionRows.length,
     enrichment_match_candidates: enrichmentMatchRows.length,
     commercial_leads: commercialLeadRows.length,
@@ -5219,6 +5296,7 @@ export async function saveToSupabase(records, options = {}) {
       db_upsert_dedupe: upsertDedupeAudit,
       optional_db_write_failures: upsertDedupeAudit.optional_db_write_failures || {},
       schema_compatibility: schemaCompatibility,
+      pilot_schedule_events_insert: pilotInsertDiagnostics,
       retention_rows_deleted_by_table: retentionRowsDeletedByTable,
       post_write_verification: postWriteVerification,
       dashboard_summary_snapshot: dashboardSummarySnapshotResult,
@@ -5277,6 +5355,7 @@ export async function saveToSupabase(records, options = {}) {
     db_upsert_dedupe: upsertDedupeAudit,
     optional_db_write_failures: upsertDedupeAudit.optional_db_write_failures || {},
     schema_compatibility: schemaCompatibility,
+    pilot_schedule_events_insert: pilotInsertDiagnostics,
     retention_rows_deleted_by_table: retentionRowsDeletedByTable,
     retentionCleanup,
     routePatternRowsSaved: routePatternRows.length,
@@ -5288,7 +5367,10 @@ export async function saveToSupabase(records, options = {}) {
     imoRecoveryResolvedRowsSaved,
     riskRowsSaved: riskRows.length,
     eventsSaved: events.length,
-    pilotScheduleEventsSaved: pilotEvents.length,
+    pilotScheduleEventsSaved: pilotInsertDiagnostics.inserted,
+    pilotScheduleEventsInsertAttempted: pilotInsertDiagnostics.attempted,
+    pilotScheduleEventsInsertFailed: pilotInsertDiagnostics.failed,
+    pilotScheduleEventsInsertDiagnostics: pilotInsertDiagnostics,
     congestionRowsSaved: congestionRows.length
   };
 }
