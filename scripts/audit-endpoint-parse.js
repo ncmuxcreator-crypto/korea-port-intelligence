@@ -26,6 +26,7 @@ const STRICT_ENDPOINTS = new Set([
   "dashboard/api/bootstrap.json",
   "dashboard/api/status.json",
   "dashboard/api/dashboard-summary.json",
+  "dashboard/api/endpoint-manifest.json",
   "dashboard/api/sales/actions.json",
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/watchlist/current.json",

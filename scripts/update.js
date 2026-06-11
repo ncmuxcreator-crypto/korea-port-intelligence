@@ -2938,14 +2938,11 @@ function parseDashboardJsonDocument(filePath, text) {
 function assertDashboardJsonPayload(filePath, payload) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const type = dashboardJsonRootType(payload);
-  if (!payload || (typeof payload !== "object" && !Array.isArray(payload))) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new Error(`dashboard_json_payload_object_required:${type}`);
   }
   if (typeof payload === "string") {
     throw new Error("dashboard_json_payload_string_rejected");
-  }
-  if (isCriticalDashboardJsonPath(normalized) && Array.isArray(payload)) {
-    throw new Error("critical_endpoint_array_payload_rejected");
   }
 }
 
@@ -3062,6 +3059,10 @@ function withEndpointItemCount(payload) {
     ...payload,
     item_count: Number(payload.item_count ?? (Number.isFinite(itemCount) ? itemCount : 0))
   };
+}
+
+function dashboardRootObjectPayload(payload) {
+  return Array.isArray(payload) ? withEndpointItemCount(payload) : payload;
 }
 
 function sanitizeDashboardJsonValue(value, key = "") {
@@ -3210,7 +3211,7 @@ function normalizeBusinessOutputPayload(filePath = "", payload) {
 
 function writeApiJson(filePath, payload, report = {}) {
   const target = routeApiOutputPath(filePath, report);
-  const preparedPayload = normalizeBusinessOutputPayload(filePath, payload);
+  const preparedPayload = normalizeBusinessOutputPayload(filePath, dashboardRootObjectPayload(payload));
   writeDashboardJson(target, preparedPayload);
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const existingPayload = target !== normalized && normalized.startsWith("dashboard/api/") && fs.existsSync(normalized)
@@ -3379,11 +3380,11 @@ function saveSuccessfulDatasetBundle({ report = {}, dashboardSummary = {}, healt
   for (const [filePath, payload] of Object.entries(files)) {
     const normalized = String(filePath).replace(/\\/g, "/");
     const target = `${dir}/${normalized}`;
-    writeDashboardJson(target, payload);
+    writeDashboardJson(target, dashboardRootObjectPayload(payload));
     fileManifest.push({
       path: normalized,
       rows: rowCountFromPayload(payload),
-      bytes: Buffer.byteLength(safeDashboardJsonString(target, payload))
+      bytes: Buffer.byteLength(safeDashboardJsonString(target, dashboardRootObjectPayload(payload)))
     });
   }
   const manifest = {
@@ -3529,7 +3530,7 @@ function withRunOrigin(payload = {}, origin = {}) {
 
 function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
-  const body = normalizeBusinessOutputPayload(normalized, withRunOrigin(payload, origin));
+  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
   writeDashboardJson(normalized, body);
   if (normalized.startsWith("dashboard/api/")) {
     const debugPath = `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
@@ -16289,9 +16290,9 @@ try {
   for (const port of portIntelligence) {
     const dir = routeApiOutputPath(`dashboard/api/ports/${port.port_code}/vessels.json`, report).split("/").slice(0, -1).join("/");
     fs.mkdirSync(dir, { recursive: true });
-    writeDashboardJson(`${dir}/vessels.json`, normalizeBusinessOutputPayload(`${dir}/vessels.json`, port.all_vessels));
-    writeDashboardJson(`${dir}/candidates.json`, normalizeBusinessOutputPayload(`${dir}/candidates.json`, port.sales_candidates));
-    writeDashboardJson(`${dir}/berths.json`, normalizeBusinessOutputPayload(`${dir}/berths.json`, port.berths));
+    writeDashboardJson(`${dir}/vessels.json`, normalizeBusinessOutputPayload(`${dir}/vessels.json`, dashboardRootObjectPayload(port.all_vessels)));
+    writeDashboardJson(`${dir}/candidates.json`, normalizeBusinessOutputPayload(`${dir}/candidates.json`, dashboardRootObjectPayload(port.sales_candidates)));
+    writeDashboardJson(`${dir}/berths.json`, normalizeBusinessOutputPayload(`${dir}/berths.json`, dashboardRootObjectPayload(port.berths)));
     writeDashboardJson(`${dir}/congestion.json`, normalizeBusinessOutputPayload(`${dir}/congestion.json`, portCongestionHeatmap.find(p => String(p.port_code) === String(port.port_code) || p.port === port.port_name) || publicItemsEnvelope({
       generatedAt: completedAt,
       dataMode: report.data_mode,
@@ -16300,7 +16301,7 @@ try {
       items: [],
       extra: { status: "empty", reason: "해당 항만 혼잡 데이터가 없습니다." }
     })));
-    writeDashboardJson(`${dir}/anchorage.json`, normalizeBusinessOutputPayload(`${dir}/anchorage.json`, buildPortAnchorage(allCollectedVessels, port.port_code)));
+    writeDashboardJson(`${dir}/anchorage.json`, normalizeBusinessOutputPayload(`${dir}/anchorage.json`, dashboardRootObjectPayload(buildPortAnchorage(allCollectedVessels, port.port_code))));
     writeDashboardJson(`${dir}/hull-cleaning.json`, normalizeBusinessOutputPayload(`${dir}/hull-cleaning.json`, hullCleaningEngine.portPayloads[String(port.port_code)] || publicItemsEnvelope({
       generatedAt: completedAt,
       dataMode: report.data_mode,
