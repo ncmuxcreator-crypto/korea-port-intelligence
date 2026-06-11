@@ -5331,6 +5331,9 @@ function buildTargetCategorySummary(records = [], { generatedAt = new Date().toI
     const value = actionabilityCounts[definition.code] ?? counts[definition.code] ?? 0;
     return [definition.kpi_key, value];
   }));
+  kpis.contact_now_action_count = actionabilityCounts.CONTACT_NOW || 0;
+  kpis.contact_now_vessel_count = Math.min(counts.CONTACT_NOW || actionabilityCounts.CONTACT_NOW || 0, items.length);
+  kpis.contact_now_count = kpis.contact_now_vessel_count;
   const overlap_matrix = {};
   for (const left of TARGET_CATEGORY_DEFINITIONS) {
     overlap_matrix[left.code] = {};
@@ -5362,10 +5365,14 @@ function refreshTargetCategoryActionabilityCounts(summary = {}) {
     acc[code] = [...unique.values()].filter(item => (item.actionability_category || salesActionability(item).actionability_category) === code).length;
     return acc;
   }, {});
+  const salesTargetItemCount = Array.isArray(summary.items) ? summary.items.length : unique.size;
+  const contactNowVesselCount = Math.min(Number(summary.counts?.CONTACT_NOW || 0) || actionabilityCounts.CONTACT_NOW || 0, salesTargetItemCount);
   summary.actionability_counts = actionabilityCounts;
   summary.kpis = {
     ...(summary.kpis || {}),
-    contact_now_count: actionabilityCounts.CONTACT_NOW || 0,
+    contact_now_count: contactNowVesselCount,
+    contact_now_vessel_count: contactNowVesselCount,
+    contact_now_action_count: actionabilityCounts.CONTACT_NOW || 0,
     verify_contact_count: actionabilityCounts.VERIFY_CONTACT || 0,
     monitor_count: actionabilityCounts.MONITOR || 0,
     hold_count: actionabilityCounts.HOLD || 0
@@ -5382,6 +5389,7 @@ function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().t
     record_count: Array.isArray(summary.items) ? summary.items.length : 0,
     source_table: "sales_candidates_current,opportunity_master,risk_history,rule_evaluations,explainability_snapshots,agent-followup-queue,arrival-pipeline,anchorage-waiting,staying-vessels",
     item_limit: itemLimit,
+    kpis: summary.kpis || {},
     actionability_counts: summary.actionability_counts || {},
     categories: (summary.categories || []).map(category => ({
       code: category.code,
@@ -5435,6 +5443,7 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
         target_categories: item.target_categories || []
       };
     });
+  const contactNowActionCount = items.filter(item => String(item.actionability_category || item.action_type || "").toUpperCase() === "CONTACT_NOW").length;
   return publicItemsEnvelope({
     generatedAt,
     dataMode,
@@ -5444,6 +5453,9 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
     extra: {
       total_count: items.length,
       returned_count: Math.min(items.length, 300),
+      contact_now_action_count: contactNowActionCount,
+      contact_now_vessel_count: Number(summary.kpis?.contact_now_vessel_count ?? summary.kpis?.contact_now_count ?? 0) || 0,
+      immediate_targets_current_count: Number(report?.rows_written_by_table?.immediate_targets_current || report?.storage_status?.supabase?.db_rows_written_by_table?.immediate_targets_current || 0),
       ...(items.length ? {} : { status: "empty", reason: "영업 액션으로 변환할 카테고리 대상이 없습니다." })
     }
   });
@@ -7590,7 +7602,25 @@ function buildVesselCountReconciliation({
   const salesTargetCount = Number(dashboardSummary?.kpis?.sales_target_count ?? dashboardSummary?.sales_target_count ?? salesCandidates.length) || 0;
   const salesActions = compactItems(salesActionsPayload);
   const salesActionsCount = salesActions.length;
-  const contactNowCount = Number(dashboardSummary?.kpis?.contact_now_count ?? dashboardSummary?.contact_now_count ?? targetCategorySummary?.kpis?.contact_now_count ?? 0) || 0;
+  const contactNowActionCount = Number(
+    dashboardSummary?.kpis?.contact_now_action_count ??
+    dashboardSummary?.contact_now_action_count ??
+    salesActionsPayload?.contact_now_action_count ??
+    salesActions.filter(item => String(item.actionability_category || item.action_type || "").toUpperCase() === "CONTACT_NOW").length
+  ) || 0;
+  const contactNowVesselCount = Math.min(
+    Number(dashboardSummary?.kpis?.contact_now_vessel_count ?? dashboardSummary?.kpis?.contact_now_count ?? dashboardSummary?.contact_now_vessel_count ?? dashboardSummary?.contact_now_count ?? targetCategorySummary?.kpis?.contact_now_vessel_count ?? targetCategorySummary?.kpis?.contact_now_count ?? 0) || 0,
+    salesTargetCount
+  );
+  const contactNowCount = contactNowVesselCount;
+  const immediateTargetsCurrentCount = Number(
+    dashboardSummary?.kpis?.immediate_targets_current_count ??
+    dashboardSummary?.immediate_targets_current_count ??
+    dashboardSummary?.rows_written_by_table?.immediate_targets_current ??
+    dashboardSummary?.storage_status?.supabase?.db_rows_written_by_table?.immediate_targets_current ??
+    salesActionsPayload?.immediate_targets_current_count ??
+    0
+  ) || 0;
   const monitorCount = Number(dashboardSummary?.kpis?.monitor_count ?? dashboardSummary?.monitor_count ?? targetCategorySummary?.kpis?.monitor_count ?? 0) || 0;
   const monitorCandidateCount = Number(dashboardSummary?.monitor_candidate_count ?? targetSplitCounts.monitor_candidate ?? 0) || 0;
   const excludedCount = Number(dashboardSummary?.non_target_count ?? targetSplitCounts.non_target ?? Math.max(0, totalVessels - salesTargetCount - monitorCandidateCount)) || 0;
@@ -7607,7 +7637,10 @@ function buildVesselCountReconciliation({
     gt_unknown_count: gtUnknownCount,
     detail_eligible_vessel_count: detailEligibleVesselCount,
     sales_target_count: salesTargetCount,
+    immediate_targets_current_count: immediateTargetsCurrentCount,
     contact_now_count: contactNowCount,
+    contact_now_vessel_count: contactNowVesselCount,
+    contact_now_action_count: contactNowActionCount,
     monitor_count: monitorCount
   };
   const explanation = {
@@ -7663,14 +7696,29 @@ function buildVesselCountReconciliation({
       explanation: "영업대상으로 확정된 선박 수입니다. 모니터링 후보는 이 숫자에 포함하지 않습니다."
     },
     {
+      field: "immediate_targets_current_count",
+      value: immediateTargetsCurrentCount,
+      explanation: "Supabase immediate_targets_current 현재 테이블에 저장된 행 수입니다. DB 현재 테이블 상태를 보여주는 운영 지표이며, 대시보드의 즉시 연락 선박/액션 수와 별도로 해석합니다."
+    },
+    {
+      field: "contact_now_vessel_count",
+      value: contactNowVesselCount,
+      explanation: "즉시 연락 조건을 만족한 고유 선박 수입니다. 사용자 화면에서는 '즉시 연락 선박'으로 표시하며 sales_target_count를 넘지 않도록 제한합니다."
+    },
+    {
       field: "sales_actions_count",
       value: salesActionsCount,
       explanation: "영업 액션 항목 수입니다. 한 선박이 연락처 확인, 견적 준비, 후속 조치 등 여러 액션을 만들 수 있어 영업대상 수와 다를 수 있습니다."
     },
     {
+      field: "contact_now_action_count",
+      value: contactNowActionCount,
+      explanation: "즉시 연락으로 분류된 액션 항목 수입니다. 액션 단위 지표라서 고유 선박 수와 다를 수 있으며 사용자 화면에서는 '즉시 연락 액션'으로 표시합니다."
+    },
+    {
       field: "contact_now_count",
       value: contactNowCount,
-      explanation: "즉시 연락 카테고리에 들어간 항목 수입니다. 카테고리는 중복 허용이므로 sales_target_count와 1:1로 일치하지 않을 수 있습니다."
+      explanation: "하위 호환용 즉시 연락 선박 수입니다. 의미는 contact_now_vessel_count와 같고, 액션 수는 contact_now_action_count를 사용합니다."
     },
     {
       field: "monitor_count",
@@ -7705,8 +7753,11 @@ function buildVesselCountReconciliation({
     gt_unknown_count: gtUnknownCount,
     detail_eligible_vessel_count: detailEligibleVesselCount,
     sales_target_count: salesTargetCount,
+    immediate_targets_current_count: immediateTargetsCurrentCount,
     sales_actions_count: salesActionsCount,
     contact_now_count: contactNowCount,
+    contact_now_vessel_count: contactNowVesselCount,
+    contact_now_action_count: contactNowActionCount,
     monitor_count: monitorCount,
     monitor_candidate_count: monitorCandidateCount,
     excluded_count: excludedCount,
@@ -7716,7 +7767,8 @@ function buildVesselCountReconciliation({
       normalized_to_display_delta: duplicateRemovedCount,
       detected_to_detail_eligible_delta: totalDetectedVessels - detailEligibleVesselCount,
       detail_eligible_to_sales_target_delta: detailEligibleVesselCount - salesTargetCount,
-      sales_actions_to_sales_target_delta: salesActionsCount - salesTargetCount
+      sales_actions_to_sales_target_delta: salesActionsCount - salesTargetCount,
+      contact_now_actions_to_vessels_delta: contactNowActionCount - contactNowVesselCount
     },
     ratios: {
       detail_eligible_coverage_pct: detailCoverageRatio,
@@ -7893,6 +7945,7 @@ function buildBootstrapSnapshot({
     gt_unknown_count: Number(dashboardSummary.gt_unknown_count || report.gt_unknown_count || 0),
     sales_target_count: Number(dashboardSummary.sales_target_count || 0),
     immediate_target_count: Number(dashboardSummary.immediate_target_count || 0),
+    immediate_targets_current_count: Number(dashboardSummary.immediate_targets_current_count || 0),
     hot_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "HOT").length,
     warm_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "WARM").length,
     port_count: Number(dashboardSummary.port_count || ports.length || 0),
@@ -7900,7 +7953,9 @@ function buildBootstrapSnapshot({
     staying_vessels_count: Number(dashboardSummary.staying_vessels_count || dashboardSummary.staying_vessel_count || 0),
     anchorage_waiting_count: Number(dashboardSummary.anchorage_waiting_count || 0),
     high_risk_count: Number(dashboardSummary.high_risk_count || 0),
-    contact_now_count: Number(dashboardSummary.contact_now_count || 0),
+    contact_now_count: Number(dashboardSummary.contact_now_vessel_count ?? dashboardSummary.contact_now_count ?? 0),
+    contact_now_vessel_count: Number(dashboardSummary.contact_now_vessel_count ?? dashboardSummary.contact_now_count ?? 0),
+    contact_now_action_count: Number(dashboardSummary.contact_now_action_count || 0),
     pre_arrival_target_count: Number(dashboardSummary.pre_arrival_target_count || 0),
     anchorage_opportunity_count: Number(dashboardSummary.anchorage_opportunity_count || 0),
     long_stay_risk_count: Number(dashboardSummary.long_stay_risk_count || 0),
@@ -7929,8 +7984,12 @@ function buildBootstrapSnapshot({
       gt_5000_plus_count: "5천GT 이상",
       gt_below_5000_count: "5천GT 미만",
       gt_unknown_count: "톤수 미확인",
-      sales_target_count: "영업 후보",
-      contact_now_count: "즉시 연락",
+      sales_target_count: "영업대상 선박",
+      immediate_target_count: "즉시 연락 선박",
+      immediate_targets_current_count: "DB 즉시대상 테이블",
+      contact_now_count: "즉시 연락 선박",
+      contact_now_vessel_count: "즉시 연락 선박",
+      contact_now_action_count: "즉시 연락 액션",
       pilotage_detected_count: "도선 정보 확인"
     },
     kpi_trends: kpiTrends,
@@ -16693,6 +16752,12 @@ try {
       null);
   const summaryRunMismatch = Boolean(summaryStatusRunId && summaryRunId && String(summaryStatusRunId) !== String(summaryRunId));
   const summaryRunWarnings = summaryRunMismatch ? ["status_run_id !== summary_run_id"] : [];
+  const contactNowActionCount = Number(targetCategorySummary.kpis.contact_now_action_count || targetCategorySummary.actionability_counts?.CONTACT_NOW || 0) || 0;
+  const contactNowVesselCount = Math.min(
+    Number(targetCategorySummary.kpis.contact_now_vessel_count || targetCategorySummary.kpis.contact_now_count || 0) || 0,
+    salesCandidates.length
+  );
+  const immediateTargetsCurrentCount = Number(report?.rows_written_by_table?.immediate_targets_current || supabaseWrite?.db_rows_written_by_table?.immediate_targets_current || 0) || 0;
   const dashboardSummary = {
     run_id: report?.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -16755,7 +16820,10 @@ try {
     target_ratio_reasonable: targetSplitCounts.target_ratio_reasonable,
     target_ratio_warning: targetSplitCounts.target_ratio_warning,
     immediate_target_count: immediateTargets.length,
-    contact_now_count: targetCategorySummary.kpis.contact_now_count || 0,
+    immediate_targets_current_count: immediateTargetsCurrentCount,
+    contact_now_count: contactNowVesselCount,
+    contact_now_vessel_count: contactNowVesselCount,
+    contact_now_action_count: contactNowActionCount,
     pre_arrival_target_count: targetCategorySummary.kpis.pre_arrival_target_count || 0,
     anchorage_opportunity_count: targetCategorySummary.kpis.anchorage_opportunity_count || 0,
     long_stay_risk_count: targetCategorySummary.kpis.long_stay_risk_count || 0,
@@ -16822,6 +16890,10 @@ try {
       target_ratio_reasonable: targetSplitCounts.target_ratio_reasonable,
       target_ratio_warning: targetSplitCounts.target_ratio_warning,
       immediate_target_count: immediateTargets.length,
+      immediate_targets_current_count: immediateTargetsCurrentCount,
+      contact_now_count: contactNowVesselCount,
+      contact_now_vessel_count: contactNowVesselCount,
+      contact_now_action_count: contactNowActionCount,
       anchorage_waiting_count: anchorageWaiting.length,
       arrival_pipeline_count: arrivalPipeline.length,
       staying_vessels_count: stayingVessels.length,

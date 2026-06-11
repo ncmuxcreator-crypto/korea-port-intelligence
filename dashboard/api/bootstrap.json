@@ -1,29 +1,32 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T05:35:02.759Z",
+  "generated_at": "2026-06-11T05:45:32.907Z",
   "data_mode": "live",
   "fallback_used": false,
   "record_count": 29,
   "kpis": {
-    "total_vessels": 921,
-    "total_detected_vessels": 921,
-    "detail_eligible_vessel_count": 639,
-    "gt_5000_plus_count": 587,
-    "gt_below_5000_count": 334,
+    "total_vessels": 927,
+    "total_detected_vessels": 927,
+    "detail_eligible_vessel_count": 640,
+    "gt_5000_plus_count": 588,
+    "gt_below_5000_count": 339,
     "gt_unknown_count": 0,
     "sales_target_count": 29,
     "immediate_target_count": 13,
+    "immediate_targets_current_count": 0,
     "hot_count": 2,
     "warm_count": 0,
     "port_count": 8,
     "arrival_pipeline_count": 200,
     "staying_vessels_count": 500,
-    "anchorage_waiting_count": 270,
+    "anchorage_waiting_count": 275,
     "high_risk_count": 24,
-    "contact_now_count": 32,
+    "contact_now_count": 29,
+    "contact_now_vessel_count": 29,
+    "contact_now_action_count": 32,
     "pre_arrival_target_count": 28,
     "anchorage_opportunity_count": 19,
-    "long_stay_risk_count": 314,
+    "long_stay_risk_count": 315,
     "compliance_target_count": 5,
     "repeat_caller_count": 29,
     "fleet_expansion_count": 2,
@@ -42,45 +45,49 @@
     "gt_5000_plus_count": "5천GT 이상",
     "gt_below_5000_count": "5천GT 미만",
     "gt_unknown_count": "톤수 미확인",
-    "sales_target_count": "영업 후보",
-    "contact_now_count": "즉시 연락",
+    "sales_target_count": "영업대상 선박",
+    "immediate_target_count": "즉시 연락 선박",
+    "immediate_targets_current_count": "DB 즉시대상 테이블",
+    "contact_now_count": "즉시 연락 선박",
+    "contact_now_vessel_count": "즉시 연락 선박",
+    "contact_now_action_count": "즉시 연락 액션",
     "pilotage_detected_count": "도선 정보 확인"
   },
   "kpi_trends": {
     "total_vessels": {
-      "current_value": 921,
-      "previous_value": 922,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 927,
+      "previous_value": 921,
+      "delta": 6,
+      "delta_percent": 0.7,
+      "direction": "up"
     },
     "total_detected_vessels": {
-      "current_value": 921,
-      "previous_value": 922,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 927,
+      "previous_value": 921,
+      "delta": 6,
+      "delta_percent": 0.7,
+      "direction": "up"
     },
     "detail_eligible_vessel_count": {
-      "current_value": 639,
-      "previous_value": 640,
-      "delta": -1,
-      "delta_percent": -0.2,
-      "direction": "down"
+      "current_value": 640,
+      "previous_value": 639,
+      "delta": 1,
+      "delta_percent": 0.2,
+      "direction": "up"
     },
     "gt_5000_plus_count": {
-      "current_value": 587,
-      "previous_value": 588,
-      "delta": -1,
-      "delta_percent": -0.2,
-      "direction": "down"
+      "current_value": 588,
+      "previous_value": 587,
+      "delta": 1,
+      "delta_percent": 0.2,
+      "direction": "up"
     },
     "gt_below_5000_count": {
-      "current_value": 334,
+      "current_value": 339,
       "previous_value": 334,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": 5,
+      "delta_percent": 1.5,
+      "direction": "up"
     },
     "gt_unknown_count": {
       "current_value": 0,
@@ -102,6 +109,13 @@
       "delta": 0,
       "delta_percent": 0,
       "direction": "flat"
+    },
+    "immediate_targets_current_count": {
+      "current_value": 0,
+      "previous_value": null,
+      "delta": null,
+      "delta_percent": null,
+      "direction": "unknown"
     },
     "hot_count": {
       "current_value": 2,
@@ -139,11 +153,11 @@
       "direction": "flat"
     },
     "anchorage_waiting_count": {
-      "current_value": 270,
-      "previous_value": 271,
-      "delta": -1,
-      "delta_percent": -0.4,
-      "direction": "down"
+      "current_value": 275,
+      "previous_value": 270,
+      "delta": 5,
+      "delta_percent": 1.9,
+      "direction": "up"
     },
     "high_risk_count": {
       "current_value": 24,
@@ -153,11 +167,25 @@
       "direction": "flat"
     },
     "contact_now_count": {
-      "current_value": 32,
+      "current_value": 29,
       "previous_value": 32,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -3,
+      "delta_percent": -9.4,
+      "direction": "down"
+    },
+    "contact_now_vessel_count": {
+      "current_value": 29,
+      "previous_value": null,
+      "delta": null,
+      "delta_percent": null,
+      "direction": "unknown"
+    },
+    "contact_now_action_count": {
+      "current_value": 32,
+      "previous_value": null,
+      "delta": null,
+      "delta_percent": null,
+      "direction": "unknown"
     },
     "pre_arrival_target_count": {
       "current_value": 28,
@@ -174,10 +202,10 @@
       "direction": "flat"
     },
     "long_stay_risk_count": {
-      "current_value": 314,
-      "previous_value": 312,
-      "delta": 2,
-      "delta_percent": 0.6,
+      "current_value": 315,
+      "previous_value": 314,
+      "delta": 1,
+      "delta_percent": 0.3,
       "direction": "up"
     },
     "compliance_target_count": {
@@ -254,11 +282,11 @@
   "trend_metrics": {
     "vessel_growth": {
       "metric_key": "total_vessels",
-      "current_value": 921,
-      "previous_value": 922,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 927,
+      "previous_value": 921,
+      "delta": 6,
+      "delta_percent": 0.7,
+      "direction": "up"
     },
     "target_growth": {
       "metric_key": "sales_target_count",
@@ -298,7 +326,7 @@
       "port_code": "020",
       "port_name": "부산",
       "display_name": "부산",
-      "vessel_count": 360,
+      "vessel_count": 366,
       "target_count": 37,
       "sales_target_count": 37,
       "hot_count": 0,
@@ -306,7 +334,7 @@
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 32.4,
+      "avg_opportunity_score": 32.3,
       "normalized_port": {
         "port_code": "020",
         "port_name": "부산",
@@ -322,9 +350,9 @@
       "port_code": "820",
       "port_name": "울산",
       "display_name": "울산",
-      "vessel_count": 152,
-      "target_count": 19,
-      "sales_target_count": 19,
+      "vessel_count": 150,
+      "target_count": 18,
+      "sales_target_count": 18,
       "hot_count": 0,
       "hot_candidate_count": 0,
       "immediate_target_count": 0,
@@ -395,14 +423,14 @@
       "port_name": "대산",
       "display_name": "대산",
       "vessel_count": 81,
-      "target_count": 18,
-      "sales_target_count": 18,
+      "target_count": 19,
+      "sales_target_count": 19,
       "hot_count": 0,
       "hot_candidate_count": 0,
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 35.4,
+      "avg_opportunity_score": 35.5,
       "normalized_port": {
         "port_code": "621",
         "port_name": "대산",
@@ -418,15 +446,15 @@
       "port_code": "031",
       "port_name": "평택·당진",
       "display_name": "평택·당진",
-      "vessel_count": 68,
-      "target_count": 6,
-      "sales_target_count": 6,
+      "vessel_count": 69,
+      "target_count": 7,
+      "sales_target_count": 7,
       "hot_count": 0,
       "hot_candidate_count": 0,
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 32,
+      "avg_opportunity_score": 31.9,
       "normalized_port": {
         "port_code": "031",
         "port_name": "평택·당진",
@@ -466,7 +494,7 @@
       "port_code": "810",
       "port_name": "포항",
       "display_name": "포항",
-      "vessel_count": 26,
+      "vessel_count": 27,
       "target_count": 3,
       "sales_target_count": 3,
       "hot_count": 0,
@@ -474,7 +502,7 @@
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 26.2,
+      "avg_opportunity_score": 26.7,
       "normalized_port": {
         "port_code": "810",
         "port_name": "포항",
@@ -512,7 +540,7 @@
       "high_risk_vessels": 1,
       "estimated_revenue": 15000,
       "average_opportunity_score": 32,
-      "demand_score": 43,
+      "demand_score": 42,
       "normalized_port": {
         "port_code": "820",
         "port_name": "울산",
@@ -625,7 +653,7 @@
       "port_name": "포항",
       "high_risk_vessels": 0,
       "estimated_revenue": 0,
-      "average_opportunity_score": 28,
+      "average_opportunity_score": 27,
       "demand_score": 15,
       "normalized_port": {
         "port_code": "810",
@@ -728,7 +756,7 @@
         "port_stay_hours": 287.1,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -770,7 +798,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -875,7 +903,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -946,7 +974,7 @@
         "port_stay_hours": 189,
         "congestion_score": 23,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -988,7 +1016,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1093,7 +1121,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -1164,7 +1192,7 @@
         "port_stay_hours": 287.1,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1206,7 +1234,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1366,7 +1394,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -1437,7 +1465,7 @@
         "port_stay_hours": 180.8,
         "congestion_score": 48,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1479,7 +1507,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1584,7 +1612,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "820",
       "display_name": "울산"
     },
@@ -1655,7 +1683,7 @@
         "port_stay_hours": 349.6,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1802,7 +1830,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "621",
       "display_name": "대산"
     },
@@ -1873,7 +1901,7 @@
         "port_stay_hours": 349.6,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2066,7 +2094,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "621",
       "display_name": "대산"
     },
@@ -2137,7 +2165,7 @@
         "port_stay_hours": 346,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2179,7 +2207,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2284,7 +2312,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -2355,7 +2383,7 @@
         "port_stay_hours": 346,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2397,7 +2425,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2548,7 +2576,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -2619,7 +2647,7 @@
         "port_stay_hours": 251,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2661,7 +2689,7 @@
         "marine_heatwave_label_ko": "극심",
         "fouling_accelerator_pct": 55,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2766,7 +2794,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "620",
       "display_name": "여수"
     },
@@ -2837,7 +2865,7 @@
         "port_stay_hours": 251,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2879,7 +2907,7 @@
         "marine_heatwave_label_ko": "극심",
         "fouling_accelerator_pct": 55,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T05:35:02.759Z",
+        "ocean_updated_at": "2026-06-11T05:45:32.907Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -3030,7 +3058,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "620",
       "display_name": "여수"
     }
@@ -3100,7 +3128,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -3245,7 +3273,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -3313,7 +3341,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -3458,7 +3486,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -3526,7 +3554,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -3671,7 +3699,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "820",
       "display_name": "울산"
     },
@@ -3740,7 +3768,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -3887,7 +3915,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "031",
       "display_name": "평택·당진"
     },
@@ -3955,7 +3983,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -4100,7 +4128,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "620-YEOSU",
       "display_name": "여수"
     },
@@ -4168,7 +4196,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -4313,7 +4341,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -4381,7 +4409,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -4526,7 +4554,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "621",
       "display_name": "대산"
     },
@@ -4594,7 +4622,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -4739,7 +4767,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "621",
       "display_name": "대산"
     },
@@ -4807,7 +4835,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -4952,7 +4980,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "020",
       "display_name": "부산"
     },
@@ -5021,7 +5049,7 @@
         "port_stay_hours": 0,
         "congestion_score": null,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T05:32:16.818Z",
+        "last_seen_at": "2026-06-11T05:42:47.058Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -5167,7 +5195,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-11T05:32:16.818Z",
+      "last_seen_at": "2026-06-11T05:42:47.058Z",
       "port_code": "620-YEOSU",
       "display_name": "여수"
     }
@@ -5175,11 +5203,11 @@
   "alerts": [],
   "data_health": {
     "status": "healthy",
-    "latest_successful_run_id": "run_20260611053216802_9bc338fd",
-    "last_success_at": "2026-06-11T05:35:02.759Z",
+    "latest_successful_run_id": "run_20260611054247041_91debf59",
+    "last_success_at": "2026-06-11T05:45:32.907Z",
     "source_status": {
-      "source_rows_collected": 2255,
-      "normalized_rows": 921,
+      "source_rows_collected": 2264,
+      "normalized_rows": 927,
       "ports_attempted_count": 0,
       "environmental_source_status": {
         "status": "proxy",
@@ -5191,8 +5219,8 @@
       "supabase_write_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 921,
-        "opportunity_master": 921,
+        "vessel_snapshots": 927,
+        "opportunity_master": 927,
         "dashboard_summary_snapshots": 1
       }
     },
@@ -5200,15 +5228,15 @@
       "output_mode": "static_json"
     },
     "technical_diagnostics": {
-      "total_rows": 1391,
+      "total_rows": 1402,
       "fallback_rows": 0,
-      "mock_rows": 1391,
+      "mock_rows": 1402,
       "scoring_errors": 0,
       "data_health_validation": {
         "status": "ok",
-        "total_rows": 921,
-        "issue_count": 921,
-        "missing_imo_mmsi_count": 921,
+        "total_rows": 927,
+        "issue_count": 927,
+        "missing_imo_mmsi_count": 927,
         "missing_port_code_count": 0,
         "date_parse_failed_count": 0,
         "lat_lon_range_error_count": 0,
@@ -5359,13 +5387,13 @@
             "severity": "WARNING",
             "type": "MISSING_IMO_MMSI",
             "index": 23,
-            "vessel_key": "NAME_PORT:MAERSK SARNIA|020"
+            "vessel_key": "NAME_PORT:MSC FAITH|020"
           },
           {
             "severity": "WARNING",
             "type": "MISSING_IMO_MMSI",
             "index": 24,
-            "vessel_key": "NAME_PORT:MSC FAITH|020"
+            "vessel_key": "NAME_PORT:MAERSK SARNIA|020"
           },
           {
             "severity": "WARNING",
@@ -5832,8 +5860,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "BUSAN",
         "port_name": "부산",
@@ -5857,8 +5885,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "GWANGYANG",
         "port_name": "광양",
@@ -5882,8 +5910,8 @@
       "marine_heatwave_level": "EXTREME",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "YEOSU",
         "port_name": "여수",
@@ -5907,8 +5935,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "ULSAN",
         "port_name": "울산",
@@ -5932,8 +5960,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "POHANG",
         "port_name": "포항",
@@ -5957,8 +5985,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "SAMCHEONPO",
         "port_name": "삼천포",
@@ -5982,8 +6010,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "HADONG",
         "port_name": "하동",
@@ -6007,8 +6035,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "INCHEON",
         "port_name": "인천",
@@ -6032,8 +6060,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "PYEONGTAEK",
         "port_name": "평택·당진",
@@ -6057,8 +6085,8 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "GUNSAN",
         "port_name": "군산",
@@ -6082,8 +6110,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "DONGHAE",
         "port_name": "동해/묵호",
@@ -6107,8 +6135,8 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-11T05:35:02.759Z",
-      "updated_at": "2026-06-11T05:35:02.759Z",
+      "observed_at": "2026-06-11T05:45:32.907Z",
+      "updated_at": "2026-06-11T05:45:32.907Z",
       "normalized_port": {
         "port_code": "SAMCHEOK",
         "port_name": "삼척",
@@ -6125,7 +6153,7 @@
   ],
   "ocean_data_health": {
     "source": "FALLBACK",
-    "last_updated": "2026-06-11T05:35:02.759Z",
+    "last_updated": "2026-06-11T05:45:32.907Z",
     "live_or_fallback": "fallback",
     "ports_covered": 12,
     "stale_warning": false,
