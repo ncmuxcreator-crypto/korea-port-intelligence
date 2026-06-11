@@ -8,13 +8,16 @@ const MANIFEST_PATH = path.join(ROOT, "dashboard", "api", "endpoint-manifest.jso
 
 const CRITICAL_FILES = [
   "dashboard/api/bootstrap.json",
+  "dashboard/api/status-summary.json",
   "dashboard/api/dashboard-summary.json",
   "dashboard/api/status.json",
   "dashboard/api/sales/actions.json",
   "dashboard/api/watchlist/current.json",
   "dashboard/api/vessels/index.json",
   "dashboard/api/vessels/page-1.json",
-  "dashboard/api/vessel-count-reconciliation.json"
+  "dashboard/api/vessel-count-reconciliation.json",
+  "dashboard/api/targets/categories-summary.json",
+  "dashboard/api/sales/verification-queue-summary.json"
 ];
 
 function readRaw(relativePath) {
@@ -132,6 +135,9 @@ for (const relativePath of CRITICAL_FILES) {
     }
     if (manifestEntry.parsed_from_disk !== true) {
       failures.push(`${relativePath}: endpoint-manifest parsed_from_disk is not true`);
+    }
+    if (!manifestEntry.parse_checked_at) {
+      failures.push(`${relativePath}: endpoint-manifest missing parse_checked_at`);
     }
     if (row.parse_ok && Number(manifestEntry.item_count ?? 0) !== row.item_count) {
       failures.push(`${relativePath}: endpoint-manifest item_count=${manifestEntry.item_count ?? 0} but raw_item_count=${row.item_count}`);

@@ -72,6 +72,15 @@ const CRITICAL_DASHBOARD_JSON_OUTPUTS = new Set([
   "dashboard/api/vessels/page-1.json",
   "dashboard/api/vessel-count-reconciliation.json"
 ]);
+const SNAPSHOT_CONTEXT_SUMMARY_OUTPUTS = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/status-summary.json",
+  "dashboard/api/vessel-count-reconciliation.json",
+  "dashboard/api/endpoint-manifest.json",
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/targets/categories-summary.json",
+  "dashboard/api/sales/verification-queue-summary.json"
+]);
 
 function envPresent(name) {
   return Boolean(process.env[name] && String(process.env[name]).trim());
@@ -3425,11 +3434,73 @@ function normalizeBusinessOutputPayload(filePath = "", payload) {
   return normalizeBusinessOutputItem(payload);
 }
 
+function snapshotContextFromPayload(payload = {}, report = {}, generatedAt = null) {
+  const contextGeneratedAt = generatedAt ||
+    payload?.snapshot_context?.generated_at ||
+    payload?.generated_at ||
+    report?.completed_at ||
+    report?.generated_at ||
+    new Date().toISOString();
+  const runId = payload?.snapshot_context?.run_id ||
+    payload?.run_id ||
+    report?.run_id ||
+    report?.active_run_id ||
+    report?.latest_successful_run_id ||
+    null;
+  const sourceRunId = payload?.snapshot_context?.source_run_id ||
+    payload?.source_run_id ||
+    payload?.status_run_id ||
+    report?.source_run_id ||
+    report?.run_id ||
+    report?.active_run_id ||
+    report?.latest_successful_run_id ||
+    runId ||
+    null;
+  return {
+    run_id: runId,
+    generated_at: contextGeneratedAt,
+    data_mode: contractDataMode(payload?.data_mode || report?.data_mode, report),
+    source_run_id: sourceRunId
+  };
+}
+
+function withSnapshotContext(payload = {}, context = {}) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
+  const generatedAt = context.generated_at || payload.generated_at || new Date().toISOString();
+  const dataMode = contractDataMode(context.data_mode || payload.data_mode);
+  const runId = context.run_id || payload.run_id || null;
+  const sourceRunId = context.source_run_id || payload.source_run_id || runId || null;
+  return {
+    ...payload,
+    schema_version: payload.schema_version || PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: dataMode,
+    run_id: runId,
+    source_run_id: sourceRunId,
+    snapshot_context: {
+      run_id: runId,
+      generated_at: generatedAt,
+      data_mode: dataMode,
+      source_run_id: sourceRunId
+    }
+  };
+}
+
+function applySnapshotContextForOutput(filePath = "", payload = {}, report = {}) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (!SNAPSHOT_CONTEXT_SUMMARY_OUTPUTS.has(normalized)) return payload;
+  return withSnapshotContext(payload, snapshotContextFromPayload(payload, report));
+}
+
 function writeApiJson(filePath, payload, report = {}) {
   const target = routeApiOutputPath(filePath, report);
-  const preparedPayload = normalizeBusinessOutputPayload(filePath, dashboardRootObjectPayload(payload));
-  writeDashboardJson(target, preparedPayload);
   const normalized = String(filePath || "").replace(/\\/g, "/");
+  const preparedPayload = applySnapshotContextForOutput(
+    normalized,
+    normalizeBusinessOutputPayload(filePath, dashboardRootObjectPayload(payload)),
+    report
+  );
+  writeDashboardJson(target, preparedPayload);
   const existingPayload = target !== normalized && normalized.startsWith("dashboard/api/") && fs.existsSync(normalized)
     ? readJsonSafe(normalized, null)
     : null;
@@ -3527,12 +3598,12 @@ function schemaProblemForEndpoint(relativePath, payload) {
   return "";
 }
 
-function endpointManifestEntry(key, relativePath) {
+function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().toISOString()) {
   const normalized = String(relativePath || "").replace(/\\/g, "/");
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
   if (!exists) {
-    return { key, path: normalized, exists: false, first_char: "", root_type: "missing", parsed_from_disk: true, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
+    return { key, path: normalized, exists: false, first_char: "", root_type: "missing", parsed_from_disk: true, parse_checked_at: parseCheckedAt, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
@@ -3552,6 +3623,7 @@ function endpointManifestEntry(key, relativePath) {
       first_char: firstChar,
       root_type: rootType,
       parsed_from_disk: true,
+      parse_checked_at: parseCheckedAt,
       valid_json: true,
       schema_valid: schemaValid,
       record_count: count,
@@ -3569,6 +3641,7 @@ function endpointManifestEntry(key, relativePath) {
       first_char: firstJsonCharacter(fs.readFileSync(fullPath, "utf8")) || "",
       root_type: "invalid",
       parsed_from_disk: true,
+      parse_checked_at: parseCheckedAt,
       valid_json: false,
       schema_valid: false,
       record_count: 0,
@@ -3581,11 +3654,16 @@ function endpointManifestEntry(key, relativePath) {
   }
 }
 
-function writeEndpointManifest(generatedAt = new Date().toISOString()) {
-  const endpoints = ENDPOINT_MANIFEST_ENDPOINTS.map(([key, relativePath]) => endpointManifestEntry(key, relativePath));
+function writeEndpointManifest(generatedAt = new Date().toISOString(), report = {}) {
+  const context = snapshotContextFromPayload({}, report, generatedAt);
+  const endpoints = ENDPOINT_MANIFEST_ENDPOINTS.map(([key, relativePath]) => endpointManifestEntry(key, relativePath, context.generated_at));
   const payload = {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
-    generated_at: generatedAt,
+    generated_at: context.generated_at,
+    data_mode: context.data_mode,
+    run_id: context.run_id,
+    source_run_id: context.source_run_id,
+    snapshot_context: context,
     record_count: endpoints.length,
     item_count: endpoints.length,
     endpoints
@@ -17658,7 +17736,7 @@ try {
     };
     writeRuntimeDiagnosticJson("dashboard/api/json-root-repairs.json", report.dashboard_json_root_repairs, finalRunOrigin);
   }
-  writeEndpointManifest(completedAt);
+  writeEndpointManifest(completedAt, report);
   writeDashboardJson("data/pipeline-report.json", report);
   writeDashboardJson(`data/reports/${today}.json`, report);
   fs.copyFileSync("dashboard/index.html", "public/index.html");

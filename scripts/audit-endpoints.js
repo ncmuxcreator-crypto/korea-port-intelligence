@@ -51,6 +51,12 @@ const CRITICAL_ENDPOINTS = new Set([
   "dashboard/api/vessel-count-reconciliation.json"
 ]);
 
+const SNAPSHOT_CONTEXT_FILES = [
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/status-summary.json",
+  "dashboard/api/vessel-count-reconciliation.json"
+];
+
 const WRAPPER_PATTERNS = [
   /^dashboard\/api\/sales\//,
   /^dashboard\/api\/watchlist\//,
@@ -112,6 +118,49 @@ function rootType(payload) {
 function recordCount(payload) {
   const direct = Number(payload?.record_count ?? payload?.total_count ?? payload?.total_vessels ?? payload?.all_vessels_count);
   return Number.isFinite(direct) ? direct : rows(payload).length;
+}
+
+function readJson(relativePath) {
+  try {
+    const filePath = path.join(ROOT, ...relativePath.split("/"));
+    return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, "utf8")) : null;
+  } catch {
+    return null;
+  }
+}
+
+function snapshotContextFromDisk() {
+  const loaded = SNAPSHOT_CONTEXT_FILES
+    .map(readJson)
+    .filter(payload => payload && typeof payload === "object" && !Array.isArray(payload));
+  const bootstrap = loaded[0] || {};
+  const firstWithContext = loaded.find(payload => payload.snapshot_context && typeof payload.snapshot_context === "object") || {};
+  const context = firstWithContext.snapshot_context || {};
+  const generatedAt = context.generated_at ||
+    bootstrap.generated_at ||
+    loaded.find(payload => payload.generated_at)?.generated_at ||
+    new Date().toISOString();
+  const runId = context.run_id ||
+    bootstrap.run_id ||
+    loaded.find(payload => payload.run_id)?.run_id ||
+    loaded.find(payload => payload.active_run_id)?.active_run_id ||
+    null;
+  const sourceRunId = context.source_run_id ||
+    bootstrap.source_run_id ||
+    loaded.find(payload => payload.source_run_id)?.source_run_id ||
+    loaded.find(payload => payload.latest_successful_run_id)?.latest_successful_run_id ||
+    runId ||
+    null;
+  const dataMode = context.data_mode ||
+    bootstrap.data_mode ||
+    loaded.find(payload => payload.data_mode)?.data_mode ||
+    "live";
+  return {
+    run_id: runId,
+    generated_at: generatedAt,
+    data_mode: dataMode,
+    source_run_id: sourceRunId
+  };
 }
 
 function hasArrayPayload(payload) {
@@ -300,6 +349,7 @@ function readDashboardEndpointMap() {
 }
 
 function writeManifest(entries) {
+  const context = snapshotContextFromDisk();
   const importantByPath = new Map(entries.map(entry => [entry.path, entry]));
   const endpoints = IMPORTANT_ENDPOINTS.map(([key, relativePath]) => {
     const entry = importantByPath.get(relativePath) || auditFile(relativePath);
@@ -310,6 +360,7 @@ function writeManifest(entries) {
       first_char: entry.first_char || "",
       root_type: entry.root_type || (entry.exists ? "unknown" : "missing"),
       parsed_from_disk: true,
+      parse_checked_at: context.generated_at,
       valid_json: entry.valid_json,
       schema_valid: entry.schema_valid,
       record_count: entry.record_count,
@@ -321,7 +372,11 @@ function writeManifest(entries) {
   });
   const manifest = {
     schema_version: "1.0",
-    generated_at: new Date().toISOString(),
+    generated_at: context.generated_at,
+    data_mode: context.data_mode,
+    run_id: context.run_id,
+    source_run_id: context.source_run_id,
+    snapshot_context: context,
     record_count: endpoints.length,
     item_count: endpoints.length,
     endpoints

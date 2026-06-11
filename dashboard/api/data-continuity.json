@@ -6,17 +6,17 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260611070417001_4c116173",
-  "generated_at": "2026-06-11T07:07:39.732Z",
+  "run_id": "run_20260611082323489_1b119ace",
+  "generated_at": "2026-06-11T08:26:41.236Z",
   "status": "healthy",
-  "record_count": 942,
+  "record_count": 963,
   "source_table": "active_dataset_pointer,latest_successful_dataset_bundle,static_dashboard_snapshot",
   "objective": "Dashboard must never become empty when collection or storage fails.",
   "current_run": {
-    "run_id": "run_20260611070417001_4c116173",
+    "run_id": "run_20260611082323489_1b119ace",
     "data_mode": "static_snapshot",
     "data_status": "ready",
-    "rows": 942,
+    "rows": 963,
     "target_vessels_count": 32,
     "fallback_used": false,
     "fallback_reason": null
@@ -26,43 +26,43 @@
     "post_write_verification_status": "completed",
     "promotion_status": "promoted",
     "rows_written_by_table": {
-      "vessel_snapshots": 942,
+      "vessel_snapshots": 963,
       "source_collection_logs": 34,
-      "vessel_entities": 942,
-      "vessel_master": 942,
-      "port_call_master": 942,
-      "opportunity_master": 942,
-      "risk_history": 311,
-      "vessel_events": 3871,
+      "vessel_entities": 963,
+      "vessel_master": 963,
+      "port_call_master": 963,
+      "opportunity_master": 963,
+      "risk_history": 319,
+      "vessel_events": 3968,
       "pilot_schedule_events": 0,
       "port_congestion_snapshots": 8,
       "enrichment_match_candidates": 0,
       "commercial_leads": 2,
       "private_sales_activity": 0,
       "dashboard_summary_snapshots": 1,
-      "sales_candidates_current": 109,
+      "sales_candidates_current": 113,
       "immediate_targets_current": 0,
       "port_summary_current": 8,
-      "feature_store": 311,
-      "feature_snapshots": 311,
-      "rule_evaluations": 685,
-      "explainability_snapshots": 311,
-      "model_training_rows": 201,
-      "vessel_snapshot_daily": 942,
+      "feature_store": 319,
+      "feature_snapshots": 319,
+      "rule_evaluations": 706,
+      "explainability_snapshots": 319,
+      "model_training_rows": 208,
+      "vessel_snapshot_daily": 963,
       "port_snapshot_daily": 8,
       "operator_snapshot_daily": 11,
-      "route_snapshot_daily": 254,
-      "commercial_opportunity_daily": 30,
+      "route_snapshot_daily": 273,
+      "commercial_opportunity_daily": 31,
       "vessel_universe_audit": 1
     },
     "successful_dataset_bundle_status": "saved",
-    "successful_dataset_rows": 942,
+    "successful_dataset_rows": 963,
     "restore_status": "not_needed"
   },
   "health": {
     "api_health_status": "success",
-    "summary_generated_at": "2026-06-11T07:07:39.732Z",
-    "last_success_at": "2026-06-11T07:07:39.732Z",
+    "summary_generated_at": "2026-06-11T08:26:41.236Z",
+    "last_success_at": "2026-06-11T08:26:41.236Z",
     "production_ready": true
   },
   "fallback_order": [
@@ -70,32 +70,32 @@
       "step": 1,
       "source": "active_dataset_pointer",
       "status": "available",
-      "rows": 942
+      "rows": 963
     },
     {
       "step": 2,
       "source": "latest_successful_dataset_bundle",
       "status": "available",
-      "rows": 942,
-      "run_id": "run_20260611070417001_4c116173"
+      "rows": 963,
+      "run_id": "run_20260611082323489_1b119ace"
     },
     {
       "step": 3,
       "source": "latest_successful_dataset",
       "status": "available",
-      "rows": 932
+      "rows": 961
     },
     {
       "step": 4,
       "source": "latest_snapshot",
       "status": "available",
-      "rows": 932
+      "rows": 961
     },
     {
       "step": 5,
       "source": "static_backup",
       "status": "available",
-      "rows": 29
+      "rows": 32
     },
     {
       "step": 6,
@@ -105,8 +105,8 @@
     }
   ],
   "operator_message_ko": "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다.",
-  "status_run_id": "run_20260611070417001_4c116173",
-  "active_run_id": "run_20260611070417001_4c116173",
+  "status_run_id": "run_20260611082323489_1b119ace",
+  "active_run_id": "run_20260611082323489_1b119ace",
   "stale_diagnostic": false,
   "placeholder": false,
   "item_count": 0

@@ -323,6 +323,7 @@ for (const file of listDashboardApiJson()) {
         continue;
       }
       if (entry.parsed_from_disk !== true) throw new Error(`endpoint-manifest.json missing parsed_from_disk=true for ${entry.path}`);
+      if (!entry.parse_checked_at) throw new Error(`endpoint-manifest.json missing parse_checked_at for ${entry.path}`);
       if ("first_char" in entry && entry.first_char !== actualFirstChar) {
         throw new Error(`endpoint-manifest.json first_char mismatch for ${entry.path}: manifest=${entry.first_char}, actual=${actualFirstChar}`);
       }
