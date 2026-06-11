@@ -6933,6 +6933,136 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
   return outputs;
 }
 
+function buildVesselCountReconciliation({
+  rawRows = [],
+  normalizedRows = [],
+  displayRows = [],
+  paginatedOutputs = {},
+  salesCandidates = [],
+  salesActionsPayload = {},
+  targetSplitCounts = {},
+  targetCategorySummary = {},
+  dashboardSummary = {},
+  generatedAt = new Date().toISOString(),
+  dataMode = "live"
+} = {}) {
+  const vesselIndex = paginatedOutputs["dashboard/api/vessels/index.json"] || {};
+  const rawRowCount = Array.isArray(rawRows) ? rawRows.length : 0;
+  const normalizedRowCount = Array.isArray(normalizedRows) ? normalizedRows.length : 0;
+  const displayVesselCount = Number(vesselIndex.total_count ?? vesselIndex.record_count ?? displayRows.length ?? 0) || 0;
+  const totalVessels = Number(dashboardSummary?.kpis?.total_vessels ?? dashboardSummary?.all_vessels_count ?? normalizedRowCount) || 0;
+  const salesTargetCount = Number(dashboardSummary?.kpis?.sales_target_count ?? dashboardSummary?.sales_target_count ?? salesCandidates.length) || 0;
+  const salesActions = compactItems(salesActionsPayload);
+  const salesActionsCount = salesActions.length;
+  const contactNowCount = Number(dashboardSummary?.kpis?.contact_now_count ?? dashboardSummary?.contact_now_count ?? targetCategorySummary?.kpis?.contact_now_count ?? 0) || 0;
+  const monitorCount = Number(dashboardSummary?.kpis?.monitor_count ?? dashboardSummary?.monitor_count ?? targetCategorySummary?.kpis?.monitor_count ?? 0) || 0;
+  const monitorCandidateCount = Number(dashboardSummary?.monitor_candidate_count ?? targetSplitCounts.monitor_candidate ?? 0) || 0;
+  const excludedCount = Number(dashboardSummary?.non_target_count ?? targetSplitCounts.non_target ?? Math.max(0, totalVessels - salesTargetCount - monitorCandidateCount)) || 0;
+  const duplicateRemovedCount = Math.max(0, normalizedRowCount - displayVesselCount);
+  const gt5000PlusCount = (Array.isArray(normalizedRows) ? normalizedRows : []).filter(record => {
+    const gt = firstFiniteNumber(
+      record?.gt,
+      record?.grtg,
+      record?.intrlGrtg,
+      record?.gross_tonnage,
+      record?.grossTonnage,
+      record?.vessel_display?.gt
+    );
+    return gt !== null && gt >= 5000;
+  }).length;
+  const salesTargetRatio = totalVessels ? Math.round((salesTargetCount / totalVessels) * 1000) / 10 : 0;
+  const displayCoverageRatio = normalizedRowCount ? Math.round((displayVesselCount / normalizedRowCount) * 1000) / 10 : 0;
+  const countExplanations = [
+    {
+      field: "raw_rows",
+      value: rawRowCount,
+      explanation: "외부/수집 원천에서 들어온 원시 행 수입니다. 같은 선박의 반복 관측이나 항만 이벤트가 포함될 수 있습니다."
+    },
+    {
+      field: "normalized_rows",
+      value: normalizedRowCount,
+      explanation: "원시 행을 선박/항만 기준으로 정규화한 뒤의 행 수입니다. 아직 동일 선박 중복 관측이 남아 있을 수 있습니다."
+    },
+    {
+      field: "total_vessels",
+      value: totalVessels,
+      explanation: "대시보드 KPI의 전체 선박 기준입니다. 현재 업데이트 런의 정규화 선박 모집단을 나타냅니다."
+    },
+    {
+      field: "display_vessel_count",
+      value: displayVesselCount,
+      explanation: "전체 선박 페이지에서 접근 가능한 dedupe 후 표시 선박 수입니다. IMO/MMSI/콜사인+선명 등 동일성 기준으로 중복이 제거됩니다."
+    },
+    {
+      field: "duplicate_removed_count",
+      value: duplicateRemovedCount,
+      explanation: "정규화 행 수에서 표시 선박 수를 뺀 값입니다. 전체 선박 목록에서 같은 선박으로 판단되어 합쳐진 건수입니다."
+    },
+    {
+      field: "gt_5000_plus_count",
+      value: gt5000PlusCount,
+      explanation: "GT 5,000 이상으로 확인된 상업적 규모 후보 수입니다. GT가 없는 선박은 이 값에 포함하지 않습니다."
+    },
+    {
+      field: "sales_target_count",
+      value: salesTargetCount,
+      explanation: "영업대상으로 확정된 선박 수입니다. 모니터링 후보는 이 숫자에 포함하지 않습니다."
+    },
+    {
+      field: "sales_actions_count",
+      value: salesActionsCount,
+      explanation: "영업 액션 항목 수입니다. 한 선박이 연락처 확인, 견적 준비, 후속 조치 등 여러 액션을 만들 수 있어 영업대상 수와 다를 수 있습니다."
+    },
+    {
+      field: "contact_now_count",
+      value: contactNowCount,
+      explanation: "즉시 연락 카테고리에 들어간 항목 수입니다. 카테고리는 중복 허용이므로 sales_target_count와 1:1로 일치하지 않을 수 있습니다."
+    },
+    {
+      field: "monitor_count",
+      value: monitorCount,
+      explanation: "카테고리 기준 모니터링 항목 수입니다. 별도의 monitor_candidate_count는 영업대상에서 제외된 넓은 모니터링 모집단입니다."
+    },
+    {
+      field: "excluded_count",
+      value: excludedCount,
+      explanation: "현재 영업대상이나 모니터링 후보로 쓰지 않는 비대상 분류 수입니다."
+    }
+  ];
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode),
+    source_table: "vessel_snapshots",
+    record_count: totalVessels,
+    item_count: 0,
+    raw_rows: rawRowCount,
+    normalized_rows: normalizedRowCount,
+    total_vessels: totalVessels,
+    display_vessel_count: displayVesselCount,
+    gt_5000_plus_count: gt5000PlusCount,
+    sales_target_count: salesTargetCount,
+    sales_actions_count: salesActionsCount,
+    contact_now_count: contactNowCount,
+    monitor_count: monitorCount,
+    monitor_candidate_count: monitorCandidateCount,
+    excluded_count: excludedCount,
+    duplicate_removed_count: duplicateRemovedCount,
+    count_deltas: {
+      raw_to_normalized_delta: rawRowCount - normalizedRowCount,
+      normalized_to_display_delta: duplicateRemovedCount,
+      display_to_sales_target_delta: displayVesselCount - salesTargetCount,
+      sales_actions_to_sales_target_delta: salesActionsCount - salesTargetCount
+    },
+    ratios: {
+      display_coverage_pct: displayCoverageRatio,
+      sales_target_ratio_pct: salesTargetRatio
+    },
+    count_explanations: countExplanations,
+    items: []
+  };
+}
+
 function cleanupStalePaginatedVesselFiles(expectedOutputs = {}, report = {}) {
   const indexPath = routeApiOutputPath("dashboard/api/vessels/index.json", report);
   const dir = indexPath.split("/").slice(0, -1).join("/");
@@ -16216,6 +16346,19 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const vesselCountReconciliationPayload = buildVesselCountReconciliation({
+    rawRows: collectedRows,
+    normalizedRows: allCollectedVessels,
+    displayRows: vessels,
+    paginatedOutputs: paginatedVesselOutputs,
+    salesCandidates,
+    salesActionsPayload,
+    targetSplitCounts,
+    targetCategorySummary,
+    dashboardSummary,
+    generatedAt: completedAt,
+    dataMode: report.data_mode
+  });
   const contactCoveragePayload = buildContactCoveragePayload({
     records: vessels,
     targets: salesCandidates,
@@ -16281,6 +16424,7 @@ try {
     "dashboard/api/sales/verification-queue.json": verificationQueuePayload,
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
+    "dashboard/api/vessel-count-reconciliation.json": vesselCountReconciliationPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
     "dashboard/api/sales/quote-opportunities.json": quoteOpportunitiesPayload,
@@ -16457,6 +16601,7 @@ try {
   writeApiJson("dashboard/api/sales/verification-queue.json", verificationQueuePayload, report);
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
+  writeApiJson("dashboard/api/vessel-count-reconciliation.json", vesselCountReconciliationPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
   writeApiJson("dashboard/api/sales/quote-opportunities.json", quoteOpportunitiesPayload, report);
