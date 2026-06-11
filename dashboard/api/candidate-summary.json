@@ -1,6 +1,6 @@
 {
   "candidate_count": 29,
-  "immediate_count": 12,
+  "immediate_count": 13,
   "strong_count": 17,
   "watch_count": 11,
   "top_candidates": [
@@ -116,6 +116,35 @@
       "display_name": "대산"
     },
     {
+      "vessel_name": "SM NAVIGATOR",
+      "port": "울산",
+      "port_name": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "SUBIC BAY",
+          "울산항",
+          "울산"
+        ]
+      },
+      "score": 65,
+      "level": "Monitor",
+      "contact_window": "Monitor weekly",
+      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
+      "reasons": [
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "High fouling / performance risk score"
+      ],
+      "port_code": "820",
+      "port_display_name": "울산",
+      "display_name": "울산"
+    },
+    {
       "vessel_name": "VITUS BERING",
       "port": "여수",
       "port_name": "여수",
@@ -145,34 +174,6 @@
     },
     {
       "vessel_name": "FLORA MARIS",
-      "port": "여수",
-      "port_name": "여수",
-      "normalized_port": {
-        "port_code": "620",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "Yeosu",
-        "raw_aliases": [
-          "Yeosu",
-          "SINGAPORE",
-          "여수·광양항",
-          "여수"
-        ]
-      },
-      "score": 65,
-      "level": "Monitor",
-      "contact_window": "Monitor weekly",
-      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
-      "reasons": [
-        "Commercially relevant vessel type",
-        "Workable UWC window available"
-      ],
-      "port_code": "620",
-      "port_display_name": "여수",
-      "display_name": "여수"
-    },
-    {
-      "vessel_name": "C. DIGNITY",
       "port": "여수",
       "port_name": "여수",
       "normalized_port": {
@@ -326,9 +327,9 @@
           "여수"
         ]
       },
-      "total": 4,
+      "total": 3,
       "immediate": 2,
-      "strong": 3,
+      "strong": 2,
       "watch": 1,
       "top_score": 65,
       "port_code": "620",
@@ -357,6 +358,30 @@
       "top_score": 65,
       "port_code": "622",
       "port_display_name": "마산/창원"
+    },
+    {
+      "port": "울산",
+      "port_name": "울산",
+      "display_name": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "SUBIC BAY",
+          "울산항",
+          "울산"
+        ]
+      },
+      "total": 2,
+      "immediate": 1,
+      "strong": 1,
+      "watch": 1,
+      "top_score": 65,
+      "port_code": "820",
+      "port_display_name": "울산"
     },
     {
       "port": "대산",
@@ -429,30 +454,6 @@
       "top_score": 65,
       "port_code": "030",
       "port_display_name": "인천"
-    },
-    {
-      "port": "울산",
-      "port_name": "울산",
-      "display_name": "울산",
-      "normalized_port": {
-        "port_code": "820",
-        "port_name": "울산",
-        "display_name": "울산",
-        "raw_port": "Ulsan",
-        "raw_aliases": [
-          "Ulsan",
-          "여천항",
-          "울산항",
-          "울산"
-        ]
-      },
-      "total": 1,
-      "immediate": 0,
-      "strong": 0,
-      "watch": 1,
-      "top_score": 48,
-      "port_code": "820",
-      "port_display_name": "울산"
     }
   ],
   "operating_rule": "Candidate score prioritizes immediate sales action: waiting/anchorage + long idle + high-value vessel + regulated destination + known operator.",

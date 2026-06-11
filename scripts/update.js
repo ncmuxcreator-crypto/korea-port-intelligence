@@ -3257,14 +3257,17 @@ function rowCountFromPayload(payload) {
 
 const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["bootstrap", "dashboard/api/bootstrap.json"],
+  ["status.summary", "dashboard/api/status-summary.json"],
   ["status", "dashboard/api/status.json"],
   ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
   ["sales.actions", "dashboard/api/sales/actions.json"],
   ["sales.conversionPipeline", "dashboard/api/sales/conversion-pipeline.json"],
   ["sales.quoteOpportunities", "dashboard/api/sales/quote-opportunities.json"],
+  ["sales.verificationQueueSummary", "dashboard/api/sales/verification-queue-summary.json"],
   ["sales.verificationQueue", "dashboard/api/sales/verification-queue.json"],
   ["watchlist.current", "dashboard/api/watchlist/current.json"],
   ["targets.current", "dashboard/api/targets/current.json"],
+  ["targets.categoriesSummary", "dashboard/api/targets/categories-summary.json"],
   ["targets.categories", "dashboard/api/targets/categories.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
@@ -3278,6 +3281,20 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["intelligence.cleaningWindow", "dashboard/api/intelligence/cleaning-window.json"]
 ];
 const ENDPOINT_TOO_LARGE_BYTES = 500 * 1024;
+const STARTUP_SAFE_ENDPOINT_BYTES = 100 * 1024;
+const STARTUP_SAFE_BOOTSTRAP_BYTES = 150 * 1024;
+
+function endpointStartupSafe(relativePath, bytes = 0, { validJson = true, schemaValid = true } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (!validJson || !schemaValid) return false;
+  if (normalized === "dashboard/api/bootstrap.json") return bytes <= STARTUP_SAFE_BOOTSTRAP_BYTES;
+  if (/dashboard\/api\/(?:status-summary|targets\/categories-summary|sales\/verification-queue-summary)\.json$/.test(normalized)) {
+    return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
+  }
+  if (/dashboard\/api\/(?:status|targets\/categories|sales\/verification-queue)\.json$/.test(normalized)) return false;
+  if (/dashboard\/api\/(?:all-collected-vessels|target-vessels|vessels\/page-\d+|imo-recovery-priority|debug|quality|review|audit|diagnostic)/i.test(normalized)) return false;
+  return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
+}
 
 function schemaProblemForEndpoint(relativePath, payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "root_object_required";
@@ -3298,7 +3315,7 @@ function endpointManifestEntry(key, relativePath) {
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
   if (!exists) {
-    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, status: "MISSING", problem: "file_missing" };
+    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
@@ -3308,15 +3325,17 @@ function endpointManifestEntry(key, relativePath) {
     const itemCount = endpointItemCount(payload) ?? 0;
     const bytes = Buffer.byteLength(text);
     const status = schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK";
+    const schemaValid = !schemaProblem;
     return {
       key,
       path: normalized,
       exists: true,
       valid_json: true,
-      schema_valid: !schemaProblem,
+      schema_valid: schemaValid,
       record_count: count,
       item_count: itemCount,
       bytes,
+      startup_safe: endpointStartupSafe(normalized, bytes, { validJson: true, schemaValid }),
       status,
       problem: schemaProblem || (status === "TOO_LARGE" ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
     };
@@ -3330,6 +3349,7 @@ function endpointManifestEntry(key, relativePath) {
       record_count: 0,
       item_count: 0,
       bytes: fs.statSync(fullPath).size,
+      startup_safe: false,
       status: "INVALID_JSON",
       problem: error.message
     };
@@ -6567,6 +6587,166 @@ function publicItemsEnvelope({ generatedAt, dataMode, report = {}, sourceTable =
     source_table: sourceTable,
     items: rows.map(withVesselDisplay),
     ...extra
+  };
+}
+
+function summaryText(value, maxLength = 180) {
+  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+function compactSummaryItem(record = {}, index = 0) {
+  const display = buildVesselDisplay(record);
+  const normalizedPort = normalizedPortObject({ ...record, current_port: display.current_port });
+  const categoryCode = firstNonEmpty(record.actionability_category, record.primary_category_code, record.action_type, record.category_code);
+  const categoryLabel = firstNonEmpty(record.actionability_label, businessLabelForCode(categoryCode), record.category_label, record.korean_label);
+  return {
+    rank: Number(record.rank || index + 1),
+    vessel_name: firstNonEmpty(display.vessel_name, record.vessel_name, "선명 확인 필요"),
+    imo: firstNonEmpty(display.imo, record.imo, "-"),
+    mmsi: firstNonEmpty(display.mmsi, record.mmsi, "-"),
+    call_sign: firstNonEmpty(display.call_sign, record.call_sign, "-"),
+    operator_display: firstNonEmpty(display.operator_display, record.operator_display, record.operator, record.company, "-"),
+    current_port: normalizedPort.display_name,
+    current_port_korean: normalizedPort.display_name,
+    normalized_port: normalizedPort,
+    priority_label: firstNonEmpty(record.priority_label, display.priority_label, "-"),
+    actionability_category: categoryCode || null,
+    actionability_label: categoryLabel || null,
+    opportunity_score: firstFiniteNumber(record.opportunity_score, display.opportunity_score),
+    risk_score: firstFiniteNumber(record.risk_score, display.risk_score),
+    confidence_score: firstFiniteNumber(record.confidence_score, display.confidence_score),
+    missing_fields: Array.isArray(record.missing_fields) ? record.missing_fields.slice(0, 6) : Array.isArray(record.missing_action_fields) ? record.missing_action_fields.slice(0, 6) : [],
+    known_company: firstNonEmpty(record.known_company, display.operator_display, record.company, record.operator, "-"),
+    reason_summary: summaryText(firstNonEmpty(record.reason_summary, record.actionability_reason, record.primary_category?.reason, ""), 180),
+    recommended_action: summaryText(firstNonEmpty(record.recommended_action, record.next_action, record.primary_category?.recommended_action, "영업 연락 가능 여부 확인"), 160)
+  };
+}
+
+function statusWarningSummary(report = {}) {
+  const warnings = [];
+  const push = (severity, feature, message, observed = "", expected = "", recommended_fix = "") => {
+    if (!message) return;
+    warnings.push({
+      severity,
+      feature,
+      message: summaryText(message, 180),
+      observed: summaryText(observed, 120),
+      expected: summaryText(expected, 120),
+      recommended_fix: summaryText(recommended_fix, 160)
+    });
+  };
+  for (const blocker of Array.isArray(report.promotion_blockers) ? report.promotion_blockers : []) {
+    push("WARNING", "데이터 승격", blocker, report.promotion_status || "", "promoted", "최근 성공 스냅샷 보존 상태 확인");
+  }
+  for (const warning of Array.isArray(report.warnings) ? report.warnings : []) {
+    push("WARNING", "업데이트", warning, "", "", "세부 진단 파일 확인");
+  }
+  const ratio = firstFiniteNumber(report.target_ratio, report.sales_target_ratio);
+  if (ratio !== null && ratio !== undefined && Number.isFinite(Number(ratio))) {
+    const normalizedRatio = Number(ratio) > 1 ? Number(ratio) / 100 : Number(ratio);
+    if (normalizedRatio < 0.2 || normalizedRatio > 0.4) {
+      push("WARNING", "영업대상 비율", `${Math.round(normalizedRatio * 1000) / 10}%`, `${Math.round(normalizedRatio * 1000) / 10}%`, "20~40%", "audit:targets 로 분류 기준 확인");
+    }
+  }
+  const continuityStatus = report.data_continuity?.status || report.continuity_status;
+  if (continuityStatus && !/healthy|ok|completed|promoted/i.test(String(continuityStatus))) {
+    push("WARNING", "데이터 생존", continuityStatus, continuityStatus, "healthy", "status.json 상세 진단 확인");
+  }
+  return warnings.slice(0, 5);
+}
+
+function buildStatusSummaryPayload({ report = {}, generatedAt = new Date().toISOString(), dataMode = "live" } = {}) {
+  const warningSummary = statusWarningSummary(report);
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: rowCountFromPayload(report),
+    item_count: 0,
+    source_table: "status.json",
+    detail_endpoint: "dashboard/api/status.json",
+    status: report.status || report.current_status || "unknown",
+    health_status: report.health_status || report.current_status || report.status || "unknown",
+    run_id: report.run_id || null,
+    active_run_id: report.active_run_id || report.active_dataset_pointer?.active_run_id || null,
+    latest_successful_run_id: report.latest_successful_run_id || report.active_dataset_pointer?.latest_successful_run_id || null,
+    last_success_at: report.last_success_at || report.completed_at || report.generated_at || generatedAt,
+    current_rows: firstFiniteNumber(report.selected_dataset_count, report.current_rows, report.record_count, report.all_collected_vessel_count, 0),
+    selected_dataset_count: firstFiniteNumber(report.selected_dataset_count, report.record_count, 0),
+    total_rows: firstFiniteNumber(report.total_rows, report.raw_rows, report.all_collected_vessel_count, 0),
+    fallback_used: Boolean(report.fallback_used),
+    supabase_write_status: report.supabase_write?.status || report.supabase_write_status || "unknown",
+    dataset_promotion_status: report.promotion_status || report.dataset_promotion_status || "unknown",
+    data_continuity: report.data_continuity ? {
+      status: report.data_continuity.status || "unknown",
+      storage_verification_status: report.data_continuity.storage_verification?.status || report.data_continuity.storage_verification || null,
+      fallback_order: Array.isArray(report.data_continuity.fallback_order) ? report.data_continuity.fallback_order.slice(0, 5) : []
+    } : null,
+    warning_count: warningSummary.length,
+    warning_summary: warningSummary
+  };
+}
+
+function buildTargetCategoriesSummaryPayload({ payload = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const categories = (Array.isArray(payload.categories) ? payload.categories : []).map(category => {
+    const items = (Array.isArray(category.items) ? category.items : []).slice(0, 5).map(compactSummaryItem);
+    return {
+      code: category.code,
+      label: category.label,
+      korean_label: category.korean_label || businessLabelForCode(category.code) || category.label,
+      category_label: category.category_label || businessLabelForCode(category.code) || category.label,
+      short_label: category.short_label,
+      count: Number(category.count || 0),
+      returned_count: items.length,
+      items_limited: Number(category.count || 0) > items.length,
+      items
+    };
+  });
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: Number(payload.record_count || 0),
+    item_count: categories.length,
+    summary_item_count: categories.reduce((sum, category) => sum + category.returned_count, 0),
+    source_table: payload.source_table || "targets/categories",
+    detail_endpoint: "dashboard/api/targets/categories.json",
+    actionability_counts: payload.actionability_counts || {},
+    categories,
+    warning_summary: categories
+      .filter(category => category.items_limited)
+      .slice(0, 5)
+      .map(category => ({
+        severity: "INFO",
+        feature: category.label || category.code,
+        message: `상세 ${category.count}건 중 상위 ${category.returned_count}건만 요약 파일에 포함`,
+        recommended_fix: "상세 목록은 categories.json lazy load 사용"
+      }))
+  };
+}
+
+function buildVerificationQueueSummaryPayload({ payload = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const sourceItems = Array.isArray(payload.items) ? payload.items : [];
+  const items = sourceItems.slice(0, 5).map(compactSummaryItem);
+  const totalCount = Number(payload.record_count ?? payload.total_count ?? sourceItems.length) || 0;
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: totalCount,
+    item_count: items.length,
+    source_table: payload.source_table || "sales/verification-queue",
+    detail_endpoint: "dashboard/api/sales/verification-queue.json",
+    total_count: totalCount,
+    returned_count: items.length,
+    items,
+    warning_summary: totalCount > items.length ? [{
+      severity: "INFO",
+      feature: "연락처 확인 필요",
+      message: `상세 ${totalCount}건 중 상위 ${items.length}건만 요약 파일에 포함`,
+      recommended_fix: "상세 목록은 verification-queue.json lazy load 사용"
+    }] : []
   };
 }
 
@@ -15945,6 +16125,18 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const targetCategoriesSummaryPayload = buildTargetCategoriesSummaryPayload({
+    payload: targetCategoriesPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
+  const verificationQueueSummaryPayload = buildVerificationQueueSummaryPayload({
+    payload: verificationQueuePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const salesActionsPayload = buildSalesActionsPayload({
     summary: targetCategorySummary,
     generatedAt: completedAt,
@@ -16039,6 +16231,7 @@ try {
     "dashboard/api/candidates/top.json": topCandidatesPayload,
     "dashboard/api/contact-queue.json": contactQueuePayload,
     "dashboard/api/agent-followup-queue.json": agentFollowupQueuePayload,
+    "dashboard/api/sales/verification-queue-summary.json": verificationQueueSummaryPayload,
     "dashboard/api/sales/verification-queue.json": verificationQueuePayload,
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
@@ -16048,6 +16241,7 @@ try {
     "dashboard/api/intelligence/contact-coverage.json": contactCoveragePayload,
     "dashboard/api/watchlist/current.json": watchlistPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
+    "dashboard/api/targets/categories-summary.json": targetCategoriesSummaryPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
     "dashboard/api/ports.json": portStatistics.ports,
@@ -16176,7 +16370,13 @@ try {
     storage_verification: dataContinuityReport.storage_verification
   };
   report.backend_ops = withRunOrigin(report.backend_ops || snapshotOutputs.backendOps, finalRunOrigin);
+  const statusSummaryPayload = buildStatusSummaryPayload({
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+  });
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
+  writeApiJson("dashboard/api/status-summary.json", statusSummaryPayload, report);
   writeRuntimeDiagnosticJson("dashboard/api/health.json", healthPayload, finalRunOrigin);
   writeApiJson("dashboard/api/health/pipeline.json", healthPayload, report);
   writeRuntimeDiagnosticJson("dashboard/api/data-continuity.json", dataContinuityReport, finalRunOrigin);
@@ -16207,6 +16407,7 @@ try {
   writeApiJson("dashboard/api/high-value-low-confidence.json", buildHighValueLowConfidence(vessels), report);
   writeApiJson("dashboard/api/congestion-watchlist.json", congestionWatchlistPayload, report);
   writeApiJson("dashboard/api/agent-followup-queue.json", agentFollowupQueuePayload, report);
+  writeApiJson("dashboard/api/sales/verification-queue-summary.json", verificationQueueSummaryPayload, report);
   writeApiJson("dashboard/api/sales/verification-queue.json", verificationQueuePayload, report);
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
@@ -16216,6 +16417,7 @@ try {
   writeApiJson("dashboard/api/intelligence/contact-coverage.json", contactCoveragePayload, report);
   writeApiJson("dashboard/api/watchlist/current.json", watchlistPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
+  writeApiJson("dashboard/api/targets/categories-summary.json", targetCategoriesSummaryPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
   writeApiJson("dashboard/api/targets/static.json", staticTargetsPayload, report);
   fs.mkdirSync(routeApiOutputPath("dashboard/api/quality/basic-info-coverage.json", report).split("/").slice(0, -1).join("/"), { recursive: true });
@@ -16315,9 +16517,19 @@ try {
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
   writeApiJson("dashboard/api/biofouling-timeline.json", biofoulingTimeline, report);
   writeApiJson("dashboard/api/status.json", report, report);
+  writeApiJson("dashboard/api/status-summary.json", buildStatusSummaryPayload({
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+  }), report);
   writeApiJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, report);
   writeApiJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, report);
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
+  writeApiJson("dashboard/api/status-summary.json", buildStatusSummaryPayload({
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+  }), report);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);

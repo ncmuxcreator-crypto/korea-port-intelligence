@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T01:29:53.160Z",
+  "generated_at": "2026-06-11T02:04:13.722Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -9,7 +9,7 @@
       "rank": 1,
       "operator_name": "미확인 운영사",
       "operator": "미확인 운영사",
-      "average_stay_days": 10.8,
+      "average_stay_days": 10.7,
       "repeat_caller_count": 27,
       "korea_presence_score": 100,
       "fleet_size_korea": 27,
@@ -54,7 +54,7 @@
           },
           {
             "port_name": "여수",
-            "count": 4,
+            "count": 3,
             "normalized_port": {
               "port_code": "620-YEOSU",
               "port_name": "여수",
@@ -85,23 +85,23 @@
             "display_name": "미확인 항만"
           },
           {
-            "port_name": "평택·당진",
+            "port_name": "울산",
             "count": 2,
             "normalized_port": {
-              "port_code": "031",
-              "port_name": "평택·당진",
-              "display_name": "평택·당진",
-              "raw_port": "평택·당진",
+              "port_code": "820",
+              "port_name": "울산",
+              "display_name": "울산",
+              "raw_port": "울산",
               "raw_aliases": [
-                "평택·당진"
+                "울산"
               ]
             },
-            "port_code": "031",
-            "port_display_name": "평택·당진",
-            "display_name": "평택·당진"
+            "port_code": "820",
+            "port_display_name": "울산",
+            "display_name": "울산"
           }
         ],
-        "average_stay_days": 10.8,
+        "average_stay_days": 10.7,
         "repeat_visit_frequency": 1.1,
         "common_vessel_types": [
           {
@@ -109,12 +109,12 @@
             "count": 9
           },
           {
-            "vessel_type": "crude_tanker",
-            "count": 6
+            "vessel_type": "tanker",
+            "count": 7
           },
           {
-            "vessel_type": "tanker",
-            "count": 6
+            "vessel_type": "crude_tanker",
+            "count": 5
           },
           {
             "vessel_type": "케미칼 운반선",
@@ -142,12 +142,12 @@
           "count": 9
         },
         {
-          "vessel_type": "crude_tanker",
-          "count": 6
+          "vessel_type": "tanker",
+          "count": 7
         },
         {
-          "vessel_type": "tanker",
-          "count": 6
+          "vessel_type": "crude_tanker",
+          "count": 5
         },
         {
           "vessel_type": "케미칼 운반선",
@@ -201,7 +201,7 @@
         },
         {
           "port_name": "여수",
-          "count": 4,
+          "count": 3,
           "normalized_port": {
             "port_code": "620-YEOSU",
             "port_name": "여수",
@@ -232,20 +232,20 @@
           "display_name": "미확인 항만"
         },
         {
-          "port_name": "평택·당진",
+          "port_name": "울산",
           "count": 2,
           "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
             "raw_aliases": [
-              "평택·당진"
+              "울산"
             ]
           },
-          "port_code": "031",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
+          "port_code": "820",
+          "port_display_name": "울산",
+          "display_name": "울산"
         }
       ],
       "top_vessels": [
@@ -294,11 +294,33 @@
           "display_name": "부산"
         },
         {
+          "vessel_name": "SM NAVIGATOR",
+          "imo": null,
+          "mmsi": null,
+          "port": "울산",
+          "opportunity_score": 69,
+          "risk_score": 64,
+          "priority_label": "WARM",
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_name": "울산",
+          "port_display_name": "울산",
+          "display_name": "울산"
+        },
+        {
           "vessel_name": "VITUS BERING",
           "imo": null,
           "mmsi": null,
           "port": "여수",
-          "opportunity_score": 69,
+          "opportunity_score": 67,
           "risk_score": 76,
           "priority_label": "WARM",
           "normalized_port": {
@@ -336,28 +358,6 @@
           "port_name": "부산",
           "port_display_name": "부산",
           "display_name": "부산"
-        },
-        {
-          "vessel_name": "PROTEUS RONG NA",
-          "imo": null,
-          "mmsi": null,
-          "port": "대산",
-          "opportunity_score": 67,
-          "risk_score": 45,
-          "priority_label": "WARM",
-          "normalized_port": {
-            "port_code": "621",
-            "port_name": "대산",
-            "display_name": "대산",
-            "raw_port": "대산",
-            "raw_aliases": [
-              "대산"
-            ]
-          },
-          "port_code": "621",
-          "port_name": "대산",
-          "port_display_name": "대산",
-          "display_name": "대산"
         }
       ],
       "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",

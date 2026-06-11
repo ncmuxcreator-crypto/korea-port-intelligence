@@ -548,7 +548,7 @@ async function loadSummary() {
   $("sourceBadge").textContent = "데이터 확인 중";
   const [summary, status] = await Promise.all([
     api("summary", "/api/dashboard-summary.json", 4500),
-    api("status", "/api/status.json", 4500)
+    api("status", "/api/status-summary.json", 4500)
   ]);
 
   state.summary = summary || {};

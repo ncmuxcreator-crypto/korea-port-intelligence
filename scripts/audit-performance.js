@@ -50,7 +50,9 @@ const heavyDiagnosticStartup = firstPaintApiCalls.filter(call => /imo-recovery-p
 const requiredStartupSnapshots = [
   "bootstrap.json",
   "dashboard-summary.json",
-  "status.json"
+  "status-summary.json",
+  "targets/categories-summary.json",
+  "sales/verification-queue-summary.json"
 ];
 const requiredLazyEndpoints = [
   "vessels/index.json",
@@ -76,6 +78,12 @@ const startupTail = startupTailStart >= 0 && startupTailEnd >= startupTailStart
   ? html.slice(startupTailStart, startupTailEnd + "loadSummary();".length)
   : html;
 const secondaryAutoLoad = /setTimeout\(\(\)=>loadSecondarySnapshotData|setTimeout\(\(\)=>loadInsightGroup|setTimeout\(\(\)=>loadBiofouling/.test(startupTail);
+const summaryFiles = [
+  "status-summary.json",
+  "targets/categories-summary.json",
+  "sales/verification-queue-summary.json"
+].map(name => ({ name, file: path.join(API_DIR, ...name.split("/")) }));
+const oversizedSummaryFiles = summaryFiles.filter(entry => sizeOf(entry.file) > 100 * 1024);
 
 console.log("Performance audit:");
 console.log(`- startup API count: ${startupApiCount}`);
@@ -89,6 +97,8 @@ console.log(`- API health panel fetches all endpoints on startup: ${apiHealthBlo
 console.log(`- secondary intelligence auto-load on startup: ${secondaryAutoLoad ? "yes" : "no"}`);
 console.log(`- heavy diagnostic JSON on startup: ${heavyDiagnosticStartup.length ? heavyDiagnosticStartup.map(call => call.url).join(", ") : "none"}`);
 console.log(`- startup JSON > 500 KB: ${oversizedStartupJson.length ? oversizedStartupJson.map(entry => `${entry.url} (${entry.size} bytes)`).join(", ") : "none"}`);
+console.log("- startup-safe summary files:");
+for (const entry of summaryFiles) console.log(`  - ${entry.name}: ${sizeOf(entry.file)} bytes`);
 console.log("- slow or missing API list:");
 if (!missingEndpoints.length) console.log("  - none detected from required static endpoints");
 for (const entry of missingEndpoints) console.log(`  - missing: dashboard/api/${entry.name}`);
@@ -110,6 +120,7 @@ if (apiHealthBlocksStartup) warnings.push("API health panel fetches endpoints du
 if (secondaryAutoLoad) warnings.push("secondary intelligence loads during startup");
 if (heavyDiagnosticStartup.length) warnings.push("heavy diagnostic file loads during startup");
 if (oversizedStartupJson.length) warnings.push("startup JSON > 500 KB");
+if (oversizedSummaryFiles.length) warnings.push(`summary endpoint > 100 KB: ${oversizedSummaryFiles.map(entry => entry.name).join(", ")}`);
 if (missingEndpoints.length) warnings.push("required static API endpoint missing");
 
 if (warnings.length) {

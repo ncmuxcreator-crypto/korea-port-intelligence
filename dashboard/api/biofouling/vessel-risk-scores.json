@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T01:29:53.160Z",
+  "generated_at": "2026-06-11T02:04:13.722Z",
   "data_mode": "live",
   "record_count": 100,
   "source_table": "NOAA_SST,AIS_dwell_time,salinity_proxy,risk_history,opportunity_master",
@@ -23,7 +23,7 @@
       "current_port": "여수",
       "risk_level": "MEDIUM",
       "biofouling_risk_score": 52,
-      "hull_cleaning_candidate_score": 51,
+      "hull_cleaning_candidate_score": 50,
       "sst_anomaly": 0.9,
       "ais_dwell_hours": 251,
       "salinity_proxy": 0.88,
@@ -171,7 +171,7 @@
         },
         "biofoulingRiskScore": 52,
         "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 51,
+        "cleaningOpportunityScore": 50,
         "anchorageHours": null,
         "portStayHours": 251,
         "sstCelsius": null,
@@ -220,219 +220,6 @@
     },
     {
       "rank": 2,
-      "vessel_name": "C. DIGNITY",
-      "tonnage_summary": {
-        "gt": 162180,
-        "dwt": null,
-        "size_class": "VERY_LARGE_COMMERCIAL",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "target_size_qualified": true,
-      "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "port": "여수",
-      "port_code": "620-YEOSU",
-      "current_port": "여수",
-      "risk_level": "MEDIUM",
-      "biofouling_risk_score": 52,
-      "hull_cleaning_candidate_score": 50,
-      "sst_anomaly": 0.9,
-      "ais_dwell_hours": 232,
-      "salinity_proxy": 0.88,
-      "norm_sst_anomaly": 0.225,
-      "norm_dwell_time": 1,
-      "norm_salinity": 0.88,
-      "model_version": "biofouling_sst_dwell_salinity_v1",
-      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
-      "compliance_score": 0,
-      "commercial_size_qualified": true,
-      "biofouling_compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure_confidence": 0,
-      "destination": "SINGAPORE",
-      "destination_port": "여수",
-      "exposure_tags": [],
-      "opportunity_score": 65,
-      "risk_score": 52,
-      "top_factors": [
-        "SST 0.9",
-        "Dwell 232h",
-        "Salinity 0.88",
-        "LONG_PORT_STAY",
-        "REPEATED_INACTIVITY",
-        "VESSEL_TYPE_EXPOSURE",
-        "EXTENDED_IDLE_PERIOD"
-      ],
-      "reason_summary": "SST anomaly 0.9, AIS dwell 232h, salinity proxy 0.88 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-      "data_sources": [
-        "NOAA SST",
-        "AIS dwell time",
-        "salinity proxy",
-        "opportunity_master"
-      ],
-      "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "여수",
-        "raw_aliases": [
-          "여수",
-          "SINGAPORE"
-        ]
-      },
-      "port_name": "여수",
-      "port_display_name": "여수",
-      "vessel_display": {
-        "vessel_name": "C. DIGNITY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 162180,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 162180,
-          "dwt": null,
-          "size_class": "VERY_LARGE_COMMERCIAL",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": true,
-        "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수",
-            "SINGAPORE"
-          ]
-        },
-        "port_display_name": "여수",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 9.7,
-        "stay_hours": 232,
-        "waiting_hours": null,
-        "port_stay_hours": 232,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "opportunity_score": 65,
-        "risk_score": 52,
-        "biofouling_score": 52,
-        "compliance_score": 0,
-        "commercial_size_qualified": true,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": 52,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 50,
-        "anchorageHours": null,
-        "portStayHours": 232,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": 0.9,
-        "salinityPsu": 0.9,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "보통",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "SST 0.9",
-          "Dwell 232h",
-          "Salinity 0.88",
-          "LONG_PORT_STAY",
-          "REPEATED_INACTIVITY",
-          "VESSEL_TYPE_EXPOSURE",
-          "EXTENDED_IDLE_PERIOD"
-        ],
-        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "confidence": "-",
-        "contact_readiness_score": null,
-        "priority_label": "WARM",
-        "priority_label_ko": "검토",
-        "target_categories": [],
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "SST anomaly 0.9, AIS dwell 232h, salinity proxy 0.88 기반 상대 biofouling 리스크",
-        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "salinity proxy",
-          "opportunity_master"
-        ],
-        "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
-      },
-      "display_name": "여수"
-    },
-    {
-      "rank": 3,
       "vessel_name": "KITHNOS",
       "tonnage_summary": {
         "gt": 13794,
@@ -645,7 +432,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 4,
+      "rank": 3,
       "vessel_name": "아라온(ARAON)",
       "tonnage_summary": {
         "gt": 7507,
@@ -858,7 +645,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 5,
+      "rank": 4,
       "vessel_name": "KONA TRADER",
       "tonnage_summary": {
         "gt": 39737,
@@ -1076,7 +863,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 6,
+      "rank": 5,
       "vessel_name": "AKANE",
       "tonnage_summary": {
         "gt": 28777,
@@ -1289,7 +1076,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 7,
+      "rank": 6,
       "vessel_name": "한유울산",
       "tonnage_summary": {
         "gt": 1996,
@@ -1502,7 +1289,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 8,
+      "rank": 7,
       "vessel_name": "GELBRAY EXPRESS",
       "tonnage_summary": {
         "gt": 10421,
@@ -1720,7 +1507,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 9,
+      "rank": 8,
       "vessel_name": "ADMIRAL SCHMIDT",
       "tonnage_summary": {
         "gt": 66291,
@@ -1933,7 +1720,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 10,
+      "rank": 9,
       "vessel_name": "KOHSEI MARU",
       "tonnage_summary": {
         "gt": 2987,
@@ -2146,7 +1933,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 11,
+      "rank": 10,
       "vessel_name": "설퍼 브레이브",
       "tonnage_summary": {
         "gt": 3887,
@@ -2359,7 +2146,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 12,
+      "rank": 11,
       "vessel_name": "스카이 글로리",
       "tonnage_summary": {
         "gt": 5534,
@@ -2572,7 +2359,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 13,
+      "rank": 12,
       "vessel_name": "12청경호",
       "tonnage_summary": {
         "gt": 320,
@@ -2785,7 +2572,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 14,
+      "rank": 13,
       "vessel_name": "뉴동신호",
       "tonnage_summary": {
         "gt": 299,
@@ -2998,220 +2785,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 15,
-      "vessel_name": "타히티",
-      "tonnage_summary": {
-        "gt": 430,
-        "dwt": null,
-        "size_class": "BELOW_COMMERCIAL_MIN",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "target_size_qualified": true,
-      "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
-      "port": "부산",
-      "port_code": "020",
-      "current_port": "부산",
-      "risk_level": "MEDIUM",
-      "biofouling_risk_score": 51,
-      "hull_cleaning_candidate_score": 46,
-      "sst_anomaly": 0.8,
-      "ais_dwell_hours": 319.5,
-      "salinity_proxy": 0.9,
-      "norm_sst_anomaly": 0.2,
-      "norm_dwell_time": 1,
-      "norm_salinity": 0.9,
-      "model_version": "biofouling_sst_dwell_salinity_v1",
-      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
-      "compliance_score": 0,
-      "commercial_size_qualified": false,
-      "biofouling_compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure_confidence": 0,
-      "destination": "울산",
-      "destination_port": "부산",
-      "exposure_tags": [],
-      "opportunity_score": 42,
-      "risk_score": 51,
-      "top_factors": [
-        "SST 0.8",
-        "Dwell 320h",
-        "Salinity 0.9",
-        "LONG_PORT_STAY",
-        "REPEATED_INACTIVITY",
-        "VESSEL_TYPE_EXPOSURE",
-        "PREVIOUS_VISIT_PATTERN"
-      ],
-      "reason_summary": "SST anomaly 0.8, AIS dwell 320h, salinity proxy 0.9 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-      "data_sources": [
-        "NOAA SST",
-        "AIS dwell time",
-        "salinity proxy",
-        "opportunity_master"
-      ],
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "부산",
-        "raw_aliases": [
-          "부산",
-          "울산"
-        ]
-      },
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "vessel_display": {
-        "vessel_name": "타히티",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 430,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 430,
-          "dwt": null,
-          "size_class": "BELOW_COMMERCIAL_MIN",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": true,
-        "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "부산",
-        "raw_current_port": "부산",
-        "current_port_korean": "부산",
-        "normalized_port": {
-          "port_code": "020",
-          "port_name": "부산",
-          "display_name": "부산",
-          "raw_port": "부산",
-          "raw_aliases": [
-            "부산",
-            "울산"
-          ]
-        },
-        "port_display_name": "부산",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 13.3,
-        "stay_hours": 320,
-        "waiting_hours": null,
-        "port_stay_hours": 320,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "opportunity_score": 42,
-        "risk_score": 51,
-        "biofouling_score": 51,
-        "compliance_score": 0,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": 51,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 46,
-        "anchorageHours": null,
-        "portStayHours": 320,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": 0.8,
-        "salinityPsu": 0.9,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "보통",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "SST 0.8",
-          "Dwell 320h",
-          "Salinity 0.9",
-          "LONG_PORT_STAY",
-          "REPEATED_INACTIVITY",
-          "VESSEL_TYPE_EXPOSURE",
-          "PREVIOUS_VISIT_PATTERN"
-        ],
-        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "confidence": "-",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "SST anomaly 0.8, AIS dwell 320h, salinity proxy 0.9 기반 상대 biofouling 리스크",
-        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "salinity proxy",
-          "opportunity_master"
-        ],
-        "enrichment_sources": [],
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산"
-      },
-      "display_name": "부산"
-    },
-    {
-      "rank": 16,
+      "rank": 14,
       "vessel_name": "신정3호",
       "tonnage_summary": {
         "gt": 237,
@@ -3424,7 +2998,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 17,
+      "rank": 15,
       "vessel_name": "비케이 25",
       "tonnage_summary": {
         "gt": 427,
@@ -3637,7 +3211,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 18,
+      "rank": 16,
       "vessel_name": "씨호라이즌호",
       "tonnage_summary": {
         "gt": 1599,
@@ -3850,7 +3424,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 19,
+      "rank": 17,
       "vessel_name": "스카이마스",
       "tonnage_summary": {
         "gt": 858,
@@ -4063,7 +3637,220 @@
       "display_name": "부산"
     },
     {
-      "rank": 20,
+      "rank": 18,
+      "vessel_name": "타히티",
+      "tonnage_summary": {
+        "gt": 430,
+        "dwt": null,
+        "size_class": "BELOW_COMMERCIAL_MIN",
+        "gt_source": "gt",
+        "dwt_source": "missing",
+        "tonnage_confidence": 90
+      },
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "port": "부산",
+      "port_code": "020",
+      "current_port": "부산",
+      "risk_level": "MEDIUM",
+      "biofouling_risk_score": 51,
+      "hull_cleaning_candidate_score": 46,
+      "sst_anomaly": 0.8,
+      "ais_dwell_hours": 225.6,
+      "salinity_proxy": 0.9,
+      "norm_sst_anomaly": 0.2,
+      "norm_dwell_time": 1,
+      "norm_salinity": 0.9,
+      "model_version": "biofouling_sst_dwell_salinity_v1",
+      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
+      "compliance_score": 0,
+      "commercial_size_qualified": false,
+      "biofouling_compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure_confidence": 0,
+      "destination": "울산",
+      "destination_port": "부산",
+      "exposure_tags": [],
+      "opportunity_score": 41,
+      "risk_score": 51,
+      "top_factors": [
+        "SST 0.8",
+        "Dwell 226h",
+        "Salinity 0.9",
+        "LONG_PORT_STAY",
+        "REPEATED_INACTIVITY",
+        "VESSEL_TYPE_EXPOSURE",
+        "PREVIOUS_VISIT_PATTERN"
+      ],
+      "reason_summary": "SST anomaly 0.8, AIS dwell 226h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "data_sources": [
+        "NOAA SST",
+        "AIS dwell time",
+        "salinity proxy",
+        "opportunity_master"
+      ],
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산",
+          "울산"
+        ]
+      },
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "vessel_display": {
+        "vessel_name": "타히티",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 430,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": 430,
+          "dwt": null,
+          "size_class": "BELOW_COMMERCIAL_MIN",
+          "gt_source": "gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 90
+        },
+        "target_size_qualified": true,
+        "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산",
+            "울산"
+          ]
+        },
+        "port_display_name": "부산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 9.4,
+        "stay_hours": 226,
+        "waiting_hours": null,
+        "port_stay_hours": 226,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "opportunity_score": 41,
+        "risk_score": 51,
+        "biofouling_score": 51,
+        "compliance_score": 0,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 51,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": 46,
+        "anchorageHours": null,
+        "portStayHours": 226,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": 0.8,
+        "salinityPsu": 0.9,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "보통",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "SST 0.8",
+          "Dwell 226h",
+          "Salinity 0.9",
+          "LONG_PORT_STAY",
+          "REPEATED_INACTIVITY",
+          "VESSEL_TYPE_EXPOSURE",
+          "PREVIOUS_VISIT_PATTERN"
+        ],
+        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "SST anomaly 0.8, AIS dwell 226h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "salinity proxy",
+          "opportunity_master"
+        ],
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
+    },
+    {
+      "rank": 19,
       "vessel_name": "BUENA DIOSA",
       "tonnage_summary": {
         "gt": 2999,
@@ -4276,7 +4063,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 21,
+      "rank": 20,
       "vessel_name": "부광5호",
       "tonnage_summary": {
         "gt": 1162,
@@ -4489,7 +4276,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 22,
+      "rank": 21,
       "vessel_name": "COOL GIRL",
       "tonnage_summary": {
         "gt": 8507,
@@ -4700,7 +4487,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 23,
+      "rank": 22,
       "vessel_name": "대진8001",
       "tonnage_summary": {
         "gt": 302,
@@ -4913,7 +4700,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 24,
+      "rank": 23,
       "vessel_name": "제301삼영호",
       "tonnage_summary": {
         "gt": 454,
@@ -5124,7 +4911,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 25,
+      "rank": 24,
       "vessel_name": "SEA HUNTER",
       "tonnage_summary": {
         "gt": 1042,
@@ -5335,7 +5122,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 26,
+      "rank": 25,
       "vessel_name": "ALIOT",
       "tonnage_summary": {
         "gt": 3707,
@@ -5546,7 +5333,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 27,
+      "rank": 26,
       "vessel_name": "해누리",
       "tonnage_summary": {
         "gt": 3408,
@@ -5755,7 +5542,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 28,
+      "rank": 27,
       "vessel_name": "아그네스90",
       "tonnage_summary": {
         "gt": 414,
@@ -5966,7 +5753,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 29,
+      "rank": 28,
       "vessel_name": "안성201호",
       "tonnage_summary": {
         "gt": 143,
@@ -6177,7 +5964,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 30,
+      "rank": 29,
       "vessel_name": "티엔에스 캐쳐",
       "tonnage_summary": {
         "gt": 286,
@@ -6388,7 +6175,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 31,
+      "rank": 30,
       "vessel_name": "대성5호",
       "tonnage_summary": {
         "gt": 45,
@@ -6599,7 +6386,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 32,
+      "rank": 31,
       "vessel_name": "CRANE REGULUS",
       "tonnage_summary": {
         "gt": 4376,
@@ -6812,7 +6599,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 33,
+      "rank": 32,
       "vessel_name": "대성102호",
       "tonnage_summary": {
         "gt": 78,
@@ -7023,7 +6810,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 34,
+      "rank": 33,
       "vessel_name": "삼원골드",
       "tonnage_summary": {
         "gt": 790,
@@ -7236,7 +7023,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 35,
+      "rank": 34,
       "vessel_name": "HAINA PATRIOT",
       "tonnage_summary": {
         "gt": 4047,
@@ -7449,7 +7236,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 36,
+      "rank": 35,
       "vessel_name": "NDL SIX",
       "tonnage_summary": {
         "gt": 3559,
@@ -7660,7 +7447,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 37,
+      "rank": 36,
       "vessel_name": "MYS NAVARIN",
       "tonnage_summary": {
         "gt": 2194,
@@ -7871,7 +7658,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 38,
+      "rank": 37,
       "vessel_name": "아틀란트",
       "tonnage_summary": {
         "gt": 1198,
@@ -8082,7 +7869,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 39,
+      "rank": 38,
       "vessel_name": "ECOPACIFIC",
       "tonnage_summary": {
         "gt": 741,
@@ -8293,26 +8080,26 @@
       "display_name": "부산"
     },
     {
-      "rank": 40,
-      "vessel_name": "CHUANG XIN 6",
+      "rank": 39,
+      "vessel_name": "SM NAVIGATOR",
       "tonnage_summary": {
-        "gt": 8703,
+        "gt": 30967,
         "dwt": null,
-        "size_class": "SMALL_COMMERCIAL",
+        "size_class": "LARGE_COMMERCIAL",
         "gt_source": "gt",
         "dwt_source": "missing",
         "tonnage_confidence": 90
       },
       "target_size_qualified": true,
-      "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
       "port": "울산",
       "port_code": "820",
       "current_port": "울산",
       "risk_level": "MEDIUM",
       "biofouling_risk_score": 50,
-      "hull_cleaning_candidate_score": 49,
+      "hull_cleaning_candidate_score": 50,
       "sst_anomaly": 0.7,
-      "ais_dwell_hours": 189,
+      "ais_dwell_hours": 180.8,
       "salinity_proxy": 0.91,
       "norm_sst_anomaly": 0.175,
       "norm_dwell_time": 1,
@@ -8338,21 +8125,21 @@
         "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
       },
       "compliance_exposure_confidence": 0,
-      "destination": "KAWASAKI",
+      "destination": "SUBIC BAY",
       "destination_port": "울산",
       "exposure_tags": [],
-      "opportunity_score": 47,
+      "opportunity_score": 65,
       "risk_score": 50,
       "top_factors": [
         "SST 0.7",
-        "Dwell 189h",
+        "Dwell 181h",
         "Salinity 0.91",
         "LONG_PORT_STAY",
         "LONG_ANCHORAGE",
         "REPEATED_INACTIVITY",
         "VESSEL_TYPE_EXPOSURE"
       ],
-      "reason_summary": "SST anomaly 0.7, AIS dwell 189h, salinity proxy 0.91 기반 상대 biofouling 리스크",
+      "reason_summary": "SST anomaly 0.7, AIS dwell 181h, salinity proxy 0.91 기반 상대 biofouling 리스크",
       "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
       "data_sources": [
         "NOAA SST",
@@ -8367,30 +8154,30 @@
         "raw_port": "울산",
         "raw_aliases": [
           "울산",
-          "KAWASAKI"
+          "SUBIC BAY"
         ]
       },
       "port_name": "울산",
       "port_display_name": "울산",
       "vessel_display": {
-        "vessel_name": "CHUANG XIN 6",
+        "vessel_name": "SM NAVIGATOR",
         "imo": "-",
         "mmsi": "-",
         "call_sign": "-",
         "flag": "-",
         "vessel_type": "-",
-        "gt": 8703,
+        "gt": 30967,
         "dwt": null,
         "tonnage_summary": {
-          "gt": 8703,
+          "gt": 30967,
           "dwt": null,
-          "size_class": "SMALL_COMMERCIAL",
+          "size_class": "LARGE_COMMERCIAL",
           "gt_source": "gt",
           "dwt_source": "missing",
           "tonnage_confidence": 90
         },
         "target_size_qualified": true,
-        "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+        "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
         "operator": "-",
         "operator_display": "-",
         "operator_source": "-",
@@ -8410,7 +8197,7 @@
           "raw_port": "울산",
           "raw_aliases": [
             "울산",
-            "KAWASAKI"
+            "SUBIC BAY"
           ]
         },
         "port_display_name": "울산",
@@ -8422,10 +8209,10 @@
         "atb": "-",
         "etd": "-",
         "atd": "-",
-        "stay_days": 7.9,
-        "stay_hours": 189,
+        "stay_days": 7.5,
+        "stay_hours": 181,
         "waiting_hours": null,
-        "port_stay_hours": 189,
+        "port_stay_hours": 181,
         "congestion_score": null,
         "waiting_score": null,
         "last_seen_at": "-",
@@ -8435,7 +8222,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 47,
+        "opportunity_score": 65,
         "risk_score": 50,
         "biofouling_score": 50,
         "compliance_score": 0,
@@ -8458,9 +8245,9 @@
         },
         "biofoulingRiskScore": 50,
         "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 49,
+        "cleaningOpportunityScore": 50,
         "anchorageHours": null,
-        "portStayHours": 189,
+        "portStayHours": 181,
         "sstCelsius": null,
         "sstAnomalyCelsius": 0.7,
         "salinityPsu": 0.9,
@@ -8475,7 +8262,7 @@
         "slowSteamingHours": null,
         "riskReasons": [
           "SST 0.7",
-          "Dwell 189h",
+          "Dwell 181h",
           "Salinity 0.91",
           "LONG_PORT_STAY",
           "LONG_ANCHORAGE",
@@ -8485,12 +8272,12 @@
         "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
         "confidence": "-",
         "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
+        "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "SST anomaly 0.7, AIS dwell 189h, salinity proxy 0.91 기반 상대 biofouling 리스크",
+        "reason_summary": "SST anomaly 0.7, AIS dwell 181h, salinity proxy 0.91 기반 상대 biofouling 리스크",
         "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
         "data_sources": [
           "NOAA SST",
@@ -8506,7 +8293,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 41,
+      "rank": 40,
       "vessel_name": "타이하이 5",
       "tonnage_summary": {
         "gt": 3038,
@@ -8719,7 +8506,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 42,
+      "rank": 41,
       "vessel_name": "제8우진호",
       "tonnage_summary": {
         "gt": 297,
@@ -8930,7 +8717,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 43,
+      "rank": 42,
       "vessel_name": "MPV THALIA",
       "tonnage_summary": {
         "gt": 23119,
@@ -9143,7 +8930,7 @@
       "display_name": "포항"
     },
     {
-      "rank": 44,
+      "rank": 43,
       "vessel_name": "ERSOZ WEST",
       "tonnage_summary": {
         "gt": 36332,
@@ -9356,7 +9143,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 45,
+      "rank": 44,
       "vessel_name": "에이치엘 오셔닉",
       "tonnage_summary": {
         "gt": 97574,
@@ -9569,7 +9356,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 46,
+      "rank": 45,
       "vessel_name": "POST MARVEL",
       "tonnage_summary": {
         "gt": 50626,
@@ -9782,7 +9569,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 47,
+      "rank": 46,
       "vessel_name": "PROTEUS RONG NA",
       "tonnage_summary": {
         "gt": 66970,
@@ -9995,7 +9782,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 48,
+      "rank": 47,
       "vessel_name": "RICH LAND",
       "tonnage_summary": {
         "gt": 5259,
@@ -10208,7 +9995,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 49,
+      "rank": 48,
       "vessel_name": "ARDMORE PURSUIT",
       "tonnage_summary": {
         "gt": 29455,
@@ -10421,7 +10208,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 50,
+      "rank": 49,
       "vessel_name": "ORKIM FORTITUDE",
       "tonnage_summary": {
         "gt": 28777,
@@ -10634,7 +10421,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 51,
+      "rank": 50,
       "vessel_name": "제유호",
       "tonnage_summary": {
         "gt": 124,
@@ -10847,7 +10634,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 52,
+      "rank": 51,
       "vessel_name": "뉴 챌린지호",
       "tonnage_summary": {
         "gt": 4060,
@@ -11058,7 +10845,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 53,
+      "rank": 52,
       "vessel_name": "VOYAGER NO.1",
       "tonnage_summary": {
         "gt": 11108,
@@ -11271,7 +11058,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 54,
+      "rank": 53,
       "vessel_name": "YUAN JU WAN",
       "tonnage_summary": {
         "gt": 64572,
@@ -11484,7 +11271,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 55,
+      "rank": 54,
       "vessel_name": "스카이케미",
       "tonnage_summary": {
         "gt": 1772,
@@ -11697,7 +11484,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 56,
+      "rank": 55,
       "vessel_name": "티앤 레아",
       "tonnage_summary": {
         "gt": 1912,
@@ -11908,7 +11695,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 57,
+      "rank": 56,
       "vessel_name": "PAN HOPE",
       "tonnage_summary": {
         "gt": 92080,
@@ -12119,7 +11906,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 58,
+      "rank": 57,
       "vessel_name": "스키야토스",
       "tonnage_summary": {
         "gt": 109299,
@@ -12330,7 +12117,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 59,
+      "rank": 58,
       "vessel_name": "핀알파",
       "tonnage_summary": {
         "gt": 289,
@@ -12543,7 +12330,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 60,
+      "rank": 59,
       "vessel_name": "V GALAXY",
       "tonnage_summary": {
         "gt": 1993,
@@ -12756,7 +12543,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 61,
+      "rank": 60,
       "vessel_name": "PACIFIC TIANJIN",
       "tonnage_summary": {
         "gt": 7464,
@@ -12967,7 +12754,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 62,
+      "rank": 61,
       "vessel_name": "한유누리",
       "tonnage_summary": {
         "gt": 749,
@@ -13180,7 +12967,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 63,
+      "rank": 62,
       "vessel_name": "OCEAN  BREEZE",
       "tonnage_summary": {
         "gt": 30087,
@@ -13393,7 +13180,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 64,
+      "rank": 63,
       "vessel_name": "MING SHAN",
       "tonnage_summary": {
         "gt": 3706,
@@ -13606,7 +13393,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 65,
+      "rank": 64,
       "vessel_name": "202대림호",
       "tonnage_summary": {
         "gt": 87,
@@ -13815,7 +13602,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 66,
+      "rank": 65,
       "vessel_name": "GLOBAL PROSPERITY",
       "tonnage_summary": {
         "gt": 119595,
@@ -14028,7 +13815,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 67,
+      "rank": 66,
       "vessel_name": "인트란스 에디",
       "tonnage_summary": {
         "gt": 7699,
@@ -14241,7 +14028,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 68,
+      "rank": 67,
       "vessel_name": "ICONSHIP",
       "tonnage_summary": {
         "gt": 92752,
@@ -14450,7 +14237,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 69,
+      "rank": 68,
       "vessel_name": "HMM TOPAZ",
       "tonnage_summary": {
         "gt": 126943,
@@ -14668,7 +14455,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 70,
+      "rank": 69,
       "vessel_name": "유한1호",
       "tonnage_summary": {
         "gt": 337,
@@ -14879,7 +14666,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 71,
+      "rank": 70,
       "vessel_name": "백령 153호",
       "tonnage_summary": {
         "gt": 368,
@@ -15090,7 +14877,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 72,
+      "rank": 71,
       "vessel_name": "SINCERENICE 1",
       "tonnage_summary": {
         "gt": 4506,
@@ -15303,7 +15090,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 73,
+      "rank": 72,
       "vessel_name": "청담",
       "tonnage_summary": {
         "gt": 1130,
@@ -15516,7 +15303,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 74,
+      "rank": 73,
       "vessel_name": "동방7호",
       "tonnage_summary": {
         "gt": 843,
@@ -15729,7 +15516,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 75,
+      "rank": 74,
       "vessel_name": "STOLT ALM",
       "tonnage_summary": {
         "gt": 23124,
@@ -15942,7 +15729,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 76,
+      "rank": 75,
       "vessel_name": "한남",
       "tonnage_summary": {
         "gt": 1097,
@@ -16155,7 +15942,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 77,
+      "rank": 76,
       "vessel_name": "AAL DAMMAM",
       "tonnage_summary": {
         "gt": 25784,
@@ -16364,7 +16151,7 @@
       "display_name": "포항"
     },
     {
-      "rank": 78,
+      "rank": 77,
       "vessel_name": "PACIFIC MOONSTONE",
       "tonnage_summary": {
         "gt": 30087,
@@ -16573,7 +16360,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 79,
+      "rank": 78,
       "vessel_name": "서해제일1호",
       "tonnage_summary": {
         "gt": 97,
@@ -16786,7 +16573,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 80,
+      "rank": 79,
       "vessel_name": "DS PROSPER",
       "tonnage_summary": {
         "gt": 8479,
@@ -16999,7 +16786,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 81,
+      "rank": 80,
       "vessel_name": "일신 골드리버",
       "tonnage_summary": {
         "gt": 19908,
@@ -17208,7 +16995,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 82,
+      "rank": 81,
       "vessel_name": "HAFNIA BEIJING",
       "tonnage_summary": {
         "gt": 43693,
@@ -17422,7 +17209,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 83,
+      "rank": 82,
       "vessel_name": "PAN REGINA",
       "tonnage_summary": {
         "gt": 36025,
@@ -17631,7 +17418,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 84,
+      "rank": 83,
       "vessel_name": "MANDARIN ARROW",
       "tonnage_summary": {
         "gt": 35998,
@@ -17840,7 +17627,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 85,
+      "rank": 84,
       "vessel_name": "덕운호",
       "tonnage_summary": {
         "gt": 65,
@@ -18047,7 +17834,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 86,
+      "rank": 85,
       "vessel_name": "디엘 앰버",
       "tonnage_summary": {
         "gt": 7333,
@@ -18260,7 +18047,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 87,
+      "rank": 86,
       "vessel_name": "광산",
       "tonnage_summary": {
         "gt": 268,
@@ -18471,7 +18258,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 88,
+      "rank": 87,
       "vessel_name": "우금호",
       "tonnage_summary": {
         "gt": 1974,
@@ -18682,7 +18469,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 89,
+      "rank": 88,
       "vessel_name": "한국1호",
       "tonnage_summary": {
         "gt": 155,
@@ -18895,7 +18682,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 90,
+      "rank": 89,
       "vessel_name": "AMERICA GRAECA",
       "tonnage_summary": {
         "gt": 35884,
@@ -19104,7 +18891,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 91,
+      "rank": 90,
       "vessel_name": "HUA YUN 1",
       "tonnage_summary": {
         "gt": 13647,
@@ -19152,7 +18939,7 @@
       "destination": "TIANJIN",
       "destination_port": "인천",
       "exposure_tags": [],
-      "opportunity_score": 31,
+      "opportunity_score": 30,
       "risk_score": 34,
       "top_factors": [
         "SST 0.6",
@@ -19244,7 +19031,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 31,
+        "opportunity_score": 30,
         "risk_score": 34,
         "biofouling_score": 34,
         "compliance_score": 0,
@@ -19313,7 +19100,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 92,
+      "rank": 91,
       "vessel_name": "우혁",
       "tonnage_summary": {
         "gt": 5025,
@@ -19526,7 +19313,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 93,
+      "rank": 92,
       "vessel_name": "G.FUTURE",
       "tonnage_summary": {
         "gt": 153841,
@@ -19735,7 +19522,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 94,
+      "rank": 93,
       "vessel_name": "그레이스 알파",
       "tonnage_summary": {
         "gt": 2676,
@@ -19948,7 +19735,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 95,
+      "rank": 94,
       "vessel_name": "ULTRA KUROSHIO",
       "tonnage_summary": {
         "gt": 9911,
@@ -20161,7 +19948,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 96,
+      "rank": 95,
       "vessel_name": "20청우호",
       "tonnage_summary": {
         "gt": 299,
@@ -20372,216 +20159,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 97,
-      "vessel_name": "ATLANTIC PIONEER",
-      "tonnage_summary": {
-        "gt": 7532,
-        "dwt": null,
-        "size_class": "SMALL_COMMERCIAL",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "target_size_qualified": true,
-      "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "port": "평택·당진",
-      "port_code": "031",
-      "current_port": "평택·당진",
-      "risk_level": "LOW",
-      "biofouling_risk_score": 31,
-      "hull_cleaning_candidate_score": 27,
-      "sst_anomaly": 0.6,
-      "ais_dwell_hours": 89.8,
-      "salinity_proxy": 0.81,
-      "norm_sst_anomaly": 0.15,
-      "norm_dwell_time": 0.535,
-      "norm_salinity": 0.81,
-      "model_version": "biofouling_sst_dwell_salinity_v1",
-      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
-      "compliance_score": 0,
-      "commercial_size_qualified": true,
-      "biofouling_compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure_confidence": 0,
-      "destination": "DALIAN",
-      "destination_port": "평택·당진",
-      "exposure_tags": [],
-      "opportunity_score": 26,
-      "risk_score": 31,
-      "top_factors": [
-        "SST 0.6",
-        "Dwell 90h",
-        "Salinity 0.81",
-        "PORT_DWELL_TIME",
-        "VESSEL_TYPE_EXPOSURE"
-      ],
-      "reason_summary": "SST anomaly 0.6, AIS dwell 90h, salinity proxy 0.81 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-      "data_sources": [
-        "NOAA SST",
-        "AIS dwell time",
-        "salinity proxy",
-        "opportunity_master"
-      ],
-      "normalized_port": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "raw_port": "평택·당진",
-        "raw_aliases": [
-          "평택·당진",
-          "DALIAN"
-        ]
-      },
-      "port_name": "평택·당진",
-      "port_display_name": "평택·당진",
-      "vessel_display": {
-        "vessel_name": "ATLANTIC PIONEER",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 7532,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 7532,
-          "dwt": null,
-          "size_class": "SMALL_COMMERCIAL",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": true,
-        "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "평택·당진",
-        "raw_current_port": "평택·당진",
-        "current_port_korean": "평택·당진",
-        "normalized_port": {
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "display_name": "평택·당진",
-          "raw_port": "평택·당진",
-          "raw_aliases": [
-            "평택·당진",
-            "DALIAN"
-          ]
-        },
-        "port_display_name": "평택·당진",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "stay_days": 3.8,
-        "stay_hours": 90,
-        "waiting_hours": null,
-        "port_stay_hours": 90,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "opportunity_score": 26,
-        "risk_score": 31,
-        "biofouling_score": 31,
-        "compliance_score": 0,
-        "commercial_size_qualified": true,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": 31,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 27,
-        "anchorageHours": null,
-        "portStayHours": 90,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": 0.6,
-        "salinityPsu": 0.8,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "보통",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "SST 0.6",
-          "Dwell 90h",
-          "Salinity 0.81",
-          "PORT_DWELL_TIME",
-          "VESSEL_TYPE_EXPOSURE"
-        ],
-        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "confidence": "-",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "SST anomaly 0.6, AIS dwell 90h, salinity proxy 0.81 기반 상대 biofouling 리스크",
-        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "salinity proxy",
-          "opportunity_master"
-        ],
-        "enrichment_sources": [],
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진"
-      },
-      "display_name": "평택·당진"
-    },
-    {
-      "rank": 98,
+      "rank": 96,
       "vessel_name": "FLORA MARIS",
       "tonnage_summary": {
         "gt": 30964,
@@ -20794,7 +20372,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 99,
+      "rank": 97,
       "vessel_name": "STOLT LOTUS",
       "tonnage_summary": {
         "gt": 22424,
@@ -21001,7 +20579,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 100,
+      "rank": 98,
       "vessel_name": "일신그린아이리스",
       "tonnage_summary": {
         "gt": 31005,
@@ -21208,6 +20786,426 @@
         "display_name": "마산/창원"
       },
       "display_name": "마산/창원"
+    },
+    {
+      "rank": 99,
+      "vessel_name": "한유파이오니아",
+      "tonnage_summary": {
+        "gt": 1848,
+        "dwt": null,
+        "size_class": "BELOW_COMMERCIAL_MIN",
+        "gt_source": "gt",
+        "dwt_source": "missing",
+        "tonnage_confidence": 90
+      },
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "port": "대산",
+      "port_code": "621",
+      "current_port": "대산",
+      "risk_level": "LOW",
+      "biofouling_risk_score": 30,
+      "hull_cleaning_candidate_score": 30,
+      "sst_anomaly": 0.6,
+      "ais_dwell_hours": 88,
+      "salinity_proxy": 0.82,
+      "norm_sst_anomaly": 0.15,
+      "norm_dwell_time": 0.524,
+      "norm_salinity": 0.82,
+      "model_version": "biofouling_sst_dwell_salinity_v1",
+      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
+      "compliance_score": 0,
+      "commercial_size_qualified": false,
+      "biofouling_compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure_confidence": 0,
+      "destination": "당진",
+      "destination_port": "대산",
+      "exposure_tags": [],
+      "opportunity_score": 35,
+      "risk_score": 30,
+      "top_factors": [
+        "SST 0.6",
+        "Dwell 88h",
+        "Salinity 0.82",
+        "PORT_DWELL_TIME",
+        "VESSEL_TYPE_EXPOSURE",
+        "PREVIOUS_VISIT_PATTERN"
+      ],
+      "reason_summary": "SST anomaly 0.6, AIS dwell 88h, salinity proxy 0.82 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "data_sources": [
+        "NOAA SST",
+        "AIS dwell time",
+        "salinity proxy",
+        "opportunity_master"
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산",
+          "당진"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "vessel_display": {
+        "vessel_name": "한유파이오니아",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 1848,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": 1848,
+          "dwt": null,
+          "size_class": "BELOW_COMMERCIAL_MIN",
+          "gt_source": "gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 90
+        },
+        "target_size_qualified": true,
+        "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "대산",
+        "raw_current_port": "대산",
+        "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산",
+            "당진"
+          ]
+        },
+        "port_display_name": "대산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 3.7,
+        "stay_hours": 88,
+        "waiting_hours": null,
+        "port_stay_hours": 88,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "opportunity_score": 35,
+        "risk_score": 30,
+        "biofouling_score": 30,
+        "compliance_score": 0,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 30,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": 30,
+        "anchorageHours": null,
+        "portStayHours": 88,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 0.8,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "SST 0.6",
+          "Dwell 88h",
+          "Salinity 0.82",
+          "PORT_DWELL_TIME",
+          "VESSEL_TYPE_EXPOSURE",
+          "PREVIOUS_VISIT_PATTERN"
+        ],
+        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "SST anomaly 0.6, AIS dwell 88h, salinity proxy 0.82 기반 상대 biofouling 리스크",
+        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "salinity proxy",
+          "opportunity_master"
+        ],
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
+    },
+    {
+      "rank": 100,
+      "vessel_name": "거제 이션",
+      "tonnage_summary": {
+        "gt": 1972,
+        "dwt": null,
+        "size_class": "BELOW_COMMERCIAL_MIN",
+        "gt_source": "gt",
+        "dwt_source": "missing",
+        "tonnage_confidence": 90
+      },
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "port": "대산",
+      "port_code": "621",
+      "current_port": "대산",
+      "risk_level": "LOW",
+      "biofouling_risk_score": 30,
+      "hull_cleaning_candidate_score": 30,
+      "sst_anomaly": 0.6,
+      "ais_dwell_hours": 89,
+      "salinity_proxy": 0.82,
+      "norm_sst_anomaly": 0.15,
+      "norm_dwell_time": 0.53,
+      "norm_salinity": 0.82,
+      "model_version": "biofouling_sst_dwell_salinity_v1",
+      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
+      "compliance_score": 0,
+      "commercial_size_qualified": false,
+      "biofouling_compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure_confidence": 0,
+      "destination": "목포",
+      "destination_port": "대산",
+      "exposure_tags": [],
+      "opportunity_score": 34,
+      "risk_score": 30,
+      "top_factors": [
+        "SST 0.6",
+        "Dwell 89h",
+        "Salinity 0.82",
+        "PORT_DWELL_TIME",
+        "VESSEL_TYPE_EXPOSURE"
+      ],
+      "reason_summary": "SST anomaly 0.6, AIS dwell 89h, salinity proxy 0.82 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "data_sources": [
+        "NOAA SST",
+        "AIS dwell time",
+        "salinity proxy",
+        "opportunity_master"
+      ],
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산",
+          "목포"
+        ]
+      },
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "vessel_display": {
+        "vessel_name": "거제 이션",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 1972,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": 1972,
+          "dwt": null,
+          "size_class": "BELOW_COMMERCIAL_MIN",
+          "gt_source": "gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 90
+        },
+        "target_size_qualified": true,
+        "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "대산",
+        "raw_current_port": "대산",
+        "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산",
+            "목포"
+          ]
+        },
+        "port_display_name": "대산",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "stay_days": 3.7,
+        "stay_hours": 89,
+        "waiting_hours": null,
+        "port_stay_hours": 89,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "opportunity_score": 34,
+        "risk_score": 30,
+        "biofouling_score": 30,
+        "compliance_score": 0,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 30,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": 30,
+        "anchorageHours": null,
+        "portStayHours": 89,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 0.8,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "SST 0.6",
+          "Dwell 89h",
+          "Salinity 0.82",
+          "PORT_DWELL_TIME",
+          "VESSEL_TYPE_EXPOSURE"
+        ],
+        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "confidence": "-",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "SST anomaly 0.6, AIS dwell 89h, salinity proxy 0.82 기반 상대 biofouling 리스크",
+        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "salinity proxy",
+          "opportunity_master"
+        ],
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
     }
   ],
   "summary": {

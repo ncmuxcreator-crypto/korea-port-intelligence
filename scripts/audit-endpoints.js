@@ -8,18 +8,23 @@ const API_ROOT = path.join(ROOT, "dashboard", "api");
 const DASHBOARD_HTML = path.join(ROOT, "dashboard", "index.html");
 const MANIFEST_PATH = path.join(API_ROOT, "endpoint-manifest.json");
 const TOO_LARGE_BYTES = 500 * 1024;
+const STARTUP_SAFE_BYTES = 100 * 1024;
+const STARTUP_SAFE_BOOTSTRAP_BYTES = 150 * 1024;
 const STALE_HOURS = 36;
 
 const IMPORTANT_ENDPOINTS = [
   ["bootstrap", "dashboard/api/bootstrap.json"],
+  ["status.summary", "dashboard/api/status-summary.json"],
   ["status", "dashboard/api/status.json"],
   ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
   ["sales.actions", "dashboard/api/sales/actions.json"],
   ["sales.conversionPipeline", "dashboard/api/sales/conversion-pipeline.json"],
   ["sales.quoteOpportunities", "dashboard/api/sales/quote-opportunities.json"],
+  ["sales.verificationQueueSummary", "dashboard/api/sales/verification-queue-summary.json"],
   ["sales.verificationQueue", "dashboard/api/sales/verification-queue.json"],
   ["watchlist.current", "dashboard/api/watchlist/current.json"],
   ["targets.current", "dashboard/api/targets/current.json"],
+  ["targets.categoriesSummary", "dashboard/api/targets/categories-summary.json"],
   ["targets.categories", "dashboard/api/targets/categories.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
@@ -116,6 +121,18 @@ function isCritical(relativePath) {
   return CRITICAL_ENDPOINTS.has(relativePath);
 }
 
+function startupSafe(relativePath, bytes = 0, { validJson = true, schemaValid = true } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (!validJson || !schemaValid) return false;
+  if (normalized === "dashboard/api/bootstrap.json") return bytes <= STARTUP_SAFE_BOOTSTRAP_BYTES;
+  if (/dashboard\/api\/(?:status-summary|targets\/categories-summary|sales\/verification-queue-summary)\.json$/.test(normalized)) {
+    return bytes <= STARTUP_SAFE_BYTES;
+  }
+  if (/dashboard\/api\/(?:status|targets\/categories|sales\/verification-queue)\.json$/.test(normalized)) return false;
+  if (/dashboard\/api\/(?:all-collected-vessels|target-vessels|vessels\/page-\d+|imo-recovery-priority|debug|quality|review|audit|diagnostic)/i.test(normalized)) return false;
+  return bytes <= STARTUP_SAFE_BYTES;
+}
+
 function staleHours(payload) {
   const value = payload?.generated_at || payload?.last_success_at || payload?.updated_at;
   const time = Date.parse(value || "");
@@ -181,7 +198,7 @@ function writeJsonAtomically(filePath, payload) {
 function auditFile(relativePath) {
   const filePath = path.join(ROOT, ...relativePath.split("/"));
   if (!fs.existsSync(filePath)) {
-  return { endpoint: relativePath, path: relativePath, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, status: "MISSING", problem: "file missing", bytes: 0 };
+  return { endpoint: relativePath, path: relativePath, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file missing", bytes: 0 };
   }
   const bytes = fs.statSync(filePath).size;
   const text = fs.readFileSync(filePath, "utf8");
@@ -189,6 +206,7 @@ function auditFile(relativePath) {
     const payload = JSON.parse(text);
     const undefinedLike = findUndefinedLike(payload);
     const schemaProblem = validateSchema(relativePath, payload);
+    const schemaValid = !schemaProblem && !undefinedLike.length;
     const age = staleHours(payload);
     const count = recordCount(payload);
     const actualItemCount = itemCount(payload);
@@ -215,9 +233,10 @@ function auditFile(relativePath) {
       path: relativePath,
       exists: true,
       valid_json: true,
-      schema_valid: !schemaProblem && !undefinedLike.length,
+      schema_valid: schemaValid,
       record_count: count,
       item_count: actualItemCount,
+      startup_safe: startupSafe(relativePath, bytes, { validJson: true, schemaValid }),
       status,
       problem,
       bytes
@@ -231,6 +250,7 @@ function auditFile(relativePath) {
       schema_valid: false,
       record_count: 0,
       item_count: 0,
+      startup_safe: false,
       status: "INVALID_JSON",
       problem: error.message,
       bytes
@@ -264,6 +284,7 @@ function writeManifest(entries) {
       schema_valid: entry.schema_valid,
       record_count: entry.record_count,
       item_count: entry.item_count,
+      startup_safe: entry.startup_safe === true,
       status: entry.status,
       problem: entry.problem || ""
     };
@@ -286,7 +307,7 @@ const entries = allPaths.map(auditFile);
 const manifest = writeManifest(entries);
 const endpointMap = readDashboardEndpointMap();
 
-console.log("Endpoint | Path | Exists | Valid JSON | Schema Valid | Record Count | Item Count | Status | Problem");
+console.log("Endpoint | Path | Exists | Valid JSON | Schema Valid | Record Count | Item Count | Startup Safe | Status | Problem");
 for (const entry of entries) {
   console.log([
     entry.endpoint,
@@ -296,6 +317,7 @@ for (const entry of entries) {
     entry.schema_valid ? "yes" : "no",
     entry.record_count,
     entry.item_count,
+    entry.startup_safe ? "yes" : "no",
     entry.status,
     entry.problem || "-"
   ].join(" | "));
