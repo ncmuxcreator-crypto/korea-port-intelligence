@@ -6065,6 +6065,103 @@ function vesselDisplayPortName(record = {}, rawPort = "") {
   return rawPort ? "미확인 항만" : "-";
 }
 
+function pilotageText(value) {
+  return String(value ?? "").normalize("NFKC").trim();
+}
+
+function pilotageHasText(value) {
+  const text = pilotageText(value);
+  return Boolean(text) && !/^(?:-|unknown|none|null|undefined|미확인|확인\s*필요)$/i.test(text);
+}
+
+function pilotageKnownDirection(value) {
+  const text = pilotageText(value).toLowerCase();
+  if (!text || /unknown|none|null|미확인/.test(text)) return "";
+  if (/inbound|arrival|arrive|\bin\b|입항/.test(text)) return "INBOUND";
+  if (/outbound|departure|depart|\bout\b|출항/.test(text)) return "OUTBOUND";
+  if (/pilot|도선/.test(text)) return "PILOTAGE";
+  return "";
+}
+
+function pilotageSourceNames(record = {}) {
+  return [
+    ...displaySources(record),
+    ...(Array.isArray(record.source_names) ? record.source_names : []),
+    record.source_name,
+    record.source_origin,
+    record.source_profile,
+    record.eta_source,
+    record.etb_source,
+    record.enrichment_source,
+    record.enrichment_source_type
+  ].filter(pilotageHasText).map(value => pilotageText(value));
+}
+
+function pilotageSourceIndicatesSchedule(record = {}) {
+  return pilotageSourceNames(record).some(value => /pilot|pilotage|pilot_schedule|pilot_sources|도선/i.test(value));
+}
+
+function buildPilotageSignal(record = {}) {
+  const existing = record.vessel_display?.pilotage_signal && typeof record.vessel_display.pilotage_signal === "object"
+    ? record.vessel_display.pilotage_signal
+    : {};
+  if (existing.has_pilotage === true) return existing;
+  const pilotTime = firstNonEmpty(
+    record.pilot_time,
+    record.pilotage_time,
+    record.pilot_event_time,
+    record.pilot_boarding_time,
+    record.pilot_inbound_time,
+    record.pilot_outbound_time,
+    record.pilot_inbound,
+    record.pilot_outbound
+  );
+  const movementTime = firstNonEmpty(record.movement_time);
+  const station = firstNonEmpty(record.pilot_station, record.pilotage_station, record.pilot_boarding_station);
+  const status = firstNonEmpty(record.pilot_status, record.pilotage_status, record.pilot_order_status, record.pilot_schedule_status);
+  const direction = pilotageKnownDirection(firstNonEmpty(record.pilot_direction, record.movement_type));
+  const sourceNames = pilotageSourceNames(record);
+  const sourceIndicatesPilotage = pilotageSourceIndicatesSchedule(record);
+  const matched = Boolean(record.pilot_schedule_matched || record.pilot_only_arrival_review || record.outbound_pilot_scheduled || record.source_origin === "pilot_schedule");
+  const explicitPilotTime = pilotageHasText(pilotTime);
+  const movementTimeWithPilotContext = pilotageHasText(movementTime) && (matched || sourceIndicatesPilotage || Boolean(direction));
+  const stationOrStatus = pilotageHasText(station) || pilotageHasText(status);
+  const hasPilotage = matched || explicitPilotTime || movementTimeWithPilotContext || stationOrStatus || (Boolean(direction) && sourceIndicatesPilotage);
+  const normalizedPort = normalizedPortObject(record);
+  const confidence = hasPilotage
+    ? matched ? 90
+      : explicitPilotTime ? 80
+        : movementTimeWithPilotContext ? 72
+          : stationOrStatus ? 65
+            : 55
+    : null;
+  const pilotageTime = explicitPilotTime ? pilotTime : movementTimeWithPilotContext ? movementTime : null;
+  const source = matched
+    ? "pilot_schedule"
+    : sourceNames.find(value => /pilot|pilotage|도선/i.test(value)) || null;
+  return {
+    has_pilotage: Boolean(hasPilotage),
+    pilotage_status: hasPilotage ? (matched ? "CONFIRMED" : pilotageTime ? "SCHEDULED" : "DETECTED") : "UNKNOWN",
+    pilotage_time: pilotageTime || null,
+    pilotage_direction: direction || null,
+    pilot_station: pilotageHasText(station) ? station : null,
+    pilotage_port: normalizedPort.display_name || null,
+    pilotage_source: source,
+    pilotage_confidence: confidence,
+    reason: hasPilotage
+      ? "도선 정보가 확인되어 입항/접안 타이밍 확인이 필요합니다."
+      : ""
+  };
+}
+
+function hasPilotageSignal(record = {}) {
+  return buildPilotageSignal(record).has_pilotage === true;
+}
+
+function pilotageDetectedCount(records = []) {
+  return Array.isArray(records) ? records.filter(hasPilotageSignal).length : 0;
+}
+
 function buildVesselDisplay(record = {}) {
   const existingDisplay = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
   const source = { ...record, vessel_display: existingDisplay };
@@ -6186,6 +6283,7 @@ function buildVesselDisplay(record = {}) {
   const reasonSummary = vesselDisplayReasonSummary(record);
   const recommendedAction = vesselDisplayRecommendedAction(record);
   const priorityLabel = displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0)));
+  const pilotageSignal = buildPilotageSignal(record);
   const baseTonnageSummary = record.tonnage_summary || buildTonnageSummary(record);
   const tonnageSummary = baseTonnageSummary.gt === null && gtFromReason
     ? {
@@ -6278,6 +6376,7 @@ function buildVesselDisplay(record = {}) {
     priority_label: priorityLabel,
     priority_label_ko: salesPriorityLabelKo(priorityLabel),
     target_categories: (Array.isArray(record.target_categories) ? record.target_categories : Array.isArray(existingDisplay.target_categories) ? existingDisplay.target_categories : []).map(normalizeBusinessCategory),
+    pilotage_signal: pilotageSignal,
     category_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     korean_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     reason_summary: reasonSummary,
@@ -6491,6 +6590,17 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "pilot_event_suppressed",
   "pilot_suppression_reason",
   "alert_dedupe_window_hours",
+  "pilotage_signal",
+  "pilot_schedule_matched",
+  "pilot_only_arrival_review",
+  "outbound_pilot_scheduled",
+  "pilot_time",
+  "movement_time",
+  "pilot_direction",
+  "movement_type",
+  "pilot_station",
+  "pilot_status",
+  "pilot_source_url",
   "hull_cleaning_candidate_score",
   "hotspot_score",
   "sst_anomaly",
@@ -7450,6 +7560,7 @@ function buildBootstrapSnapshot({
     verify_contact_count: Number(dashboardSummary.verify_contact_count || 0),
     monitor_count: Number(dashboardSummary.monitor_count || 0),
     hold_count: Number(dashboardSummary.hold_count || 0),
+    pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
     biofouling_high_risk_count: Number(dashboardSummary.biofouling_high_risk_count || report.hull_cleaning_prediction_kpis?.biofouling_high_risk_count || 0),
     cleaning_immediate_candidate_count: Number(dashboardSummary.cleaning_immediate_candidate_count || report.hull_cleaning_prediction_kpis?.cleaning_immediate_candidate_count || 0),
     average_hull_growth_index: Number(dashboardSummary.average_hull_growth_index || report.hull_cleaning_prediction_kpis?.average_hull_growth_index || 0)
@@ -7469,7 +7580,8 @@ function buildBootstrapSnapshot({
       gt_below_5000_count: "5천GT 미만",
       gt_unknown_count: "톤수 미확인",
       sales_target_count: "영업 후보",
-      contact_now_count: "즉시 연락"
+      contact_now_count: "즉시 연락",
+      pilotage_detected_count: "도선 정보 확인"
     },
     kpi_trends: kpiTrends,
     trend_metrics: buildGrowthMetrics(kpiTrends),
@@ -15934,6 +16046,7 @@ try {
   ], biofoulingSstContext);
   const hullCleaningPredictionKpis = buildHullCleaningPredictionKpis(allCollectedVessels, hullCleaningPredictionDiagnostics);
   const dataHealthValidation = validateVesselRecords(allCollectedVessels);
+  const pilotageDetectedTotal = pilotageDetectedCount(allCollectedVessels);
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -16059,6 +16172,7 @@ try {
     gt_5000_plus_count: detailSummary.gt_5000_plus_count,
     staying_vessel_count: stayingVessels.length,
     long_stay_risk_count: longStayRiskCount,
+    pilotage_detected_count: pilotageDetectedTotal,
     anchorage_waiting_count: anchorageWaiting.length,
     arrival_pipeline_count: arrivalPipeline.length,
     predicted_arrivals_count: arrivalPipeline.length,
@@ -16286,6 +16400,7 @@ try {
     pre_arrival_target_count: targetCategorySummary.kpis.pre_arrival_target_count || 0,
     anchorage_opportunity_count: targetCategorySummary.kpis.anchorage_opportunity_count || 0,
     long_stay_risk_count: targetCategorySummary.kpis.long_stay_risk_count || 0,
+    pilotage_detected_count: pilotageDetectedTotal,
     compliance_target_count: targetCategorySummary.kpis.compliance_target_count || 0,
     repeat_caller_count: targetCategorySummary.kpis.repeat_caller_count || 0,
     fleet_expansion_count: targetCategorySummary.kpis.fleet_expansion_count || 0,
@@ -16350,7 +16465,8 @@ try {
       immediate_target_count: immediateTargets.length,
       anchorage_waiting_count: anchorageWaiting.length,
       arrival_pipeline_count: arrivalPipeline.length,
-      staying_vessels_count: stayingVessels.length
+      staying_vessels_count: stayingVessels.length,
+      pilotage_detected_count: pilotageDetectedTotal
     },
     port_summary: portIntelligence.map(({ all_vessels, scored_vessels, sales_candidates, immediate_targets, berths, ...port }) => port),
     candidate_summary: buildCandidateSummary(vessels),

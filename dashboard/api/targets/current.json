@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T03:28:34.217Z",
+  "generated_at": "2026-06-11T04:01:06.981Z",
   "data_mode": "live",
   "record_count": 29,
   "source_table": "sales_candidates_current",
@@ -133,8 +133,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1.25,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -144,6 +144,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 67,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -350,15 +354,15 @@
         "Workable UWC window available",
         "High fouling / performance risk score"
       ],
-      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 30시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 29시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "KONA TRADER",
@@ -422,7 +426,7 @@
         "port_stay_hours": 287.1,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -464,7 +468,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -540,9 +544,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 30시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 29시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -688,8 +703,8 @@
       "fouling_accelerator_pct": 35,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 91,
         "anchorage_factor": 0,
@@ -699,6 +714,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 44,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -870,15 +889,15 @@
         "Operator identified for outreach",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 26점, 평균 체선노출 7점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 101시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 26점, 평균 체선노출 7점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 100시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "대리점 확인 후 견적 제안",
       "recommended_next_action": "대리점 확인 후 견적 제안",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "PAN HOPE",
@@ -942,7 +961,7 @@
         "port_stay_hours": 152.8,
         "congestion_score": 36,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -984,7 +1003,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 35,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1051,9 +1070,20 @@
             "recommended_action": "선사 단위로 추가 선박 기회를 함께 검토"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "평택·당진",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 26점, 평균 체선노출 7점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 101시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 26점, 평균 체선노출 7점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 100시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "Merged Port Operation port call",
@@ -1196,8 +1226,8 @@
       "fouling_accelerator_pct": 35,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 0,
@@ -1207,6 +1237,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 48,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -1358,15 +1392,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 467시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 466시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_pyeongtaek_dangjin_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_pyeongtaek_dangjin_i",
       "vessel_display": {
         "vessel_name": "ERSOZ WEST",
@@ -1430,7 +1464,7 @@
         "port_stay_hours": 304.1,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1472,7 +1506,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 35,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1530,9 +1564,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "평택·당진",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 467시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 466시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -1674,8 +1719,8 @@
       "fouling_accelerator_pct": 34,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 0,
@@ -1685,6 +1730,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 46,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -1834,15 +1883,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Incheon 영흥도 영흥화력1돌핀에서 체류 10.2일째인 GT 50,626 벌크선으로, 출항 전 약 126시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Incheon 영흥도 영흥화력1돌핀에서 체류 10.2일째인 GT 50,626 벌크선으로, 출항 전 약 125시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_incheon_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_incheon_o",
       "vessel_display": {
         "vessel_name": "POST MARVEL",
@@ -1906,7 +1955,7 @@
         "port_stay_hours": 245.8,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1948,7 +1997,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 34,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2006,9 +2055,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "인천",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Incheon 영흥도 영흥화력1돌핀에서 체류 10.2일째인 GT 50,626 벌크선으로, 출항 전 약 126시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Incheon 영흥도 영흥화력1돌핀에서 체류 10.2일째인 GT 50,626 벌크선으로, 출항 전 약 125시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -2150,8 +2210,8 @@
       "fouling_accelerator_pct": 35,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 0,
@@ -2161,6 +2221,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 47,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -2321,8 +2385,8 @@
       "data_source_used": "port_operation_pyeongtaek_dangjin_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_pyeongtaek_dangjin_i",
       "vessel_display": {
         "vessel_name": "에이치엘 오셔닉",
@@ -2386,7 +2450,7 @@
         "port_stay_hours": 221.5,
         "congestion_score": 54,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2428,7 +2492,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 35,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2486,6 +2550,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "평택·당진",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Pyeongtaek-Dangjin 송악부두 4번선석에서 체류 9.2일째인 GT 97,574 벌크선으로, 출항 전 약 152시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
@@ -2632,8 +2707,8 @@
       "fouling_accelerator_pct": 37,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -2643,6 +2718,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 59,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -2823,15 +2902,15 @@
         "High fouling / performance risk score",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Ulsan 정박지-E3에서 묘박/대기 7.5일째인 GT 30,967 탱커으로, 출항 전 약 24시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 정박지-E3에서 묘박/대기 7.5일째인 GT 30,967 탱커으로, 출항 전 약 23시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_ulsan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_ulsan_o",
       "vessel_display": {
         "vessel_name": "SM NAVIGATOR",
@@ -2895,7 +2974,7 @@
         "port_stay_hours": 180.8,
         "congestion_score": 48,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2937,7 +3016,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -3004,9 +3083,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "울산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 7.5일째인 GT 30,967 탱커으로, 출항 전 약 24시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 7.5일째인 GT 30,967 탱커으로, 출항 전 약 23시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -3140,6 +3230,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 60,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -3326,15 +3420,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 5.4일째인 GT 119,595 벌크선으로, 출항 전 약 347시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 5.4일째인 GT 119,595 벌크선으로, 출항 전 약 346시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_south_gyeongsang_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_south_gyeongsang_o",
       "vessel_display": {
         "vessel_name": "GLOBAL PROSPERITY",
@@ -3398,7 +3492,7 @@
         "port_stay_hours": 130,
         "congestion_score": 36,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -3507,9 +3601,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "마산/창원",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 5.4일째인 GT 119,595 벌크선으로, 출항 전 약 347시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 5.4일째인 GT 119,595 벌크선으로, 출항 전 약 346시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -3641,6 +3746,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 41,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -3792,15 +3901,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 165시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 164시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "스키야토스",
@@ -3864,7 +3973,7 @@
         "port_stay_hours": 142,
         "congestion_score": 36,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -3964,9 +4073,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "마산/창원",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 165시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 164시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -4100,6 +4220,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 59,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -4282,15 +4406,15 @@
         "High fouling / performance risk score",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 480시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 479시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_daesan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_daesan_o",
       "vessel_display": {
         "vessel_name": "YUAN JU WAN",
@@ -4354,7 +4478,7 @@
         "port_stay_hours": 162.7,
         "congestion_score": 32,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4463,9 +4587,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "대산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 480시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 6.8일째인 GT 64,572 원유운반선으로, 출항 전 약 479시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -4597,6 +4732,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 39,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -4748,15 +4887,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "South Gyeongsang 원료부두 6선석에서 체류 4.9일째인 GT 92,752 벌크선으로, 출항 전 약 54시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "South Gyeongsang 원료부두 6선석에서 체류 4.9일째인 GT 92,752 벌크선으로, 출항 전 약 53시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "ICONSHIP",
@@ -4820,7 +4959,7 @@
         "port_stay_hours": 118.3,
         "congestion_score": 18,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4920,9 +5059,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "마산/창원",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "South Gyeongsang 원료부두 6선석에서 체류 4.9일째인 GT 92,752 벌크선으로, 출항 전 약 54시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "South Gyeongsang 원료부두 6선석에서 체류 4.9일째인 GT 92,752 벌크선으로, 출항 전 약 53시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -5066,8 +5216,8 @@
       "fouling_accelerator_pct": 55,
       "regulatory_multiplier": 1.1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 43,
         "anchorage_factor": 100,
@@ -5077,6 +5227,10 @@
         "marine_heatwave_bonus": 15
       },
       "hull_cleaning_opportunity_score": 52,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -5261,15 +5415,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 151시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 150시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "FLORA MARIS",
@@ -5333,7 +5487,7 @@
         "port_stay_hours": 73,
         "congestion_score": 16,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -5375,7 +5529,7 @@
         "marine_heatwave_label_ko": "극심",
         "fouling_accelerator_pct": 55,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 7,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -5442,9 +5596,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "여수",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 151시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Yeosu D-2정박지에서 묘박/대기 3일째인 GT 30,964 원유운반선으로, 출항 전 약 150시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -5509,10 +5674,10 @@
       "status_bucket": "anchorage_waiting",
       "ata": "2026-06-08 08:00:00+09:00",
       "etd": "2026-06-13 07:00:00",
-      "stay_hours": 76.5,
-      "current_call_stay_hours": 76.5,
-      "cumulative_stay_hours": 76.5,
-      "anchorage_hours": 76.5,
+      "stay_hours": 77,
+      "current_call_stay_hours": 77,
+      "cumulative_stay_hours": 77,
+      "anchorage_hours": 77,
       "berth_hours": 119,
       "repeat_caller_score": 49,
       "congestion_score": 15,
@@ -5586,8 +5751,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 46,
         "anchorage_factor": 100,
@@ -5597,6 +5762,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 52,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -5657,7 +5826,7 @@
       "commercial_value_score": 65,
       "total_sales_priority_score": 65,
       "cleaning_candidate_score": 65,
-      "biofouling_exposure_score": 69,
+      "biofouling_exposure_score": 70,
       "biofouling_score": 52,
       "risk_score": 50,
       "data_confidence_score": 86,
@@ -5765,15 +5934,15 @@
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 3.2일째인 GT 55,898 원유운반선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 43시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+      "why_now": "Busan 남외항 N-5박지에서 묘박/대기 3.2일째인 GT 55,898 원유운반선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 42시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "PORT-MIS VsslEtrynd5 Busan I",
       "data_source_used": "port_operation_busan_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_i",
       "vessel_display": {
         "vessel_name": "KRUGER",
@@ -5831,12 +6000,12 @@
         "etd": "2026-06-13 07:00:00",
         "atd": "-",
         "stay_days": 3.2,
-        "stay_hours": 76.5,
-        "waiting_hours": 76.5,
+        "stay_hours": 77,
+        "waiting_hours": 77,
         "port_stay_hours": 72.1,
         "congestion_score": 15,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -5867,7 +6036,7 @@
         "biofoulingRiskScore": 75,
         "hullGrowthIndex": 66,
         "cleaningOpportunityScore": 68,
-        "anchorageHours": 76.5,
+        "anchorageHours": 77,
         "portStayHours": 72.1,
         "sstCelsius": 24.6,
         "sstAnomalyCelsius": 0.8,
@@ -5878,7 +6047,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -5936,9 +6105,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 3.2일째인 GT 55,898 원유운반선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 43시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+        "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 3.2일째인 GT 55,898 원유운반선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 42시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "PORT-MIS VsslEtrynd5 Busan I",
@@ -6082,8 +6262,8 @@
       "fouling_accelerator_pct": 55,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -6093,6 +6273,10 @@
         "marine_heatwave_bonus": 15
       },
       "hull_cleaning_opportunity_score": 60,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -6277,15 +6461,15 @@
         "High fouling / performance risk score",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 11시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 10시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_yeosu_gwangyang_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_yeosu_gwangyang_i",
       "vessel_display": {
         "vessel_name": "VITUS BERING",
@@ -6349,7 +6533,7 @@
         "port_stay_hours": 251,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -6391,7 +6575,7 @@
         "marine_heatwave_label_ko": "극심",
         "fouling_accelerator_pct": 55,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -6458,9 +6642,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "여수",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 11시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항 전 약 10시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -6594,6 +6789,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 56,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -6783,8 +6982,8 @@
       "data_source_used": "port_operation_daesan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_daesan_o",
       "vessel_display": {
         "vessel_name": "PROTEUS RONG NA",
@@ -6848,7 +7047,7 @@
         "port_stay_hours": 349.6,
         "congestion_score": 65,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -6957,6 +7156,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "대산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Daesan D-1정박지에서 묘박/대기 14.6일째인 GT 66,970 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
@@ -7103,8 +7313,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -7114,6 +7324,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 56,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -7303,8 +7517,8 @@
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "ADMIRAL SCHMIDT",
@@ -7368,7 +7582,7 @@
         "port_stay_hours": 346,
         "congestion_score": 59,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -7410,7 +7624,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -7477,6 +7691,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 14.4일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
@@ -7611,6 +7836,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 34,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -7761,8 +7990,8 @@
       "data_source_used": "port_operation_daesan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_daesan_o",
       "vessel_display": {
         "vessel_name": "OCEAN  BREEZE",
@@ -7826,7 +8055,7 @@
         "port_stay_hours": 146.5,
         "congestion_score": 32,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -7926,6 +8155,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "대산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Daesan W구역에서 체류 6.1일째인 GT 30,087 탱커으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
@@ -8060,6 +8300,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 35,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -8216,8 +8460,8 @@
       "data_source_used": "port_operation_daesan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_daesan_o",
       "vessel_display": {
         "vessel_name": "G.FUTURE",
@@ -8281,7 +8525,7 @@
         "port_stay_hours": 100.3,
         "congestion_score": 19,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -8381,6 +8625,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "대산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Daesan 원유부두 W2선석에서 체류 4.2일째인 GT 153,841 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
@@ -8529,8 +8784,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 71,
         "anchorage_factor": 0,
@@ -8540,6 +8795,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 49,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -8720,15 +8979,15 @@
         "Workable UWC window available",
         "Operator identified for outreach"
       ],
-      "why_now": "Busan 신항 4부두 2선석에서 체류 5일째인 GT 126,943 컨테이너선으로, 출항 전 약 214시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · north_america 항로 민감도가 있습니다.",
+      "why_now": "Busan 신항 4부두 2선석에서 체류 5일째인 GT 126,943 컨테이너선으로, 출항 전 약 213시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · north_america 항로 민감도가 있습니다.",
       "recommended_action": "대리점 확인 후 견적 제안",
       "recommended_next_action": "대리점 확인 후 견적 제안",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_i",
       "vessel_display": {
         "vessel_name": "HMM TOPAZ",
@@ -8792,7 +9051,7 @@
         "port_stay_hours": 120,
         "congestion_score": 33,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -8834,7 +9093,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -8910,9 +9169,20 @@
             "recommended_action": "선사 단위로 추가 선박 기회를 함께 검토"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 신항 4부두 2선석에서 체류 5일째인 GT 126,943 컨테이너선으로, 출항 전 약 214시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · north_america 항로 민감도가 있습니다.",
+        "reason_summary": "Busan 신항 4부두 2선석에서 체류 5일째인 GT 126,943 컨테이너선으로, 출항 전 약 213시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · north_america 항로 민감도가 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "Merged Port Operation port call",
@@ -9057,8 +9327,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -9068,6 +9338,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 57,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -9248,15 +9522,15 @@
         "High fouling / performance risk score",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
       ],
-      "why_now": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 462시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "why_now": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 461시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_i",
       "vessel_display": {
         "vessel_name": "AKANE",
@@ -9320,7 +9594,7 @@
         "port_stay_hours": 534,
         "congestion_score": 53,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9362,7 +9636,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -9429,9 +9703,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 462시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 22.3일째인 GT 28,777 탱커으로, 출항 전 약 461시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -9563,6 +9848,10 @@
       ],
       "actionability_blockers": [],
       "hull_cleaning_opportunity_score": 47,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -9730,15 +10019,15 @@
         "Commercially relevant vessel type",
         "Workable UWC window available"
       ],
-      "why_now": "Daesan C구역에서 체류 4.4일째인 GT 43,693 탱커으로, 출항 전 약 587시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+      "why_now": "Daesan C구역에서 체류 4.4일째인 GT 43,693 탱커으로, 출항 전 약 586시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "HAFNIA BEIJING",
@@ -9802,7 +10091,7 @@
         "port_stay_hours": 106.5,
         "congestion_score": 16,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9911,9 +10200,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "대산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Daesan C구역에서 체류 4.4일째인 GT 43,693 탱커으로, 출항 전 약 587시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
+        "reason_summary": "Daesan C구역에서 체류 4.4일째인 GT 43,693 탱커으로, 출항 전 약 586시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -10059,8 +10359,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -10070,6 +10370,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 53,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -10246,15 +10550,15 @@
         "High fouling / performance risk score",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
       ],
-      "why_now": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 372시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 371시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_i",
       "vessel_display": {
         "vessel_name": "한유울산",
@@ -10318,7 +10622,7 @@
         "port_stay_hours": 432,
         "congestion_score": 29,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -10360,7 +10664,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -10427,9 +10731,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 372시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 371시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -10576,8 +10891,8 @@
       "fouling_accelerator_pct": 37,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 92,
         "anchorage_factor": 100,
@@ -10587,6 +10902,10 @@
         "marine_heatwave_bonus": 5
       },
       "hull_cleaning_opportunity_score": 52,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -10765,15 +11084,15 @@
         "Workable UWC window available",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
       ],
-      "why_now": "Ulsan 정박지-M1에서 묘박/대기 6.5일째인 탱커으로, 출항 전 약 107시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 정박지-M1에서 묘박/대기 6.5일째인 탱커으로, 출항 전 약 106시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "스카이케미",
@@ -10837,7 +11156,7 @@
         "port_stay_hours": 155,
         "congestion_score": 16,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -10879,7 +11198,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -10946,9 +11265,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "울산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Ulsan 정박지-M1에서 묘박/대기 6.5일째인 탱커으로, 출항 전 약 107시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정박지-M1에서 묘박/대기 6.5일째인 탱커으로, 출항 전 약 106시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -11092,8 +11422,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 57,
         "anchorage_factor": 100,
@@ -11103,6 +11433,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 51,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -11283,15 +11617,15 @@
         "Commercially relevant vessel type",
         "Workable UWC window available"
       ],
-      "why_now": "Busan 남외항 N-3박지에서 묘박/대기 4일째인 GT 7,333 탱커으로, 출항 전 약 106시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan 남외항 N-3박지에서 묘박/대기 4일째인 GT 7,333 탱커으로, 출항 전 약 105시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "merged_port_operation",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "merged_port_operation",
       "vessel_display": {
         "vessel_name": "디엘 앰버",
@@ -11355,7 +11689,7 @@
         "port_stay_hours": 96,
         "congestion_score": 13,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -11397,7 +11731,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11464,9 +11798,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 4일째인 GT 7,333 탱커으로, 출항 전 약 106시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 4일째인 GT 7,333 탱커으로, 출항 전 약 105시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -11610,8 +11955,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1.25,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -11621,6 +11966,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 53,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -11810,8 +12159,8 @@
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "GELBRAY EXPRESS",
@@ -11875,7 +12224,7 @@
         "port_stay_hours": 189,
         "congestion_score": 23,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -11917,7 +12266,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11993,6 +12342,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 7일째인 GT 10,421 unknown으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
@@ -12141,8 +12501,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -12152,6 +12512,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 44,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -12314,15 +12678,15 @@
         "Workable UWC window available",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
       ],
-      "why_now": "Busan 남외항 N-2박지에서 묘박/대기 11.1일째인 unknown으로, 출항 전 약 294시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan 남외항 N-2박지에서 묘박/대기 11.1일째인 unknown으로, 출항 전 약 293시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_i",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_i",
       "vessel_display": {
         "vessel_name": "KOHSEI MARU",
@@ -12386,7 +12750,7 @@
         "port_stay_hours": 266,
         "congestion_score": 17,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -12428,7 +12792,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -12495,9 +12859,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-2박지에서 묘박/대기 11.1일째인 unknown으로, 출항 전 약 294시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan 남외항 N-2박지에서 묘박/대기 11.1일째인 unknown으로, 출항 전 약 293시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -12643,8 +13018,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -12654,6 +13029,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 44,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -12816,15 +13195,15 @@
         "Workable UWC window available",
         "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
       ],
-      "why_now": "Busan 남외항 N-3박지에서 묘박/대기 15.3일째인 unknown으로, 출항 전 약 96시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Busan 남외항 N-3박지에서 묘박/대기 15.3일째인 unknown으로, 출항 전 약 95시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "recommended_next_action": "운영선사 확인",
       "source_label": "Merged Port Operation port call",
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "설퍼 브레이브",
@@ -12888,7 +13267,7 @@
         "port_stay_hours": 365,
         "congestion_score": 17,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -12930,7 +13309,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -12997,9 +13376,20 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
-        "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 15.3일째인 unknown으로, 출항 전 약 96시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 15.3일째인 unknown으로, 출항 전 약 95시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
@@ -13145,8 +13535,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -13156,6 +13546,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 47,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -13329,8 +13723,8 @@
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "BUENA DIOSA",
@@ -13394,7 +13788,7 @@
         "port_stay_hours": 1061.1,
         "congestion_score": 29,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -13436,7 +13830,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -13503,6 +13897,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 44.2일째인 가스운반선으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
@@ -13647,8 +14052,8 @@
       "fouling_accelerator_pct": 55,
       "regulatory_multiplier": 1.1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 0,
@@ -13658,6 +14063,10 @@
         "marine_heatwave_bonus": 15
       },
       "hull_cleaning_opportunity_score": 37,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -13802,8 +14211,8 @@
       "data_source_used": "port_operation_yeosu_gwangyang_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_yeosu_gwangyang_o",
       "vessel_display": {
         "vessel_name": "KITHNOS",
@@ -13867,7 +14276,7 @@
         "port_stay_hours": 379,
         "congestion_score": 58,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -13909,7 +14318,7 @@
         "marine_heatwave_label_ko": "극심",
         "fouling_accelerator_pct": 55,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 7,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -13967,6 +14376,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "여수",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Yeosu B구역에서 체류 15.8일째인 GT 13,794 가스운반선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
@@ -14115,8 +14535,8 @@
       "fouling_accelerator_pct": 38,
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-11T03:28:34.217Z",
-      "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+      "ocean_observed_at": "2026-06-11T04:01:06.981Z",
+      "ocean_updated_at": "2026-06-11T04:01:06.981Z",
       "ocean_score_components": {
         "stay_days_factor": 100,
         "anchorage_factor": 100,
@@ -14126,6 +14546,10 @@
         "marine_heatwave_bonus": 10
       },
       "hull_cleaning_opportunity_score": 39,
+      "pilot_schedule_matched": false,
+      "pilot_direction": "unknown",
+      "movement_type": "unknown",
+      "pilot_source_url": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5",
       "commercial_size_qualified": false,
       "biofouling_compliance_exposure": {
         "exposed": false,
@@ -14291,8 +14715,8 @@
       "data_source_used": "port_operation_busan_o",
       "source_mode": "real_public_api_snapshot",
       "agent_source": "port_operation",
-      "last_seen_at": "2026-06-11T03:25:38.552Z",
-      "updated_at": "2026-06-11T03:25:38.552Z",
+      "last_seen_at": "2026-06-11T03:58:31.152Z",
+      "updated_at": "2026-06-11T03:58:31.152Z",
       "source": "port_operation_busan_o",
       "vessel_display": {
         "vessel_name": "CRANE REGULUS",
@@ -14356,7 +14780,7 @@
         "port_stay_hours": 239.8,
         "congestion_score": 13,
         "waiting_score": null,
-        "last_seen_at": "2026-06-11T03:25:38.552Z",
+        "last_seen_at": "2026-06-11T03:58:31.152Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -14398,7 +14822,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-11T03:28:34.217Z",
+        "ocean_updated_at": "2026-06-11T04:01:06.981Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -14465,6 +14889,17 @@
             "recommended_action": "반복 입항 이력을 근거로 선사/대리점 접점을 확인"
           }
         ],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_direction": null,
+          "pilot_station": null,
+          "pilotage_port": "부산",
+          "pilotage_source": null,
+          "pilotage_confidence": null,
+          "reason": ""
+        },
         "category_label": "즉시 연락",
         "korean_label": "즉시 연락",
         "reason_summary": "Busan 남외항 N-3박지에서 묘박/대기 10일째인 unknown으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
@@ -14484,16 +14919,16 @@
       "display_name": "부산"
     }
   ],
-  "all_vessels_count": 897,
+  "all_vessels_count": 892,
   "sales_target_count": 29,
   "immediate_target_count": 13,
-  "target_ratio": 3.2,
+  "target_ratio": 3.3,
   "target_ratio_warning": "영업대상 비율이 비정상적으로 낮음",
   "target_category_counts": {
     "CONTACT_NOW": 29,
     "PRE_ARRIVAL": 28,
     "ANCHORAGE_OPPORTUNITY": 18,
-    "LONG_STAY_RISK": 304,
+    "LONG_STAY_RISK": 303,
     "BIOFOULING_COMPLIANCE": 4,
     "REPEAT_CALLER": 29,
     "FLEET_EXPANSION": 2,
@@ -14504,7 +14939,7 @@
   "contact_now_count": 32,
   "pre_arrival_target_count": 28,
   "anchorage_opportunity_count": 18,
-  "long_stay_risk_count": 304,
+  "long_stay_risk_count": 303,
   "compliance_target_count": 4,
   "repeat_caller_count": 29,
   "fleet_expansion_count": 2,
