@@ -51,11 +51,11 @@ function pickCurrentStatus() {
 
 const { status, status_path: statusPath, diagnostics_only: diagnosticsOnly } = pickCurrentStatus();
 const datasetState = getBaseDatasetState({ statusPath });
-const runtimePath = "dashboard/api/source-health-runtime.json";
+const canonicalRuntimePath = "dashboard/api/source-health-runtime.json";
 const registryPath = "dashboard/api/source-health.json";
-const debugRuntimePath = "dashboard/api/debug/source-health-runtime.json";
+const localRuntimePath = "dashboard/api/debug/source-health-local.json";
 const debugRegistryPath = "dashboard/api/debug/source-health.json";
-const previousRuntime = readJson(runtimePath, null);
+const previousRuntime = readJson(canonicalRuntimePath, null);
 const diagnostics = status.collector_diagnostics || {};
 const sources = Array.isArray(diagnostics.sources) ? diagnostics.sources : [];
 const configured = tracked.filter(key => Boolean(process.env[key]));
@@ -81,6 +81,8 @@ const servingMode = normalizeServingMode(process.env.SERVING_MODE || status.serv
 const runtimeConfigAudit = buildRuntimeConfigAudit();
 const portOperationApiUrl = portOperationApiUrlInfo();
 const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
+const runtimePath = isGithubActionsRuntime ? canonicalRuntimePath : localRuntimePath;
+const debugRuntimePath = isGithubActionsRuntime ? "dashboard/api/debug/source-health-runtime.json" : localRuntimePath;
 const missingPortOperationSecret = !portOperationServiceKeyPresent();
 const missingPortOperationUrl = !portOperationApiUrl.effective_present;
 const portOperationAttemptedCount = Number(diagnostics.coverage?.ports_attempted_count || diagnostics.ports_attempted_count || 0);
@@ -168,7 +170,7 @@ report.source_collection_status = buildSourceCollectionStatus({
 });
 
 fs.mkdirSync("dashboard/api", { recursive: true });
-if (diagnosticsOnly) fs.mkdirSync("dashboard/api/debug", { recursive: true });
+fs.mkdirSync("dashboard/api/debug", { recursive: true });
 fs.mkdirSync("data", { recursive: true });
 const registryReport = {
   ...runOrigin,
@@ -188,8 +190,9 @@ const registryReport = {
 };
 fs.writeFileSync(runtimePath, JSON.stringify(report, null, 2));
 fs.writeFileSync(registryPath, JSON.stringify(registryReport, null, 2));
-fs.mkdirSync("dashboard/api/debug", { recursive: true });
-fs.writeFileSync(debugRuntimePath, JSON.stringify(report, null, 2));
+if (debugRuntimePath !== runtimePath) {
+  fs.writeFileSync(debugRuntimePath, JSON.stringify(report, null, 2));
+}
 fs.writeFileSync(debugRegistryPath, JSON.stringify(registryReport, null, 2));
 fs.writeFileSync("data/source-health.json", JSON.stringify(registryReport, null, 2));
 console.log("Source health generated");

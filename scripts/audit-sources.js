@@ -15,6 +15,7 @@ function readJson(relativePath, fallback = {}) {
 
 const status = readJson("dashboard/api/status.json", {});
 const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", null);
+const sourceHealthLocal = readJson("dashboard/api/debug/source-health-local.json", null);
 const payload = sourceCollectionStatus?.items
   ? sourceCollectionStatus
   : buildSourceCollectionStatus({
@@ -29,6 +30,9 @@ console.log(`run_id=${payload.run_id || "unknown"}`);
 console.log(`generated_at=${payload.generated_at || "unknown"}`);
 console.log(`record_count=${payload.record_count || 0}`);
 console.log(`status_counts=${JSON.stringify(payload.status_counts || {})}`);
+if (payload.generated_by === "local" || sourceHealthLocal?.generated_by === "local" || sourceHealthLocal?.is_github_actions === false) {
+  console.log("WARN: This diagnostic was generated locally and may not reflect GitHub Actions secrets.");
+}
 console.log("");
 console.log("Source | Status | Env Present | Missing Env | Attempted | Rows | Skip Reason | Fix");
 for (const item of payload.items || []) {

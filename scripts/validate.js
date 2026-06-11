@@ -25,6 +25,10 @@ function countRowsInFile(file) {
 
 function outputPath(file) {
   if (validationMode !== "local" || !String(file).startsWith("dashboard/api/")) return file;
+  if (String(file).replace(/\\/g, "/") === "dashboard/api/source-health-runtime.json") {
+    const localSourceHealthPath = `${DEBUG_API_DIR}/source-health-local.json`;
+    if (fs.existsSync(localSourceHealthPath)) return localSourceHealthPath;
+  }
   const debugPath = `${DEBUG_API_DIR}/${String(file).slice("dashboard/api/".length)}`;
   if (!fs.existsSync(debugPath)) return file;
   const rootRows = countRowsInFile(file);

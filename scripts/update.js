@@ -3863,6 +3863,19 @@ function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   return normalized;
 }
 
+function writeSourceHealthRuntimeJson(payload, origin = {}) {
+  const isGithubActionsRuntime = Boolean(origin.is_github_actions || payload?.is_github_actions);
+  const normalized = isGithubActionsRuntime
+    ? "dashboard/api/source-health-runtime.json"
+    : "dashboard/api/debug/source-health-local.json";
+  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
+  writeDashboardJson(normalized, body);
+  if (isGithubActionsRuntime) {
+    writeDashboardJson(`${DEBUG_API_DIR}/source-health-runtime.json`, body);
+  }
+  return normalized;
+}
+
 function riskLevel(score = 0) {
   if (score >= 85) return "Critical";
   if (score >= 70) return "High";
@@ -17676,7 +17689,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
+  writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
@@ -17822,7 +17835,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
-  writeRuntimeDiagnosticJson("dashboard/api/source-health-runtime.json", sourceHealthRuntimeReport, finalRunOrigin);
+  writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
