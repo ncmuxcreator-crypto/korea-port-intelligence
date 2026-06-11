@@ -69,8 +69,12 @@ function uniqueIdentityCount(items = []) {
 
 const sourceRows = rows(readJson("dashboard/api/all-collected-vessels.json", []));
 const sourceUniqueCount = uniqueIdentityCount(sourceRows);
+const reconciliation = readJson("dashboard/api/vessel-count-reconciliation.json", {});
+const reconciliationCounts = reconciliation?.counts || {};
 const index = readJson(path.join(API_DIR, "index.json"), {});
 const totalCount = Number(index?.total_count || 0);
+const detailEligibleCount = Number(reconciliationCounts.detail_eligible_vessel_count || reconciliation?.detail_eligible_vessel_count || totalCount);
+const totalDetectedVessels = Number(reconciliationCounts.total_detected_vessels || reconciliation?.total_detected_vessels || sourceRows.length);
 const pageSize = Number(index?.page_size || 0);
 const totalPages = Number(index?.total_pages || 0);
 const expectedTotalPages = pageSize > 0 ? Math.ceil(totalCount / pageSize) : 0;
@@ -141,6 +145,8 @@ for (const file of pageFiles) {
 console.log("Vessel page audit:");
 console.log(`- total_count from source dataset: ${sourceRows.length}`);
 console.log(`- unique_identity_count from source dataset: ${sourceUniqueCount}`);
+console.log(`- total_detected_vessels from reconciliation: ${totalDetectedVessels}`);
+console.log(`- detail_eligible_vessel_count from reconciliation: ${detailEligibleCount}`);
 console.log(`- total_count from vessels/index.json: ${totalCount}`);
 console.log(`- page_size: ${pageSize}`);
 console.log(`- expected_total_pages: ${expectedTotalPages}`);
@@ -156,7 +162,7 @@ console.log(`- mismatches: ${mismatches.length ? mismatches.join(" | ") : "none"
 const failures = [];
 if (index?.__invalid_json) failures.push(`vessels/index.json invalid JSON: ${index.error}`);
 if (sumItems !== totalCount) failures.push("sum of page items !== total_count");
-if (sourceUniqueCount && totalCount !== sourceUniqueCount) failures.push("index total_count !== source unique identity count");
+if (detailEligibleCount && totalCount !== detailEligibleCount) failures.push("index total_count !== detail_eligible_vessel_count");
 if (expectedTotalPages !== totalPages) failures.push("index total_pages !== ceil(total_count / page_size)");
 if (expectedPages.length !== totalPages) failures.push("index pages.length !== total_pages");
 if (pageFiles.length !== totalPages) failures.push("page file count !== total_pages");

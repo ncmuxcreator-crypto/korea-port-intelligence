@@ -2576,6 +2576,148 @@ function targetSizeQualification(record = {}, signals = []) {
   };
 }
 
+function hasManualDetailInclusion(record = {}) {
+  return record.manual_include === true ||
+    record.manual_watchlist === true ||
+    record.watchlist_manual === true ||
+    String(record.watchlist_source || "").toLowerCase() === "manual";
+}
+
+function hasCommercialHistorySignal(record = {}) {
+  const activityCount = Number(firstFiniteNumber(
+    record.previous_contacts,
+    record.previous_quotes,
+    record.previous_wins,
+    record.previous_losses,
+    record.contact_count,
+    record.quote_count,
+    record.win_count,
+    record.lost_count,
+    0
+  ) || 0);
+  if (activityCount > 0) return true;
+  const stage = String(firstNonEmpty(record.sales_stage, record.pipeline_stage, record.customer_status, record.lead_status)).toLowerCase();
+  return /contacted|quote|quoted|won|lost|negotiation|customer|operation_completed|견적|수주|실주|연락완료/.test(stage);
+}
+
+function hasSpecialVesselTypeSignal(record = {}) {
+  const typeText = String(firstNonEmpty(record.vessel_type, record.vessel_type_group, record.ship_type, record.commercial_segment)).toLowerCase();
+  return /offshore|survey|cable|dive|diving|research|special|service|cruise|passenger/.test(typeText);
+}
+
+function hasStrongComplianceOrBiofoulingSignal(record = {}) {
+  return hasBiofoulingComplianceExposure(record) ||
+    Number(record.biofouling_risk_score || record.biofouling_score || record.risk_score || record.compliance_score || record.compliance_exposure_score || 0) >= 75;
+}
+
+function hasImportantOperatorRelationshipSignal(record = {}) {
+  return Boolean(canonicalOperatorValue(record)) &&
+    (repeatCallerVisitCount(record, 90) >= 2 ||
+      Number(record.repeat_caller_score || record.korea_presence_score || record.relationship_score || 0) >= 70 ||
+      hasCommercialHistorySignal(record));
+}
+
+function hasStrongLongStayOrAnchorageException(record = {}) {
+  const longStay = longStayRiskSignal(record);
+  const stayHours = Number(record.stay_hours || record.current_call_stay_hours || record.cumulative_stay_hours || record.port_stay_hours || record.portStayHours || 0);
+  const anchorageHours = Number(record.anchorage_hours || record.anchorageHours || record.waiting_hours || 0);
+  const waitingScore = Number(record.waiting_score || record.dwell_score || 0);
+  const opportunityScore = commercialOpportunityScore(record);
+  const riskScore = recordRiskScore(record);
+  return (longStay.detected && (opportunityScore >= 60 || riskScore >= 60 || stayHours >= 120 || anchorageHours >= 72)) ||
+    stayHours >= 168 ||
+    anchorageHours >= 96 ||
+    waitingScore >= 80;
+}
+
+function detailEligibility(record = {}) {
+  const summary = buildTonnageSummary(record);
+  const gt = Number(summary.gt || 0);
+  if (gt >= COMMERCIAL_GT_THRESHOLD) {
+    return {
+      detail_eligible: true,
+      detail_inclusion_exception: false,
+      detail_inclusion_reason: "GT 5,000 이상으로 상세 상업 분석 대상입니다.",
+      detail_exclusion_reason: "",
+      tonnage_summary: summary
+    };
+  }
+
+  const exceptionCodes = [];
+  if (hasManualDetailInclusion(record)) exceptionCodes.push("manual_watchlist");
+  if (hasCommercialHistorySignal(record)) exceptionCodes.push("customer_or_quote_history");
+  if (hasStrongComplianceOrBiofoulingSignal(record)) exceptionCodes.push("strong_compliance_or_biofouling_signal");
+  if (hasSpecialVesselTypeSignal(record)) exceptionCodes.push("special_vessel_type");
+  if (hasStrongLongStayOrAnchorageException(record)) exceptionCodes.push("strong_long_stay_or_anchorage_signal");
+  if (hasImportantOperatorRelationshipSignal(record)) exceptionCodes.push("operator_or_fleet_relationship");
+
+  if (exceptionCodes.length) {
+    return {
+      detail_eligible: true,
+      detail_inclusion_exception: true,
+      detail_inclusion_reason: `GT 기준 기본 제외 대상이나 예외 신호(${exceptionCodes.join(", ")})가 있어 상세 분석에 포함합니다.`,
+      detail_exclusion_reason: "",
+      detail_inclusion_exception_codes: exceptionCodes,
+      tonnage_summary: summary
+    };
+  }
+
+  const unknown = summary.size_class === "UNKNOWN";
+  return {
+    detail_eligible: false,
+    detail_inclusion_exception: false,
+    detail_inclusion_reason: "",
+    detail_exclusion_reason: unknown
+      ? "GT 미확인으로 상세 상업 분석 기본 대상에서 제외합니다."
+      : "GT 5,000 미만으로 상세 상업 분석 기본 대상에서 제외합니다.",
+    detail_inclusion_exception_codes: [],
+    tonnage_summary: summary
+  };
+}
+
+function annotateDetailEligibility(records = []) {
+  for (const record of records) {
+    const decision = detailEligibility(record);
+    record.detail_eligible = decision.detail_eligible;
+    record.detail_inclusion_exception = decision.detail_inclusion_exception;
+    record.detail_inclusion_reason = decision.detail_inclusion_reason;
+    record.detail_exclusion_reason = decision.detail_exclusion_reason;
+    record.detail_inclusion_exception_codes = decision.detail_inclusion_exception_codes || [];
+    record.tonnage_summary = decision.tonnage_summary || record.tonnage_summary || buildTonnageSummary(record);
+  }
+  return records;
+}
+
+function detailEligibilitySummary(records = []) {
+  const sourceRows = Array.isArray(records) ? records : [];
+  const eligible = sourceRows.filter(record => detailEligibility(record).detail_eligible);
+  const excluded = sourceRows.filter(record => !detailEligibility(record).detail_eligible);
+  const gt5000Plus = sourceRows.filter(record => {
+    const summary = record.tonnage_summary || buildTonnageSummary(record);
+    return Number(summary.gt || 0) >= COMMERCIAL_GT_THRESHOLD;
+  });
+  const below5000 = sourceRows.filter(record => {
+    const summary = record.tonnage_summary || buildTonnageSummary(record);
+    return summary.size_class === "BELOW_COMMERCIAL_MIN";
+  });
+  const unknownGt = sourceRows.filter(record => {
+    const summary = record.tonnage_summary || buildTonnageSummary(record);
+    return summary.size_class === "UNKNOWN";
+  });
+  return {
+    total_detected_vessels: sourceRows.length,
+    unique_vessel_count: sourceRows.length,
+    gt_known_count: gt5000Plus.length + below5000.length,
+    gt_5000_plus_count: gt5000Plus.length,
+    gt_below_5000_count: below5000.length,
+    gt_unknown_count: unknownGt.length,
+    detail_eligible_vessel_count: eligible.length,
+    exception_included_count: eligible.filter(record => detailEligibility(record).detail_inclusion_exception).length,
+    excluded_vessels: excluded,
+    detail_eligible_vessels: eligible
+  };
+}
+
 function targetQuality(record = {}) {
   if (!hasUsefulVesselIdentity(record)) {
     return {
@@ -6066,6 +6208,10 @@ function buildVesselDisplay(record = {}) {
     tonnage_summary: tonnageSummary,
     target_size_qualified: record.target_size_qualified ?? null,
     target_size_reason: record.target_size_reason || "",
+    detail_eligible: record.detail_eligible ?? null,
+    detail_inclusion_exception: record.detail_inclusion_exception ?? false,
+    detail_inclusion_reason: record.detail_inclusion_reason || "",
+    detail_exclusion_reason: record.detail_exclusion_reason || "",
     operator: displayText(operatorDisplay),
     operator_display: displayText(operatorDisplay),
     operator_source: displayText(firstDisplayText(record.operator_source, vesselDisplayOperatorSource(record))),
@@ -6159,7 +6305,8 @@ function buildTargetSplitCounts(records = []) {
   };
   for (const record of records) {
     const quality = targetQuality(record);
-    if (quality.is_sales_target) split.qualified_sales_target += 1;
+    const detailEligible = record.detail_eligible === true || detailEligibility(record).detail_eligible === true;
+    if (detailEligible && quality.is_sales_target) split.qualified_sales_target += 1;
     else if (quality.is_monitor) split.monitor_candidate += 1;
     else split.non_target += 1;
   }
@@ -6875,7 +7022,14 @@ function dedupePaginatedVesselRows(rows = []) {
   return [...byKey.values(), ...passthrough];
 }
 
-function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().toISOString(), dataMode = "live", pageSize = 30 } = {}) {
+function buildPaginatedVesselOutputs({
+  records = [],
+  generatedAt = new Date().toISOString(),
+  dataMode = "live",
+  pageSize = 30,
+  totalDetectedVessels = null,
+  excludedSummaryPath = "vessels/excluded-summary.json"
+} = {}) {
   const mappedRows = Array.isArray(records) ? records.map(row => ({
     vessel_id: firstNonEmpty(row.vessel_id, row.master_vessel_id, row.hybrid_entity_key, row.port_call_id),
     master_vessel_id: firstNonEmpty(row.master_vessel_id, row.hybrid_entity_key),
@@ -6894,6 +7048,12 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
     operator_display: canonicalOperatorValue(row) || "",
     operator_source: row.operator_source || canonicalOperatorSource(row) || "",
     operator_confidence: firstFiniteNumber(row.operator_confidence, canonicalOperatorValue(row) ? 70 : 0, 0) || 0,
+    detail_eligible: row.detail_eligible === true,
+    detail_inclusion_exception: row.detail_inclusion_exception === true,
+    detail_inclusion_reason: row.detail_inclusion_reason || "",
+    detail_exclusion_reason: row.detail_exclusion_reason || "",
+    detail_inclusion_exception_codes: Array.isArray(row.detail_inclusion_exception_codes) ? row.detail_inclusion_exception_codes : [],
+    tonnage_summary: row.tonnage_summary || buildTonnageSummary(row),
     ...hullCleaningPublicFields(row),
     vessel_display: vesselDisplay(row)
   })) : [];
@@ -6909,6 +7069,14 @@ function buildPaginatedVesselOutputs({ records = [], generatedAt = new Date().to
       record_count: rows.length,
       total_count: rows.length,
       item_count: 0,
+      total_detected_vessels: Number(totalDetectedVessels ?? rows.length),
+      detail_eligible_vessel_count: rows.length,
+      detail_filter: {
+        threshold_metric: "GT",
+        minimum_gt: COMMERCIAL_GT_THRESHOLD,
+        default_rule: "GT >= 5000",
+        excluded_summary_path: `dashboard/api/${excludedSummaryPath}`
+      },
       page_size: safePageSize,
       total_pages: totalPages,
       pages
@@ -6938,6 +7106,7 @@ function buildVesselCountReconciliation({
   normalizedRows = [],
   displayRows = [],
   paginatedOutputs = {},
+  detailSummary = {},
   salesCandidates = [],
   salesActionsPayload = {},
   targetSplitCounts = {},
@@ -6950,7 +7119,14 @@ function buildVesselCountReconciliation({
   const rawRowCount = Array.isArray(rawRows) ? rawRows.length : 0;
   const normalizedRowCount = Array.isArray(normalizedRows) ? normalizedRows.length : 0;
   const displayVesselCount = Number(vesselIndex.total_count ?? vesselIndex.record_count ?? displayRows.length ?? 0) || 0;
-  const totalVessels = Number(dashboardSummary?.kpis?.total_vessels ?? dashboardSummary?.all_vessels_count ?? normalizedRowCount) || 0;
+  const totalDetectedVessels = Number(detailSummary.total_detected_vessels ?? dashboardSummary?.total_detected_vessels ?? dashboardSummary?.kpis?.total_detected_vessels ?? dashboardSummary?.all_vessels_count ?? normalizedRowCount) || 0;
+  const uniqueVesselCount = Number(detailSummary.unique_vessel_count ?? totalDetectedVessels) || 0;
+  const gtKnownCount = Number(detailSummary.gt_known_count ?? 0) || 0;
+  const gt5000PlusCount = Number(detailSummary.gt_5000_plus_count ?? 0) || 0;
+  const gtBelow5000Count = Number(detailSummary.gt_below_5000_count ?? 0) || 0;
+  const gtUnknownCount = Number(detailSummary.gt_unknown_count ?? 0) || 0;
+  const detailEligibleVesselCount = Number(detailSummary.detail_eligible_vessel_count ?? displayVesselCount) || 0;
+  const totalVessels = Number(dashboardSummary?.kpis?.total_vessels ?? dashboardSummary?.all_vessels_count ?? totalDetectedVessels) || 0;
   const salesTargetCount = Number(dashboardSummary?.kpis?.sales_target_count ?? dashboardSummary?.sales_target_count ?? salesCandidates.length) || 0;
   const salesActions = compactItems(salesActionsPayload);
   const salesActionsCount = salesActions.length;
@@ -6958,23 +7134,31 @@ function buildVesselCountReconciliation({
   const monitorCount = Number(dashboardSummary?.kpis?.monitor_count ?? dashboardSummary?.monitor_count ?? targetCategorySummary?.kpis?.monitor_count ?? 0) || 0;
   const monitorCandidateCount = Number(dashboardSummary?.monitor_candidate_count ?? targetSplitCounts.monitor_candidate ?? 0) || 0;
   const excludedCount = Number(dashboardSummary?.non_target_count ?? targetSplitCounts.non_target ?? Math.max(0, totalVessels - salesTargetCount - monitorCandidateCount)) || 0;
-  const duplicateRemovedCount = Math.max(0, normalizedRowCount - displayVesselCount);
-  const gt5000PlusCount = (Array.isArray(normalizedRows) ? normalizedRows : []).filter(record => {
-    const gt = firstFiniteNumber(
-      record?.gt,
-      record?.grtg,
-      record?.intrlGrtg,
-      record?.gross_tonnage,
-      record?.grossTonnage,
-      record?.vessel_display?.gt
-    );
-    return gt !== null && gt >= 5000;
-  }).length;
-  const salesTargetRatio = totalVessels ? Math.round((salesTargetCount / totalVessels) * 1000) / 10 : 0;
-  const displayCoverageRatio = normalizedRowCount ? Math.round((displayVesselCount / normalizedRowCount) * 1000) / 10 : 0;
+  const duplicateRemovedCount = Math.max(0, normalizedRowCount - uniqueVesselCount);
+  const salesTargetRatio = totalDetectedVessels ? Math.round((salesTargetCount / totalDetectedVessels) * 1000) / 10 : 0;
+  const detailCoverageRatio = totalDetectedVessels ? Math.round((detailEligibleVesselCount / totalDetectedVessels) * 1000) / 10 : 0;
+  const counts = {
+    raw_rows_collected: rawRowCount,
+    total_detected_vessels: totalDetectedVessels,
+    unique_vessel_count: uniqueVesselCount,
+    gt_known_count: gtKnownCount,
+    gt_5000_plus_count: gt5000PlusCount,
+    gt_below_5000_count: gtBelow5000Count,
+    gt_unknown_count: gtUnknownCount,
+    detail_eligible_vessel_count: detailEligibleVesselCount,
+    sales_target_count: salesTargetCount,
+    contact_now_count: contactNowCount,
+    monitor_count: monitorCount
+  };
+  const explanation = {
+    total_detected_vessels: "5천GT 미만과 GT 미확인 선박까지 포함한 전체 감지 선박 수입니다.",
+    detail_eligible_vessel_count: "상세 영업 분석 대상으로 기본 표시되는 5천GT 이상 선박 수입니다. 명시적 예외 신호가 있는 선박도 포함될 수 있습니다.",
+    gt_below_5000_count: "전체 항만 활동에는 포함하지만 상세 영업 분석에서는 기본 제외하는 5천GT 미만 선박 수입니다.",
+    gt_unknown_count: "GT가 없어 0으로 취급하지 않고 별도 분리한 선박 수입니다."
+  };
   const countExplanations = [
     {
-      field: "raw_rows",
+      field: "raw_rows_collected",
       value: rawRowCount,
       explanation: "외부/수집 원천에서 들어온 원시 행 수입니다. 같은 선박의 반복 관측이나 항만 이벤트가 포함될 수 있습니다."
     },
@@ -6984,14 +7168,14 @@ function buildVesselCountReconciliation({
       explanation: "원시 행을 선박/항만 기준으로 정규화한 뒤의 행 수입니다. 아직 동일 선박 중복 관측이 남아 있을 수 있습니다."
     },
     {
-      field: "total_vessels",
-      value: totalVessels,
-      explanation: "대시보드 KPI의 전체 선박 기준입니다. 현재 업데이트 런의 정규화 선박 모집단을 나타냅니다."
+      field: "total_detected_vessels",
+      value: totalDetectedVessels,
+      explanation: explanation.total_detected_vessels
     },
     {
-      field: "display_vessel_count",
-      value: displayVesselCount,
-      explanation: "전체 선박 페이지에서 접근 가능한 dedupe 후 표시 선박 수입니다. IMO/MMSI/콜사인+선명 등 동일성 기준으로 중복이 제거됩니다."
+      field: "detail_eligible_vessel_count",
+      value: detailEligibleVesselCount,
+      explanation: explanation.detail_eligible_vessel_count
     },
     {
       field: "duplicate_removed_count",
@@ -7002,6 +7186,16 @@ function buildVesselCountReconciliation({
       field: "gt_5000_plus_count",
       value: gt5000PlusCount,
       explanation: "GT 5,000 이상으로 확인된 상업적 규모 후보 수입니다. GT가 없는 선박은 이 값에 포함하지 않습니다."
+    },
+    {
+      field: "gt_below_5000_count",
+      value: gtBelow5000Count,
+      explanation: explanation.gt_below_5000_count
+    },
+    {
+      field: "gt_unknown_count",
+      value: gtUnknownCount,
+      explanation: explanation.gt_unknown_count
     },
     {
       field: "sales_target_count",
@@ -7036,11 +7230,20 @@ function buildVesselCountReconciliation({
     source_table: "vessel_snapshots",
     record_count: totalVessels,
     item_count: 0,
+    counts,
+    explanation,
     raw_rows: rawRowCount,
+    raw_rows_collected: rawRowCount,
     normalized_rows: normalizedRowCount,
+    total_detected_vessels: totalDetectedVessels,
+    unique_vessel_count: uniqueVesselCount,
     total_vessels: totalVessels,
     display_vessel_count: displayVesselCount,
+    gt_known_count: gtKnownCount,
     gt_5000_plus_count: gt5000PlusCount,
+    gt_below_5000_count: gtBelow5000Count,
+    gt_unknown_count: gtUnknownCount,
+    detail_eligible_vessel_count: detailEligibleVesselCount,
     sales_target_count: salesTargetCount,
     sales_actions_count: salesActionsCount,
     contact_now_count: contactNowCount,
@@ -7051,14 +7254,68 @@ function buildVesselCountReconciliation({
     count_deltas: {
       raw_to_normalized_delta: rawRowCount - normalizedRowCount,
       normalized_to_display_delta: duplicateRemovedCount,
-      display_to_sales_target_delta: displayVesselCount - salesTargetCount,
+      detected_to_detail_eligible_delta: totalDetectedVessels - detailEligibleVesselCount,
+      detail_eligible_to_sales_target_delta: detailEligibleVesselCount - salesTargetCount,
       sales_actions_to_sales_target_delta: salesActionsCount - salesTargetCount
     },
     ratios: {
-      display_coverage_pct: displayCoverageRatio,
+      detail_eligible_coverage_pct: detailCoverageRatio,
       sales_target_ratio_pct: salesTargetRatio
     },
     count_explanations: countExplanations,
+    items: []
+  };
+}
+
+function topPortCounts(records = [], limit = 8) {
+  const counts = new Map();
+  for (const record of records) {
+    const port = normalizedPortObject(record).display_name || "미확인 항만";
+    counts.set(port, (counts.get(port) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([port_name, count]) => ({ port_name, count }))
+    .sort((a, b) => b.count - a.count || a.port_name.localeCompare(b.port_name))
+    .slice(0, limit);
+}
+
+function buildExcludedVesselSummaryPayload({
+  records = [],
+  detailSummary = {},
+  generatedAt = new Date().toISOString(),
+  dataMode = "live"
+} = {}) {
+  const sourceRows = Array.isArray(records) ? records : [];
+  const excluded = sourceRows.filter(record => !detailEligibility(record).detail_eligible);
+  const below5000 = excluded.filter(record => {
+    const summary = record.tonnage_summary || buildTonnageSummary(record);
+    return summary.size_class === "BELOW_COMMERCIAL_MIN";
+  });
+  const unknownGt = excluded.filter(record => {
+    const summary = record.tonnage_summary || buildTonnageSummary(record);
+    return summary.size_class === "UNKNOWN";
+  });
+  const excludedByReason = {};
+  for (const record of excluded) {
+    const reason = detailEligibility(record).detail_exclusion_reason || "상세 분석 기본 대상 제외";
+    excludedByReason[reason] = (excludedByReason[reason] || 0) + 1;
+  }
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode),
+    source_table: "vessel_snapshots",
+    record_count: excluded.length,
+    item_count: 0,
+    total_detected_vessels: detailSummary.total_detected_vessels ?? sourceRows.length,
+    detail_eligible_vessel_count: detailSummary.detail_eligible_vessel_count ?? sourceRows.length - excluded.length,
+    gt_below_5000_count: detailSummary.gt_below_5000_count ?? below5000.length,
+    gt_unknown_count: detailSummary.gt_unknown_count ?? unknownGt.length,
+    excluded_gt_below_5000_count: below5000.length,
+    excluded_gt_unknown_count: unknownGt.length,
+    excluded_by_reason: excludedByReason,
+    top_ports_for_below_5000: topPortCounts(below5000),
+    top_ports_for_gt_unknown: topPortCounts(unknownGt),
     items: []
   };
 }
@@ -7169,6 +7426,11 @@ function buildBootstrapSnapshot({
   }));
   const kpis = {
     total_vessels: Number(dashboardSummary.total_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
+    total_detected_vessels: Number(dashboardSummary.total_detected_vessels || report.total_detected_vessels || dashboardSummary.all_vessels_count || report.all_collected_vessel_count || 0),
+    detail_eligible_vessel_count: Number(dashboardSummary.detail_eligible_vessel_count || report.detail_eligible_vessel_count || 0),
+    gt_5000_plus_count: Number(dashboardSummary.gt_5000_plus_count || report.gt_5000_plus_count || 0),
+    gt_below_5000_count: Number(dashboardSummary.gt_below_5000_count || report.gt_below_5000_count || 0),
+    gt_unknown_count: Number(dashboardSummary.gt_unknown_count || report.gt_unknown_count || 0),
     sales_target_count: Number(dashboardSummary.sales_target_count || 0),
     immediate_target_count: Number(dashboardSummary.immediate_target_count || 0),
     hot_count: topItems.filter(item => String(item.priority_label || item.sales_priority_band || "").toUpperCase() === "HOT").length,
@@ -7200,6 +7462,15 @@ function buildBootstrapSnapshot({
     fallback_used: Boolean(report.fallback_used || dashboardSummary.fallback_used),
     record_count: Number(dashboardSummary.record_count || report.record_count || dashboardSummary.all_vessels_count || 0),
     kpis,
+    kpi_labels_ko: {
+      total_detected_vessels: "전체 감지 선박",
+      detail_eligible_vessel_count: "상세 분석 대상",
+      gt_5000_plus_count: "5천GT 이상",
+      gt_below_5000_count: "5천GT 미만",
+      gt_unknown_count: "톤수 미확인",
+      sales_target_count: "영업 후보",
+      contact_now_count: "즉시 연락"
+    },
     kpi_trends: kpiTrends,
     trend_metrics: buildGrowthMetrics(kpiTrends),
     ports,
@@ -15606,8 +15877,11 @@ try {
     dataMode: baseReport.data_mode || "live"
   });
   enrichRecordsWithOceanRisk(allCollectedVessels, oceanLayer);
+  annotateDetailEligibility(allCollectedVessels);
+  const detailSummary = detailEligibilitySummary(allCollectedVessels);
+  const detailEligibleVessels = detailSummary.detail_eligible_vessels;
   const oceanRiskGeoJson = buildOceanRiskGeoJson(oceanLayer);
-  const targetVesselsRaw = allCollectedVessels.filter(v => isQualifiedSalesTarget(v));
+  const targetVesselsRaw = allCollectedVessels.filter(v => v.detail_eligible && isQualifiedSalesTarget(v));
   annotateTargetClassification(targetVesselsRaw);
   const targetVessels = targetVesselsRaw.slice(0, MAX_TARGET_VESSELS);
   const anchorageWaiting = buildAnchorageWaiting(allCollectedVessels);
@@ -15773,10 +16047,16 @@ try {
       exclude_from_main_view: ["GT under 5000", "fishing vessels", "tugs", "government vessels", "workboats", "completed departure-only rows"]
     },
     all_collected_vessel_count: allCollectedVessels.length,
+    total_detected_vessels: detailSummary.total_detected_vessels,
+    detail_eligible_vessel_count: detailSummary.detail_eligible_vessel_count,
+    gt_known_count: detailSummary.gt_known_count,
+    gt_below_5000_count: detailSummary.gt_below_5000_count,
+    gt_unknown_count: detailSummary.gt_unknown_count,
+    detail_exception_included_count: detailSummary.exception_included_count,
     raw_collected_vessel_count: collectedRows.length,
     target_vessel_count: targetVessels.length,
     target_vessel_uncapped_count: targetVesselsRaw.length,
-    gt_5000_plus_count: targetVessels.filter(v => v.gt_status === "target_vessel").length,
+    gt_5000_plus_count: detailSummary.gt_5000_plus_count,
     staying_vessel_count: stayingVessels.length,
     long_stay_risk_count: longStayRiskCount,
     anchorage_waiting_count: anchorageWaiting.length,
@@ -15984,6 +16264,14 @@ try {
     rows_written_by_table: report.rows_written_by_table,
     promotion_status: report.promotion_status,
     all_vessels_count: report?.all_collected_vessel_count || allCollectedVessels.length,
+    total_detected_vessels: report?.total_detected_vessels || detailSummary.total_detected_vessels,
+    unique_vessel_count: detailSummary.unique_vessel_count,
+    detail_eligible_vessel_count: report?.detail_eligible_vessel_count || detailSummary.detail_eligible_vessel_count,
+    gt_known_count: report?.gt_known_count || detailSummary.gt_known_count,
+    gt_5000_plus_count: report?.gt_5000_plus_count || detailSummary.gt_5000_plus_count,
+    gt_below_5000_count: report?.gt_below_5000_count || detailSummary.gt_below_5000_count,
+    gt_unknown_count: report?.gt_unknown_count || detailSummary.gt_unknown_count,
+    detail_exception_included_count: report?.detail_exception_included_count || detailSummary.exception_included_count,
     target_vessels_count: report?.target_vessel_count || targetVessels.length,
     target_count: salesCandidates.length,
     sales_target_count: salesCandidates.length,
@@ -16046,6 +16334,11 @@ try {
       collector_not_attempted: collectorNotAttempted,
       collector_not_attempted_reason: collectorNotAttemptedReason,
       all_collected_vessel_count: report?.all_collected_vessel_count || allCollectedVessels.length,
+      total_detected_vessels: report?.total_detected_vessels || detailSummary.total_detected_vessels,
+      detail_eligible_vessel_count: report?.detail_eligible_vessel_count || detailSummary.detail_eligible_vessel_count,
+      gt_5000_plus_count: report?.gt_5000_plus_count || detailSummary.gt_5000_plus_count,
+      gt_below_5000_count: report?.gt_below_5000_count || detailSummary.gt_below_5000_count,
+      gt_unknown_count: report?.gt_unknown_count || detailSummary.gt_unknown_count,
       target_vessel_count: report?.target_vessel_count || targetVessels.length,
       sales_candidate_count: salesCandidates.length,
       qualified_sales_target_count: targetSplitCounts.qualified_sales_target,
@@ -16223,10 +16516,11 @@ try {
   dashboardSummary.trend_metrics = bootstrapPayload.trend_metrics;
   dashboardSummary.port_revenue_radar = bootstrapPayload.port_revenue_radar;
   const paginatedVesselOutputs = buildPaginatedVesselOutputs({
-    records: allCollectedVessels,
+    records: detailEligibleVessels,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_json",
-    pageSize: Number(process.env.VESSEL_STATIC_PAGE_SIZE || 30)
+    pageSize: Number(process.env.VESSEL_STATIC_PAGE_SIZE || 30),
+    totalDetectedVessels: detailSummary.total_detected_vessels
   });
   const candidateChangesPayload = buildCandidateChangesPayload(snapshotOutputs.candidateChanges, completedAt);
   const candidateSummaryPayload = buildCandidateSummary(vessels);
@@ -16346,11 +16640,18 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const excludedVesselSummaryPayload = buildExcludedVesselSummaryPayload({
+    records: allCollectedVessels,
+    detailSummary,
+    generatedAt: completedAt,
+    dataMode: report.data_mode
+  });
   const vesselCountReconciliationPayload = buildVesselCountReconciliation({
     rawRows: collectedRows,
     normalizedRows: allCollectedVessels,
-    displayRows: vessels,
+    displayRows: detailEligibleVessels,
     paginatedOutputs: paginatedVesselOutputs,
+    detailSummary,
     salesCandidates,
     salesActionsPayload,
     targetSplitCounts,
@@ -16425,6 +16726,7 @@ try {
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
     "dashboard/api/vessel-count-reconciliation.json": vesselCountReconciliationPayload,
+    "dashboard/api/vessels/excluded-summary.json": excludedVesselSummaryPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
     "dashboard/api/sales/quote-opportunities.json": quoteOpportunitiesPayload,
@@ -16602,6 +16904,7 @@ try {
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/vessel-count-reconciliation.json", vesselCountReconciliationPayload, report);
+  writeApiJson("dashboard/api/vessels/excluded-summary.json", excludedVesselSummaryPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
   writeApiJson("dashboard/api/sales/quote-opportunities.json", quoteOpportunitiesPayload, report);
