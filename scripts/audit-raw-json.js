@@ -39,6 +39,24 @@ function rootType(value) {
   return typeof value;
 }
 
+function endpointRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.vessels)) return payload.vessels;
+  if (Array.isArray(payload?.candidates)) return payload.candidates;
+  if (Array.isArray(payload?.opportunities)) return payload.opportunities;
+  if (Array.isArray(payload?.contact_today)) return payload.contact_today;
+  if (Array.isArray(payload?.ports)) return payload.ports;
+  if (Array.isArray(payload?.categories)) return payload.categories;
+  if (Array.isArray(payload?.endpoints)) return payload.endpoints;
+  return [];
+}
+
+function endpointItemCount(payload) {
+  return endpointRows(payload).length;
+}
+
 function loadManifest() {
   if (!fs.existsSync(MANIFEST_PATH)) return { endpoints: [], error: "missing_manifest" };
   try {
@@ -63,6 +81,7 @@ for (const relativePath of CRITICAL_FILES) {
     root_type: "-",
     schema_version: "-",
     generated_at: "-",
+    item_count: 0,
     problem: "-"
   };
 
@@ -90,14 +109,22 @@ for (const relativePath of CRITICAL_FILES) {
     row.root_type = rootType(parsed);
     row.schema_version = parsed?.schema_version ?? "-";
     row.generated_at = parsed?.generated_at ?? "-";
+    row.item_count = endpointItemCount(parsed);
   } catch (error) {
     row.problem = `json_parse_failed:${error.message}`;
     failures.push(`${relativePath}: ${row.problem}; prefix="${row.first_200}"`);
   }
 
   const manifestEntry = manifestByPath.get(relativePath);
-  if (manifestEntry?.valid_json === true && !row.parse_ok) {
-    failures.push(`${relativePath}: endpoint-manifest valid_json=true but raw JSON.parse failed`);
+  if (!manifestEntry) {
+    failures.push(`${relativePath}: missing from endpoint-manifest`);
+  } else {
+    if (manifestEntry.valid_json !== row.parse_ok) {
+      failures.push(`${relativePath}: endpoint-manifest valid_json=${manifestEntry.valid_json} but raw_parse=${row.parse_ok}`);
+    }
+    if (row.parse_ok && Number(manifestEntry.item_count ?? 0) !== row.item_count) {
+      failures.push(`${relativePath}: endpoint-manifest item_count=${manifestEntry.item_count ?? 0} but raw_item_count=${row.item_count}`);
+    }
   }
 
   rows.push(row);
@@ -108,7 +135,7 @@ if (manifest.error) {
 }
 
 console.log("Raw JSON parse truth:");
-console.log("Path | First | Parse | Root | schema_version | generated_at | Prefix");
+console.log("Path | First | Parse | Root | schema_version | generated_at | item_count | Prefix");
 for (const row of rows) {
   console.log([
     row.path,
@@ -117,6 +144,7 @@ for (const row of rows) {
     row.root_type,
     row.schema_version,
     row.generated_at,
+    row.item_count,
     row.first_200
   ].join(" | "));
 }
