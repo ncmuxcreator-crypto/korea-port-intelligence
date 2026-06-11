@@ -2008,6 +2008,71 @@ function gtGroup(gt) {
   return "gt_unknown";
 }
 
+function tonnageSizeClass(gtValue) {
+  const gt = Number(gtValue);
+  if (!Number.isFinite(gt) || gt <= 0) return "UNKNOWN";
+  if (gt < COMMERCIAL_GT_THRESHOLD) return "BELOW_COMMERCIAL_MIN";
+  if (gt < 10000) return "SMALL_COMMERCIAL";
+  if (gt < 30000) return "MEDIUM_COMMERCIAL";
+  if (gt < 80000) return "LARGE_COMMERCIAL";
+  return "VERY_LARGE_COMMERCIAL";
+}
+
+function tonnageValue(record = {}, aliases = []) {
+  for (const alias of aliases) {
+    const value = vesselDisplayPathValue(record, alias);
+    if (value === undefined || value === null || String(value).trim() === "") continue;
+    const number = Number(String(value).replace(/,/g, ""));
+    if (Number.isFinite(number) && number > 0) return { value: number, source: alias.replace(/^vessel_display\./, "vessel_display.") };
+  }
+  return { value: null, source: "" };
+}
+
+function buildTonnageSummary(record = {}) {
+  const gt = tonnageValue(record, ["gt", "grtg", "intrlGrtg", "gross_tonnage", "grossTonnage", "vessel_display.gt"]);
+  const dwt = tonnageValue(record, ["dwt", "deadweight", "deadweight_tonnage", "vessel_display.dwt"]);
+  const sizeClass = tonnageSizeClass(gt.value);
+  const confidence = sizeClass === "UNKNOWN" ? 25 : gt.source === "vessel_display.gt" ? 65 : 90;
+  return {
+    gt: gt.value,
+    dwt: dwt.value,
+    size_class: sizeClass,
+    gt_source: gt.source || "missing",
+    dwt_source: dwt.source || "missing",
+    tonnage_confidence: confidence
+  };
+}
+
+const HIGH_GT_REASON_CODES = new Set([
+  "GT_30000_PLUS",
+  "GT_80000_PLUS",
+  "HIGH_GT_VESSEL",
+  "HIGH_VALUE_GT_30000_PLUS",
+  "HIGH_VALUE_VESSEL_TYPE",
+  "LARGE_BULK_CARRIER"
+]);
+
+function sanitizeTonnageReasonCodes(record = {}) {
+  const summary = record.tonnage_summary || buildTonnageSummary(record);
+  const codes = [...new Set([...(record.reason_codes || []), ...(record.sales_reason || [])].filter(Boolean))];
+  const filtered = codes.filter(code => {
+    if (code === "GT_BELOW_5000_NOT_COMMERCIAL_TARGET" && summary.size_class !== "BELOW_COMMERCIAL_MIN") return false;
+    if (["GT_30000_PLUS", "HIGH_VALUE_GT_30000_PLUS"].includes(code) && !(Number(summary.gt || 0) >= 30000)) return false;
+    if (code === "GT_80000_PLUS" && !(Number(summary.gt || 0) >= 80000)) return false;
+    if (summary.size_class === "BELOW_COMMERCIAL_MIN" && HIGH_GT_REASON_CODES.has(code)) return false;
+    if (summary.size_class === "UNKNOWN" && (code === "GT_BELOW_5000_NOT_COMMERCIAL_TARGET" || HIGH_GT_REASON_CODES.has(code))) return false;
+    return true;
+  });
+  if (summary.size_class === "UNKNOWN" && !filtered.includes("GT_UNKNOWN")) filtered.push("GT_UNKNOWN");
+  return [...new Set(filtered)];
+}
+
+function hasTonnageReasonConflict(record = {}) {
+  const codes = new Set([...(record.reason_codes || []), ...(record.sales_reason || []), ...(record.commercial_signal_flags || [])].filter(Boolean));
+  if (!codes.has("GT_BELOW_5000_NOT_COMMERCIAL_TARGET")) return false;
+  return ["GT_30000_PLUS", "GT_80000_PLUS", "HIGH_GT_VESSEL", "HIGH_VALUE_GT_30000_PLUS"].some(code => codes.has(code));
+}
+
 function defaultVesselTypeGroup(v = {}) {
   const text = String([v.vessel_type_group, v.vessel_type, v.vsslKndNm, v.vsslKndCd, v.ship_type, v.kind, v.commercial_segment].filter(Boolean).join(" ")).toLowerCase();
   if (/bulk|bulker|cape|ore|산물|벌크|광석/.test(text)) return "bulk_carrier";
@@ -2021,11 +2086,10 @@ function defaultVesselTypeGroup(v = {}) {
 }
 
 function commercialGtProfile(v = {}) {
+  const tonnage = buildTonnageSummary(v);
+  const gt = Number(tonnage.gt || 0);
   const grtg = Number(v.grtg || 0);
   const intrlGrtg = Number(v.intrlGrtg || 0);
-  const fallbackGt = Number(v.gt || 0);
-  const gt = Math.max(grtg, intrlGrtg, fallbackGt);
-  const gtSource = grtg > 0 ? "grtg" : intrlGrtg > 0 ? "intrlGrtg" : fallbackGt > 0 ? "gt" : "unknown";
   const gtStatus = gt >= COMMERCIAL_GT_THRESHOLD
     ? "target_vessel"
     : gt > 0
@@ -2035,8 +2099,10 @@ function commercialGtProfile(v = {}) {
     gt,
     grtg,
     intrlGrtg,
-    gt_source: gtSource,
+    gt_source: tonnage.gt_source === "missing" ? "unknown" : tonnage.gt_source,
     gt_status: gtStatus,
+    tonnage_summary: tonnage,
+    size_class: tonnage.size_class,
     meets_commercial_gt_threshold: gt >= COMMERCIAL_GT_THRESHOLD,
     target_vessel: gt >= COMMERCIAL_GT_THRESHOLD || gtStatus === "unknown_gt_review"
   };
@@ -2434,11 +2500,12 @@ function cleaningWindowOpportunityScore(record = {}) {
 function targetCommercialSignals(v = {}) {
   const score = commercialOpportunityScore(v);
   const risk = recordRiskScore(v);
-  const gt = Number(v.gt || v.grtg || v.intrlGrtg || v.gross_tonnage || 0);
+  const tonnage = buildTonnageSummary(v);
+  const gt = Number(tonnage.gt || 0);
   const typeText = String(v.vessel_type || v.vessel_type_group || v.commercial_segment || "").toLowerCase();
   const longStay = longStayRiskSignal(v);
   const cleaningWindowScore = cleaningWindowOpportunityScore(v);
-  const complianceScore = Number(v.compliance_score || v.compliance_exposure_score || 0);
+  const complianceScore = hasBiofoulingComplianceExposure(v) ? Number(v.compliance_score || v.compliance_exposure_score || 65) : 0;
   const hasHighValueVesselSignal = gt >= 30000 || /bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText);
   const signals = [];
   const add = (code, strength, reason) => signals.push({ code, strength, reason });
@@ -2452,7 +2519,7 @@ function targetCommercialSignals(v = {}) {
     (score >= 50 || risk >= 50 || cleaningWindowScore >= 50 || hasHighValueVesselSignal)) {
     add("anchorage_or_long_stay", longStay.confidence || 60, longStay.reason || "묘박/대기 또는 장기 체류 신호가 있습니다.");
   }
-  if (risk >= 65 || complianceScore >= 65 || (regulatedRouteSignal(v) && risk >= 45)) add("risk_or_compliance", Math.max(risk, complianceScore, 65), "리스크 또는 compliance 노출 신호가 있습니다.");
+  if (risk >= 65 || complianceScore >= 65 || (hasBiofoulingComplianceExposure(v) && risk >= 45)) add("risk_or_compliance", Math.max(risk, complianceScore, 65), "리스크 또는 compliance 노출 신호가 있습니다.");
   if ((gt >= 80000 && (score >= 55 || risk >= 55 || cleaningWindowScore >= 60 || longStay.detected)) ||
     (gt >= 30000 && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70)) ||
     (/bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg/.test(typeText) && (score >= 80 || risk >= 65 || cleaningWindowScore >= 70))) {
@@ -2463,6 +2530,50 @@ function targetCommercialSignals(v = {}) {
   if (canonicalOperatorValue(v) && (score >= 50 || risk >= 60 || cleaningWindowScore >= 60 || longStay.detected)) add("operator_known", 45, "운영사/회사 정보가 확인됩니다.");
   if (cleaningWindowScore >= 60) add("cleaning_window", 65, "클리닝 적기 신호가 있습니다.");
   return signals;
+}
+
+function targetSizeQualification(record = {}, signals = []) {
+  const summary = buildTonnageSummary(record);
+  const signalCodes = new Set(signals.map(signal => signal.code));
+  const strongSignals = signals.filter(signal => Number(signal.strength || 0) >= 50);
+  const typeText = String(firstNonEmpty(record.vessel_type, record.vessel_type_group, record.ship_type, record.commercial_segment)).toLowerCase();
+  const commerciallyRelevantType = /bulk|tanker|container|cargo|carrier|pctc|ro-ro|lng|lpg|general/.test(typeText) && !excludedCommercialType(record);
+  const hasCustomerHistory = Number(firstFiniteNumber(record.previous_contacts, record.previous_quotes, record.previous_wins, record.contact_count, record.quote_count, record.win_count, 0) || 0) > 0 ||
+    Boolean(firstNonEmpty(record.sales_stage, record.lead_status, record.pipeline_stage));
+  const specialVesselType = /offshore|survey|cable|dive|diving|research|special|service|cruise|passenger/.test(typeText);
+  const exceptionSignals = [];
+  if (repeatCallerVisitCount(record, 90) >= 2 || Number(record.repeat_caller_score || 0) >= 70 || signalCodes.has("repeat_korea_caller")) exceptionSignals.push("repeated_korea_caller");
+  if (hasCustomerHistory) exceptionSignals.push("customer_or_quote_history");
+  if (specialVesselType) exceptionSignals.push("special_vessel_type");
+  if (hasBiofoulingComplianceExposure(record) || Number(record.biofouling_risk_score || record.biofouling_score || record.risk_score || 0) >= 75) exceptionSignals.push("strong_compliance_or_biofouling_signal");
+  if (isWatchlistVessel(record) || record.manual_include === true || record.watchlist === true) exceptionSignals.push("manual_watchlist_inclusion");
+
+  if (summary.size_class === "UNKNOWN") {
+    const qualified = commerciallyRelevantType && strongSignals.length >= 2;
+    return {
+      target_size_qualified: qualified,
+      target_size_reason: qualified
+        ? "GT 미확인이나 상업 선종과 복수의 강한 영업 신호가 확인됩니다."
+        : "GT 미확인으로 신뢰도를 낮추고 모니터링 대상으로 분리합니다.",
+      tonnage_summary: summary
+    };
+  }
+  if (summary.size_class === "BELOW_COMMERCIAL_MIN") {
+    const qualified = exceptionSignals.length > 0;
+    return {
+      target_size_qualified: qualified,
+      target_size_reason: qualified
+        ? `5000GT 미만이나 예외 신호(${exceptionSignals.join(", ")})가 있어 후보로 유지합니다.`
+        : "5000GT 미만으로 일반 영업대상 최소 규모 기준을 충족하지 않습니다.",
+      target_size_exception_codes: exceptionSignals,
+      tonnage_summary: summary
+    };
+  }
+  return {
+    target_size_qualified: true,
+    target_size_reason: `${summary.size_class} 기준으로 5000GT 이상 상업 규모 선박입니다.`,
+    tonnage_summary: summary
+  };
 }
 
 function targetQuality(record = {}) {
@@ -2487,6 +2598,7 @@ function targetQuality(record = {}) {
     };
   }
   const signals = targetCommercialSignals(record);
+  const size = targetSizeQualification(record, signals);
   const strongSignals = signals.filter(signal => signal.strength >= 50);
   const coreCodes = new Set([
     "high_opportunity_score",
@@ -2510,6 +2622,7 @@ function targetQuality(record = {}) {
   const signalCodesPresent = new Set(signals.filter(signal => signal.strength >= 45).map(signal => signal.code));
   const commerciallyGrounded = score >= 50 || risk >= 65 || cleaningWindowScore >= 60;
   const isTarget = commerciallyGrounded &&
+    size.target_size_qualified &&
     strongCurrentContext &&
     coreSignals.length >= 1 &&
     signalCodesPresent.size >= 2 &&
@@ -2526,11 +2639,15 @@ function targetQuality(record = {}) {
     target_strength: isImmediate ? "immediate" : isTarget ? (coreSignals.length >= 3 ? "strong" : "qualified") : signals.length ? "monitor" : "low",
     target_reasons: strongSignals.map(signal => signal.reason),
     monitor_reason: !isTarget && signals.length ? signals.map(signal => signal.reason).slice(0, 2).join(" / ") : "",
-    disqualification_reason: !isTarget && !signals.length ? "no_strong_commercial_signal" : "",
+    disqualification_reason: !isTarget && !size.target_size_qualified ? size.target_size_reason : !isTarget && !signals.length ? "no_strong_commercial_signal" : "",
     target_signal_codes: signals.map(signal => signal.code),
     monitor_signal_codes: !isTarget ? signals.map(signal => signal.code) : [],
     target_core_signal_codes: coreSignals.map(signal => signal.code),
-    target_context_signal_codes: contextSignals.map(signal => signal.code)
+    target_context_signal_codes: contextSignals.map(signal => signal.code),
+    target_size_qualified: size.target_size_qualified,
+    target_size_reason: size.target_size_reason,
+    target_size_exception_codes: size.target_size_exception_codes || [],
+    tonnage_summary: size.tonnage_summary
   };
 }
 
@@ -2602,6 +2719,10 @@ function annotateTargetClassification(records = []) {
     vessel.monitor_reason = quality.monitor_reason;
     vessel.disqualification_reason = quality.disqualification_reason || vessel.disqualification_reason;
     vessel.target_signal_codes = quality.target_signal_codes;
+    vessel.target_size_qualified = quality.target_size_qualified;
+    vessel.target_size_reason = quality.target_size_reason;
+    vessel.target_size_exception_codes = quality.target_size_exception_codes;
+    vessel.tonnage_summary = quality.tonnage_summary || buildTonnageSummary(vessel);
     vessel.long_stay_reason = longStay.reason || vessel.long_stay_reason || "";
     vessel.stay_duration_source = longStay.source || vessel.stay_duration_source || "";
     vessel.long_stay_confidence = longStay.confidence || vessel.long_stay_confidence || 0;
@@ -2620,7 +2741,8 @@ function commercialExclusionReason(v = {}) {
 }
 
 function buildCommercialSignals(v = {}, metrics = {}) {
-  const gt = Number(v.gt || v.grtg || v.intrlGrtg || 0);
+  const tonnage = v.tonnage_summary || buildTonnageSummary(v);
+  const gt = Number(tonnage.gt || 0);
   const typeGroup = String(v.vessel_type_group || v.vessel_type || "").toLowerCase();
   const routeProfile = deriveRouteCommercialProfile(v);
   const routePattern = deriveRoutePattern(v, metrics, routeProfile);
@@ -2629,8 +2751,8 @@ function buildCommercialSignals(v = {}, metrics = {}) {
   const flags = [];
   if (gt >= 30000) flags.push("GT_30000_PLUS");
   if (gt >= 80000) flags.push("GT_80000_PLUS");
-  if (/bulk|bulk_carrier|tanker|pctc/.test(typeGroup)) flags.push("HIGH_VALUE_VESSEL_TYPE");
-  if (/bulk|bulk_carrier/.test(typeGroup)) flags.push("LARGE_BULK_CARRIER");
+  if (tonnage.size_class !== "BELOW_COMMERCIAL_MIN" && /bulk|bulk_carrier|tanker|pctc/.test(typeGroup)) flags.push("HIGH_VALUE_VESSEL_TYPE");
+  if (tonnage.size_class !== "BELOW_COMMERCIAL_MIN" && /bulk|bulk_carrier/.test(typeGroup)) flags.push("LARGE_BULK_CARRIER");
   if (/tanker/.test(typeGroup)) flags.push("TANKER_TARGET");
   if (/pctc/.test(typeGroup)) flags.push("PCTC_TARGET");
   if (/cruise|passenger/.test(typeGroup)) flags.push("CRUISE_TARGET");
@@ -2651,7 +2773,7 @@ function buildCommercialSignals(v = {}, metrics = {}) {
   if (predictiveSignals.biofouling_exposure_score >= 60) flags.push("BIOFOULING_EXPOSURE_HIGH");
   flags.push(...routeProfile.route_reason_codes);
   return {
-    commercial_signal_flags: [...new Set(flags)],
+    commercial_signal_flags: sanitizeTonnageReasonCodes({ ...v, tonnage_summary: tonnage, reason_codes: flags }),
     high_value_target: flags.includes("GT_30000_PLUS") && flags.includes("HIGH_VALUE_VESSEL_TYPE"),
     congestion_exposed_target: flags.includes("ANCHORAGE_WAITING_CLASSIFIED") || flags.includes("CONGESTION_EXPOSED"),
     route_region: routeProfile.route_region,
@@ -3944,6 +4066,7 @@ function enrichSalesSignals(records) {
       data_quality_tier: dataQualityTier({ ...v, ...scheduleMetrics }),
       compliance_band: complianceWatch ? "biosecurity_watch" : "standard",
       commercial_size_qualified: gtProfile.meets_commercial_gt_threshold,
+      tonnage_summary: gtProfile.tonnage_summary,
       biofouling_compliance_exposure: complianceExposure,
       compliance_exposure: complianceExposure,
       compliance_exposure_jurisdiction: complianceExposure.jurisdiction || "",
@@ -3994,16 +4117,19 @@ function enrichSalesSignals(records) {
       enriched.is_operating_immediate_candidate = enriched.is_immediate_candidate;
       enriched.cleaning_candidate_score = enriched.total_sales_priority_score;
       if (!isMainCommercialVessel(enriched) || !enriched.meets_commercial_gt_threshold) {
-        const gtReason = enriched.gt_status === "unknown_gt_review"
+        const tonnage = enriched.tonnage_summary || buildTonnageSummary(enriched);
+        const gtReason = tonnage.size_class === "UNKNOWN" || enriched.gt_status === "unknown_gt_review"
           ? "GT_UNKNOWN_NEEDS_VESSEL_SPEC_ENRICHMENT"
           : enriched.commercial_relevance_status === "excluded_non_commercial_type"
             ? "NON_COMMERCIAL_VESSEL_TYPE_EXCLUDED"
             : enriched.commercial_relevance_status === "excluded_departure_only"
               ? "COMPLETED_DEPARTURE_ONLY_EXCLUDED"
-              : "GT_BELOW_5000_NOT_COMMERCIAL_TARGET";
+              : tonnage.size_class === "BELOW_COMMERCIAL_MIN"
+                ? "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
+                : "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT";
         enriched.reason_codes = [...new Set([...(enriched.reason_codes || []), gtReason])];
         enriched.sales_reason = enriched.reason_codes;
-        enriched.sales_priority_band = "monitor";
+      enriched.sales_priority_band = "monitor";
       }
     }
     Object.assign(enriched, deriveOperationalRisk(enriched, scheduleMetrics, biofoulingScore));
@@ -4025,6 +4151,8 @@ function enrichSalesSignals(records) {
       enriched.reason_codes = [...new Set([...(enriched.reason_codes || []), ...enriched.commercial_signal_flags])];
       enriched.sales_reason = enriched.reason_codes;
     }
+    enriched.reason_codes = sanitizeTonnageReasonCodes(enriched);
+    enriched.sales_reason = enriched.reason_codes;
     enriched.operator_fleet_badges = deriveFleetBadges(enriched);
     Object.assign(enriched, deriveLeadPipelineFields(enriched, scheduleMetrics));
     enriched.recommended_action = enriched.recommended_next_action || enriched.recommended_action || enriched.candidate_next_action || recommendedAction(enriched);
@@ -5064,33 +5192,39 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
   ]);
   const items = actionItems
     .filter(item => item.primary_category_code !== "HOLD")
-    .map((item, index) => ({
-      rank: index + 1,
-      vessel_display: buildVesselDisplay(item),
-      vessel_name: item.vessel_name,
-      imo: item.imo || "",
-      port: normalizedPortObject(item).display_name,
-      port_name: normalizedPortObject(item).display_name,
-      normalized_port: normalizedPortObject(item),
-      action_type: item.actionability_category || item.primary_category_code,
-      action_label: item.actionability_label || businessLabelForCode(item.primary_category_code) || item.primary_category_label,
-      category_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
-      korean_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
-      actionability_category: item.actionability_category,
-      actionability_label: item.actionability_label,
-      actionability_score: item.actionability_score,
-      actionability_reason: item.actionability_reason,
-      missing_action_fields: item.missing_action_fields || [],
-      priority_label: item.priority_label,
-      opportunity_score: item.opportunity_score,
-      risk_score: item.risk_score,
-      confidence_score: item.confidence_score,
-      reason_summary: item.actionability_reason || item.primary_category?.reason || item.reason_summary || item.why_now || "",
-      recommended_action: item.actionability_category === "VERIFY_CONTACT"
-        ? "선사/에이전트 확인 후 영업 연락 준비"
-        : item.primary_category?.recommended_action || item.recommended_action || "영업 연락 가능 여부 확인",
-      target_categories: item.target_categories || []
-    }));
+    .map((item, index) => {
+      const display = buildVesselDisplay(item);
+      return {
+        rank: index + 1,
+        vessel_display: display,
+        vessel_name: item.vessel_name,
+        imo: item.imo || "",
+        port: normalizedPortObject(item).display_name,
+        port_name: normalizedPortObject(item).display_name,
+        normalized_port: normalizedPortObject(item),
+        tonnage_summary: display.tonnage_summary,
+        target_size_qualified: display.target_size_qualified,
+        target_size_reason: display.target_size_reason,
+        action_type: item.actionability_category || item.primary_category_code,
+        action_label: item.actionability_label || businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+        category_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+        korean_label: businessLabelForCode(item.primary_category_code) || item.primary_category_label,
+        actionability_category: item.actionability_category,
+        actionability_label: item.actionability_label,
+        actionability_score: item.actionability_score,
+        actionability_reason: item.actionability_reason,
+        missing_action_fields: item.missing_action_fields || [],
+        priority_label: item.priority_label,
+        opportunity_score: item.opportunity_score,
+        risk_score: item.risk_score,
+        confidence_score: item.confidence_score,
+        reason_summary: item.actionability_reason || item.primary_category?.reason || item.reason_summary || item.why_now || "",
+        recommended_action: item.actionability_category === "VERIFY_CONTACT"
+          ? "선사/에이전트 확인 후 영업 연락 준비"
+          : item.primary_category?.recommended_action || item.recommended_action || "영업 연락 가능 여부 확인",
+        target_categories: item.target_categories || []
+      };
+    });
   return publicItemsEnvelope({
     generatedAt,
     dataMode,
@@ -5843,6 +5977,16 @@ function buildVesselDisplay(record = {}) {
   const reasonSummary = vesselDisplayReasonSummary(record);
   const recommendedAction = vesselDisplayRecommendedAction(record);
   const priorityLabel = displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0)));
+  const baseTonnageSummary = record.tonnage_summary || buildTonnageSummary(record);
+  const tonnageSummary = baseTonnageSummary.gt === null && gtFromReason
+    ? {
+      ...baseTonnageSummary,
+      gt: gtFromReason,
+      size_class: tonnageSizeClass(gtFromReason),
+      gt_source: "reason_summary",
+      tonnage_confidence: Math.max(Number(baseTonnageSummary.tonnage_confidence || 0), 55)
+    }
+    : baseTonnageSummary;
   return {
     vessel_name: vesselDisplayText(source, ["vessel_name", "name", "ship_name", "vsslNm", "vessel_display.vessel_name"], "선명 확인 필요"),
     imo: vesselDisplayText(source, ["imo", "imo_no", "imoNo", "vessel_imo", "recovered_imo", "vessel_display.imo"]),
@@ -5850,8 +5994,11 @@ function buildVesselDisplay(record = {}) {
     call_sign: vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn", "vsslCallSgn", "vessel_display.call_sign"]),
     flag: vesselDisplayText(source, ["flag", "vsslNltyNm", "vsslNltyCd", "nationality", "country", "vessel_display.flag"]),
     vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_type_group", "commercial_segment", "vessel_display.vessel_type"]),
-    gt: positiveDisplayNumber(source, ["gt", "grtg", "intrlGrtg", "gross_tonnage", "grossTonnage", "vessel_display.gt"], gtFromReason),
-    dwt: positiveDisplayNumber(source, ["dwt", "deadweight", "deadweight_tonnage", "vessel_display.dwt"]),
+    gt: tonnageSummary.gt,
+    dwt: tonnageSummary.dwt,
+    tonnage_summary: tonnageSummary,
+    target_size_qualified: record.target_size_qualified ?? null,
+    target_size_reason: record.target_size_reason || "",
     operator: displayText(operatorDisplay),
     operator_display: displayText(operatorDisplay),
     operator_source: displayText(firstDisplayText(record.operator_source, vesselDisplayOperatorSource(record))),
@@ -5972,6 +6119,10 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "vessel_type_group",
   "gt",
   "dwt",
+  "tonnage_summary",
+  "target_size_qualified",
+  "target_size_reason",
+  "target_size_exception_codes",
   "flag",
   "vsslNltyNm",
   "vsslNltyCd",
@@ -6593,6 +6744,9 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
     port_name: normalizedPort.display_name,
     port_display_name: normalizedPort.display_name,
     normalized_port: normalizedPort,
+    tonnage_summary: display.tonnage_summary,
+    target_size_qualified: display.target_size_qualified,
+    target_size_reason: display.target_size_reason,
     opportunity_score: firstFiniteNumber(item.opportunity_score, item.sales_priority_score, item.commercial_value_score, display.opportunity_score, 0),
     risk_score: firstFiniteNumber(item.risk_score, item.biofouling_exposure_score, item.biofouling_score, display.risk_score, 0),
     confidence_score: firstFiniteNumber(item.confidence_score, item.data_confidence_score, display.confidence_score, 0),
@@ -6985,6 +7139,10 @@ function compactVesselInsight(record = {}, index = 0, extra = {}) {
     record.operational_risk_score
   );
   const complianceExposure = biofoulingComplianceExposure(record);
+  const tonnageSummary = record.tonnage_summary || buildTonnageSummary(record);
+  const targetSize = record.target_size_reason
+    ? { target_size_qualified: record.target_size_qualified, target_size_reason: record.target_size_reason }
+    : targetSizeQualification(record, targetCommercialSignals(record));
   return {
     rank: index + 1,
     vessel_name: firstNonEmpty(record.vessel_name, record.name, record.ship_name, "선명 확인 필요"),
@@ -6996,6 +7154,9 @@ function compactVesselInsight(record = {}, index = 0, extra = {}) {
     reason_summary: compactReasonSummary(record),
     top_factors: compactInsightFactors(record),
     recommended_action: compactRecommendedAction(record),
+    tonnage_summary: tonnageSummary,
+    target_size_qualified: targetSize.target_size_qualified ?? null,
+    target_size_reason: targetSize.target_size_reason || "",
     commercial_size_qualified: commercialSizeQualified(record),
     biofouling_compliance_exposure: complianceExposure,
     compliance_exposure: complianceExposure,
@@ -9680,6 +9841,9 @@ function buildQuoteOpportunitiesPayload({
         rank: index + 1,
         vessel_display: display,
         commercial_size_qualified: commercialSizeQualified(record),
+        tonnage_summary: display.tonnage_summary,
+        target_size_qualified: display.target_size_qualified,
+        target_size_reason: display.target_size_reason,
         biofouling_compliance_exposure: complianceExposure,
         compliance_exposure: complianceExposure,
         quote_readiness_score: readinessScore,
@@ -12699,6 +12863,9 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
         opportunity_score: opportunityScore,
         risk_score: riskScore,
         compliance_score: complianceScore,
+        tonnage_summary: display.tonnage_summary,
+        target_size_qualified: display.target_size_qualified,
+        target_size_reason: display.target_size_reason,
         commercial_size_qualified: commercialSizeQualified(record),
         biofouling_compliance_exposure: biofoulingComplianceExposure(record),
         compliance_exposure: biofoulingComplianceExposure(record),
