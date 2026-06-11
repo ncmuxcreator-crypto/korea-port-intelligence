@@ -28,6 +28,7 @@ const IMPORTANT_ENDPOINTS = [
   ["targets.categories", "dashboard/api/targets/categories.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
+  ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
@@ -46,7 +47,8 @@ const CRITICAL_ENDPOINTS = new Set([
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/watchlist/current.json",
   "dashboard/api/vessels/index.json",
-  "dashboard/api/vessels/page-1.json"
+  "dashboard/api/vessels/page-1.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ]);
 
 const WRAPPER_PATTERNS = [
@@ -94,6 +96,17 @@ function rows(payload) {
 
 function itemCount(payload) {
   return rows(payload).length;
+}
+
+function firstJsonCharacter(text = "") {
+  const match = String(text || "").replace(/^\uFEFF/, "").match(/\S/);
+  return match ? match[0] : "";
+}
+
+function rootType(payload) {
+  if (Array.isArray(payload)) return "array";
+  if (payload === null) return "null";
+  return typeof payload;
 }
 
 function recordCount(payload) {
@@ -198,12 +211,20 @@ function writeJsonAtomically(filePath, payload) {
 function auditFile(relativePath) {
   const filePath = path.join(ROOT, ...relativePath.split("/"));
   if (!fs.existsSync(filePath)) {
-  return { endpoint: relativePath, path: relativePath, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file missing", bytes: 0 };
+  return { endpoint: relativePath, path: relativePath, exists: false, first_char: "", root_type: "missing", parsed_from_disk: true, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file missing", bytes: 0 };
   }
   const bytes = fs.statSync(filePath).size;
   const text = fs.readFileSync(filePath, "utf8");
   try {
+    const firstChar = firstJsonCharacter(text);
+    if (firstChar !== "{") {
+      throw new Error(`dashboard endpoint must start with object root; first_char=${firstChar || "empty"}`);
+    }
     const payload = JSON.parse(text);
+    const root = rootType(payload);
+    if (root !== "object") {
+      throw new Error(`dashboard endpoint root object required; root_type=${root}`);
+    }
     const undefinedLike = findUndefinedLike(payload);
     const schemaProblem = validateSchema(relativePath, payload);
     const schemaValid = !schemaProblem && !undefinedLike.length;
@@ -232,6 +253,9 @@ function auditFile(relativePath) {
       endpoint: relativePath,
       path: relativePath,
       exists: true,
+      first_char: firstChar,
+      root_type: root,
+      parsed_from_disk: true,
       valid_json: true,
       schema_valid: schemaValid,
       record_count: count,
@@ -246,6 +270,9 @@ function auditFile(relativePath) {
       endpoint: relativePath,
       path: relativePath,
       exists: true,
+      first_char: firstJsonCharacter(text) || "",
+      root_type: "invalid",
+      parsed_from_disk: true,
       valid_json: false,
       schema_valid: false,
       record_count: 0,
@@ -280,6 +307,9 @@ function writeManifest(entries) {
       key,
       path: relativePath,
       exists: entry.exists,
+      first_char: entry.first_char || "",
+      root_type: entry.root_type || (entry.exists ? "unknown" : "missing"),
+      parsed_from_disk: true,
       valid_json: entry.valid_json,
       schema_valid: entry.schema_valid,
       record_count: entry.record_count,

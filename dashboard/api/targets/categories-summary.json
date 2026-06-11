@@ -1,16 +1,16 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T06:05:30.924Z",
+  "generated_at": "2026-06-11T07:07:39.732Z",
   "data_mode": "live",
-  "record_count": 29,
+  "record_count": 32,
   "item_count": 10,
   "summary_item_count": 32,
   "source_table": "sales_candidates_current,opportunity_master,risk_history,rule_evaluations,explainability_snapshots,agent-followup-queue,arrival-pipeline,anchorage-waiting,staying-vessels",
   "detail_endpoint": "dashboard/api/targets/categories.json",
   "actionability_counts": {
-    "CONTACT_NOW": 32,
-    "VERIFY_CONTACT": 25,
-    "MONITOR": 1,
+    "CONTACT_NOW": 34,
+    "VERIFY_CONTACT": 24,
+    "MONITOR": 2,
     "HOLD": 0
   },
   "categories": [
@@ -20,7 +20,7 @@
       "korean_label": "즉시 연락",
       "category_label": "즉시 연락",
       "short_label": "즉시 연락",
-      "count": 29,
+      "count": 32,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -232,7 +232,7 @@
       "korean_label": "입항 전 선제 연락",
       "category_label": "입항 전 선제 연락",
       "short_label": "입항 전",
-      "count": 28,
+      "count": 31,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -444,7 +444,7 @@
       "korean_label": "묘박/정박 작업 가능",
       "category_label": "묘박/정박 작업 가능",
       "short_label": "묘박/정박",
-      "count": 19,
+      "count": 21,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -570,6 +570,46 @@
         },
         {
           "rank": 4,
+          "vessel_name": "WASHINGTON",
+          "imo": "",
+          "mmsi": "",
+          "call_sign": "KLBO",
+          "operator_display": "허브에이젠시(주)",
+          "current_port": "대산",
+          "current_port_korean": "대산",
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "Daesan",
+            "raw_aliases": [
+              "Daesan",
+              "VALDEZ",
+              "대산항",
+              "대산"
+            ]
+          },
+          "priority_label": "WARM",
+          "actionability_category": "CONTACT_NOW",
+          "actionability_label": "즉시 연락",
+          "opportunity_score": 65,
+          "risk_score": 45,
+          "confidence_score": 35,
+          "missing_fields": [
+            "contact_person",
+            "imo",
+            "mmsi"
+          ],
+          "known_company": "허브에이젠시(주)",
+          "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
+          "recommended_action": "운영선사 확인",
+          "port_code": "621",
+          "port_name": "대산",
+          "port_display_name": "대산",
+          "display_name": "대산"
+        },
+        {
+          "rank": 5,
           "vessel_name": "FLORA MARIS",
           "imo": "",
           "mmsi": "",
@@ -607,45 +647,6 @@
           "port_name": "여수",
           "port_display_name": "여수",
           "display_name": "여수"
-        },
-        {
-          "rank": 5,
-          "vessel_name": "KRUGER",
-          "imo": "",
-          "mmsi": "",
-          "call_sign": "3X2065",
-          "operator_display": "케이앤제이오션(주)",
-          "current_port": "부산",
-          "current_port_korean": "부산",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "Busan",
-            "raw_aliases": [
-              "Busan",
-              "부산항",
-              "부산"
-            ]
-          },
-          "priority_label": "WARM",
-          "actionability_category": "CONTACT_NOW",
-          "actionability_label": "즉시 연락",
-          "opportunity_score": 65,
-          "risk_score": 50,
-          "confidence_score": 35,
-          "missing_fields": [
-            "contact_person",
-            "imo",
-            "mmsi"
-          ],
-          "known_company": "케이앤제이오션(주)",
-          "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-          "recommended_action": "운영선사 확인",
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
         }
       ]
     },
@@ -655,7 +656,7 @@
       "korean_label": "장기 체류 위험",
       "category_label": "장기 체류 위험",
       "short_label": "장기 체류",
-      "count": 316,
+      "count": 317,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -869,9 +870,9 @@
       "korean_label": "Compliance 대상",
       "category_label": "Compliance 대상",
       "short_label": "Compliance",
-      "count": 5,
+      "count": 6,
       "returned_count": 5,
-      "items_limited": false,
+      "items_limited": true,
       "items": [
         {
           "rank": 1,
@@ -1035,43 +1036,43 @@
         },
         {
           "rank": 5,
-          "vessel_name": "GELBRAY EXPRESS",
+          "vessel_name": "MEDI POSITANO",
           "imo": "",
           "mmsi": "",
-          "call_sign": "CQ2021",
-          "operator_display": "세화해운 주식회사",
-          "current_port": "부산",
-          "current_port_korean": "부산",
+          "call_sign": "5LRD7",
+          "operator_display": "(유)조영해운",
+          "current_port": "여수",
+          "current_port_korean": "여수",
           "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "Busan",
+            "port_code": "620",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "Yeosu",
             "raw_aliases": [
-              "Busan",
-              "DARWIN",
-              "부산항",
-              "부산"
+              "Yeosu",
+              "NEWCASTLE",
+              "여수·광양항",
+              "여수"
             ]
           },
           "priority_label": "LOW",
           "actionability_category": "CONTACT_NOW",
           "actionability_label": "즉시 연락",
-          "opportunity_score": 71,
-          "risk_score": 89,
+          "opportunity_score": 59,
+          "risk_score": 54,
           "confidence_score": 35,
           "missing_fields": [
             "contact_person",
             "imo",
             "mmsi"
           ],
-          "known_company": "세화해운 주식회사",
+          "known_company": "(유)조영해운",
           "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
           "recommended_action": "운영선사 확인",
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
+          "port_code": "620",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
         }
       ]
     },
@@ -1081,7 +1082,7 @@
       "korean_label": "반복 입항",
       "category_label": "반복 입항",
       "short_label": "반복 입항",
-      "count": 29,
+      "count": 32,
       "returned_count": 5,
       "items_limited": true,
       "items": [
@@ -1417,31 +1418,31 @@
     {
       "severity": "INFO",
       "feature": "즉시 연락",
-      "message": "상세 29건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 32건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {
       "severity": "INFO",
       "feature": "입항 전 선제 연락",
-      "message": "상세 28건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 31건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {
       "severity": "INFO",
       "feature": "묘박/정박 작업 가능",
-      "message": "상세 19건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 21건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {
       "severity": "INFO",
       "feature": "장기 체류 위험",
-      "message": "상세 316건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 317건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     },
     {
       "severity": "INFO",
-      "feature": "반복 입항",
-      "message": "상세 29건 중 상위 5건만 요약 파일에 포함",
+      "feature": "Compliance 대상",
+      "message": "상세 6건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "상세 목록은 categories.json lazy load 사용"
     }
   ]

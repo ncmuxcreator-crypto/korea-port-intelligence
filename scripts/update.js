@@ -58,7 +58,8 @@ const PROTECTED_DASHBOARD_JSON_OUTPUTS = new Set([
   "dashboard/api/bootstrap.json",
   "dashboard/api/dashboard-summary.json",
   "dashboard/api/status.json",
-  "dashboard/api/endpoint-manifest.json"
+  "dashboard/api/endpoint-manifest.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ]);
 const CRITICAL_DASHBOARD_JSON_OUTPUTS = new Set([
   "dashboard/api/bootstrap.json",
@@ -68,7 +69,8 @@ const CRITICAL_DASHBOARD_JSON_OUTPUTS = new Set([
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/watchlist/current.json",
   "dashboard/api/vessels/index.json",
-  "dashboard/api/vessels/page-1.json"
+  "dashboard/api/vessels/page-1.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ]);
 
 function envPresent(name) {
@@ -3108,19 +3110,43 @@ function writeParsedJsonTextAtomically(filePath, body) {
   ensureParentDir(normalized);
   parseDashboardJsonDocument(normalized, body);
   const tempPath = `${normalized}.tmp-${process.pid}-${Date.now()}`;
+  const previousValidBody = fs.existsSync(normalized) && existingDashboardJsonIsValid(normalized)
+    ? fs.readFileSync(normalized, "utf8")
+    : null;
   try {
     fs.writeFileSync(tempPath, body, "utf8");
     parseDashboardJsonDocument(normalized, fs.readFileSync(tempPath, "utf8"));
     fs.renameSync(tempPath, normalized);
+    validateFinalDashboardJsonFile(normalized);
   } catch (error) {
     try {
       if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
     } catch {
       // Best effort cleanup only.
     }
+    if (previousValidBody) {
+      try {
+        fs.writeFileSync(normalized, previousValidBody, "utf8");
+        validateFinalDashboardJsonFile(normalized);
+      } catch {
+        // Surface the original write failure to the caller.
+      }
+    } else if (fs.existsSync(normalized) && !existingDashboardJsonIsValid(normalized)) {
+      quarantineInvalidDashboardJson(normalized);
+    }
     throw error;
   }
   return normalized;
+}
+
+function validateFinalDashboardJsonFile(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  const parsed = parseDashboardJsonDocument(normalized, fs.readFileSync(normalized, "utf8"));
+  if (isCriticalDashboardJsonPath(normalized)) {
+    const schemaProblem = schemaProblemForEndpoint(normalized, parsed);
+    if (schemaProblem) throw new Error(`critical_endpoint_schema_invalid_after_write:${schemaProblem}`);
+  }
+  return parsed;
 }
 
 function existingDashboardJsonIsValid(filePath) {
@@ -3461,6 +3487,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["targets.categories", "dashboard/api/targets/categories.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
+  ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
@@ -3505,11 +3532,13 @@ function endpointManifestEntry(key, relativePath) {
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
   if (!exists) {
-    return { key, path: normalized, exists: false, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
+    return { key, path: normalized, exists: false, first_char: "", root_type: "missing", parsed_from_disk: true, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
+    const firstChar = firstJsonCharacter(text);
     const payload = parseDashboardJsonDocument(normalized, text);
+    const rootType = dashboardJsonRootType(payload);
     const schemaProblem = schemaProblemForEndpoint(normalized, payload);
     const count = rowCountFromPayload(payload);
     const itemCount = endpointItemCount(payload) ?? 0;
@@ -3520,6 +3549,9 @@ function endpointManifestEntry(key, relativePath) {
       key,
       path: normalized,
       exists: true,
+      first_char: firstChar,
+      root_type: rootType,
+      parsed_from_disk: true,
       valid_json: true,
       schema_valid: schemaValid,
       record_count: count,
@@ -3534,6 +3566,9 @@ function endpointManifestEntry(key, relativePath) {
       key,
       path: normalized,
       exists: true,
+      first_char: firstJsonCharacter(fs.readFileSync(fullPath, "utf8")) || "",
+      root_type: "invalid",
+      parsed_from_disk: true,
       valid_json: false,
       schema_valid: false,
       record_count: 0,

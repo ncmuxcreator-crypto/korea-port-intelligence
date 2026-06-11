@@ -256,7 +256,8 @@ const criticalDashboardEndpoints = new Set([
   "dashboard/api/sales/conversion-pipeline.json",
   "dashboard/api/watchlist/current.json",
   "dashboard/api/vessels/index.json",
-  "dashboard/api/vessels/page-1.json"
+  "dashboard/api/vessels/page-1.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ]);
 
 function validateCriticalDashboardEndpoint(file, payload) {
@@ -305,11 +306,28 @@ for (const file of listDashboardApiJson()) {
     for (const entry of payload.endpoints) {
       if (!entry?.path || !fs.existsSync(entry.path)) continue;
       let actualPayload;
+      const actualText = fs.readFileSync(entry.path, "utf8");
+      const actualFirstChar = firstJsonCharacter(actualText);
+      const actualRootType = (() => {
+        try {
+          const parsed = JSON.parse(actualText);
+          return dashboardJsonRootType(parsed);
+        } catch {
+          return "invalid";
+        }
+      })();
       try {
-        actualPayload = JSON.parse(fs.readFileSync(entry.path, "utf8"));
+        actualPayload = JSON.parse(actualText);
       } catch (error) {
         if (entry.valid_json === true) throw new Error(`endpoint-manifest.json valid_json mismatch: ${entry.path}: ${error.message}`);
         continue;
+      }
+      if (entry.parsed_from_disk !== true) throw new Error(`endpoint-manifest.json missing parsed_from_disk=true for ${entry.path}`);
+      if ("first_char" in entry && entry.first_char !== actualFirstChar) {
+        throw new Error(`endpoint-manifest.json first_char mismatch for ${entry.path}: manifest=${entry.first_char}, actual=${actualFirstChar}`);
+      }
+      if ("root_type" in entry && entry.root_type !== actualRootType) {
+        throw new Error(`endpoint-manifest.json root_type mismatch for ${entry.path}: manifest=${entry.root_type}, actual=${actualRootType}`);
       }
       const actualRecordCount = Number(actualPayload?.record_count ?? actualPayload?.total_count ?? actualPayload?.total_vessels ?? endpointItemCount(actualPayload));
       const actualItemCount = endpointItemCount(actualPayload);

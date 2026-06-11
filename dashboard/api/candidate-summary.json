@@ -1,8 +1,8 @@
 {
-  "candidate_count": 29,
+  "candidate_count": 32,
   "immediate_count": 13,
-  "strong_count": 16,
-  "watch_count": 12,
+  "strong_count": 18,
+  "watch_count": 13,
   "top_candidates": [
     {
       "vessel_name": "KONA TRADER",
@@ -114,6 +114,34 @@
       "port_code": "621",
       "port_display_name": "대산",
       "display_name": "대산"
+    },
+    {
+      "vessel_name": "자리브",
+      "port": "울산",
+      "port_name": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "포항",
+          "울산항",
+          "울산"
+        ]
+      },
+      "score": 65,
+      "level": "Monitor",
+      "contact_window": "Monitor weekly",
+      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
+      "reasons": [
+        "Commercially relevant vessel type",
+        "Workable UWC window available"
+      ],
+      "port_code": "820",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "vessel_name": "SM NAVIGATOR",
@@ -255,34 +283,6 @@
       "port_code": "031",
       "port_display_name": "평택·당진",
       "display_name": "평택·당진"
-    },
-    {
-      "vessel_name": "에이치엘 오셔닉",
-      "port": "평택·당진",
-      "port_name": "평택·당진",
-      "normalized_port": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "raw_port": "Pyeongtaek-Dangjin",
-        "raw_aliases": [
-          "Pyeongtaek-Dangjin",
-          "PORT WALCOTT",
-          "평택·당진항",
-          "평택·당진"
-        ]
-      },
-      "score": 65,
-      "level": "Monitor",
-      "contact_window": "Monitor weekly",
-      "next_action": "Monitor only; wait for stronger port-stay or itinerary signal.",
-      "reasons": [
-        "Commercially relevant vessel type",
-        "Workable UWC window available"
-      ],
-      "port_code": "031",
-      "port_display_name": "평택·당진",
-      "display_name": "평택·당진"
     }
   ],
   "port_candidate_summary": [
@@ -326,13 +326,37 @@
           "여수"
         ]
       },
-      "total": 4,
+      "total": 5,
       "immediate": 2,
       "strong": 2,
-      "watch": 2,
+      "watch": 3,
       "top_score": 65,
       "port_code": "620",
       "port_display_name": "여수"
+    },
+    {
+      "port": "울산",
+      "port_name": "울산",
+      "display_name": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "포항",
+          "울산항",
+          "울산"
+        ]
+      },
+      "total": 3,
+      "immediate": 1,
+      "strong": 2,
+      "watch": 1,
+      "top_score": 65,
+      "port_code": "820",
+      "port_display_name": "울산"
     },
     {
       "port": "마산/창원",
@@ -359,30 +383,6 @@
       "port_display_name": "마산/창원"
     },
     {
-      "port": "울산",
-      "port_name": "울산",
-      "display_name": "울산",
-      "normalized_port": {
-        "port_code": "820",
-        "port_name": "울산",
-        "display_name": "울산",
-        "raw_port": "Ulsan",
-        "raw_aliases": [
-          "Ulsan",
-          "SUBIC BAY",
-          "울산항",
-          "울산"
-        ]
-      },
-      "total": 2,
-      "immediate": 1,
-      "strong": 1,
-      "watch": 1,
-      "top_score": 65,
-      "port_code": "820",
-      "port_display_name": "울산"
-    },
-    {
       "port": "대산",
       "port_name": "대산",
       "display_name": "대산",
@@ -398,9 +398,9 @@
           "대산"
         ]
       },
-      "total": 4,
+      "total": 5,
       "immediate": 0,
-      "strong": 3,
+      "strong": 4,
       "watch": 1,
       "top_score": 65,
       "port_code": "621",

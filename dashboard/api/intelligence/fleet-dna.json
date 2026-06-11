@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T06:05:30.924Z",
+  "generated_at": "2026-06-11T07:07:39.732Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -8,7 +8,7 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "average_stay_days": 10.7,
+      "average_stay_days": 10.2,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 고위험 선박 포함, 장기체류형",
       "preferred_ports": [
         {
@@ -29,7 +29,7 @@
         },
         {
           "port_name": "대산",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "621",
             "port_name": "대산",
@@ -45,7 +45,7 @@
         },
         {
           "port_name": "여수",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "620-YEOSU",
             "port_name": "여수",
@@ -58,6 +58,22 @@
           "port_code": "620-YEOSU",
           "port_display_name": "여수",
           "display_name": "여수"
+        },
+        {
+          "port_name": "울산",
+          "count": 3,
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_display_name": "울산",
+          "display_name": "울산"
         },
         {
           "port_name": "미확인 항만",
@@ -74,29 +90,13 @@
           "port_code": "UNKNOWN",
           "port_display_name": "미확인 항만",
           "display_name": "미확인 항만"
-        },
-        {
-          "port_name": "울산",
-          "count": 2,
-          "normalized_port": {
-            "port_code": "820",
-            "port_name": "울산",
-            "display_name": "울산",
-            "raw_port": "울산",
-            "raw_aliases": [
-              "울산"
-            ]
-          },
-          "port_code": "820",
-          "port_display_name": "울산",
-          "display_name": "울산"
         }
       ],
       "repeat_visit_frequency": 1.1,
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
-          "count": 10
+          "count": 12
         },
         {
           "vessel_type": "tanker",
@@ -104,7 +104,7 @@
         },
         {
           "vessel_type": "crude_tanker",
-          "count": 4
+          "count": 5
         },
         {
           "vessel_type": "케미칼 운반선",
@@ -114,10 +114,10 @@
       "compliance_exposure_tags": [
         "Australia"
       ],
-      "congestion_exposure": 35,
+      "congestion_exposure": 34,
       "commercial_tendency": "HOT 후보 집중",
       "recommended_sales_strategy": "선대별 상위 후보와 항만 패턴을 묶어 관계 구축",
-      "opportunity_score": 77,
+      "opportunity_score": 79,
       "reason_summary": "미확인 운영사: HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 고위험 선박 포함, 장기체류형",
       "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
       "normalized_port": {
@@ -201,7 +201,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 77,
+        "opportunity_score": 79,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,

@@ -32,7 +32,8 @@ const STRICT_ENDPOINTS = new Set([
   "dashboard/api/watchlist/current.json",
   "dashboard/api/targets/categories.json",
   "dashboard/api/vessels/index.json",
-  "dashboard/api/vessels/page-1.json"
+  "dashboard/api/vessels/page-1.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ]);
 
 function repoPath(filePath) {
@@ -115,7 +116,10 @@ function auditFile(filePath) {
   const bytes = fs.statSync(filePath).size;
   const text = fs.readFileSync(filePath, "utf8");
   try {
+    const firstChar = text.replace(/^\uFEFF/, "").match(/\S/)?.[0] || "";
+    if (firstChar !== "{") throw new Error(`dashboard endpoint must start with object root; first_char=${firstChar || "empty"}`);
     const payload = JSON.parse(text);
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("dashboard endpoint root object required");
     const problems = validatePayload(relativePath, payload);
     const tooLarge = bytes > TOO_LARGE_BYTES;
     return {

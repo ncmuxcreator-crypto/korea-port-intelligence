@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T06:05:30.924Z",
+  "generated_at": "2026-06-11T07:07:39.732Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -9,15 +9,15 @@
       "rank": 1,
       "operator_name": "미확인 운영사",
       "operator": "미확인 운영사",
-      "average_stay_days": 10.7,
-      "repeat_caller_count": 27,
+      "average_stay_days": 10.2,
+      "repeat_caller_count": 30,
       "korea_presence_score": 100,
-      "fleet_size_korea": 27,
-      "vessel_count": 27,
+      "fleet_size_korea": 30,
+      "vessel_count": 30,
       "hot_count": 2,
-      "warm_count": 25,
+      "warm_count": 28,
       "high_risk_count": 3,
-      "compliance_exposure_count": 4,
+      "compliance_exposure_count": 5,
       "fleet_dna": {
         "preferred_ports": [
           {
@@ -38,7 +38,7 @@
           },
           {
             "port_name": "대산",
-            "count": 4,
+            "count": 5,
             "normalized_port": {
               "port_code": "621",
               "port_name": "대산",
@@ -54,7 +54,7 @@
           },
           {
             "port_name": "여수",
-            "count": 4,
+            "count": 5,
             "normalized_port": {
               "port_code": "620-YEOSU",
               "port_name": "여수",
@@ -67,6 +67,22 @@
             "port_code": "620-YEOSU",
             "port_display_name": "여수",
             "display_name": "여수"
+          },
+          {
+            "port_name": "울산",
+            "count": 3,
+            "normalized_port": {
+              "port_code": "820",
+              "port_name": "울산",
+              "display_name": "울산",
+              "raw_port": "울산",
+              "raw_aliases": [
+                "울산"
+              ]
+            },
+            "port_code": "820",
+            "port_display_name": "울산",
+            "display_name": "울산"
           },
           {
             "port_name": "미확인 항만",
@@ -83,30 +99,14 @@
             "port_code": "UNKNOWN",
             "port_display_name": "미확인 항만",
             "display_name": "미확인 항만"
-          },
-          {
-            "port_name": "울산",
-            "count": 2,
-            "normalized_port": {
-              "port_code": "820",
-              "port_name": "울산",
-              "display_name": "울산",
-              "raw_port": "울산",
-              "raw_aliases": [
-                "울산"
-              ]
-            },
-            "port_code": "820",
-            "port_display_name": "울산",
-            "display_name": "울산"
           }
         ],
-        "average_stay_days": 10.7,
+        "average_stay_days": 10.2,
         "repeat_visit_frequency": 1.1,
         "common_vessel_types": [
           {
             "vessel_type": "bulk_carrier",
-            "count": 10
+            "count": 12
           },
           {
             "vessel_type": "tanker",
@@ -114,7 +114,7 @@
           },
           {
             "vessel_type": "crude_tanker",
-            "count": 4
+            "count": 5
           },
           {
             "vessel_type": "케미칼 운반선",
@@ -139,7 +139,7 @@
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
-          "count": 10
+          "count": 12
         },
         {
           "vessel_type": "tanker",
@@ -147,7 +147,7 @@
         },
         {
           "vessel_type": "crude_tanker",
-          "count": 4
+          "count": 5
         },
         {
           "vessel_type": "케미칼 운반선",
@@ -157,12 +157,12 @@
       "compliance_exposure_tags": [
         "Australia"
       ],
-      "congestion_exposure": 35,
+      "congestion_exposure": 34,
       "commercial_tendency": "HOT 후보 집중",
       "estimated_revenue": {
         "currency": "USD",
-        "estimated_revenue_low": 195500,
-        "estimated_revenue_high": 613500,
+        "estimated_revenue_low": 218000,
+        "estimated_revenue_high": 684000,
         "basis": "HOT/WARM targets, compliance exposure, repeat caller signals"
       },
       "average_opportunity_score": 61,
@@ -185,7 +185,7 @@
         },
         {
           "port_name": "대산",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "621",
             "port_name": "대산",
@@ -201,7 +201,7 @@
         },
         {
           "port_name": "여수",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "620-YEOSU",
             "port_name": "여수",
@@ -214,6 +214,22 @@
           "port_code": "620-YEOSU",
           "port_display_name": "여수",
           "display_name": "여수"
+        },
+        {
+          "port_name": "울산",
+          "count": 3,
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_display_name": "울산",
+          "display_name": "울산"
         },
         {
           "port_name": "미확인 항만",
@@ -230,22 +246,6 @@
           "port_code": "UNKNOWN",
           "port_display_name": "미확인 항만",
           "display_name": "미확인 항만"
-        },
-        {
-          "port_name": "울산",
-          "count": 2,
-          "normalized_port": {
-            "port_code": "820",
-            "port_name": "울산",
-            "display_name": "울산",
-            "raw_port": "울산",
-            "raw_aliases": [
-              "울산"
-            ]
-          },
-          "port_code": "820",
-          "port_display_name": "울산",
-          "display_name": "울산"
         }
       ],
       "top_vessels": [
@@ -361,10 +361,10 @@
         }
       ],
       "recommended_sales_angle": "HOT 후보를 중심으로 선대 단위 제안",
-      "estimated_revenue_low": 195500,
-      "estimated_revenue_high": 613500,
-      "missing_contact_count": 27,
-      "opportunity_score": 77,
+      "estimated_revenue_low": 218000,
+      "estimated_revenue_high": 684000,
+      "missing_contact_count": 30,
+      "opportunity_score": 79,
       "top_factors": [
         "HOT 후보 집중",
         "WARM 후보 풀",
@@ -373,7 +373,7 @@
         "고위험 선박 포함",
         "장기체류형"
       ],
-      "reason_summary": "미확인 운영사 관련 27척, HOT 2척, 반복입항 27척, Compliance 4척",
+      "reason_summary": "미확인 운영사 관련 30척, HOT 2척, 반복입항 30척, Compliance 5척",
       "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -456,7 +456,7 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 77,
+        "opportunity_score": 79,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -523,7 +523,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 운영사 관련 27척, HOT 2척, 반복입항 27척, Compliance 4척",
+        "reason_summary": "미확인 운영사 관련 30척, HOT 2척, 반복입항 30척, Compliance 5척",
         "recommended_action": "운영사 단위로 후보 선박, 주요 항만, 연락 경로를 함께 확인하세요.",
         "data_sources": [],
         "enrichment_sources": [],

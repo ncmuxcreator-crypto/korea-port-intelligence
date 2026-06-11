@@ -13,7 +13,8 @@ const CRITICAL_FILES = [
   "dashboard/api/sales/actions.json",
   "dashboard/api/watchlist/current.json",
   "dashboard/api/vessels/index.json",
-  "dashboard/api/vessels/page-1.json"
+  "dashboard/api/vessels/page-1.json",
+  "dashboard/api/vessel-count-reconciliation.json"
 ];
 
 function readRaw(relativePath) {
@@ -82,6 +83,7 @@ for (const relativePath of CRITICAL_FILES) {
     schema_version: "-",
     generated_at: "-",
     item_count: 0,
+    parsed_from_disk: true,
     problem: "-"
   };
 
@@ -122,6 +124,15 @@ for (const relativePath of CRITICAL_FILES) {
     if (manifestEntry.valid_json !== row.parse_ok) {
       failures.push(`${relativePath}: endpoint-manifest valid_json=${manifestEntry.valid_json} but raw_parse=${row.parse_ok}`);
     }
+    if (manifestEntry.first_char !== row.first_non_whitespace) {
+      failures.push(`${relativePath}: endpoint-manifest first_char=${manifestEntry.first_char ?? "(missing)"} but raw_first_char=${row.first_non_whitespace}`);
+    }
+    if (manifestEntry.root_type !== row.root_type) {
+      failures.push(`${relativePath}: endpoint-manifest root_type=${manifestEntry.root_type ?? "(missing)"} but raw_root_type=${row.root_type}`);
+    }
+    if (manifestEntry.parsed_from_disk !== true) {
+      failures.push(`${relativePath}: endpoint-manifest parsed_from_disk is not true`);
+    }
     if (row.parse_ok && Number(manifestEntry.item_count ?? 0) !== row.item_count) {
       failures.push(`${relativePath}: endpoint-manifest item_count=${manifestEntry.item_count ?? 0} but raw_item_count=${row.item_count}`);
     }
@@ -135,13 +146,15 @@ if (manifest.error) {
 }
 
 console.log("Raw JSON parse truth:");
-console.log("Path | First | Parse | Root | schema_version | generated_at | item_count | Prefix");
+console.log("File | First Char | Root Type | Parse OK | Schema OK | Parsed From Disk | schema_version | generated_at | item_count | Prefix");
 for (const row of rows) {
   console.log([
     row.path,
     row.first_non_whitespace,
-    row.parse_ok ? "OK" : "FAIL",
     row.root_type,
+    row.parse_ok ? "OK" : "FAIL",
+    row.problem === "-" ? "OK" : "FAIL",
+    row.parsed_from_disk ? "true" : "false",
     row.schema_version,
     row.generated_at,
     row.item_count,
