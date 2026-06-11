@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T01:07:04.801Z",
+  "generated_at": "2026-06-11T01:29:53.160Z",
   "data_mode": "live",
-  "record_count": 882,
+  "record_count": 894,
   "source_table": "active_dataset_pointer,latest_successful_dataset_bundle,static_dashboard_snapshot",
   "items": [
     {
@@ -12,14 +12,14 @@
           "step": 1,
           "source": "active_dataset_pointer",
           "status": "available",
-          "rows": 882
+          "rows": 894
         },
         {
           "step": 2,
           "source": "latest_successful_dataset_bundle",
           "status": "available",
-          "rows": 882,
-          "run_id": "run_20260611010259960_8f6c1a0b"
+          "rows": 894,
+          "run_id": "run_20260611012715931_825bbec6"
         },
         {
           "step": 3,
@@ -37,7 +37,7 @@
           "step": 5,
           "source": "static_backup",
           "status": "available",
-          "rows": 27
+          "rows": 28
         },
         {
           "step": 6,
@@ -51,37 +51,37 @@
         "post_write_verification_status": "completed",
         "promotion_status": "promoted",
         "rows_written_by_table": {
-          "vessel_snapshots": 882,
+          "vessel_snapshots": 894,
           "source_collection_logs": 34,
-          "vessel_entities": 882,
-          "vessel_master": 881,
-          "port_call_master": 882,
-          "opportunity_master": 882,
-          "risk_history": 300,
-          "vessel_events": 3603,
+          "vessel_entities": 894,
+          "vessel_master": 893,
+          "port_call_master": 894,
+          "opportunity_master": 894,
+          "risk_history": 305,
+          "vessel_events": 3655,
           "pilot_schedule_events": 0,
           "port_congestion_snapshots": 8,
           "enrichment_match_candidates": 0,
           "commercial_leads": 2,
           "private_sales_activity": 0,
           "dashboard_summary_snapshots": 1,
-          "sales_candidates_current": 98,
+          "sales_candidates_current": 99,
           "immediate_targets_current": 0,
           "port_summary_current": 8,
-          "feature_store": 300,
-          "feature_snapshots": 300,
-          "rule_evaluations": 655,
-          "explainability_snapshots": 300,
-          "model_training_rows": 191,
-          "vessel_snapshot_daily": 882,
+          "feature_store": 305,
+          "feature_snapshots": 305,
+          "rule_evaluations": 667,
+          "explainability_snapshots": 305,
+          "model_training_rows": 194,
+          "vessel_snapshot_daily": 894,
           "port_snapshot_daily": 8,
           "operator_snapshot_daily": 10,
-          "route_snapshot_daily": 244,
-          "commercial_opportunity_daily": 25,
+          "route_snapshot_daily": 248,
+          "commercial_opportunity_daily": 26,
           "vessel_universe_audit": 1
         },
         "successful_dataset_bundle_status": "saved",
-        "successful_dataset_rows": 882,
+        "successful_dataset_rows": 894,
         "restore_status": "not_needed"
       },
       "operator_message_ko": "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다."
@@ -90,11 +90,11 @@
   "status": "healthy",
   "objective": "Dashboard must never become empty when collection or storage fails.",
   "current_run": {
-    "run_id": "run_20260611010259960_8f6c1a0b",
+    "run_id": "run_20260611012715931_825bbec6",
     "data_mode": "static_snapshot",
     "data_status": "ready",
-    "rows": 882,
-    "target_vessels_count": 28,
+    "rows": 894,
+    "target_vessels_count": 29,
     "fallback_used": false,
     "fallback_reason": null
   },
@@ -103,43 +103,43 @@
     "post_write_verification_status": "completed",
     "promotion_status": "promoted",
     "rows_written_by_table": {
-      "vessel_snapshots": 882,
+      "vessel_snapshots": 894,
       "source_collection_logs": 34,
-      "vessel_entities": 882,
-      "vessel_master": 881,
-      "port_call_master": 882,
-      "opportunity_master": 882,
-      "risk_history": 300,
-      "vessel_events": 3603,
+      "vessel_entities": 894,
+      "vessel_master": 893,
+      "port_call_master": 894,
+      "opportunity_master": 894,
+      "risk_history": 305,
+      "vessel_events": 3655,
       "pilot_schedule_events": 0,
       "port_congestion_snapshots": 8,
       "enrichment_match_candidates": 0,
       "commercial_leads": 2,
       "private_sales_activity": 0,
       "dashboard_summary_snapshots": 1,
-      "sales_candidates_current": 98,
+      "sales_candidates_current": 99,
       "immediate_targets_current": 0,
       "port_summary_current": 8,
-      "feature_store": 300,
-      "feature_snapshots": 300,
-      "rule_evaluations": 655,
-      "explainability_snapshots": 300,
-      "model_training_rows": 191,
-      "vessel_snapshot_daily": 882,
+      "feature_store": 305,
+      "feature_snapshots": 305,
+      "rule_evaluations": 667,
+      "explainability_snapshots": 305,
+      "model_training_rows": 194,
+      "vessel_snapshot_daily": 894,
       "port_snapshot_daily": 8,
       "operator_snapshot_daily": 10,
-      "route_snapshot_daily": 244,
-      "commercial_opportunity_daily": 25,
+      "route_snapshot_daily": 248,
+      "commercial_opportunity_daily": 26,
       "vessel_universe_audit": 1
     },
     "successful_dataset_bundle_status": "saved",
-    "successful_dataset_rows": 882,
+    "successful_dataset_rows": 894,
     "restore_status": "not_needed"
   },
   "health": {
     "api_health_status": "success",
-    "summary_generated_at": "2026-06-11T01:07:04.801Z",
-    "last_success_at": "2026-06-11T01:07:04.801Z",
+    "summary_generated_at": "2026-06-11T01:29:53.160Z",
+    "last_success_at": "2026-06-11T01:29:53.160Z",
     "production_ready": true
   },
   "fallback_order": [
@@ -147,14 +147,14 @@
       "step": 1,
       "source": "active_dataset_pointer",
       "status": "available",
-      "rows": 882
+      "rows": 894
     },
     {
       "step": 2,
       "source": "latest_successful_dataset_bundle",
       "status": "available",
-      "rows": 882,
-      "run_id": "run_20260611010259960_8f6c1a0b"
+      "rows": 894,
+      "run_id": "run_20260611012715931_825bbec6"
     },
     {
       "step": 3,
@@ -172,7 +172,7 @@
       "step": 5,
       "source": "static_backup",
       "status": "available",
-      "rows": 27
+      "rows": 28
     },
     {
       "step": 6,

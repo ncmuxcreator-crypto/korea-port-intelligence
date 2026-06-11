@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T01:07:49.511Z",
+  "generated_at": "2026-06-11T01:30:27.995Z",
   "record_count": 34,
   "item_count": 34,
   "items": [
@@ -510,6 +510,7 @@
       "idle_risk_score": 0,
       "total_sales_priority_score": 43,
       "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
         "HIGH_GT_VESSEL",
         "HIGH_VALUE_GT_30000_PLUS",
@@ -635,10 +636,10 @@
       "port_code": "620",
       "port_name": "여수",
       "anchorage_name": "D-2정박지",
-      "anchorage_hours": 0.6,
+      "anchorage_hours": 1,
       "anchorage_days": 0,
-      "anchorage_density_score": 20,
-      "idle_risk_score": 0,
+      "anchorage_density_score": 21,
+      "idle_risk_score": 1,
       "total_sales_priority_score": 41,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -817,6 +818,49 @@
       "display_name": "여수"
     },
     {
+      "vessel_id": "CALL-LAGX8",
+      "vessel_name": "CLIPPER WILMA",
+      "port_code": "620",
+      "port_name": "여수",
+      "anchorage_name": "D-2정박지",
+      "anchorage_hours": 16,
+      "anchorage_days": 0.7,
+      "anchorage_density_score": 28,
+      "idle_risk_score": 12,
+      "total_sales_priority_score": 40,
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "port_display_name": "여수",
+      "display_name": "여수"
+    },
+    {
       "vessel_id": "CALL-9V2729",
       "vessel_name": "SANSOVINO",
       "port_code": "620",
@@ -945,48 +989,6 @@
     {
       "vessel_id": "CALL-C6BX5",
       "vessel_name": "COMMANDER",
-      "port_code": "620",
-      "port_name": "여수",
-      "anchorage_name": "D-2정박지",
-      "anchorage_hours": 0,
-      "anchorage_days": 0,
-      "anchorage_density_score": 20,
-      "idle_risk_score": 0,
-      "total_sales_priority_score": 39,
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "HIGH_GT_EXPOSURE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Workable UWC window available",
-        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
-        "GT_30000_PLUS",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT"
-      ],
-      "normalized_port": {
-        "port_code": "620",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "여수",
-        "raw_aliases": [
-          "여수"
-        ]
-      },
-      "port_display_name": "여수",
-      "display_name": "여수"
-    },
-    {
-      "vessel_id": "CALL-LAGX8",
-      "vessel_name": "CLIPPER WILMA",
       "port_code": "620",
       "port_name": "여수",
       "anchorage_name": "D-2정박지",

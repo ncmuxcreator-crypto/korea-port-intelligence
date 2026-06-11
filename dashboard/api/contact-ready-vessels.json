@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T01:07:47.945Z",
-  "record_count": 17,
-  "item_count": 17,
+  "generated_at": "2026-06-11T01:30:26.880Z",
+  "record_count": 18,
+  "item_count": 18,
   "items": [
     {
       "vessel_name": "PAN HOPE",
@@ -22,7 +22,7 @@
       "lead_priority_score": 80,
       "commercial_value_score": 68,
       "recommended_action": "대리점 확인 후 견적 제안",
-      "why_now": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 29점, 평균 체선노출 9점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 103시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 43점이며 평균 바이오파울링 노출 26점, 평균 체선노출 7점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 103시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "HIGH_GT_VESSEL",
@@ -255,6 +255,62 @@
       },
       "port_display_name": "평택·당진",
       "display_name": "평택·당진"
+    },
+    {
+      "vessel_name": "POST MARVEL",
+      "port": "인천",
+      "port_code": "030",
+      "port_name": "인천",
+      "operator_name": "",
+      "agent_name": "주식회사 에이치쉬핑",
+      "operator_website": "",
+      "agent_website": "",
+      "contact_readiness_score": 35,
+      "contact_path_status": "agent_known",
+      "contact_priority": "LOW",
+      "contact_path_label_ko": "대리점 경로 확인 · LOW",
+      "contact_path_available": true,
+      "lead_status": "monitor",
+      "lead_priority_score": 66,
+      "commercial_value_score": 65,
+      "recommended_action": "운영선사 확인",
+      "why_now": "Incheon 영흥도 영흥화력1돌핀에서 체류 10.2일째인 GT 50,626 벌크선으로, 출항 전 약 128시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "HIGH_GT_VESSEL",
+        "HIGH_VALUE_GT_30000_PLUS",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "HIGH_CONGESTION_EXPOSURE",
+        "HIGH_GT_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Commercially relevant vessel type",
+        "Workable UWC window available",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "GT_30000_PLUS",
+        "HIGH_VALUE_VESSEL_TYPE",
+        "LARGE_BULK_CARRIER",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "PREDICTED_ARRIVAL_OPPORTUNITY"
+      ],
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon"
+        ]
+      },
+      "port_display_name": "인천",
+      "display_name": "인천"
     },
     {
       "vessel_name": "C. DIGNITY",
