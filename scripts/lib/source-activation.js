@@ -390,7 +390,12 @@ function statusForSpec({ spec, env, sources }) {
       failure_reason: source.failure_reason || null,
       http_status: source.http_status || null,
       response_size_bytes: Number(source.response_size_bytes || 0) || null,
-      response_content_type: source.response_content_type || null
+      response_content_type: source.response_content_type || null,
+      raw_sample_keys: Array.isArray(source.raw_sample_keys) ? source.raw_sample_keys : undefined,
+      sanitized_raw_samples: Array.isArray(source.sanitized_raw_samples) ? source.sanitized_raw_samples : undefined,
+      expected_field_aliases_matched: source.expected_field_aliases_matched || undefined,
+      missing_required_fields: source.missing_required_fields || undefined,
+      parser_blockers: Array.isArray(source.parser_blockers) ? source.parser_blockers : undefined
     })),
     business_impact: spec.businessImpact
   });

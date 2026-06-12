@@ -6351,6 +6351,61 @@ function pilotageDetectedCount(records = []) {
   return Array.isArray(records) ? records.filter(hasPilotageSignal).length : 0;
 }
 
+function buildBerthSignal(record = {}) {
+  const existing = record.vessel_display?.berth_signal && typeof record.vessel_display.berth_signal === "object"
+    ? record.vessel_display.berth_signal
+    : {};
+  if (existing.has_berth_info === true) return existing;
+  const sourceNames = [
+    ...displaySources(record),
+    record.source_origin,
+    record.berth_source,
+    record.berth_data_source,
+    record.enrichment_source
+  ].filter(pilotageHasText).map(value => pilotageText(value));
+  const sourceText = sourceNames.join(" ");
+  const pncSource = /PNC|PNIT|PUSAN\s*NEW\s*PORT|BUSAN\s*NEW\s*PORT|pnc_source/i.test(sourceText);
+  const explicitMatched = Boolean(record.secondary_enrichment_matched || record.berth_signal?.has_berth_info);
+  const berthSource = explicitMatched || pncSource || /berth|terminal|pnc_berth/i.test(sourceText);
+  const terminal = firstNonEmpty(record.terminal_name, record.terminal, record.vessel_display?.terminal);
+  const berth = firstNonEmpty(record.berth_name, record.berth, record.berth_no, record.berth_code, record.laidupFcltyNm, record.vessel_display?.berth);
+  const eta = firstNonEmpty(record.eta, record.eta_candidate, record.vessel_display?.eta);
+  const etb = firstNonEmpty(record.etb, record.etb_candidate, record.vessel_display?.etb);
+  const ata = firstNonEmpty(record.ata, record.vessel_display?.ata);
+  const atb = firstNonEmpty(record.atb, record.vessel_display?.atb);
+  const operationStart = firstNonEmpty(record.operation_start, record.work_start, record.cargo_start);
+  const operationEnd = firstNonEmpty(record.operation_end, record.work_end, record.cargo_end);
+  const hasBerthInfo = Boolean((explicitMatched || berthSource) && (terminal || berth || eta || etb || ata || atb || operationStart || operationEnd));
+  const confidenceValue = Number(record.berth_match_confidence || record.berth_signal?.confidence || record.enrichment_confidence || 0);
+  const confidence = Number.isFinite(confidenceValue) && confidenceValue > 0
+    ? Math.min(100, Math.round(confidenceValue))
+    : hasBerthInfo ? (explicitMatched ? 70 : 55) : null;
+  const normalizedPort = normalizedPortObject(record);
+  return {
+    has_berth_info: Boolean(hasBerthInfo),
+    source: hasBerthInfo ? (pncSource ? "PNC" : sourceNames.find(value => /berth|terminal|pnc/i.test(value)) || "berth_sources") : null,
+    terminal: pilotageHasText(terminal) ? terminal : null,
+    berth: pilotageHasText(berth) ? berth : null,
+    eta: pilotageHasText(eta) ? eta : null,
+    etb: pilotageHasText(etb) ? etb : null,
+    ata: pilotageHasText(ata) ? ata : null,
+    atb: pilotageHasText(atb) ? atb : null,
+    operation_start: pilotageHasText(operationStart) ? operationStart : null,
+    operation_end: pilotageHasText(operationEnd) ? operationEnd : null,
+    port: normalizedPort.display_name || null,
+    match_type: record.berth_match_method || record.berth_signal?.match_type || (pncSource ? "pnc_berth_match" : hasBerthInfo ? "berth_enrichment" : "none"),
+    confidence
+  };
+}
+
+function hasBerthSignal(record = {}) {
+  return buildBerthSignal(record).has_berth_info === true;
+}
+
+function berthInfoDetectedCount(records = []) {
+  return Array.isArray(records) ? records.filter(hasBerthSignal).length : 0;
+}
+
 function pilotageNormalizeIdentity(value) {
   return String(value || "")
     .normalize("NFKC")
@@ -6862,6 +6917,7 @@ function buildVesselDisplay(record = {}) {
   const recommendedAction = vesselDisplayRecommendedAction(record);
   const priorityLabel = displayText(firstNonEmpty(record.priority_label, record.sales_priority_band, salesPriorityBand(opportunityScore || riskScore || 0)));
   const pilotageSignal = buildPilotageSignal(record);
+  const berthSignal = buildBerthSignal(record);
   const baseTonnageSummary = record.tonnage_summary || buildTonnageSummary(record);
   const tonnageSummary = baseTonnageSummary.gt === null && gtFromReason
     ? {
@@ -6902,12 +6958,13 @@ function buildVesselDisplay(record = {}) {
     current_port_korean: currentPortKorean,
     normalized_port: normalizedPort,
     port_display_name: normalizedPort.display_name,
-    berth: vesselDisplayText(source, ["berth", "berth_name", "berth_no", "berth_code", "laidupFcltyNm", "terminal_name", "vessel_display.berth"], berthFromReason || "-"),
+    terminal: vesselDisplayText(source, ["terminal_name", "terminal", "vessel_display.terminal"], berthSignal.terminal || "-"),
+    berth: vesselDisplayText(source, ["berth", "berth_name", "berth_no", "berth_code", "laidupFcltyNm", "terminal_name", "vessel_display.berth"], berthSignal.berth || berthFromReason || "-"),
     anchorage: vesselDisplayText(source, ["anchorage", "anchorage_name", "anchorage_zone", "anchorage_area", "vessel_display.anchorage"], anchorageFromReason || "-"),
-    eta: vesselDisplayText(source, ["eta", "estimated_arrival", "arrival_eta", "predicted_arrival_time", "next_eta", "vessel_display.eta"]),
-    etb: vesselDisplayText(source, ["etb", "estimated_berth", "vessel_display.etb"]),
-    ata: vesselDisplayText(source, ["ata", "actual_arrival", "arrival_time", "vessel_display.ata"]),
-    atb: vesselDisplayText(source, ["atb", "actual_berth", "vessel_display.atb"]),
+    eta: vesselDisplayText(source, ["eta", "estimated_arrival", "arrival_eta", "predicted_arrival_time", "next_eta", "vessel_display.eta"], berthSignal.eta || "-"),
+    etb: vesselDisplayText(source, ["etb", "estimated_berth", "vessel_display.etb"], berthSignal.etb || "-"),
+    ata: vesselDisplayText(source, ["ata", "actual_arrival", "arrival_time", "vessel_display.ata"], berthSignal.ata || "-"),
+    atb: vesselDisplayText(source, ["atb", "actual_berth", "vessel_display.atb"], berthSignal.atb || "-"),
     etd: vesselDisplayText(source, ["etd", "estimated_departure", "departure_prediction_eta", "vessel_display.etd"]),
     atd: vesselDisplayText(source, ["atd", "actual_departure", "vessel_display.atd"]),
     berth_source: vesselDisplayText(source, ["berth_source", "berth_data_source", "vessel_display.berth_source"]),
@@ -6958,11 +7015,12 @@ function buildVesselDisplay(record = {}) {
     priority_label_ko: salesPriorityLabelKo(priorityLabel),
     target_categories: (Array.isArray(record.target_categories) ? record.target_categories : Array.isArray(existingDisplay.target_categories) ? existingDisplay.target_categories : []).map(normalizeBusinessCategory),
     pilotage_signal: pilotageSignal,
+    berth_signal: berthSignal,
     category_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     korean_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     reason_summary: reasonSummary,
     recommended_action: recommendedAction,
-    data_sources: [...new Set([...displaySources(record), ...vesselDisplayArray(record, ["vessel_display.data_sources"])])],
+    data_sources: [...new Set([...displaySources(record), ...(berthSignal.has_berth_info && berthSignal.source ? [berthSignal.source] : []), ...vesselDisplayArray(record, ["vessel_display.data_sources"])])],
     enrichment_sources: [...new Set([
       ...vesselDisplayArray(record, ["enrichment_sources", "vessel_display.enrichment_sources"]),
       ...[record.enrichment_source, record.identity_source, record.imo_recovery_source, record.recovery_source].filter(vesselDisplayHasText).map(value => String(value).trim())
@@ -7055,6 +7113,8 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "sub_port",
   "current_port",
   "raw_current_port",
+  "terminal",
+  "terminal_name",
   "berth",
   "berth_name",
   "berth_no",
@@ -7189,7 +7249,14 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "pilotage_match_reasons",
   "arrival_window",
   "arrival_window_source",
+  "berth_signal",
   "berth_source",
+  "berth_data_source",
+  "berth_match_method",
+  "berth_match_confidence",
+  "operation_start",
+  "operation_end",
+  "operation_type",
   "eta_candidate",
   "etb_candidate",
   "etd_candidate",
@@ -8136,6 +8203,9 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
     port_name: normalizedPort.display_name,
     port_display_name: normalizedPort.display_name,
     normalized_port: normalizedPort,
+    terminal: display.terminal || item.terminal_name || item.terminal || "-",
+    berth: display.berth || item.berth_name || item.berth || "-",
+    berth_signal: display.berth_signal || item.berth_signal || { has_berth_info: false },
     tonnage_summary: display.tonnage_summary,
     target_size_qualified: display.target_size_qualified,
     target_size_reason: display.target_size_reason,
@@ -8161,7 +8231,7 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
     priority_label: item.priority_label || item.sales_priority_band || display.priority_label || "LOW",
     reason_summary: item.reason_summary || display.reason_summary || compactReasonSummary(item),
     recommended_action: item.recommended_action || display.recommended_action || compactRecommendedAction(item),
-    data_sources: displaySources(item).slice(0, 4),
+    data_sources: [...new Set([...displaySources(item), ...(Array.isArray(display.data_sources) ? display.data_sources : [])])].slice(0, 4),
     last_seen_at: item.last_seen_at || item.collected_at || display.last_seen_at || null
   };
 }
@@ -8232,6 +8302,7 @@ function buildBootstrapSnapshot({
     monitor_count: Number(dashboardSummary.monitor_count || 0),
     hold_count: Number(dashboardSummary.hold_count || 0),
     pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+    berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0),
     biofouling_high_risk_count: Number(dashboardSummary.biofouling_high_risk_count || report.hull_cleaning_prediction_kpis?.biofouling_high_risk_count || 0),
     cleaning_immediate_candidate_count: Number(dashboardSummary.cleaning_immediate_candidate_count || report.hull_cleaning_prediction_kpis?.cleaning_immediate_candidate_count || 0),
     average_hull_growth_index: Number(dashboardSummary.average_hull_growth_index || report.hull_cleaning_prediction_kpis?.average_hull_growth_index || 0)
@@ -8256,7 +8327,8 @@ function buildBootstrapSnapshot({
       contact_now_count: "즉시 연락 선박",
       contact_now_vessel_count: "즉시 연락 선박",
       contact_now_action_count: "즉시 연락 액션",
-      pilotage_detected_count: "도선 정보 확인"
+      pilotage_detected_count: "도선 정보 확인",
+      berth_info_detected_count: "선석 정보 확인"
     },
     kpi_trends: kpiTrends,
     trend_metrics: buildGrowthMetrics(kpiTrends),
@@ -8398,6 +8470,9 @@ function displaySources(record = {}) {
     record.agent_source,
     record.operator_source,
     record.enrichment_source,
+    record.berth_source,
+    record.berth_data_source,
+    record.berth_signal?.source,
     record.gt_source,
     record.eta_source
   ].flatMap(value => Array.isArray(value) ? value : value ? [value] : []);
@@ -16743,6 +16818,7 @@ try {
   const hullCleaningPredictionKpis = buildHullCleaningPredictionKpis(allCollectedVessels, hullCleaningPredictionDiagnostics);
   const dataHealthValidation = validateVesselRecords(allCollectedVessels);
   const pilotageDetectedTotal = pilotageDetectedCount(allCollectedVessels);
+  const berthInfoDetectedTotal = berthInfoDetectedCount(allCollectedVessels);
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -17107,6 +17183,7 @@ try {
     anchorage_opportunity_count: targetCategorySummary.kpis.anchorage_opportunity_count || 0,
     long_stay_risk_count: targetCategorySummary.kpis.long_stay_risk_count || 0,
     pilotage_detected_count: pilotageDetectedTotal,
+    berth_info_detected_count: berthInfoDetectedTotal,
     compliance_target_count: targetCategorySummary.kpis.compliance_target_count || 0,
     repeat_caller_count: targetCategorySummary.kpis.repeat_caller_count || 0,
     fleet_expansion_count: targetCategorySummary.kpis.fleet_expansion_count || 0,
