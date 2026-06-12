@@ -243,14 +243,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_867a161588d6950b",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ff76ef4db4125d55",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c330a1748ee423e1",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_77a1a03a75bfd155",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c330a1748ee423e1",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_77a1a03a75bfd155",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_867a161588d6950b",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ff76ef4db4125d55",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3E3614",
@@ -488,14 +551,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_57e647149e638dc0",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c4b767517be41490",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_e6dd9a51b79c885a",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_3633045e6cc3a4cb",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9245795fb67e1d22",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_f5570531754ec060",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_e6dd9a51b79c885a",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_3633045e6cc3a4cb",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_57e647149e638dc0",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c4b767517be41490",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9245795fb67e1d22",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_f5570531754ec060",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-D6A4061",
@@ -731,14 +889,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_29e968d60e985e84",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_7a6ab3baec54ffd0",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_34e584b0024d05df",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_290abcffc8b77476",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_34e584b0024d05df",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_290abcffc8b77476",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_29e968d60e985e84",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_7a6ab3baec54ffd0",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-5LNE2",
@@ -974,14 +1195,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_ccb38365b0d41afc",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_15d564e4fb805f95",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_b15d8387c540a8c3",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_af7884a433074915",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_b15d8387c540a8c3",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_af7884a433074915",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_ccb38365b0d41afc",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_15d564e4fb805f95",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3E5300",
@@ -1217,14 +1501,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_e482fc718e510890",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ee76eb2a11098d94",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_a0519a9004e3bddd",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_f27ee37f0114d910",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_a0519a9004e3bddd",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_f27ee37f0114d910",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_e482fc718e510890",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ee76eb2a11098d94",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-171071",
@@ -1464,14 +1811,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_4f00503fdf0442f8",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6780c8795433babc",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_83c91934c17e395f",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_20926d24e939be90",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_b42d0c3eb23d8405",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_993c3b651fa66f5c",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "부산"
+      "display_name": "부산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_83c91934c17e395f",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_20926d24e939be90",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_4f00503fdf0442f8",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6780c8795433babc",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_b42d0c3eb23d8405",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_993c3b651fa66f5c",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-HZFD",
@@ -1707,14 +2149,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_8b32485f8f0ac420",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_082e4dcf6dac1ac9",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c521dc4021a9a1f0",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_2d10869ae534bdb1",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c521dc4021a9a1f0",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_2d10869ae534bdb1",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_8b32485f8f0ac420",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_082e4dcf6dac1ac9",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-9V5491",
@@ -1950,14 +2455,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_dceda10226c093b6",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_f0e75fa5bd4ad2f3",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_b796deb71df90c49",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_f365a675fcfd7bb5",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_b796deb71df90c49",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_f365a675fcfd7bb5",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_dceda10226c093b6",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_f0e75fa5bd4ad2f3",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-D5TH5",
@@ -2193,14 +2761,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_fc3318fa6b7bd88b",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_667e71b19fc5bbf3",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_7e149db1167d0173",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9566a3df589bd17e",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_7e149db1167d0173",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9566a3df589bd17e",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_fc3318fa6b7bd88b",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_667e71b19fc5bbf3",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-240018",
@@ -2440,14 +3071,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_38b291285fcf74ec",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_d8df404c09abd1d7",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_d2ad7b6462a0337a",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_88ded4ae0dc7c342",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_77c9a828747fc8ac",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_46faf451d35f3936",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_d2ad7b6462a0337a",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_88ded4ae0dc7c342",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_38b291285fcf74ec",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_d8df404c09abd1d7",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_77c9a828747fc8ac",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_46faf451d35f3936",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-H3XM",
@@ -2683,14 +3409,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_105508367a8e4d51",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_425c0d2c3c57ae6e",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_20a9fcc4f5ec3e00",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_95842052f8d37f7c",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_20a9fcc4f5ec3e00",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_95842052f8d37f7c",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_105508367a8e4d51",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_425c0d2c3c57ae6e",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7UF2",
@@ -2926,14 +3715,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_19798aa465206f8d",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ec554659de59a5a9",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_54ba8db82981c533",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_581e7698a6f46e93",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "울산"
+      "display_name": "울산",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_54ba8db82981c533",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_581e7698a6f46e93",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_19798aa465206f8d",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ec554659de59a5a9",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-9HA3008",
@@ -3171,14 +4023,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_12ce26bf80874b4f",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_4364d0ca67ac9ea1",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_d94b5e39c247b39c",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_d5e4cc7c539fe4b3",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_085aa8d7735c75e2",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_be085bd4fc51602e",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "여수"
+      "display_name": "여수",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_d94b5e39c247b39c",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_d5e4cc7c539fe4b3",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_12ce26bf80874b4f",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_4364d0ca67ac9ea1",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_085aa8d7735c75e2",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_be085bd4fc51602e",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-SVCH5",
@@ -3416,14 +4363,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_7b4d5a4b5cea207d",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_d58d297731c94ee9",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_00ac58f3f068a93f",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ba9397859c69ed97",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6d9c722097946fd9",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_4de428b7428add8f",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "여수"
+      "display_name": "여수",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_00ac58f3f068a93f",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ba9397859c69ed97",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_7b4d5a4b5cea207d",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_d58d297731c94ee9",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6d9c722097946fd9",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_4de428b7428add8f",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7XQ8",
@@ -3659,14 +4701,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_05bb1e96c6678ec1",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_4d44f8803cc75ef1",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_752af0581bed0450",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9763778b8b4be8d0",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_752af0581bed0450",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9763778b8b4be8d0",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_05bb1e96c6678ec1",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_4d44f8803cc75ef1",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3FVS",
@@ -3902,14 +5007,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_1b7ecada62da48bf",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_bf873a1e45268a69",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_95b843687349df3f",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_2f387c56ac34975e",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_95b843687349df3f",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_2f387c56ac34975e",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_1b7ecada62da48bf",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_bf873a1e45268a69",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-J5AR7",
@@ -4145,14 +5313,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_d5f812e3b7b14691",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_027835c5a889e69c",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6fbcb13a95dfe7b8",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_8418477a61c0217b",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6fbcb13a95dfe7b8",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_8418477a61c0217b",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_d5f812e3b7b14691",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_027835c5a889e69c",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-DSPQ4",
@@ -4388,14 +5619,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_f48bc235044323b3",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_20060ec84e489511",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c7bb4e8aeddc1cb1",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6d5ff9293ad7cec4",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c7bb4e8aeddc1cb1",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6d5ff9293ad7cec4",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_f48bc235044323b3",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_20060ec84e489511",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7PU7",
@@ -4631,14 +5925,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_491350cb353ab71b",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_095e44908c1e1a44",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_a9b61124f2b9e095",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ff788c1633a7f98b",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_a9b61124f2b9e095",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ff788c1633a7f98b",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_491350cb353ab71b",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_095e44908c1e1a44",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-D7HS",
@@ -4874,14 +6231,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_b0b64cf569539e95",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_19aed7d4bee542fb",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_b97addd69e33a632",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_3ca8efadb7e09776",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_b97addd69e33a632",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_3ca8efadb7e09776",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_b0b64cf569539e95",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_19aed7d4bee542fb",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-970431",
@@ -5121,14 +6541,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_6f02b3bad6ff03a1",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_f67049ffadc30cbd",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_e8c7e05b9bf56394",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_4c0533a5ca8f1570",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9da75ce06aa97fe4",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_3397bb5cc579f86d",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_e8c7e05b9bf56394",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_4c0533a5ca8f1570",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_6f02b3bad6ff03a1",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_f67049ffadc30cbd",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9da75ce06aa97fe4",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_3397bb5cc579f86d",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-5LHI7",
@@ -5364,14 +6879,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_bb661ff3b6c21576",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_11ead007e192eb92",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_b39fd72421418732",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_41952e70a2e999e2",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "평택·당진"
+      "display_name": "평택·당진",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_b39fd72421418732",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_41952e70a2e999e2",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_bb661ff3b6c21576",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_11ead007e192eb92",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7CH9",
@@ -5609,14 +7187,109 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_d07cff81163c889b",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_e21d44984ae3b477",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_2dce7d64e7e3d564",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9bafd29203b9c394",
+            "action": "APPLY"
+          },
+          "eta": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9bfd1565710b290b",
+            "action": "APPLY"
+          },
+          "atd": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_ba1e851e75c4add4",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_2dce7d64e7e3d564",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9bafd29203b9c394",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_d07cff81163c889b",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_e21d44984ae3b477",
+          "action": "APPLY"
+        },
+        "eta": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9bfd1565710b290b",
+          "action": "APPLY"
+        },
+        "atd": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_ba1e851e75c4add4",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-D7SK",
@@ -5852,14 +7525,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_8de98570314a2cd6",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_336faa72017cfe44",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_8d6a7fb1eb410d79",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6c6961e0b83f0a4d",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_8d6a7fb1eb410d79",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6c6961e0b83f0a4d",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_8de98570314a2cd6",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_336faa72017cfe44",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-5LRT6",
@@ -6095,14 +7831,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_4230926b62d446ec",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_43beb4bf0121eccb",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_61c8550cc49bff59",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_0f1d7f0d49a8a47f",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_61c8550cc49bff59",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_0f1d7f0d49a8a47f",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_4230926b62d446ec",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_43beb4bf0121eccb",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3WSY9",
@@ -6338,14 +8137,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_f0c38100c0ce9909",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c557a5c47484462c",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_1740db87e3a2f115",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_398978dde058d743",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_1740db87e3a2f115",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_398978dde058d743",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_f0c38100c0ce9909",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c557a5c47484462c",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3E7078",
@@ -6581,14 +8443,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_1e73c343dab732a9",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_9dec37871c0af78b",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_4aa1af2e720f9270",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c05bfbedfb783682",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_4aa1af2e720f9270",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c05bfbedfb783682",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_1e73c343dab732a9",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_9dec37871c0af78b",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7A6181",
@@ -6824,14 +8749,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_896b8f53c15d9258",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_8842ddb603fbe5a6",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_7046e367d18aa702",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_948f718d0ba1b4e9",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_7046e367d18aa702",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_948f718d0ba1b4e9",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_896b8f53c15d9258",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_8842ddb603fbe5a6",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-3EWK9",
@@ -7067,14 +9055,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_45c29e8e9dc6648e",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_2ca88ecdecdc1fa5",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_6c8926219824e8f8",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_7a62a0143fb3615b",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "인천"
+      "display_name": "인천",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_6c8926219824e8f8",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_7a62a0143fb3615b",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_45c29e8e9dc6648e",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_2ca88ecdecdc1fa5",
+          "action": "APPLY"
+        }
+      }
     },
     {
       "vessel_id": "CALL-V7QU5",
@@ -7310,14 +9361,77 @@
           "call_sign": "port_operation",
           "gt": "port_operation",
           "dwt": "unknown",
-          "operator_display": "company_fallback",
-          "current_port": "port_operation",
-          "berth": "port_operation",
+          "operator_display": {
+            "source": "berth_sources",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": false,
+            "candidate_id": "ec_6570c50cc9125854",
+            "action": "APPLY"
+          },
+          "current_port": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_c8944bea80502748",
+            "action": "APPLY"
+          },
+          "berth": {
+            "source": "port_operation",
+            "confidence": 94,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_95028fa6d2ccc980",
+            "action": "APPLY"
+          },
           "pilotage_signal": "unknown",
-          "opportunity_score": "opportunity_engine"
+          "opportunity_score": "opportunity_engine",
+          "ata": {
+            "source": "port_operation",
+            "confidence": 86,
+            "updated_at": "2026-06-11T09:40:49.215Z",
+            "verified": true,
+            "candidate_id": "ec_3c5757cb3121a998",
+            "action": "APPLY"
+          }
         }
       },
-      "display_name": "마산/창원"
+      "display_name": "마산/창원",
+      "data_lineage": {
+        "berth": {
+          "source": "port_operation",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_95028fa6d2ccc980",
+          "action": "APPLY"
+        },
+        "ata": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_3c5757cb3121a998",
+          "action": "APPLY"
+        },
+        "operator_display": {
+          "source": "berth_sources",
+          "confidence": 94,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": false,
+          "candidate_id": "ec_6570c50cc9125854",
+          "action": "APPLY"
+        },
+        "current_port": {
+          "source": "port_operation",
+          "confidence": 86,
+          "updated_at": "2026-06-11T09:40:49.215Z",
+          "verified": true,
+          "candidate_id": "ec_c8944bea80502748",
+          "action": "APPLY"
+        }
+      }
     }
   ]
 }

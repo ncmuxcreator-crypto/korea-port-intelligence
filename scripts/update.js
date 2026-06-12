@@ -18,6 +18,7 @@ import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
+import { buildSourceDataEnrichmentPayloads } from "./lib/source-data-enrichment-engine.js";
 import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
 import {
   buildAuxiliarySourceCacheStatusPayload,
@@ -6703,9 +6704,13 @@ function inferOperatorDisplayLineage(record = {}) {
 }
 
 function buildVesselDataLineage(record = {}, context = {}) {
-  const existing = record.vessel_display?.data_lineage && typeof record.vessel_display.data_lineage === "object"
+  const displayLineage = record.vessel_display?.data_lineage && typeof record.vessel_display.data_lineage === "object"
     ? record.vessel_display.data_lineage
     : {};
+  const recordLineage = record.data_lineage && typeof record.data_lineage === "object"
+    ? record.data_lineage
+    : {};
+  const existing = { ...displayLineage, ...recordLineage };
   const sourceBlob = lineageSourceBlob(record);
   const hasPortOperation = /port[_ -]?operation|merged port operation|port call|port_operation/.test(sourceBlob);
   const portOperationSource = hasPortOperation ? "port_operation" : normalizeLineageSource(firstDisplayText(record.data_source_used, record.source, record.vessel_display?.data_source));
@@ -18393,6 +18398,26 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     referenceTime: completedAt
   }), finalRunOrigin);
+  const sourceDataEnrichmentRecords = [
+    ...allCollectedVessels,
+    ...vessels,
+    ...targetVessels,
+    ...salesCandidates,
+    ...immediateTargets,
+    ...candidateList,
+    ...hotVessels,
+    ...arrivalPipeline,
+    ...anchorageWaiting,
+    ...stayingVessels
+  ].filter(record => record && typeof record === "object");
+  const sourceDataEnrichmentPayloads = buildSourceDataEnrichmentPayloads({
+    records: sourceDataEnrichmentRecords,
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceQualityScore: sourceQualityScorePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    report
+  });
   const enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
     records: allCollectedVessels,
     sourceQualityScore: sourceQualityScorePayload,
@@ -19134,6 +19159,10 @@ try {
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
+  writeApiJson("dashboard/api/enrichment/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
+  writeApiJson("dashboard/api/enrichment/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);
+  writeApiJson("dashboard/api/enrichment/review-queue.json", sourceDataEnrichmentPayloads.reviewQueuePayload, report);
+  writeApiJson("dashboard/api/enrichment/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
