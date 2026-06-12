@@ -23,7 +23,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -37,21 +37,46 @@ const CORE_INITIAL_ENDPOINTS = new Set([
   "dashboard/api/sales/verification-queue-summary.json"
 ]);
 
+const ENDPOINT_SUMMARY_DETAIL_PAIRS = new Map([
+  ["dashboard/api/all-collected-vessels.json", "dashboard/api/all-collected-vessels-summary.json"],
+  ["dashboard/api/target-vessels.json", "dashboard/api/target-vessels-summary.json"],
+  ["dashboard/api/vessels.json", "dashboard/api/vessels-summary.json"],
+  ["dashboard/api/candidates.json", "dashboard/api/candidates-summary.json"],
+  ["dashboard/api/candidates/top.json", "dashboard/api/candidates/top-summary.json"],
+  ["dashboard/api/hot-vessels.json", "dashboard/api/hot-vessels-summary.json"],
+  ["dashboard/api/sales/actions.json", "dashboard/api/sales/actions-summary.json"],
+  ["dashboard/api/sales/verification-queue.json", "dashboard/api/sales/verification-queue-summary.json"],
+  ["dashboard/api/targets/current.json", "dashboard/api/targets/current-summary.json"],
+  ["dashboard/api/targets/categories.json", "dashboard/api/targets/categories-summary.json"],
+  ["dashboard/api/staying-vessels.json", "dashboard/api/staying-vessels-summary.json"],
+  ["dashboard/api/anchorage-waiting.json", "dashboard/api/anchorage-waiting-summary.json"],
+  ["dashboard/api/arrival-pipeline.json", "dashboard/api/arrival-pipeline-summary.json"],
+  ["dashboard/api/predicted-arrivals.json", "dashboard/api/predicted-arrivals-summary.json"],
+  ["dashboard/api/commercial-command-center.json", "dashboard/api/commercial-command-center-summary.json"],
+  ["dashboard/api/biofouling/vessel-risk-scores.json", "dashboard/api/biofouling/vessel-risk-scores-summary.json"],
+  ["dashboard/api/intelligence/contact-coverage.json", "dashboard/api/intelligence/contact-coverage-summary.json"],
+  ["dashboard/api/status.json", "dashboard/api/status-summary.json"]
+]);
+const ENDPOINT_DETAIL_BY_SUMMARY = new Map([...ENDPOINT_SUMMARY_DETAIL_PAIRS.entries()].map(([detail, summary]) => [summary, detail]));
+
 const IMPORTANT_ENDPOINTS = [
   ["bootstrap", "dashboard/api/bootstrap.json"],
   ["status.summary", "dashboard/api/status-summary.json"],
   ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["ports", "dashboard/api/ports.json"],
+  ["candidates.topSummary", "dashboard/api/candidates/top-summary.json"],
   ["candidates.top", "dashboard/api/candidates/top.json"],
   ["status", "dashboard/api/status.json"],
   ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
+  ["sales.actionsSummary", "dashboard/api/sales/actions-summary.json"],
   ["sales.actions", "dashboard/api/sales/actions.json"],
   ["sales.conversionPipeline", "dashboard/api/sales/conversion-pipeline.json"],
   ["sales.quoteOpportunities", "dashboard/api/sales/quote-opportunities.json"],
   ["sales.verificationQueueSummary", "dashboard/api/sales/verification-queue-summary.json"],
   ["sales.verificationQueue", "dashboard/api/sales/verification-queue.json"],
   ["watchlist.current", "dashboard/api/watchlist/current.json"],
+  ["targets.currentSummary", "dashboard/api/targets/current-summary.json"],
   ["targets.current", "dashboard/api/targets/current.json"],
   ["targets.categoriesSummary", "dashboard/api/targets/categories-summary.json"],
   ["targets.categories", "dashboard/api/targets/categories.json"],
@@ -64,11 +89,13 @@ const IMPORTANT_ENDPOINTS = [
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
+  ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
   ["intelligence.portDna", "dashboard/api/intelligence/port-dna.json"],
   ["intelligence.opportunityMemory", "dashboard/api/intelligence/opportunity-memory.json"],
+  ["intelligence.contactCoverageSummary", "dashboard/api/intelligence/contact-coverage-summary.json"],
   ["intelligence.contactCoverage", "dashboard/api/intelligence/contact-coverage.json"],
   ["intelligence.complianceExposure", "dashboard/api/intelligence/compliance-exposure.json"],
   ["intelligence.cleaningWindow", "dashboard/api/intelligence/cleaning-window.json"]
@@ -151,7 +178,7 @@ function rootType(payload) {
 }
 
 function recordCount(payload) {
-  const direct = Number(payload?.record_count ?? payload?.total_count ?? payload?.total_vessels ?? payload?.all_vessels_count);
+  const direct = Number(payload?.record_count ?? payload?.total_count ?? payload?.total_vessels);
   return Number.isFinite(direct) ? direct : rows(payload).length;
 }
 
@@ -248,6 +275,49 @@ function startupSafe(relativePath, bytes = 0, { validJson = true, schemaValid = 
   return false;
 }
 
+function summaryPathFor(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/ports\/[^/]+\/vessels\.json$/.test(normalized)) {
+    return normalized.replace(/\/vessels\.json$/, "/vessels-summary.json");
+  }
+  return ENDPOINT_SUMMARY_DETAIL_PAIRS.get(normalized) || null;
+}
+
+function detailPathFor(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/ports\/[^/]+\/vessels-summary\.json$/.test(normalized)) {
+    return normalized.replace(/\/vessels-summary\.json$/, "/vessels.json");
+  }
+  return ENDPOINT_DETAIL_BY_SUMMARY.get(normalized) || null;
+}
+
+function maxRecommendedSizeKb(relativePath = "", { startupSafe: isStartupSafe = false } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (isStartupSafe) return normalized === "dashboard/api/bootstrap.json" ? 150 : 100;
+  if (summaryPathFor(normalized) || detailPathFor(normalized)) return detailPathFor(normalized) ? 100 : 500;
+  if (sourceLayer(normalized) === "diagnostic") return 500;
+  return 500;
+}
+
+function recommendedLoad(relativePath = "", { startupSafe: isStartupSafe = false, summaryAvailable = false } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (isStartupSafe) return "initial";
+  if (detailPathFor(normalized)) return "summary";
+  if (summaryAvailable) return "lazy_detail";
+  if (sourceLayer(normalized) === "diagnostic") return "diagnostic_only";
+  if (sourceLayer(normalized) === "auxiliary") return "lazy";
+  return "lazy";
+}
+
+function duplicatedPayloadRisk(relativePath = "", text = "", { bytes = 0, itemCount = 0 } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const vesselDisplayRepeats = (String(text || "").match(/"vessel_display"/g) || []).length;
+  if (detailPathFor(normalized)) return "LOW";
+  if (vesselDisplayRepeats > 100 || (bytes > TOO_LARGE_BYTES && vesselDisplayRepeats > 25)) return "HIGH";
+  if (vesselDisplayRepeats > 25 || (bytes > TOO_LARGE_BYTES && itemCount > 25)) return "MEDIUM";
+  return "LOW";
+}
+
 function staleHours(payload) {
   const value = payload?.generated_at || payload?.last_success_at || payload?.updated_at;
   const time = Date.parse(value || "");
@@ -329,6 +399,11 @@ function auditFile(relativePath) {
       source_layer: sourceLayer(relativePath),
       startup_safe: false,
       load_strategy: loadStrategy(relativePath, { startupSafe: false }),
+      duplicated_payload_risk: "LOW",
+      summary_available: false,
+      detail_available: false,
+      recommended_load: recommendedLoad(relativePath, { startupSafe: false, summaryAvailable: false }),
+      max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: false }),
       status: "MISSING",
       problem: "file missing"
     };
@@ -370,6 +445,10 @@ function auditFile(relativePath) {
       problem = "0 records";
     }
     const safeForStartup = startupSafe(relativePath, bytes, { validJson: true, schemaValid });
+    const summaryPath = summaryPathFor(relativePath);
+    const detailPath = detailPathFor(relativePath);
+    const summaryAvailable = summaryPath ? fs.existsSync(path.join(ROOT, ...summaryPath.split("/"))) : Boolean(detailPath);
+    const detailAvailable = detailPath ? fs.existsSync(path.join(ROOT, ...detailPath.split("/"))) : Boolean(summaryPath);
     return {
       endpoint: relativePath,
       path: relativePath,
@@ -386,6 +465,11 @@ function auditFile(relativePath) {
       source_layer: sourceLayer(relativePath),
       startup_safe: safeForStartup,
       load_strategy: loadStrategy(relativePath, { startupSafe: safeForStartup }),
+      duplicated_payload_risk: duplicatedPayloadRisk(relativePath, text, { bytes, itemCount: actualItemCount }),
+      summary_available: summaryAvailable,
+      detail_available: detailAvailable,
+      recommended_load: recommendedLoad(relativePath, { startupSafe: safeForStartup, summaryAvailable }),
+      max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: safeForStartup }),
       status,
       problem
     };
@@ -406,6 +490,11 @@ function auditFile(relativePath) {
       source_layer: sourceLayer(relativePath),
       startup_safe: false,
       load_strategy: loadStrategy(relativePath, { startupSafe: false }),
+      duplicated_payload_risk: "UNKNOWN",
+      summary_available: Boolean(summaryPathFor(relativePath)),
+      detail_available: Boolean(detailPathFor(relativePath)),
+      recommended_load: recommendedLoad(relativePath, { startupSafe: false, summaryAvailable: Boolean(summaryPathFor(relativePath)) }),
+      max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: false }),
       status: "INVALID_JSON",
       problem: error.message
     };
@@ -428,26 +517,37 @@ function readDashboardEndpointMap() {
 
 function writeManifest(entries) {
   const context = snapshotContextFromDisk();
-  const importantByPath = new Map(entries.map(entry => [entry.path, entry]));
-  const endpoints = IMPORTANT_ENDPOINTS.map(([key, relativePath]) => {
-    const entry = importantByPath.get(relativePath) || auditFile(relativePath);
+  const entryByPath = new Map(entries.map(entry => [entry.path, entry]));
+  const importantKeyByPath = new Map(IMPORTANT_ENDPOINTS.map(([key, relativePath]) => [relativePath, key]));
+  const endpointPaths = [...new Set([...IMPORTANT_ENDPOINTS.map(([, relativePath]) => relativePath), ...entries.map(entry => entry.path)])].sort();
+  const totalEndpointCount = endpointPaths.length;
+  const endpoints = endpointPaths.map((relativePath) => {
+    const entry = entryByPath.get(relativePath) || auditFile(relativePath);
+    const key = importantKeyByPath.get(relativePath)
+      || relativePath.replace(/^dashboard\/api\//, "").replace(/\.json$/, "").replace(/[\\/]+/g, ".");
+    const isManifestEntry = relativePath === "dashboard/api/endpoint-manifest.json";
     return {
       key,
       path: relativePath,
-      exists: entry.exists,
-      first_char: entry.first_char || "",
-      root_type: entry.root_type || (entry.exists ? "unknown" : "missing"),
+      exists: isManifestEntry ? true : entry.exists,
+      first_char: isManifestEntry ? "{" : (entry.first_char || ""),
+      root_type: isManifestEntry ? "object" : (entry.root_type || (entry.exists ? "unknown" : "missing")),
       parsed_from_disk: true,
       parse_checked_at: context.generated_at,
-      valid_json: entry.valid_json,
-      schema_valid: entry.schema_valid,
-      record_count: entry.record_count,
-      item_count: entry.item_count,
+      valid_json: isManifestEntry ? true : entry.valid_json,
+      schema_valid: isManifestEntry ? true : entry.schema_valid,
+      record_count: isManifestEntry ? totalEndpointCount : entry.record_count,
+      item_count: isManifestEntry ? totalEndpointCount : entry.item_count,
       size_kb: entry.size_kb ?? Math.round(((entry.bytes || 0) / 1024) * 10) / 10,
       bytes: entry.bytes || 0,
       source_layer: entry.source_layer || sourceLayer(relativePath),
       startup_safe: entry.startup_safe === true,
       load_strategy: entry.load_strategy || loadStrategy(relativePath, { startupSafe: entry.startup_safe === true }),
+      duplicated_payload_risk: entry.duplicated_payload_risk || "LOW",
+      summary_available: entry.summary_available === true,
+      detail_available: entry.detail_available === true,
+      recommended_load: entry.recommended_load || recommendedLoad(relativePath, { startupSafe: entry.startup_safe === true, summaryAvailable: entry.summary_available === true }),
+      max_recommended_size_kb: entry.max_recommended_size_kb || maxRecommendedSizeKb(relativePath, { startupSafe: entry.startup_safe === true }),
       status: entry.status,
       problem: entry.problem || ""
     };

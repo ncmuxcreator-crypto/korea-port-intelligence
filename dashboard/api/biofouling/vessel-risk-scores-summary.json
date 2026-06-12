@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-11T09:44:10.845Z",
+  "data_mode": "live",
+  "title": "???? ?? ?? ??",
+  "source_endpoint": "dashboard/api/biofouling/vessel-risk-scores.json",
+  "detail_endpoint": "dashboard/api/biofouling/vessel-risk-scores.json",
+  "summary": true,
+  "startup_safe": false,
+  "record_count": 100,
+  "item_count": 5,
+  "total_item_count": 100,
+  "score_distribution": {
+    "very_high": 0,
+    "high": 0,
+    "medium": 21,
+    "low": 79,
+    "missing": 0
+  },
+  "warning_summary": {
+    "large_detail_endpoint": true,
+    "detail_size_kb": 767.8,
+    "note": "?? ???? ?? ? ?? ?????."
+  },
+  "items": [
+    {
+      "rank": 1,
+      "vessel_key": null,
+      "vessel_name": "PAN HOPE",
+      "call_sign": "-",
+      "current_port_korean": "평택·당진",
+      "operator_display": "-",
+      "opportunity_score": 68,
+      "priority_label": "검토",
+      "reason_summary": "SST anomaly 0.6, AIS dwell 153h, salinity proxy 0.81 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+    },
+    {
+      "rank": 2,
+      "vessel_key": null,
+      "vessel_name": "KONA TRADER",
+      "call_sign": "-",
+      "current_port_korean": "부산",
+      "operator_display": "-",
+      "opportunity_score": 67,
+      "priority_label": "검토",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 287h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+    },
+    {
+      "rank": 3,
+      "vessel_key": null,
+      "vessel_name": "VITUS BERING",
+      "call_sign": "-",
+      "current_port_korean": "여수",
+      "operator_display": "-",
+      "opportunity_score": 65,
+      "priority_label": "검토",
+      "reason_summary": "SST anomaly 0.9, AIS dwell 251h, salinity proxy 0.88 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+    },
+    {
+      "rank": 4,
+      "vessel_key": null,
+      "vessel_name": "ADMIRAL SCHMIDT",
+      "call_sign": "-",
+      "current_port_korean": "부산",
+      "operator_display": "-",
+      "opportunity_score": 65,
+      "priority_label": "검토",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 346h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+    },
+    {
+      "rank": 5,
+      "vessel_key": null,
+      "vessel_name": "SM NAVIGATOR",
+      "call_sign": "-",
+      "current_port_korean": "울산",
+      "operator_display": "-",
+      "opportunity_score": 65,
+      "priority_label": "검토",
+      "reason_summary": "SST anomaly 0.7, AIS dwell 181h, salinity proxy 0.91 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+    }
+  ]
+}

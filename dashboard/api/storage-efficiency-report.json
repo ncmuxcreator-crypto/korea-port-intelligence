@@ -1,0 +1,2901 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-12T06:32:18.515Z",
+  "db_health_score": 42,
+  "db_context": {
+    "active_pointer_rows": 1,
+    "active_pointer_error": null,
+    "active_run_id": "run_20260612061752520_06a37656",
+    "active_pointer": {
+      "id": "current",
+      "active_run_id": "run_20260612061752520_06a37656",
+      "active_collected_at": "2026-06-12T06:21:42.349+00:00",
+      "promoted_at": "2026-06-12T06:21:42.349+00:00",
+      "data_age_minutes": 0,
+      "is_stale": false
+    },
+    "latest_successful_run_id": "run_20260612061752520_06a37656",
+    "latest_successful_run": {
+      "run_id": "run_20260612061752520_06a37656",
+      "status": "promoted",
+      "started_at": "2026-06-12T06:17:52.519+00:00",
+      "finished_at": "2026-06-12T06:21:42.349+00:00",
+      "promoted_at": "2026-06-12T06:21:42.349+00:00",
+      "total_rows": 2465,
+      "all_vessels_count": 1009,
+      "normalized_rows": 1009,
+      "target_vessels_count": 126
+    },
+    "latest_run_id": "run_20260612061752520_06a37656",
+    "protected_run_ids": [
+      "run_20260612061752520_06a37656"
+    ]
+  },
+  "summary": {
+    "total_tables_checked": 38,
+    "total_rows_estimated": 80577,
+    "cleanup_candidate_tables": 8,
+    "protected_tables": 4,
+    "critical_issues": 0,
+    "warnings": 29
+  },
+  "table_inventory": [
+    {
+      "table_name": "data_collection_runs",
+      "group": "core_run_pointer",
+      "exists": true,
+      "row_count": 369,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-30T03:25:08.431+00:00",
+      "newest_created_at": "2026-06-12T06:17:52.519+00:00",
+      "oldest_run_id": "run_20260530032508431_e3da08af",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 369,
+      "latest_run_row_count": 1,
+      "active_run_row_count": 1,
+      "cleanup_risk_level": "NEEDS_MANUAL_REVIEW",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "started_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "active_dataset_pointer",
+      "group": "core_run_pointer",
+      "exists": true,
+      "row_count": 1,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "NEVER_DELETE",
+      "protection_status": "BLOCKED_BY_PROTECTION_RULE",
+      "error": null,
+      "date_column": null,
+      "run_id_column": null
+    },
+    {
+      "table_name": "sales_candidates_current",
+      "group": "current_serving",
+      "exists": true,
+      "row_count": 126,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 126,
+      "active_run_row_count": 126,
+      "cleanup_risk_level": "NEEDS_MANUAL_REVIEW",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "updated_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "immediate_targets_current",
+      "group": "current_serving",
+      "exists": true,
+      "row_count": 0,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": 0,
+      "latest_run_row_count": 0,
+      "active_run_row_count": 0,
+      "cleanup_risk_level": "NEEDS_MANUAL_REVIEW",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "updated_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "port_summary_current",
+      "group": "current_serving",
+      "exists": true,
+      "row_count": 8,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 8,
+      "active_run_row_count": 8,
+      "cleanup_risk_level": "NEEDS_MANUAL_REVIEW",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "updated_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "vessel_master",
+      "group": "core_vessel_data",
+      "exists": true,
+      "row_count": 2853,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-31T23:52:14.755+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "BLOCKED_BY_PROTECTION_RULE",
+      "error": null,
+      "date_column": "updated_at",
+      "run_id_column": null
+    },
+    {
+      "table_name": "vessel_entities",
+      "group": "core_vessel_data",
+      "exists": true,
+      "row_count": 2938,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": null,
+      "run_id_column": null
+    },
+    {
+      "table_name": "vessel_snapshots",
+      "group": "core_vessel_data",
+      "exists": true,
+      "row_count": 1009,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:17:52.541+00:00",
+      "newest_created_at": "2026-06-12T06:17:52.541+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "updated_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "port_call_master",
+      "group": "core_vessel_data",
+      "exists": true,
+      "row_count": 1009,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "opportunity_master",
+      "group": "core_vessel_data",
+      "exists": true,
+      "row_count": 6698,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-31T23:52:14.755+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260531234657085_97e698b4",
+      "newest_run_id": "run_20260603222310601_ada20eaf",
+      "run_id_count": 57,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "vessel_events",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 42309,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-09T08:10:47.167+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260609080644599_8e5e0fd6",
+      "newest_run_id": "run_20260609083500928_1c6556c2",
+      "run_id_count": 3,
+      "latest_run_row_count": 4166,
+      "active_run_row_count": 4166,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "risk_history",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 321,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 321,
+      "active_run_row_count": 321,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "explainability_snapshots",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 321,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 321,
+      "active_run_row_count": 321,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "rule_evaluations",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 700,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 700,
+      "active_run_row_count": 700,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "feature_store",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 321,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 321,
+      "active_run_row_count": 321,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "feature_snapshots",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 321,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 321,
+      "active_run_row_count": 321,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "model_training_rows",
+      "group": "history_scoring",
+      "exists": true,
+      "row_count": 208,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 208,
+      "active_run_row_count": 208,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "vessel_snapshot_daily",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 1009,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "port_snapshot_daily",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 72,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-05T12:42:58.188+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260609124044464_c88ee8d5",
+      "newest_run_id": "run_20260608145136181_77806445",
+      "run_id_count": 10,
+      "latest_run_row_count": 8,
+      "active_run_row_count": 8,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "commercial_opportunity_daily",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 29,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 29,
+      "active_run_row_count": 29,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "route_snapshot_daily",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 3933,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-04T19:54:52.292+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260610130919967_460f782f",
+      "newest_run_id": "run_20260611094049200_540e1000",
+      "run_id_count": 46,
+      "latest_run_row_count": 292,
+      "active_run_row_count": 292,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "operator_snapshot_daily",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 87,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-05T12:42:58.188+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260608145136181_77806445",
+      "run_id_count": 10,
+      "latest_run_row_count": 10,
+      "active_run_row_count": 10,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "vessel_universe_audit",
+      "group": "daily_aggregate",
+      "exists": true,
+      "row_count": 358,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-31T04:02:05.274+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260531035624661_bf94e0a5",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 358,
+      "latest_run_row_count": 1,
+      "active_run_row_count": 1,
+      "cleanup_risk_level": "NEEDS_MANUAL_REVIEW",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "port_congestion_snapshots",
+      "group": "port_congestion",
+      "exists": true,
+      "row_count": 1046,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-09T08:10:47.167+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260609080644599_8e5e0fd6",
+      "newest_run_id": "run_20260612024804038_4b6419ef",
+      "run_id_count": 122,
+      "latest_run_row_count": 8,
+      "active_run_row_count": 8,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "port_daily_summary",
+      "group": "port_congestion",
+      "exists": true,
+      "row_count": 18,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "newest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "generated_at",
+      "run_id_column": null
+    },
+    {
+      "table_name": "port_weekly_summary",
+      "group": "port_congestion",
+      "exists": true,
+      "row_count": 18,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "newest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "generated_at",
+      "run_id_column": null
+    },
+    {
+      "table_name": "port_monthly_summary",
+      "group": "port_congestion",
+      "exists": true,
+      "row_count": 18,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "newest_created_at": "2026-06-01T11:24:05.056099+00:00",
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "generated_at",
+      "run_id_column": null
+    },
+    {
+      "table_name": "commercial_leads",
+      "group": "commercial_sales",
+      "exists": true,
+      "row_count": 4,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-05T12:00:05.827752+00:00",
+      "newest_created_at": "2026-06-12T05:09:43.331375+00:00",
+      "oldest_run_id": "run_20260610025017527_987627b8",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 4,
+      "latest_run_row_count": 1,
+      "active_run_row_count": 1,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "BLOCKED_BY_PROTECTION_RULE",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "operator_contact_history",
+      "group": "commercial_sales",
+      "exists": true,
+      "row_count": 1009,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "BLOCKED_BY_PROTECTION_RULE",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "sales_pipeline",
+      "group": "commercial_sales",
+      "exists": false,
+      "row_count": null,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": "Could not find the table 'public.sales_pipeline' in the schema cache"
+    },
+    {
+      "table_name": "quote_opportunities",
+      "group": "commercial_sales",
+      "exists": false,
+      "row_count": null,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": "Could not find the table 'public.quote_opportunities' in the schema cache"
+    },
+    {
+      "table_name": "customer_memory",
+      "group": "commercial_sales",
+      "exists": false,
+      "row_count": null,
+      "estimated_size": null,
+      "oldest_created_at": null,
+      "newest_created_at": null,
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": "Could not find the table 'public.customer_memory' in the schema cache"
+    },
+    {
+      "table_name": "enrichment_match_candidates",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 692,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-10T22:27:10.163+00:00",
+      "newest_created_at": "2026-06-12T05:09:15.657+00:00",
+      "oldest_run_id": "daily_enrich_20260610222710163_02b02ecd",
+      "newest_run_id": "run_20260612050007057_76fd46c6",
+      "run_id_count": 12,
+      "latest_run_row_count": 0,
+      "active_run_row_count": 0,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "imo_recovery_queue",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 4575,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-31T14:24:04.213+00:00",
+      "newest_created_at": "2026-06-12T06:21:42.349+00:00",
+      "oldest_run_id": "daily_enrich_20260606185817239_75370cab",
+      "newest_run_id": "run_20260604194926676_c01ead84",
+      "run_id_count": 83,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "vessel_identity_candidates",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 1009,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:21:53.835977+00:00",
+      "newest_created_at": "2026-06-12T06:21:54.386057+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 1009,
+      "active_run_row_count": 1009,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "collected_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": true
+    },
+    {
+      "table_name": "vessel_aliases",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 6952,
+      "estimated_size": null,
+      "oldest_created_at": "2026-05-31T05:28:13.753733+00:00",
+      "newest_created_at": "2026-06-12T06:21:53.758982+00:00",
+      "oldest_run_id": null,
+      "newest_run_id": null,
+      "run_id_count": null,
+      "latest_run_row_count": null,
+      "active_run_row_count": null,
+      "cleanup_risk_level": "RETAIN_LONG_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": null
+    },
+    {
+      "table_name": "pilot_schedule_events",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 201,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-09T09:54:33.280406+00:00",
+      "newest_created_at": "2026-06-12T05:09:53.733426+00:00",
+      "oldest_run_id": "run_20260609094725526_5c35787a",
+      "newest_run_id": "run_20260612050007057_76fd46c6",
+      "run_id_count": 29,
+      "latest_run_row_count": 0,
+      "active_run_row_count": 0,
+      "cleanup_risk_level": "RETAIN_MEDIUM_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "created_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    },
+    {
+      "table_name": "source_collection_logs",
+      "group": "enrichment_source_cache",
+      "exists": true,
+      "row_count": 35,
+      "estimated_size": null,
+      "oldest_created_at": "2026-06-12T06:17:55.974+00:00",
+      "newest_created_at": "2026-06-12T06:21:14.655+00:00",
+      "oldest_run_id": "run_20260612061752520_06a37656",
+      "newest_run_id": "run_20260612061752520_06a37656",
+      "run_id_count": 1,
+      "latest_run_row_count": 35,
+      "active_run_row_count": 35,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "protection_status": "not_protected",
+      "error": null,
+      "date_column": "started_at",
+      "run_id_column": "run_id",
+      "run_id_count_sampled": false
+    }
+  ],
+  "protected_data": [
+    {
+      "type": "active_dataset_pointer",
+      "identifier": "run_20260612061752520_06a37656",
+      "protected": true
+    },
+    {
+      "type": "latest_successful_run",
+      "identifier": "run_20260612061752520_06a37656",
+      "protected": true
+    },
+    {
+      "type": "vessel_master",
+      "identifier": "canonical identity rows",
+      "protected": true
+    },
+    {
+      "type": "commercial_sales_history",
+      "identifier": "commercial_leads/operator_contact_history/sales_pipeline/quote/customer_memory",
+      "protected": true
+    },
+    {
+      "type": "manual_reference_data",
+      "identifier": "verified source_csv/manual watchlist records",
+      "protected": true
+    }
+  ],
+  "run_level_cleanup": {
+    "summary": {
+      "total_runs": 369,
+      "completed_runs": 342,
+      "failed_runs": 0,
+      "syncing_runs": 0,
+      "syncing_runs_older_than_1h": 0,
+      "failed_runs_older_than_14d": 0,
+      "completed_runs_older_than_retention_window": 25,
+      "latest_successful_run": "run_20260612061752520_06a37656",
+      "active_run": "run_20260612061752520_06a37656"
+    },
+    "cleanup_candidates": [
+      {
+        "run_id": "run_20260611103308821_aea4733e",
+        "status": "promoted",
+        "age_days": 0.8,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 28,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 9,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611094049200_540e1000",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 16,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611093628081_fa869604",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 1,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611093102163_c5f766ac",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611085053060_c44ab234",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 13,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611082323489_1b119ace",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 3,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611081706677_c876572b",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611074820254_f92e3219",
+        "status": "promoted",
+        "age_days": 0.9,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 11,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 9,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611070417001_4c116173",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 14,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611061010164_2554ea08",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 22,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 9,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611060133674_e92f303b",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 1,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611055708096_8ac8df80",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 5,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611054247041_91debf59",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 1,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611053216802_9bc338fd",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 2,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611052213874_65155e42",
+        "status": "promoted",
+        "age_days": 1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 6,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611051422321_0047505b",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 12,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611040707989_3073fbe8",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 11,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 9,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611035831134_55a86b88",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611035302244_18f586c4",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 3,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611034748756_79da3159",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 2,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611032538498_b4f7ac82",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 4,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611032047881_cc3c1c41",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611031424592_8981c987",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611030904330_ff81ea5b",
+        "status": "promoted",
+        "age_days": 1.1,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 0,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      },
+      {
+        "run_id": "run_20260611023859390_d3f7ea00",
+        "status": "promoted",
+        "age_days": 1.2,
+        "row_counts_by_table": {
+          "vessel_snapshots": 0,
+          "port_call_master": 0,
+          "opportunity_master": 7,
+          "risk_history": 0,
+          "feature_snapshots": 0,
+          "explainability_snapshots": 0,
+          "rule_evaluations": 0,
+          "port_congestion_snapshots": 8,
+          "source_collection_logs": 0
+        },
+        "reason": "completed run outside recent 20 detailed runs",
+        "protected": false,
+        "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+      }
+    ],
+    "sampled": false
+  },
+  "cleanup_candidates": [
+    {
+      "run_id": "run_20260611103308821_aea4733e",
+      "status": "promoted",
+      "age_days": 0.8,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 28,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 9,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611094049200_540e1000",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 16,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611093628081_fa869604",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 1,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611093102163_c5f766ac",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611085053060_c44ab234",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 13,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611082323489_1b119ace",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 3,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611081706677_c876572b",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611074820254_f92e3219",
+      "status": "promoted",
+      "age_days": 0.9,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 11,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 9,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611070417001_4c116173",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 14,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611061010164_2554ea08",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 22,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 9,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611060133674_e92f303b",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 1,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611055708096_8ac8df80",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 5,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611054247041_91debf59",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 1,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611053216802_9bc338fd",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 2,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611052213874_65155e42",
+      "status": "promoted",
+      "age_days": 1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 6,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611051422321_0047505b",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 12,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611040707989_3073fbe8",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 11,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 9,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611035831134_55a86b88",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611035302244_18f586c4",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 3,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611034748756_79da3159",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 2,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611032538498_b4f7ac82",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 4,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611032047881_cc3c1c41",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611031424592_8981c987",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611030904330_ff81ea5b",
+      "status": "promoted",
+      "age_days": 1.1,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 0,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "run_id": "run_20260611023859390_d3f7ea00",
+      "status": "promoted",
+      "age_days": 1.2,
+      "row_counts_by_table": {
+        "vessel_snapshots": 0,
+        "port_call_master": 0,
+        "opportunity_master": 7,
+        "risk_history": 0,
+        "feature_snapshots": 0,
+        "explainability_snapshots": 0,
+        "rule_evaluations": 0,
+        "port_congestion_snapshots": 8,
+        "source_collection_logs": 0
+      },
+      "reason": "completed run outside recent 20 detailed runs",
+      "protected": false,
+      "cleanup_safety": "SAFE_CLEANUP_CANDIDATE"
+    },
+    {
+      "table_name": "vessel_snapshots",
+      "row_count": 1009,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "reason": "run-level detailed snapshot table",
+      "protected": false
+    },
+    {
+      "table_name": "port_call_master",
+      "row_count": 1009,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "reason": "run-level detailed snapshot table",
+      "protected": false
+    },
+    {
+      "table_name": "opportunity_master",
+      "row_count": 6698,
+      "cleanup_risk_level": "SAFE_CLEANUP_CANDIDATE",
+      "reason": "run-level detailed snapshot table",
+      "protected": false
+    },
+    {
+      "table_name": "port_congestion_snapshots",
+      "row_count": 1046,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "reason": "short-term operational/cache table",
+      "protected": false
+    },
+    {
+      "table_name": "enrichment_match_candidates",
+      "row_count": 692,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "reason": "short-term operational/cache table",
+      "protected": false
+    },
+    {
+      "table_name": "imo_recovery_queue",
+      "row_count": 4575,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "reason": "short-term operational/cache table",
+      "protected": false
+    },
+    {
+      "table_name": "vessel_identity_candidates",
+      "row_count": 1009,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "reason": "short-term operational/cache table",
+      "protected": false
+    },
+    {
+      "table_name": "source_collection_logs",
+      "row_count": 35,
+      "cleanup_risk_level": "RETAIN_SHORT_TERM",
+      "reason": "short-term operational/cache table",
+      "protected": false
+    }
+  ],
+  "duplicate_findings": [
+    {
+      "table": "vessel_master",
+      "check": "duplicate IMO",
+      "columns": [
+        "imo"
+      ],
+      "duplicate_count": 0,
+      "duplicate_key_count": 0,
+      "examples": [],
+      "sampled": true,
+      "recommended_unique_index": [
+        "imo"
+      ],
+      "cleanup_safety": "OK"
+    },
+    {
+      "table": "vessel_master",
+      "check": "duplicate MMSI",
+      "columns": [
+        "mmsi"
+      ],
+      "duplicate_count": 0,
+      "duplicate_key_count": 0,
+      "examples": [],
+      "sampled": true,
+      "recommended_unique_index": [
+        "mmsi"
+      ],
+      "cleanup_safety": "OK"
+    },
+    {
+      "table": "vessel_master",
+      "check": "duplicate call_sign + normalized_vessel_name",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column vessel_master.normalized_vessel_name does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "vessel_master",
+      "check": "duplicate normalized_vessel_name + vessel_type + gt",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column vessel_master.normalized_vessel_name does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "vessel_snapshots",
+      "check": "duplicate run_id + vessel_id",
+      "columns": [
+        "run_id",
+        "vessel_id"
+      ],
+      "duplicate_count": 0,
+      "duplicate_key_count": 0,
+      "examples": [],
+      "sampled": true,
+      "recommended_unique_index": [
+        "run_id",
+        "vessel_id"
+      ],
+      "cleanup_safety": "OK"
+    },
+    {
+      "table": "vessel_snapshots",
+      "check": "duplicate run_id + call_sign + vessel_name",
+      "columns": [
+        "run_id",
+        "call_sign",
+        "vessel_name"
+      ],
+      "duplicate_count": 0,
+      "duplicate_key_count": 0,
+      "examples": [],
+      "sampled": true,
+      "recommended_unique_index": [
+        "run_id",
+        "call_sign",
+        "vessel_name"
+      ],
+      "cleanup_safety": "OK"
+    },
+    {
+      "table": "vessel_snapshots",
+      "check": "duplicate run_id + normalized_vessel_name + current_port",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column vessel_snapshots.normalized_vessel_name does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "port_call_master",
+      "check": "duplicate run_id + vessel + port + ata",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column port_call_master.vessel_id does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "port_call_master",
+      "check": "duplicate call_sign + port + time",
+      "columns": [
+        "call_sign",
+        "port_code",
+        "ata"
+      ],
+      "duplicate_count": 0,
+      "duplicate_key_count": 0,
+      "examples": [],
+      "sampled": true,
+      "recommended_unique_index": [
+        "call_sign",
+        "port_code",
+        "ata"
+      ],
+      "cleanup_safety": "OK"
+    },
+    {
+      "table": "opportunity_master",
+      "check": "duplicate run_id + vessel_id",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column opportunity_master.vessel_id does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "opportunity_master",
+      "check": "duplicate run_id + call_sign + vessel_name",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column opportunity_master.call_sign does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "sales_candidates_current",
+      "check": "duplicate vessel_id",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column sales_candidates_current.vessel_id does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "sales_candidates_current",
+      "check": "duplicate call_sign + vessel_name",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column sales_candidates_current.call_sign does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "sales_candidates_current",
+      "check": "duplicate rank",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "WITHIN GROUP is required for ordered-set aggregate rank",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "immediate_targets_current",
+      "check": "duplicate rank",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "WITHIN GROUP is required for ordered-set aggregate rank",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "port_summary_current",
+      "check": "duplicate port display names",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column port_summary_current.display_name does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "vessel_identity_candidates",
+      "check": "duplicate identity candidate keys",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column vessel_identity_candidates.candidate_key does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "imo_recovery_queue",
+      "check": "duplicate recovery queue rows",
+      "columns": [
+        "call_sign",
+        "vessel_name",
+        "status"
+      ],
+      "duplicate_count": 143,
+      "duplicate_key_count": 130,
+      "examples": [
+        {
+          "key": "3EPP8|NEW DEDICATION|pending",
+          "values": {
+            "call_sign": "3EPP8",
+            "vessel_name": "NEW DEDICATION",
+            "status": "pending"
+          },
+          "count": 4
+        },
+        {
+          "key": "LATD8|돈카를로스|pending",
+          "values": {
+            "call_sign": "LATD8",
+            "vessel_name": "돈카를로스",
+            "status": "pending"
+          },
+          "count": 4
+        },
+        {
+          "key": "210016|부광5호|pending",
+          "values": {
+            "call_sign": "210016",
+            "vessel_name": "부광5호",
+            "status": "pending"
+          },
+          "count": 4
+        },
+        {
+          "key": "H3KT|AMIS VICTORY|pending",
+          "values": {
+            "call_sign": "H3KT",
+            "vessel_name": "AMIS VICTORY",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "212838|제8우진호|pending",
+          "values": {
+            "call_sign": "212838",
+            "vessel_name": "제8우진호",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "OWLD2|CHARLOTTE MAERSK|pending",
+          "values": {
+            "call_sign": "OWLD2",
+            "vessel_name": "CHARLOTTE MAERSK",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "DYTK|ORION TRADER|pending",
+          "values": {
+            "call_sign": "DYTK",
+            "vessel_name": "ORION TRADER",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "9HA5941|CMA CGM MONACO|pending",
+          "values": {
+            "call_sign": "9HA5941",
+            "vessel_name": "CMA CGM MONACO",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "SMIO|FIGARO|pending",
+          "values": {
+            "call_sign": "SMIO",
+            "vessel_name": "FIGARO",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "9VDK5|AURORA GUARDIAN|pending",
+          "values": {
+            "call_sign": "9VDK5",
+            "vessel_name": "AURORA GUARDIAN",
+            "status": "pending"
+          },
+          "count": 3
+        },
+        {
+          "key": "V7A6569|POSILLIPO|pending",
+          "values": {
+            "call_sign": "V7A6569",
+            "vessel_name": "POSILLIPO",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "V7B3347|MARCEL|pending",
+          "values": {
+            "call_sign": "V7B3347",
+            "vessel_name": "MARCEL",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "3E9572|ADMIRAL SCHMIDT|pending",
+          "values": {
+            "call_sign": "3E9572",
+            "vessel_name": "ADMIRAL SCHMIDT",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "HZKV|MONA|pending",
+          "values": {
+            "call_sign": "HZKV",
+            "vessel_name": "MONA",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "3EA4147|NAVE HINA|pending",
+          "values": {
+            "call_sign": "3EA4147",
+            "vessel_name": "NAVE HINA",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "S6UJ2|PM EMPRESS|pending",
+          "values": {
+            "call_sign": "S6UJ2",
+            "vessel_name": "PM EMPRESS",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "3E8916|STENA CONTINENT|pending",
+          "values": {
+            "call_sign": "3E8916",
+            "vessel_name": "STENA CONTINENT",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "A8WR3|XIN TAI LONG|pending",
+          "values": {
+            "call_sign": "A8WR3",
+            "vessel_name": "XIN TAI LONG",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "9V5378|EAGLE BRISBANE|pending",
+          "values": {
+            "call_sign": "9V5378",
+            "vessel_name": "EAGLE BRISBANE",
+            "status": "pending"
+          },
+          "count": 2
+        },
+        {
+          "key": "3EPK3|SPRING SKY|pending",
+          "values": {
+            "call_sign": "3EPK3",
+            "vessel_name": "SPRING SKY",
+            "status": "pending"
+          },
+          "count": 2
+        }
+      ],
+      "sampled": true,
+      "recommended_unique_index": [
+        "call_sign",
+        "vessel_name",
+        "status"
+      ],
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    },
+    {
+      "table": "vessel_aliases",
+      "check": "duplicate vessel aliases",
+      "duplicate_count": null,
+      "examples": [],
+      "error": "column vessel_aliases.alias does not exist",
+      "cleanup_safety": "NEEDS_MANUAL_REVIEW"
+    }
+  ],
+  "orphan_findings": [
+    {
+      "table": "vessel_snapshots",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": true,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "port_call_master",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": true,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "opportunity_master",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": true,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "risk_history",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "feature_snapshots",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "explainability_snapshots",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "rule_evaluations",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "port_congestion_snapshots",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": true,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "source_collection_logs",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "sales_candidates_current",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "immediate_targets_current",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "port_summary_current",
+      "type": "run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "sampled": false,
+      "severity": "OK",
+      "cleanup_recommendation": "No orphan run ids detected in sample."
+    },
+    {
+      "table": "active_dataset_pointer",
+      "type": "active_run_id_missing_from_data_collection_runs",
+      "orphan_count": 0,
+      "examples": [],
+      "severity": "OK",
+      "cleanup_recommendation": "Active pointer run is known."
+    },
+    {
+      "table": "opportunity_master",
+      "type": "master_vessel_id_missing_from_vessel_master",
+      "orphan_count": 507,
+      "examples": [
+        "MASTER-CALLSIGN-V7A6569",
+        "MASTER-CALLSIGN-9VCX4",
+        "MASTER-CALLSIGN-BHJI",
+        "MASTER-CALLSIGN-TJMW24",
+        "MASTER-CALLSIGN-D8TI",
+        "MASTER-CALLSIGN-H3KT",
+        "MASTER-CALLSIGN-9VCB8",
+        "MASTER-CALLSIGN-S6UJ2",
+        "MASTER-CALLSIGN-8PAV4",
+        "MASTER-CALLSIGN-A8LF8",
+        "MASTER-CALLSIGN-DSRP4",
+        "MASTER-CALLSIGN-D5ML4",
+        "MASTER-CALLSIGN-DSOU4",
+        "MASTER-CALLSIGN-9V5378",
+        "MASTER-CALLSIGN-VRTB6",
+        "MASTER-CALLSIGN-7KAJ",
+        "MASTER-CALLSIGN-9V7910",
+        "MASTER-CALLSIGN-V7B2587",
+        "MASTER-CALLSIGN-VTPZ",
+        "MASTER-CALLSIGN-D8PH"
+      ],
+      "sampled": true,
+      "severity": "WARNING",
+      "cleanup_recommendation": "Review identity mapping before cleanup; child commercial/risk rows may need remap."
+    },
+    {
+      "table": "risk_history",
+      "type": "master_vessel_id_missing_from_vessel_master",
+      "orphan_count": 230,
+      "examples": [
+        "MASTER-CALLSIGN-V7B3347",
+        "MASTER-CALLSIGN-HOYL",
+        "MASTER-CALLSIGN-8PSO2",
+        "MASTER-CALLSIGN-V7KU4",
+        "MASTER-CALLSIGN-V7A4617",
+        "MASTER-CALLSIGN-V7A3508",
+        "MASTER-CALLSIGN-5LYO4",
+        "MASTER-CALLSIGN-V7A2046",
+        "MASTER-CALLSIGN-BUQZ",
+        "MASTER-CALLSIGN-KLBO",
+        "MASTER-CALLSIGN-7KSY",
+        "MASTER-CALLSIGN-V7B2724",
+        "MASTER-CALLSIGN-V7A3317",
+        "MASTER-CALLSIGN-PCPA",
+        "MASTER-CALLSIGN-D5TM2",
+        "MASTER-CALLSIGN-D7UQ",
+        "MASTER-CALLSIGN-D5XU7",
+        "MASTER-CALLSIGN-V7B2857",
+        "MASTER-CALLSIGN-D5MF8",
+        "MASTER-CALLSIGN-V7A6226"
+      ],
+      "sampled": true,
+      "severity": "WARNING",
+      "cleanup_recommendation": "Review identity mapping before cleanup; child commercial/risk rows may need remap."
+    },
+    {
+      "table": "sales_candidates_current",
+      "type": "master_vessel_id_missing_from_vessel_master",
+      "orphan_count": 56,
+      "examples": [
+        "MASTER-CALLSIGN-V7B3347",
+        "MASTER-CALLSIGN-HOYL",
+        "MASTER-CALLSIGN-8PSO2",
+        "MASTER-CALLSIGN-V7KU4",
+        "MASTER-CALLSIGN-V7A4617",
+        "MASTER-CALLSIGN-V7A3508",
+        "MASTER-CALLSIGN-5LYO4",
+        "MASTER-CALLSIGN-V7A2046",
+        "MASTER-CALLSIGN-BUQZ",
+        "MASTER-CALLSIGN-KLBO",
+        "MASTER-CALLSIGN-PCPA",
+        "MASTER-CALLSIGN-V7A2782",
+        "MASTER-CALLSIGN-9HA5941",
+        "MASTER-CALLSIGN-V7A3322",
+        "MASTER-CALLSIGN-9HA3539",
+        "MASTER-CALLSIGN-9HA6117",
+        "MASTER-CALLSIGN-V7B2847",
+        "MASTER-CALLSIGN-D7CQ",
+        "MASTER-CALLSIGN-V7KG7",
+        "MASTER-CALLSIGN-D7DL"
+      ],
+      "sampled": true,
+      "severity": "WARNING",
+      "cleanup_recommendation": "Review identity mapping before cleanup; child commercial/risk rows may need remap."
+    }
+  ],
+  "current_table_consistency": [
+    {
+      "table": "sales_candidates_current",
+      "row_count": 126,
+      "run_ids": [
+        "run_20260612061752520_06a37656"
+      ],
+      "severity": "OK",
+      "issues": []
+    },
+    {
+      "table": "immediate_targets_current",
+      "row_count": 0,
+      "run_ids": [],
+      "severity": "OK",
+      "issues": []
+    },
+    {
+      "table": "port_summary_current",
+      "row_count": 8,
+      "run_ids": [
+        "run_20260612061752520_06a37656"
+      ],
+      "severity": "OK",
+      "issues": []
+    }
+  ],
+  "compaction_opportunities": [
+    {
+      "detail_table": "vessel_snapshots",
+      "aggregate_target": "vessel_snapshot_daily",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 1009,
+      "aggregate_rows": 1009,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "port_call_master",
+      "aggregate_target": "port_daily_summary",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 1009,
+      "aggregate_rows": 18,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "opportunity_master",
+      "aggregate_target": "commercial_opportunity_daily",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 6698,
+      "aggregate_rows": 29,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "risk_history",
+      "aggregate_target": "commercial_opportunity_daily",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 321,
+      "aggregate_rows": 29,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "feature_snapshots",
+      "aggregate_target": "vessel_snapshot_daily",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 321,
+      "aggregate_rows": 1009,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "explainability_snapshots",
+      "aggregate_target": "commercial_opportunity_daily",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 321,
+      "aggregate_rows": 29,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    },
+    {
+      "detail_table": "port_congestion_snapshots",
+      "aggregate_target": "port_daily_summary",
+      "detail_exists": true,
+      "aggregate_exists": true,
+      "detailed_rows": 1046,
+      "aggregate_rows": 18,
+      "detailed_rows_older_than_30d": 0,
+      "detailed_rows_older_than_60d": 0,
+      "detailed_rows_older_than_90d": 0,
+      "aggregate_coverage_exists": true,
+      "safe_to_compact": "MANUAL_REVIEW",
+      "missing_aggregate_table": false
+    }
+  ],
+  "enrichment_queue_cleanup": [
+    {
+      "table": "imo_recovery_queue",
+      "exists": true,
+      "total_rows": 4575,
+      "pending_rows": 1000,
+      "resolved_rows": 0,
+      "applied_rows": 0,
+      "failed_rows": 0,
+      "needs_review_rows": 0,
+      "duplicate_pending_candidates": 147,
+      "pending_rows_older_than_30d": 0,
+      "rows_that_can_be_archived": 0,
+      "recommendation": "Keep recent pending/needs_review rows; archive old resolved/applied rows; preserve manually reviewed records."
+    },
+    {
+      "table": "enrichment_match_candidates",
+      "exists": true,
+      "total_rows": 692,
+      "pending_rows": 0,
+      "resolved_rows": 0,
+      "applied_rows": 0,
+      "failed_rows": 0,
+      "needs_review_rows": 0,
+      "duplicate_pending_candidates": 0,
+      "pending_rows_older_than_30d": 0,
+      "rows_that_can_be_archived": 0,
+      "recommendation": "Keep recent pending/needs_review rows; archive old resolved/applied rows; preserve manually reviewed records."
+    },
+    {
+      "table": "vessel_identity_candidates",
+      "exists": true,
+      "total_rows": 1009,
+      "pending_rows": 0,
+      "resolved_rows": 0,
+      "applied_rows": 0,
+      "failed_rows": 0,
+      "needs_review_rows": 0,
+      "duplicate_pending_candidates": 0,
+      "pending_rows_older_than_30d": 0,
+      "rows_that_can_be_archived": 0,
+      "recommendation": "Keep recent pending/needs_review rows; archive old resolved/applied rows; preserve manually reviewed records."
+    },
+    {
+      "table": "vessel_aliases",
+      "exists": true,
+      "total_rows": 6952,
+      "pending_rows": 0,
+      "resolved_rows": 0,
+      "applied_rows": 0,
+      "failed_rows": 0,
+      "needs_review_rows": 0,
+      "duplicate_pending_candidates": 0,
+      "pending_rows_older_than_30d": 0,
+      "rows_that_can_be_archived": 0,
+      "recommendation": "Keep recent pending/needs_review rows; archive old resolved/applied rows; preserve manually reviewed records."
+    }
+  ],
+  "source_log_cleanup": {
+    "exists": true,
+    "total_rows": 35,
+    "rows_by_source_sample": {
+      "korea_public_data": 1,
+      "mof_ais_dynamic": 1,
+      "mof_ais_info": 1,
+      "mof_ais_stat": 1,
+      "port_operation_busan_i": 1,
+      "port_operation_busan_o": 1,
+      "port_operation_daesan_i": 1,
+      "port_operation_daesan_o": 1,
+      "port_operation_donghae_mukho_i": 1,
+      "port_operation_donghae_mukho_o": 1,
+      "port_operation_gunsan_i": 1,
+      "port_operation_gunsan_o": 1,
+      "port_operation_incheon_i": 1,
+      "port_operation_incheon_o": 1,
+      "port_operation_jeju_i": 1,
+      "port_operation_jeju_o": 1,
+      "port_operation_mokpo_i": 1,
+      "port_operation_mokpo_o": 1,
+      "port_operation_pohang_i": 1,
+      "port_operation_pohang_o": 1,
+      "port_operation_pyeongtaek_dangjin_i": 1,
+      "port_operation_pyeongtaek_dangjin_o": 1,
+      "port_operation_south_gyeongsang_i": 1,
+      "port_operation_south_gyeongsang_o": 1,
+      "port_operation_ulsan_i": 1,
+      "port_operation_ulsan_o": 1,
+      "port_operation_yeosu_gwangyang_i": 1,
+      "port_operation_yeosu_gwangyang_o": 1,
+      "source_csv": 1,
+      "ulsan_berth_detail": 1,
+      "ulsan_berth_operation": 1,
+      "ulsan_cargo_plan": 1,
+      "ulsan_core": 1,
+      "ulsan_terminal_process": 1,
+      "vessel_spec": 1
+    },
+    "failed_source_logs_older_than_30d": 0,
+    "success_or_any_logs_older_than_30d": 0,
+    "duplicate_logs_per_run_source_sample": 0,
+    "recommendation": "Keep recent 30-60 days of detailed logs; aggregate older logs into source_daily_health; never store secret URLs; truncate large response samples."
+  },
+  "static_json_db_mismatch": [
+    {
+      "file": "dashboard/api/bootstrap.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": "run_20260612003828650_0b99d4a3",
+      "json_generated_at": "2026-06-12T00:45:11.678Z",
+      "json_record_count": 24,
+      "json_item_count": null,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": "JSON run_id differs from active_run_id"
+    },
+    {
+      "file": "dashboard/api/status-summary.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": "run_20260612003828650_0b99d4a3",
+      "json_generated_at": "2026-06-12T00:45:11.678Z",
+      "json_record_count": 24,
+      "json_item_count": null,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": "JSON run_id differs from active_run_id"
+    },
+    {
+      "file": "dashboard/api/vessel-count-reconciliation.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": "run_20260611094049200_540e1000",
+      "json_generated_at": "2026-06-11T09:44:10.845Z",
+      "json_record_count": 968,
+      "json_item_count": 0,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": "JSON run_id differs from active_run_id"
+    },
+    {
+      "file": "dashboard/api/endpoint-manifest.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": "run_20260612003828650_0b99d4a3",
+      "json_generated_at": "2026-06-12T00:45:11.678Z",
+      "json_record_count": 377,
+      "json_item_count": 377,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": "JSON run_id differs from active_run_id"
+    },
+    {
+      "file": "dashboard/api/vessels/index.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": "run_20260611094049200_540e1000",
+      "json_generated_at": "2026-06-11T09:44:10.845Z",
+      "json_record_count": 664,
+      "json_item_count": null,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": "JSON run_id differs from active_run_id"
+    },
+    {
+      "file": "dashboard/api/sales/actions.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": null,
+      "json_generated_at": "2026-06-11T09:44:10.845Z",
+      "json_record_count": 59,
+      "json_item_count": 59,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": null
+    },
+    {
+      "file": "dashboard/api/targets/current.json",
+      "exists": true,
+      "db_active_run_id": "run_20260612061752520_06a37656",
+      "db_latest_successful_run_id": "run_20260612061752520_06a37656",
+      "json_run_id": null,
+      "json_generated_at": "2026-06-11T09:44:10.845Z",
+      "json_record_count": 31,
+      "json_item_count": 31,
+      "db_counts": {
+        "sales_candidates_current": 126,
+        "immediate_targets_current": 0,
+        "vessel_snapshots_active": 1009,
+        "vessel_snapshots_latest_successful": 1009
+      },
+      "stale_json_warning": null
+    }
+  ],
+  "retention_recommendations": [
+    {
+      "table_group": "active_dataset_pointer",
+      "recommendation": "keep always",
+      "reason": "Current live dataset pointer."
+    },
+    {
+      "table_group": "latest_successful_run",
+      "recommendation": "keep always",
+      "reason": "Required for rollback and serving continuity."
+    },
+    {
+      "table_group": "completed_detailed_runs",
+      "recommendation": "keep recent 20 detailed runs",
+      "reason": "Balance rollback depth with storage growth."
+    },
+    {
+      "table_group": "failed_syncing_runs",
+      "recommendation": "keep 7-14 days",
+      "reason": "Enough time for debugging without indefinite growth."
+    },
+    {
+      "table_group": "vessel_master",
+      "recommendation": "retain long term",
+      "reason": "Canonical identity and enrichment memory."
+    },
+    {
+      "table_group": "commercial_sales_history",
+      "recommendation": "retain long term",
+      "reason": "Private commercial memory and won/lost/quote/contact history."
+    },
+    {
+      "table_group": "source_collection_logs",
+      "recommendation": "keep detailed logs 30-60 days, aggregate older logs",
+      "reason": "Diagnostics can grow quickly."
+    }
+  ],
+  "index_recommendations": [
+    {
+      "table": "vessel_snapshots",
+      "columns": [
+        "run_id",
+        "master_vessel_id"
+      ],
+      "reason": "Prevent duplicate run-level vessel rows and speed active dataset reads."
+    },
+    {
+      "table": "sales_candidates_current",
+      "columns": [
+        "run_id",
+        "rank"
+      ],
+      "reason": "Current target ordering should be unique per run."
+    },
+    {
+      "table": "immediate_targets_current",
+      "columns": [
+        "run_id",
+        "rank"
+      ],
+      "reason": "Immediate target ordering should be unique per run."
+    },
+    {
+      "table": "port_summary_current",
+      "columns": [
+        "run_id",
+        "port_code"
+      ],
+      "reason": "One current summary per port per run."
+    },
+    {
+      "table": "imo_recovery_queue",
+      "columns": [
+        "run_id",
+        "call_sign",
+        "vessel_name"
+      ],
+      "reason": "Reduce repeated pending recovery candidates."
+    },
+    {
+      "table": "vessel_master",
+      "columns": [
+        "imo"
+      ],
+      "reason": "Canonical IMO lookup; use partial unique index where IMO is not null."
+    },
+    {
+      "table": "vessel_master",
+      "columns": [
+        "mmsi"
+      ],
+      "reason": "Canonical MMSI lookup; use partial unique index where MMSI is not null."
+    }
+  ],
+  "manual_review_required": [
+    {
+      "severity": "MANUAL_REVIEW",
+      "issue": "imo_recovery_queue: duplicate recovery queue rows duplicates=143"
+    },
+    {
+      "severity": "WARNING",
+      "issue": "opportunity_master: master_vessel_id_missing_from_vessel_master count=507"
+    },
+    {
+      "severity": "WARNING",
+      "issue": "risk_history: master_vessel_id_missing_from_vessel_master count=230"
+    },
+    {
+      "severity": "WARNING",
+      "issue": "sales_candidates_current: master_vessel_id_missing_from_vessel_master count=56"
+    }
+  ]
+}

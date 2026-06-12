@@ -3672,15 +3672,18 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["ports", "dashboard/api/ports.json"],
+  ["candidates.topSummary", "dashboard/api/candidates/top-summary.json"],
   ["candidates.top", "dashboard/api/candidates/top.json"],
   ["status", "dashboard/api/status.json"],
   ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
+  ["sales.actionsSummary", "dashboard/api/sales/actions-summary.json"],
   ["sales.actions", "dashboard/api/sales/actions.json"],
   ["sales.conversionPipeline", "dashboard/api/sales/conversion-pipeline.json"],
   ["sales.quoteOpportunities", "dashboard/api/sales/quote-opportunities.json"],
   ["sales.verificationQueueSummary", "dashboard/api/sales/verification-queue-summary.json"],
   ["sales.verificationQueue", "dashboard/api/sales/verification-queue.json"],
   ["watchlist.current", "dashboard/api/watchlist/current.json"],
+  ["targets.currentSummary", "dashboard/api/targets/current-summary.json"],
   ["targets.current", "dashboard/api/targets/current.json"],
   ["targets.categoriesSummary", "dashboard/api/targets/categories-summary.json"],
   ["targets.categories", "dashboard/api/targets/categories.json"],
@@ -3693,11 +3696,13 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
+  ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
   ["intelligence.portDna", "dashboard/api/intelligence/port-dna.json"],
   ["intelligence.opportunityMemory", "dashboard/api/intelligence/opportunity-memory.json"],
+  ["intelligence.contactCoverageSummary", "dashboard/api/intelligence/contact-coverage-summary.json"],
   ["intelligence.contactCoverage", "dashboard/api/intelligence/contact-coverage.json"],
   ["intelligence.complianceExposure", "dashboard/api/intelligence/compliance-exposure.json"],
   ["intelligence.cleaningWindow", "dashboard/api/intelligence/cleaning-window.json"]
@@ -3717,7 +3722,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -3730,6 +3735,28 @@ const CORE_INITIAL_ENDPOINTS = new Set([
   "dashboard/api/targets/categories-summary.json",
   "dashboard/api/sales/verification-queue-summary.json"
 ]);
+
+const ENDPOINT_SUMMARY_DETAIL_PAIRS = new Map([
+  ["dashboard/api/all-collected-vessels.json", "dashboard/api/all-collected-vessels-summary.json"],
+  ["dashboard/api/target-vessels.json", "dashboard/api/target-vessels-summary.json"],
+  ["dashboard/api/vessels.json", "dashboard/api/vessels-summary.json"],
+  ["dashboard/api/candidates.json", "dashboard/api/candidates-summary.json"],
+  ["dashboard/api/candidates/top.json", "dashboard/api/candidates/top-summary.json"],
+  ["dashboard/api/hot-vessels.json", "dashboard/api/hot-vessels-summary.json"],
+  ["dashboard/api/sales/actions.json", "dashboard/api/sales/actions-summary.json"],
+  ["dashboard/api/sales/verification-queue.json", "dashboard/api/sales/verification-queue-summary.json"],
+  ["dashboard/api/targets/current.json", "dashboard/api/targets/current-summary.json"],
+  ["dashboard/api/targets/categories.json", "dashboard/api/targets/categories-summary.json"],
+  ["dashboard/api/staying-vessels.json", "dashboard/api/staying-vessels-summary.json"],
+  ["dashboard/api/anchorage-waiting.json", "dashboard/api/anchorage-waiting-summary.json"],
+  ["dashboard/api/arrival-pipeline.json", "dashboard/api/arrival-pipeline-summary.json"],
+  ["dashboard/api/predicted-arrivals.json", "dashboard/api/predicted-arrivals-summary.json"],
+  ["dashboard/api/commercial-command-center.json", "dashboard/api/commercial-command-center-summary.json"],
+  ["dashboard/api/biofouling/vessel-risk-scores.json", "dashboard/api/biofouling/vessel-risk-scores-summary.json"],
+  ["dashboard/api/intelligence/contact-coverage.json", "dashboard/api/intelligence/contact-coverage-summary.json"],
+  ["dashboard/api/status.json", "dashboard/api/status-summary.json"]
+]);
+const ENDPOINT_DETAIL_BY_SUMMARY = new Map([...ENDPOINT_SUMMARY_DETAIL_PAIRS.entries()].map(([detail, summary]) => [summary, detail]));
 
 function endpointSourceLayer(relativePath = "") {
   const normalized = String(relativePath || "").replace(/\\/g, "/");
@@ -3759,6 +3786,49 @@ function endpointStartupSafe(relativePath, bytes = 0, { validJson = true, schema
     return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
   }
   return false;
+}
+
+function endpointSummaryPath(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/ports\/[^/]+\/vessels\.json$/.test(normalized)) {
+    return normalized.replace(/\/vessels\.json$/, "/vessels-summary.json");
+  }
+  return ENDPOINT_SUMMARY_DETAIL_PAIRS.get(normalized) || null;
+}
+
+function endpointDetailPath(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/ports\/[^/]+\/vessels-summary\.json$/.test(normalized)) {
+    return normalized.replace(/\/vessels-summary\.json$/, "/vessels.json");
+  }
+  return ENDPOINT_DETAIL_BY_SUMMARY.get(normalized) || null;
+}
+
+function endpointMaxRecommendedSizeKb(relativePath = "", { startupSafe = false } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (startupSafe) return normalized === "dashboard/api/bootstrap.json" ? 150 : 100;
+  if (endpointSummaryPath(normalized) || endpointDetailPath(normalized)) return endpointDetailPath(normalized) ? 100 : 500;
+  if (endpointSourceLayer(normalized) === "diagnostic") return 500;
+  return 500;
+}
+
+function endpointRecommendedLoad(relativePath = "", { startupSafe = false, summaryAvailable = false } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (startupSafe) return "initial";
+  if (endpointDetailPath(normalized)) return "summary";
+  if (summaryAvailable) return "lazy_detail";
+  if (endpointSourceLayer(normalized) === "diagnostic") return "diagnostic_only";
+  if (endpointSourceLayer(normalized) === "auxiliary") return "lazy";
+  return "lazy";
+}
+
+function endpointDuplicatedPayloadRisk(relativePath = "", text = "", { bytes = 0, itemCount = 0 } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const vesselDisplayRepeats = (String(text || "").match(/"vessel_display"/g) || []).length;
+  if (endpointDetailPath(normalized)) return "LOW";
+  if (vesselDisplayRepeats > 100 || (bytes > ENDPOINT_TOO_LARGE_BYTES && vesselDisplayRepeats > 25)) return "HIGH";
+  if (vesselDisplayRepeats > 25 || (bytes > ENDPOINT_TOO_LARGE_BYTES && itemCount > 25)) return "MEDIUM";
+  return "LOW";
 }
 
 function schemaProblemForEndpoint(relativePath, payload) {
@@ -3797,6 +3867,11 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       source_layer: endpointSourceLayer(normalized),
       startup_safe: false,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
+      duplicated_payload_risk: "LOW",
+      summary_available: false,
+      detail_available: false,
+      recommended_load: endpointRecommendedLoad(normalized, { startupSafe: false, summaryAvailable: false }),
+      max_recommended_size_kb: endpointMaxRecommendedSizeKb(normalized, { startupSafe: false }),
       status: "MISSING",
       problem: "file_missing"
     };
@@ -3813,6 +3888,13 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
     const status = schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK";
     const schemaValid = !schemaProblem;
     const startupSafe = endpointStartupSafe(normalized, bytes, { validJson: true, schemaValid });
+    const summaryPath = endpointSummaryPath(normalized);
+    const detailPath = endpointDetailPath(normalized);
+    const summaryAvailable = summaryPath ? fs.existsSync(summaryPath) : Boolean(detailPath);
+    const detailAvailable = detailPath ? fs.existsSync(detailPath) : Boolean(summaryPath);
+    const duplicatedPayloadRisk = endpointDuplicatedPayloadRisk(normalized, text, { bytes, itemCount });
+    const maxRecommendedSizeKb = endpointMaxRecommendedSizeKb(normalized, { startupSafe });
+    const recommendedLoad = endpointRecommendedLoad(normalized, { startupSafe, summaryAvailable });
     return {
       key,
       path: normalized,
@@ -3830,6 +3912,11 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       source_layer: endpointSourceLayer(normalized),
       startup_safe: startupSafe,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe }),
+      duplicated_payload_risk: duplicatedPayloadRisk,
+      summary_available: summaryAvailable,
+      detail_available: detailAvailable,
+      recommended_load: recommendedLoad,
+      max_recommended_size_kb: maxRecommendedSizeKb,
       status,
       problem: schemaProblem || (status === "TOO_LARGE" ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
     };
@@ -3851,6 +3938,11 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       source_layer: endpointSourceLayer(normalized),
       startup_safe: false,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
+      duplicated_payload_risk: "UNKNOWN",
+      summary_available: Boolean(endpointSummaryPath(normalized)),
+      detail_available: Boolean(endpointDetailPath(normalized)),
+      recommended_load: endpointRecommendedLoad(normalized, { startupSafe: false, summaryAvailable: Boolean(endpointSummaryPath(normalized)) }),
+      max_recommended_size_kb: endpointMaxRecommendedSizeKb(normalized, { startupSafe: false }),
       status: "INVALID_JSON",
       problem: error.message
     };
@@ -7955,6 +8047,186 @@ function buildVerificationQueueSummaryPayload({ payload = {}, generatedAt = new 
       feature: "연락처 확인 필요",
       message: `상세 ${totalCount}건 중 상위 ${items.length}건만 요약 파일에 포함`,
       recommended_fix: "상세 목록은 verification-queue.json lazy load 사용"
+    }] : []
+  };
+}
+
+function scoreDistribution(items = [], scoreKeys = ["opportunity_score", "score", "actionability_score", "contact_coverage_score"]) {
+  const buckets = { "0_49": 0, "50_69": 0, "70_84": 0, "85_100": 0, unknown: 0 };
+  for (const item of Array.isArray(items) ? items : []) {
+    const score = firstFiniteNumber(...scoreKeys.map(key => item?.[key]), item?.vessel_display?.opportunity_score);
+    if (score === null || score === undefined || !Number.isFinite(Number(score))) {
+      buckets.unknown += 1;
+    } else if (Number(score) >= 85) {
+      buckets["85_100"] += 1;
+    } else if (Number(score) >= 70) {
+      buckets["70_84"] += 1;
+    } else if (Number(score) >= 50) {
+      buckets["50_69"] += 1;
+    } else {
+      buckets["0_49"] += 1;
+    }
+  }
+  return buckets;
+}
+
+function warningSummaryForLimitedEndpoint({ feature, totalCount = 0, returnedCount = 0, detailEndpoint = "" } = {}) {
+  return totalCount > returnedCount ? [{
+    severity: "INFO",
+    feature,
+    message: `상세 ${totalCount}건 중 상위 ${returnedCount}건만 요약 파일에 포함`,
+    recommended_fix: detailEndpoint ? `${detailEndpoint} lazy load 사용` : "상세 endpoint lazy load 사용"
+  }] : [];
+}
+
+function buildListSummaryPayload({
+  payload = {},
+  items = null,
+  generatedAt = new Date().toISOString(),
+  dataMode = "live",
+  report = {},
+  sourceTable = "",
+  detailEndpoint = "",
+  feature = "요약",
+  scoreKeys = ["opportunity_score", "score", "actionability_score"]
+} = {}) {
+  const sourceItems = Array.isArray(items) ? items : compactItems(payload);
+  const topItems = sourceItems.slice(0, 5).map(compactSummaryItem);
+  const totalCount = Number(payload.record_count ?? payload.total_count ?? sourceItems.length) || 0;
+  const priorityCounts = {};
+  const actionabilityCounts = {};
+  for (const item of sourceItems) {
+    const priority = String(firstNonEmpty(item.priority_label, item.vessel_display?.priority_label, "UNKNOWN")).toUpperCase();
+    priorityCounts[priority] = (priorityCounts[priority] || 0) + 1;
+    const actionability = String(firstNonEmpty(item.actionability_category, item.actionability_label, "UNKNOWN")).toUpperCase();
+    actionabilityCounts[actionability] = (actionabilityCounts[actionability] || 0) + 1;
+  }
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: totalCount,
+    item_count: topItems.length,
+    source_table: sourceTable || payload.source_table || feature,
+    detail_endpoint: detailEndpoint,
+    total_count: totalCount,
+    returned_count: topItems.length,
+    score_distribution: scoreDistribution(sourceItems, scoreKeys),
+    priority_counts: priorityCounts,
+    actionability_counts: actionabilityCounts,
+    items: topItems,
+    warning_summary: warningSummaryForLimitedEndpoint({
+      feature,
+      totalCount,
+      returnedCount: topItems.length,
+      detailEndpoint
+    })
+  };
+}
+
+function buildContactCoverageSummaryPayload({ payload = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
+  const sourceItems = Array.isArray(payload.items) ? payload.items : [];
+  const items = sourceItems.slice(0, 5).map(compactSummaryItem);
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: Number(payload.record_count ?? sourceItems.length) || 0,
+    item_count: items.length,
+    source_table: payload.source_table || "intelligence/contact-coverage",
+    detail_endpoint: "dashboard/api/intelligence/contact-coverage.json",
+    status: payload.status || (sourceItems.length ? "active" : "empty"),
+    portfolio_metrics: payload.portfolio_metrics || payload.summary?.portfolio_metrics || {},
+    top_missing_fields: Array.isArray(payload.top_missing_fields) ? payload.top_missing_fields.slice(0, 8) : [],
+    target_count: Number(payload.target_count ?? payload.record_count ?? sourceItems.length) || 0,
+    high_count: Number(payload.high_count || 0),
+    medium_count: Number(payload.medium_count || 0),
+    low_count: Number(payload.low_count || 0),
+    verification_queue_count: Number(payload.verification_queue_count || 0),
+    score_distribution: scoreDistribution(sourceItems, ["contact_coverage_score", "opportunity_score"]),
+    items,
+    warning_summary: warningSummaryForLimitedEndpoint({
+      feature: "연락 가능성 / 데이터 커버리지",
+      totalCount: Number(payload.record_count ?? sourceItems.length) || 0,
+      returnedCount: items.length,
+      detailEndpoint: "dashboard/api/intelligence/contact-coverage.json"
+    })
+  };
+}
+
+function collectTableRowCounts(report = {}) {
+  const candidates = [
+    report.table_row_counts,
+    report.db_table_row_counts,
+    report.supabase_write?.table_row_counts,
+    report.supabase_write?.table_counts,
+    report.supabase?.table_row_counts,
+    report.post_write_verification?.table_row_counts,
+    report.supabase_write?.post_write_verification?.table_row_counts
+  ];
+  const out = {};
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    for (const [table, count] of Object.entries(candidate)) {
+      const numeric = Number(count);
+      if (Number.isFinite(numeric)) out[table] = numeric;
+      else if (count && typeof count === "object" && Number.isFinite(Number(count.row_count))) out[table] = Number(count.row_count);
+    }
+  }
+  const fallbackCounts = {
+    vessel_snapshots: firstFiniteNumber(report.record_count, report.selected_dataset_count, report.all_collected_vessel_count),
+    sales_candidates_current: firstFiniteNumber(report.sales_target_count, report.sales_candidates_count),
+    immediate_targets_current: firstFiniteNumber(report.immediate_target_count),
+    pilot_schedule_events: firstFiniteNumber(report.pilot_schedule_events_count, report.pilotage_rows_inserted),
+    active_dataset_pointer: firstFiniteNumber(report.active_run_id || report.latest_successful_run_id ? 1 : null)
+  };
+  for (const [table, count] of Object.entries(fallbackCounts)) {
+    if (!Number.isFinite(Number(out[table])) && Number.isFinite(Number(count))) out[table] = Number(count);
+  }
+  return Object.entries(out)
+    .map(([table_name, row_count]) => ({ table_name, row_count: Number(row_count) || 0 }))
+    .sort((a, b) => b.row_count - a.row_count || a.table_name.localeCompare(b.table_name));
+}
+
+function buildStorageEfficiencyReport({ report = {}, generatedAt = new Date().toISOString(), dataMode = "live" } = {}) {
+  const rowCounts = collectTableRowCounts(report);
+  const policy = [
+    { table_group: "latest_successful_run", recommendation: "항상 보존", reason: "운영 화면의 마지막 정상 스냅샷 보호" },
+    { table_group: "active_dataset_pointer", recommendation: "항상 보존", reason: "현재 라이브 데이터셋 포인터" },
+    { table_group: "detailed_runs", recommendation: "최근 20개 상세 run 보존", reason: "디버깅 가능성과 저장 비용 균형" },
+    { table_group: "failed_or_syncing_runs", recommendation: "7~14일 보존", reason: "장애 분석 후 정리 가능" },
+    { table_group: "vessel_master", recommendation: "장기 보존", reason: "IMO/MMSI/운영사 enrichment 기준 데이터" },
+    { table_group: "vessel_visits_history", recommendation: "12~24개월 보존", reason: "반복 입항/영업 기억 분석" },
+    { table_group: "port_run_snapshots", recommendation: "24~48시간 또는 최신 20개 보존", reason: "항만 현황은 빠르게 낡아지는 run-level 데이터" },
+    { table_group: "daily_weekly_monthly_aggregates", recommendation: "장기 보존", reason: "추세/경영 리포트 기반" }
+  ];
+  const cleanupCandidates = rowCounts
+    .filter(row => /snapshot|raw|staging|debug|failed|syncing|run/i.test(row.table_name) && !/master|daily|weekly|monthly|active_dataset_pointer/i.test(row.table_name))
+    .slice(0, 20);
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    record_count: rowCounts.length,
+    item_count: rowCounts.length,
+    source_table: "supabase_table_counts,status",
+    row_counts_by_table: rowCounts,
+    run_level_tables: rowCounts.filter(row => /snapshot|run|raw|staging/i.test(row.table_name)).map(row => row.table_name),
+    daily_aggregate_tables: rowCounts.filter(row => /daily|weekly|monthly|aggregate/i.test(row.table_name)).map(row => row.table_name),
+    short_term_retention_candidates: cleanupCandidates,
+    long_term_retention_tables: rowCounts.filter(row => /master|history|visits|contact|leads|memory|daily|weekly|monthly/i.test(row.table_name)).map(row => row.table_name),
+    cleanup_candidates: cleanupCandidates,
+    duplicate_or_redundant_storage_risk: [
+      "run-level vessel snapshots and static JSON detail endpoints can duplicate full vessel_display payloads",
+      "failed/syncing run rows can accumulate without retention cleanup",
+      "raw collector payloads should stay diagnostic-only and avoid startup JSON exposure"
+    ],
+    recommended_retention_policy: policy,
+    warning_summary: cleanupCandidates.length ? [{
+      severity: "INFO",
+      feature: "Storage retention",
+      message: `${cleanupCandidates.length}개 run-level/debug 성격 테이블은 단기 보존 정책 검토 대상입니다.`,
+      recommended_fix: "latest successful run, active pointer, 최근 20개 상세 run 보존 정책 적용 검토"
     }] : []
   };
 }
@@ -17821,6 +18093,16 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const salesActionsSummaryPayload = buildListSummaryPayload({
+    payload: salesActionsPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "sales/actions",
+    detailEndpoint: "dashboard/api/sales/actions.json",
+    feature: "오늘의 영업 액션",
+    scoreKeys: ["actionability_score", "opportunity_score", "confidence_score"]
+  });
   const conversionPipelinePayload = buildLeadConversionPipelinePayload({
     summary: targetCategorySummary,
     generatedAt: completedAt,
@@ -17877,6 +18159,12 @@ try {
     dataMode: report.data_mode,
     report
   });
+  const contactCoverageSummaryPayload = buildContactCoverageSummaryPayload({
+    payload: contactCoveragePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report
+  });
   const currentTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
     dataMode: report.data_mode,
@@ -17897,6 +18185,141 @@ try {
       ...targetCategorySummary.kpis,
       ...(salesCandidates.length ? {} : { status: "empty", reason: "영업 후보 조건을 통과한 선박이 없습니다." })
     }
+  });
+  const currentTargetsSummaryPayload = buildListSummaryPayload({
+    payload: currentTargetsPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "sales_candidates_current",
+    detailEndpoint: "dashboard/api/targets/current.json",
+    feature: "영업대상 선박",
+    scoreKeys: ["opportunity_score", "risk_score", "confidence_score"]
+  });
+  const topCandidatesSummaryPayload = buildListSummaryPayload({
+    payload: topCandidatesPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "commercial_opportunity_daily,candidates/top",
+    detailEndpoint: "dashboard/api/candidates/top.json",
+    feature: "상위 영업 후보",
+    scoreKeys: ["opportunity_score", "score", "cleaning_candidate_score"]
+  });
+  const storageEfficiencyReportPayload = buildStorageEfficiencyReport({
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode
+  });
+  const allCollectedVesselsSummaryPayload = buildListSummaryPayload({
+    items: allCollectedVessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "all_collected_vessels",
+    detailEndpoint: "dashboard/api/all-collected-vessels.json",
+    feature: "전체 수집 선박",
+    scoreKeys: ["opportunity_score", "score", "risk_score"]
+  });
+  const targetVesselsSummaryPayload = buildListSummaryPayload({
+    items: targetVessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "target-vessels",
+    detailEndpoint: "dashboard/api/target-vessels.json",
+    feature: "영업 후보 선박",
+    scoreKeys: ["opportunity_score", "score", "risk_score"]
+  });
+  const vesselsSummaryPayload = buildListSummaryPayload({
+    items: vessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "vessel_snapshots",
+    detailEndpoint: "dashboard/api/vessels.json",
+    feature: "선박 상세",
+    scoreKeys: ["opportunity_score", "score", "risk_score"]
+  });
+  const candidatesSummaryPayload = buildListSummaryPayload({
+    items: candidateList,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "candidates",
+    detailEndpoint: "dashboard/api/candidates.json",
+    feature: "후보 선박",
+    scoreKeys: ["opportunity_score", "total_sales_priority_score", "score"]
+  });
+  const hotVesselsSummaryPayload = buildListSummaryPayload({
+    items: hotVessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "hot-vessels",
+    detailEndpoint: "dashboard/api/hot-vessels.json",
+    feature: "고우선 후보",
+    scoreKeys: ["opportunity_score", "total_sales_priority_score", "score"]
+  });
+  const stayingVesselsSummaryPayload = buildListSummaryPayload({
+    payload: stayingVesselsPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "vessel_snapshots",
+    detailEndpoint: "dashboard/api/staying-vessels.json",
+    feature: "체류 선박",
+    scoreKeys: ["stay_days", "stay_hours", "opportunity_score"]
+  });
+  const anchorageWaitingSummaryPayload = buildListSummaryPayload({
+    payload: anchorageWaitingPayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "vessel_snapshots",
+    detailEndpoint: "dashboard/api/anchorage-waiting.json",
+    feature: "묘박/대기 선박",
+    scoreKeys: ["waiting_hours", "anchorageHours", "opportunity_score"]
+  });
+  const arrivalPipelineSummaryPayload = buildListSummaryPayload({
+    payload: arrivalPipelinePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "vessel_snapshots",
+    detailEndpoint: "dashboard/api/arrival-pipeline.json",
+    feature: "입항 예정",
+    scoreKeys: ["opportunity_score", "arrival_score", "confidence_score"]
+  });
+  const predictedArrivalsSummaryPayload = buildListSummaryPayload({
+    payload: arrivalPipelinePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "vessel_snapshots",
+    detailEndpoint: "dashboard/api/predicted-arrivals.json",
+    feature: "예측 입항",
+    scoreKeys: ["opportunity_score", "arrival_score", "confidence_score"]
+  });
+  const commercialCommandCenterSummaryPayload = buildListSummaryPayload({
+    payload: commercialCommandCenter,
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "commercial-command-center",
+    detailEndpoint: "dashboard/api/commercial-command-center.json",
+    feature: "Commercial command center",
+    scoreKeys: ["opportunity_score", "score", "priority_score"]
+  });
+  const biofoulingVesselRiskSummaryPayload = buildListSummaryPayload({
+    payload: biofoulingModule.outputs?.["dashboard/api/biofouling/vessel-risk-scores.json"],
+    generatedAt: completedAt,
+    dataMode: report.data_mode,
+    report,
+    sourceTable: "biofouling/vessel-risk-scores",
+    detailEndpoint: "dashboard/api/biofouling/vessel-risk-scores.json",
+    feature: "부착생물 선박 위험",
+    scoreKeys: ["biofoulingRiskScore", "biofouling_risk_score", "risk_score"]
   });
   const staticTargetsPayload = publicItemsEnvelope({
     generatedAt: completedAt,
@@ -17922,33 +18345,51 @@ try {
   }));
   const successfulBundleOutputs = {
     "dashboard/api/all-collected-vessels.json": allCollectedVessels,
+    "dashboard/api/all-collected-vessels-summary.json": allCollectedVesselsSummaryPayload,
     "dashboard/api/target-vessels.json": targetVessels,
+    "dashboard/api/target-vessels-summary.json": targetVesselsSummaryPayload,
     "dashboard/api/vessels.json": vessels,
+    "dashboard/api/vessels-summary.json": vesselsSummaryPayload,
     "dashboard/api/bootstrap.json": bootstrapPayload,
     "dashboard/api/candidates.json": candidateList,
+    "dashboard/api/candidates-summary.json": candidatesSummaryPayload,
+    "dashboard/api/candidates/top-summary.json": topCandidatesSummaryPayload,
     "dashboard/api/candidates/top.json": topCandidatesPayload,
+    "dashboard/api/hot-vessels-summary.json": hotVesselsSummaryPayload,
     "dashboard/api/contact-queue.json": contactQueuePayload,
     "dashboard/api/agent-followup-queue.json": agentFollowupQueuePayload,
     "dashboard/api/sales/verification-queue-summary.json": verificationQueueSummaryPayload,
     "dashboard/api/sales/verification-queue.json": verificationQueuePayload,
     "dashboard/api/sales/agent-followup-priority.json": agentFollowupPriorityPayload,
     "dashboard/api/sales/actions.json": salesActionsPayload,
+    "dashboard/api/sales/actions-summary.json": salesActionsSummaryPayload,
     "dashboard/api/vessel-count-reconciliation.json": vesselCountReconciliationPayload,
+    "dashboard/api/storage-efficiency-report.json": storageEfficiencyReportPayload,
     "dashboard/api/vessels/excluded-summary.json": excludedVesselSummaryPayload,
     "dashboard/api/sales/conversion-pipeline.json": conversionPipelinePayload,
     "dashboard/api/sales/private-activity-summary.json": privateActivitySummaryPayload,
     "dashboard/api/sales/quote-opportunities.json": quoteOpportunitiesPayload,
     "dashboard/api/intelligence/contact-coverage.json": contactCoveragePayload,
+    "dashboard/api/intelligence/contact-coverage-summary.json": contactCoverageSummaryPayload,
     "dashboard/api/watchlist/current.json": watchlistPayload,
     "dashboard/api/targets/current.json": currentTargetsPayload,
+    "dashboard/api/targets/current-summary.json": currentTargetsSummaryPayload,
     "dashboard/api/targets/categories-summary.json": targetCategoriesSummaryPayload,
     "dashboard/api/targets/categories.json": targetCategoriesPayload,
     "dashboard/api/targets/static.json": staticTargetsPayload,
     "dashboard/api/ports.json": portStatistics.ports,
     "dashboard/api/arrival-pipeline.json": arrivalPipelinePayload,
+    "dashboard/api/arrival-pipeline-summary.json": arrivalPipelineSummaryPayload,
+    "dashboard/api/predicted-arrivals.json": arrivalPipelinePayload,
+    "dashboard/api/predicted-arrivals-summary.json": predictedArrivalsSummaryPayload,
     "dashboard/api/anchorage-waiting.json": anchorageWaitingPayload,
+    "dashboard/api/anchorage-waiting-summary.json": anchorageWaitingSummaryPayload,
     "dashboard/api/staying-vessels.json": stayingVesselsPayload,
+    "dashboard/api/staying-vessels-summary.json": stayingVesselsSummaryPayload,
     "dashboard/api/congestion-watchlist.json": congestionWatchlistPayload,
+    "dashboard/api/commercial-command-center-summary.json": commercialCommandCenterSummaryPayload,
+    "dashboard/api/commercial-command-center.json": commercialCommandCenter,
+    "dashboard/api/biofouling/vessel-risk-scores-summary.json": biofoulingVesselRiskSummaryPayload,
     "dashboard/api/intelligence/risk-summary.json": intelligenceSummaries["risk-summary"],
     "dashboard/api/intelligence/biofouling-risk.json": intelligenceSummaries["biofouling-risk"],
     "dashboard/api/intelligence/hull-cleaning-engine.json": intelligenceSummaries["hull-cleaning-engine"],
@@ -18100,10 +18541,16 @@ try {
   }
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
+  writeApiJson("dashboard/api/all-collected-vessels-summary.json", allCollectedVesselsSummaryPayload, report);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
+  writeApiJson("dashboard/api/target-vessels-summary.json", targetVesselsSummaryPayload, report);
+  writeApiJson("dashboard/api/vessels-summary.json", vesselsSummaryPayload, report);
   writeApiJson("dashboard/api/bootstrap.json", bootstrapPayload, report);
+  writeApiJson("dashboard/api/staying-vessels-summary.json", stayingVesselsSummaryPayload, report);
   writeApiJson("dashboard/api/staying-vessels.json", stayingVesselsPayload, report);
+  writeApiJson("dashboard/api/anchorage-waiting-summary.json", anchorageWaitingSummaryPayload, report);
   writeApiJson("dashboard/api/anchorage-waiting.json", anchorageWaitingPayload, report);
+  writeApiJson("dashboard/api/arrival-pipeline-summary.json", arrivalPipelineSummaryPayload, report);
   writeApiJson("dashboard/api/arrival-pipeline.json", arrivalPipelinePayload, report);
   writeApiJson("dashboard/api/imo-recovery-queue.json", buildImoRecoveryQueue(vessels), report);
   writeApiJson("dashboard/api/imo-recovery-priority.json", buildImoRecoveryQueue(vessels), report);
@@ -18115,14 +18562,18 @@ try {
   writeApiJson("dashboard/api/sales/verification-queue-summary.json", verificationQueueSummaryPayload, report);
   writeApiJson("dashboard/api/sales/verification-queue.json", verificationQueuePayload, report);
   writeApiJson("dashboard/api/sales/agent-followup-priority.json", agentFollowupPriorityPayload, report);
+  writeApiJson("dashboard/api/sales/actions-summary.json", salesActionsSummaryPayload, report);
   writeApiJson("dashboard/api/sales/actions.json", salesActionsPayload, report);
   writeApiJson("dashboard/api/vessel-count-reconciliation.json", vesselCountReconciliationPayload, report);
+  writeApiJson("dashboard/api/storage-efficiency-report.json", storageEfficiencyReportPayload, report);
   writeApiJson("dashboard/api/vessels/excluded-summary.json", excludedVesselSummaryPayload, report);
   writeApiJson("dashboard/api/sales/conversion-pipeline.json", conversionPipelinePayload, report);
   writeApiJson("dashboard/api/sales/private-activity-summary.json", privateActivitySummaryPayload, report);
   writeApiJson("dashboard/api/sales/quote-opportunities.json", quoteOpportunitiesPayload, report);
+  writeApiJson("dashboard/api/intelligence/contact-coverage-summary.json", contactCoverageSummaryPayload, report);
   writeApiJson("dashboard/api/intelligence/contact-coverage.json", contactCoveragePayload, report);
   writeApiJson("dashboard/api/watchlist/current.json", watchlistPayload, report);
+  writeApiJson("dashboard/api/targets/current-summary.json", currentTargetsSummaryPayload, report);
   writeApiJson("dashboard/api/targets/current.json", currentTargetsPayload, report);
   writeApiJson("dashboard/api/targets/categories-summary.json", targetCategoriesSummaryPayload, report);
   writeApiJson("dashboard/api/targets/categories.json", targetCategoriesPayload, report);
@@ -18138,6 +18589,7 @@ try {
   writeApiJson("dashboard/api/quality/data-quality.json", dataQualityLayer, report);
   writeApiJson("dashboard/api/review/basic-info-missing.json", buildBasicInfoMissingReview(vessels), report);
   writeApiJson("dashboard/api/predicted-arrivals.json", arrivalPipeline, report);
+  writeApiJson("dashboard/api/predicted-arrivals-summary.json", predictedArrivalsSummaryPayload, report);
   writeStaticDatasetJson("dashboard/api/vessels.json", vessels, report, staticOutputManifest);
   cleanupStalePaginatedVesselFiles(paginatedVesselOutputs, report);
   for (const [filePath, payload] of Object.entries(paginatedVesselOutputs)) {
@@ -18145,6 +18597,8 @@ try {
   }
   writeStaticDatasetJson("data/latest-lite.json", vessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/candidates.json", candidateList, report, staticOutputManifest);
+  writeApiJson("dashboard/api/candidates-summary.json", candidatesSummaryPayload, report);
+  writeApiJson("dashboard/api/candidates/top-summary.json", topCandidatesSummaryPayload, report);
   writeApiJson("dashboard/api/candidates/top.json", topCandidatesPayload, report);
   writeApiJson("dashboard/api/changes.json", candidateChangesPayload, report);
   writeApiJson("dashboard/api/contact-ready-vessels.json", contactReadyVessels, report);
@@ -18153,6 +18607,7 @@ try {
   writeApiJson("dashboard/api/candidate-summary.json", candidateSummaryPayload, report);
   writeApiJson("dashboard/api/contact-queue.json", contactQueuePayload, report);
   writeApiJson("dashboard/api/hot-candidates.json", candidateList.filter(v => v.is_immediate_candidate || (v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 40), report);
+  writeApiJson("dashboard/api/hot-vessels-summary.json", hotVesselsSummaryPayload, report);
   writeApiJson("dashboard/api/hot-vessels.json", hotVessels, report);
   for (const [name, payload] of Object.entries(intelligenceSummaries)) {
     writeApiJson(`dashboard/api/intelligence/${name}.json`, payload, report);
@@ -18171,6 +18626,7 @@ try {
   for (const [filePath, payload] of Object.entries(biofoulingModule.outputs)) {
     writeApiJson(filePath, payload, report);
   }
+  writeApiJson("dashboard/api/biofouling/vessel-risk-scores-summary.json", biofoulingVesselRiskSummaryPayload, report);
   writeStaticDatasetJson("dashboard/api/ports.json", portStatistics.ports, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/dashboard-summary.json", dashboardSummary, report, staticOutputManifest);
   writeApiJson("dashboard/api/port-opportunities.json", portOpportunities, report);
@@ -18199,6 +18655,16 @@ try {
   for (const port of portIntelligence) {
     const dir = routeApiOutputPath(`dashboard/api/ports/${port.port_code}/vessels.json`, report).split("/").slice(0, -1).join("/");
     fs.mkdirSync(dir, { recursive: true });
+    writeDashboardJson(`${dir}/vessels-summary.json`, normalizeBusinessOutputPayload(`${dir}/vessels-summary.json`, buildListSummaryPayload({
+      items: port.all_vessels,
+      generatedAt: completedAt,
+      dataMode: report.data_mode,
+      report,
+      sourceTable: "port_vessels",
+      detailEndpoint: `${dir}/vessels.json`,
+      feature: `${port.port_name || port.port_code || "항만"} 선박`,
+      scoreKeys: ["opportunity_score", "score", "risk_score", "stay_days", "waiting_hours"]
+    })));
     writeDashboardJson(`${dir}/vessels.json`, normalizeBusinessOutputPayload(`${dir}/vessels.json`, dashboardRootObjectPayload(port.all_vessels)));
     writeDashboardJson(`${dir}/candidates.json`, normalizeBusinessOutputPayload(`${dir}/candidates.json`, dashboardRootObjectPayload(port.sales_candidates)));
     writeDashboardJson(`${dir}/berths.json`, normalizeBusinessOutputPayload(`${dir}/berths.json`, dashboardRootObjectPayload(port.berths)));
@@ -18220,6 +18686,7 @@ try {
       extra: { status: "empty", reason: "해당 항만 Hull Cleaning 후보가 없습니다." }
     })));
   }
+  writeApiJson("dashboard/api/commercial-command-center-summary.json", commercialCommandCenterSummaryPayload, report);
   writeApiJson("dashboard/api/commercial-command-center.json", commercialCommandCenter, report);
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
   writeApiJson("dashboard/api/biofouling-timeline.json", biofoulingTimeline, report);
