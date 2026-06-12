@@ -17,6 +17,7 @@ import {
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
+import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
@@ -3847,6 +3848,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
+  ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
@@ -3873,7 +3875,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -18015,6 +18017,19 @@ try {
     startup_safe: false,
     core_blocking: false
   }, finalRunOrigin);
+  const sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    matchingDiagnostics,
+    bootstrapKpis: {
+      ...(dashboardSummary.kpis || {}),
+      pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
+    },
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    referenceTime: completedAt
+  }), finalRunOrigin);
   const auxSummaryOptions = {
     sourceCollectionStatus: sourceCollectionStatusPayload,
     generatedAt: completedAt,
@@ -18701,6 +18716,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);

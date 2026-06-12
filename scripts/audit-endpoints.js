@@ -23,7 +23,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -89,6 +89,7 @@ const IMPORTANT_ENDPOINTS = [
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
+  ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
