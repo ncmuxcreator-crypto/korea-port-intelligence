@@ -18,6 +18,11 @@ import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
+import {
+  buildAuxiliarySourceCacheStatusPayload,
+  readAuxiliarySourceCacheStatus,
+  writeAuxiliarySourceCacheStatus
+} from "./lib/auxiliary-source-cache.js";
 import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
@@ -3847,6 +3852,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.aisInfoSummary", "dashboard/api/aux/ais-info-summary.json"],
   ["aux.aisDynamicSummary", "dashboard/api/aux/ais-dynamic-summary.json"],
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
+  ["aux.cacheStatus", "dashboard/api/aux/cache-status.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
@@ -18090,6 +18096,22 @@ try {
       title: "선박 제원 보강 요약"
     })
   };
+  const auxiliarySourceCacheStatusPayload = withRunOrigin(buildAuxiliarySourceCacheStatusPayload({
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    summaries: {
+      source_csv: sourceCsvSummaryPayload,
+      pilot_sources: auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
+      berth_sources: auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
+      vessel_spec: auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
+      mof_ais_info: auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
+      mof_ais_dynamic: auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"]
+    },
+    previousCache: readAuxiliarySourceCacheStatus(),
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    report
+  }), finalRunOrigin);
+  writeAuxiliarySourceCacheStatus(auxiliarySourceCacheStatusPayload);
   const healthPayload = withRunOrigin({
     run_id: report.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -18738,6 +18760,7 @@ try {
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }
+  writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeApiJson("dashboard/api/all-collected-vessels-summary.json", allCollectedVesselsSummaryPayload, report);
@@ -18914,6 +18937,7 @@ try {
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }
+  writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

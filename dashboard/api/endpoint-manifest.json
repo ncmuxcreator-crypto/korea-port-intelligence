@@ -10,8 +10,8 @@
     "data_mode": "live",
     "source_run_id": "run_20260612065952169_5b648f9d"
   },
-  "record_count": 398,
-  "item_count": 398,
+  "record_count": 399,
+  "item_count": 399,
   "endpoints": [
     {
       "key": "agent-followup-queue",
@@ -302,6 +302,31 @@
       "item_count": 0,
       "size_kb": 5,
       "bytes": 5146,
+      "source_layer": "auxiliary",
+      "startup_safe": false,
+      "load_strategy": "lazy",
+      "duplicated_payload_risk": "LOW",
+      "summary_available": false,
+      "detail_available": false,
+      "recommended_load": "lazy",
+      "max_recommended_size_kb": 500,
+      "status": "OK",
+      "problem": ""
+    },
+    {
+      "key": "aux.cacheStatus",
+      "path": "dashboard/api/aux/cache-status.json",
+      "exists": true,
+      "first_char": "{",
+      "root_type": "object",
+      "parsed_from_disk": true,
+      "parse_checked_at": "2026-06-12T07:06:16.970Z",
+      "valid_json": true,
+      "schema_valid": true,
+      "record_count": 6,
+      "item_count": 6,
+      "size_kb": 5.2,
+      "bytes": 5364,
       "source_layer": "auxiliary",
       "startup_safe": false,
       "load_strategy": "lazy",
@@ -1136,7 +1161,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "307h old"
+      "problem": "308h old"
     },
     {
       "key": "coverage-registry",
@@ -4973,8 +4998,8 @@
       "parse_checked_at": "2026-06-12T07:06:16.970Z",
       "valid_json": true,
       "schema_valid": true,
-      "record_count": 398,
-      "item_count": 398,
+      "record_count": 399,
+      "item_count": 399,
       "size_kb": 293.6,
       "bytes": 300675,
       "source_layer": "core",
