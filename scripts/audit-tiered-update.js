@@ -3,43 +3,42 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 
-const REQUIRED_FILES = [
-  "dashboard/api/bootstrap.json",
-  "dashboard/api/status-summary.json",
-  "dashboard/api/runtime/update-tiers.json",
-  "dashboard/api/runtime-budget-report.json",
-  "dashboard/api/aux/latest/index.json",
-  "dashboard/api/enrichment/latest/index.json",
-  "dashboard/api/enrichment/latest/patches.json"
-];
+const FILES = {
+  statusSummary: "dashboard/api/status-summary.json",
+  updateTiers: "dashboard/api/runtime/update-tiers.json",
+  runtimeBudget: "dashboard/api/runtime-budget-report.json",
+  sourceCollection: "dashboard/api/source-collection-status.json",
+  sourceQuality: "dashboard/api/source-quality-score.json",
+  enrichmentUtilization: "dashboard/api/enrichment-utilization.json",
+  auxLatest: "dashboard/api/aux/latest/index.json",
+  enrichmentLatest: "dashboard/api/enrichment/latest/index.json"
+};
 
-const DEPLOY_REQUIRED = [
-  "aux/latest/index.json",
-  "aux/latest/pilotage-summary.json",
-  "aux/latest/berth-summary.json",
-  "aux/latest/ais-info-summary.json",
-  "aux/latest/ais-dynamic-summary.json",
-  "aux/latest/vessel-spec-summary.json",
-  "aux/latest/cache-status.json",
-  "aux/source-csv-summary.json",
-  "enrichment/latest/index.json",
-  "enrichment/latest/summary.json",
-  "enrichment/latest/patches.json",
-  "enrichment/latest/review-queue.json",
-  "enrichment/summary.json",
-  "enrichment/review-queue.json",
-  "source-quality-score.json",
-  "enrichment-utilization.json",
-  "runtime/update-tiers.json",
-  "runtime-budget-report.json"
-];
+const AUX_SOURCE_KEYS = new Set([
+  "source_csv",
+  "pilot_sources",
+  "berth_sources",
+  "vessel_spec",
+  "mof_ais_info",
+  "mof_ais_dynamic",
+  "mof_ais_stat",
+  "ulsan_core",
+  "ulsan_berth_detail",
+  "ulsan_cargo_plan",
+  "ulsan_berth_operation",
+  "ulsan_terminal_process"
+]);
 
-function readJson(relativePath, fallback = null) {
+function readJson(relativePath, fallback = {}) {
   try {
     return JSON.parse(fs.readFileSync(path.join(ROOT, relativePath), "utf8"));
   } catch {
     return fallback;
   }
+}
+
+function exists(relativePath) {
+  return fs.existsSync(path.join(ROOT, relativePath));
 }
 
 function ageHours(generatedAt) {
@@ -48,63 +47,164 @@ function ageHours(generatedAt) {
   return Number.isFinite(age) ? Math.max(0, Math.round(age * 10) / 10) : null;
 }
 
-function fileStatus(relativePath) {
-  const fullPath = path.join(ROOT, relativePath);
-  if (!fs.existsSync(fullPath)) return { path: relativePath, exists: false, generated_at: null, age_hours: null };
-  const payload = readJson(relativePath, {});
-  return {
-    path: relativePath,
-    exists: true,
-    generated_at: payload.generated_at || null,
-    age_hours: ageHours(payload.generated_at),
-    stale: Boolean(payload.stale_diagnostic),
-    record_count: Number(payload.record_count || 0),
-    item_count: Number(payload.item_count || 0)
-  };
+function sourceItems(payload = {}) {
+  return Array.isArray(payload.items) ? payload.items : [];
 }
 
-function workflowText() {
-  const file = path.join(ROOT, ".github", "workflows", "longterm-update.yml");
-  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+function sourceQualityMissingAux(payload = {}) {
+  return sourceItems(payload).filter(item => {
+    const key = String(item.source_key || "");
+    if (!AUX_SOURCE_KEYS.has(key)) return false;
+    const blocker = String(item.blocker_reason || item.recommended_fix || "").toLowerCase();
+    const rows = Number(item.rows_collected || 0) + Number(item.rows_normalized || 0) + Number(item.rows_matched_to_vessels || 0);
+    return rows <= 0 &&
+      item.configured === false &&
+      item.attempted === false &&
+      String(item.quality_label || "").toUpperCase() === "FAILED" &&
+      /missing_env|missing_api|not_configured|set /.test(blocker);
+  });
 }
 
-const tiers = readJson("dashboard/api/runtime/update-tiers.json", {});
-const budget = readJson("dashboard/api/runtime-budget-report.json", {});
-const sourceCsv = readJson("dashboard/api/aux/source-csv-summary.json", {});
-const auxIndex = readJson("dashboard/api/aux/latest/index.json", {});
-const enrichmentIndex = readJson("dashboard/api/enrichment/latest/index.json", {});
-const workflow = workflowText();
+function sourceCollectionActiveAux(payload = {}) {
+  return sourceItems(payload).filter(item => {
+    const key = String(item.source_key || "");
+    return AUX_SOURCE_KEYS.has(key) && String(item.status || "").toUpperCase() === "ACTIVE";
+  });
+}
 
-const statuses = REQUIRED_FILES.map(fileStatus);
-const deployMissing = DEPLOY_REQUIRED.filter(file => !workflow.includes(file));
+function auxIndexMissingEnv(payload = {}) {
+  const status = payload.source_status && typeof payload.source_status === "object" ? payload.source_status : {};
+  return Object.entries(status)
+    .filter(([key, value]) => AUX_SOURCE_KEYS.has(key) && ["NOT_CONFIGURED", "SKIPPED", "NOT_ATTEMPTED"].includes(String(value || "").toUpperCase()))
+    .map(([key]) => key);
+}
+
+function enrichmentUtilizationMissingAux(payload = {}) {
+  return sourceItems(payload).filter(item => {
+    const key = String(item.source_key || "");
+    return AUX_SOURCE_KEYS.has(key) &&
+      String(item.quality_label || "").toUpperCase() === "FAILED" &&
+      Number(item.matched_vessels || 0) <= 0;
+  });
+}
+
+function fileRunId(payload = {}, preferred = []) {
+  for (const field of preferred) {
+    if (payload[field]) return payload[field];
+  }
+  return payload.run_id || payload.status_run_id || payload.source_run_id || null;
+}
+
+function ownershipIssue(label, payload, expected) {
+  if (!payload || typeof payload !== "object") return `${label}: missing payload`;
+  const owner = payload.owner_tier || "";
+  if (expected.owners && !expected.owners.includes(owner)) {
+    return `${label}: owner_tier=${owner || "missing"} expected=${expected.owners.join("|")}`;
+  }
+  if (expected.coreMayUpdate !== undefined && payload.core_may_update !== expected.coreMayUpdate) {
+    return `${label}: core_may_update=${payload.core_may_update} expected=${expected.coreMayUpdate}`;
+  }
+  if (expected.allowPolicy && payload.core_may_update === true && !payload.core_update_policy) {
+    return `${label}: core_may_update=true requires core_update_policy`;
+  }
+  return null;
+}
+
+const statusSummary = readJson(FILES.statusSummary);
+const updateTiers = readJson(FILES.updateTiers);
+const runtimeBudget = readJson(FILES.runtimeBudget);
+const sourceCollection = readJson(FILES.sourceCollection);
+const sourceQuality = readJson(FILES.sourceQuality);
+const enrichmentUtilization = readJson(FILES.enrichmentUtilization);
+const auxLatest = readJson(FILES.auxLatest);
+const enrichmentLatest = readJson(FILES.enrichmentLatest);
+
+const coreRunId = updateTiers.core_run_id || updateTiers.run_id || runtimeBudget.run_id || statusSummary.run_id || null;
+const rows = [
+  ["core", coreRunId, updateTiers.core_generated_at || updateTiers.generated_at, updateTiers.core_generated_by || updateTiers.generated_by],
+  ["status-summary", fileRunId(statusSummary, ["run_id"]), statusSummary.generated_at, statusSummary.generated_by],
+  ["source-collection-status", fileRunId(sourceCollection, ["run_id"]), sourceCollection.generated_at, sourceCollection.generated_by],
+  ["source-quality-score", fileRunId(sourceQuality, ["run_id"]), sourceQuality.generated_at, sourceQuality.generated_by],
+  ["aux/latest/index", fileRunId(auxLatest, ["aux_run_id", "run_id"]), auxLatest.generated_at, auxLatest.generated_by],
+  ["enrichment/latest/index", fileRunId(enrichmentLatest, ["enrichment_run_id", "run_id"]), enrichmentLatest.generated_at, enrichmentLatest.generated_by]
+];
+
+const stale = {
+  status_summary: Boolean(coreRunId && statusSummary.run_id && statusSummary.run_id !== coreRunId),
+  source_collection_status: Boolean(coreRunId && sourceCollection.run_id && sourceCollection.run_id !== coreRunId),
+  source_quality_score: Boolean(coreRunId && sourceQuality.run_id && sourceQuality.run_id !== coreRunId),
+  aux_latest: Boolean(coreRunId && (auxLatest.aux_run_id || auxLatest.run_id) && (auxLatest.aux_run_id || auxLatest.run_id) !== coreRunId),
+  enrichment_latest: Boolean(coreRunId && (enrichmentLatest.enrichment_run_id || enrichmentLatest.run_id) && (enrichmentLatest.enrichment_run_id || enrichmentLatest.run_id) !== coreRunId)
+};
+
+const activeAux = sourceCollectionActiveAux(sourceCollection);
+const missingAuxQuality = sourceQualityMissingAux(sourceQuality);
+const missingAuxIndex = auxIndexMissingEnv(auxLatest);
+const missingUtilization = enrichmentUtilizationMissingAux(enrichmentUtilization);
+const sourceQualityOverwrite = sourceQuality.generated_by === "local" &&
+  missingAuxQuality.length > 0 &&
+  activeAux.length > 0 &&
+  sourceQuality.reused_from_cache !== true;
+const auxIndexOverwrite = auxLatest.generated_by === "local" &&
+  String(auxLatest.update_mode || "").toLowerCase() === "core" &&
+  missingAuxIndex.length > 0 &&
+  auxLatest.reused_from_cache !== true;
+const utilizationOverwrite = enrichmentUtilization.generated_by === "local" &&
+  missingUtilization.length > 0 &&
+  enrichmentUtilization.reused_from_cache !== true;
+
+const ownershipIssues = [
+  ownershipIssue("status-summary", statusSummary, { owners: ["core"], coreMayUpdate: true }),
+  ownershipIssue("runtime/update-tiers", updateTiers, { owners: ["core"], coreMayUpdate: true }),
+  ownershipIssue("source-quality-score", sourceQuality, { owners: ["fast_aux", "reference_enrichment"], allowPolicy: true }),
+  ownershipIssue("enrichment-utilization", enrichmentUtilization, { owners: ["reference_enrichment"], allowPolicy: true }),
+  ownershipIssue("aux/latest/index", auxLatest, { owners: ["fast_aux"], coreMayUpdate: false }),
+  ownershipIssue("enrichment/latest/index", enrichmentLatest, { owners: ["reference_enrichment"], coreMayUpdate: false })
+].filter(Boolean);
+
+if (exists(FILES.sourceCollection)) {
+  const sourceCollectionOwner = sourceCollection.owner_tier || "";
+  if (!sourceCollectionOwner) {
+    ownershipIssues.push("source-collection-status: owner_tier missing on preserved legacy file");
+  }
+}
+
+const statusSummaryFresh = !stale.status_summary;
+const localCoreLooksPromoted = statusSummary.generated_by === "local" &&
+  String(statusSummary.update_mode || updateTiers.update_mode || "").toLowerCase() === "core" &&
+  (statusSummary.data_mode !== "local_static" ||
+    statusSummary.supabase_write_status !== "skipped_local" ||
+    statusSummary.dataset_promotion_status !== "not_promoted");
+
 const problems = [];
+if (!statusSummaryFresh) problems.push("status-summary run_id does not match current core run_id");
+if (sourceQualityOverwrite) problems.push(`local source-quality overwrite detected for: ${missingAuxQuality.map(item => item.source_key).join(", ")}`);
+if (auxIndexOverwrite) problems.push(`local aux/latest overwrite detected for: ${missingAuxIndex.join(", ")}`);
+if (utilizationOverwrite) problems.push(`local enrichment-utilization overwrite detected for: ${missingUtilization.map(item => item.source_key).join(", ")}`);
+if (localCoreLooksPromoted) problems.push("local core status-summary looks production-promoted");
+if (!updateTiers.mixed_tier_note) problems.push("runtime/update-tiers.json missing mixed_tier_note");
 
-for (const status of statuses) {
-  if (!status.exists) problems.push(`missing ${status.path}`);
-}
-if (deployMissing.length) problems.push(`deploy whitelist missing: ${deployMissing.join(", ")}`);
-if (String(tiers.update_mode || budget.update_mode || "").toLowerCase() === "core" && String(sourceCsv.source_csv_mode || "").toLowerCase() === "refresh") {
-  problems.push("core update is configured to refresh source_csv");
-}
-if (budget.update_mode === "core" && Array.isArray(budget.stages) && budget.stages.some(stage => /full source-data enrichment|storage efficiency audit/i.test(stage.name) && stage.status !== "skipped")) {
-  problems.push("heavy optional stages appear to run during core update");
-}
+const recommendedFix = problems.length
+  ? "Run npm run update:core after the tier-preservation patch, then verify aux/enrichment outputs keep reused_from_cache metadata and original tier run ids."
+  : ownershipIssues.length
+    ? "Refresh the owning tier to backfill ownership metadata on preserved legacy files; core preservation is otherwise effective."
+    : "none";
 
 console.log("Tiered update audit");
 console.log("===================");
-console.log(`core: run=${tiers.core_run_id || "-"} generated_at=${tiers.core_generated_at || "-"} age_hours=${ageHours(tiers.core_generated_at) ?? "-"}`);
-console.log(`fast_aux: run=${tiers.fast_aux_run_id || "-"} generated_at=${tiers.fast_aux_generated_at || "-"} age_hours=${ageHours(tiers.fast_aux_generated_at) ?? "-"}`);
-console.log(`reference_enrichment: run=${tiers.reference_enrichment_run_id || "-"} generated_at=${tiers.reference_enrichment_generated_at || "-"} age_hours=${ageHours(tiers.reference_enrichment_generated_at) ?? "-"}`);
-console.log(`discovery_audit: run=${tiers.discovery_audit_run_id || "-"} generated_at=${tiers.discovery_audit_generated_at || "-"} age_hours=${ageHours(tiers.discovery_audit_generated_at) ?? "-"}`);
-console.log(`active_aux_cache_available=${Boolean(tiers.active_aux_cache_available || auxIndex.generated_at)}`);
-console.log(`active_enrichment_patch_available=${Boolean(tiers.active_enrichment_patch_available || enrichmentIndex.patches_available)}`);
-console.log(`source_csv_mode=${sourceCsv.source_csv_mode || process.env.SOURCE_CSV_MODE || "-"}`);
-console.log(`runtime_budget: mode=${budget.update_mode || "-"} duration_ms=${budget.duration_ms ?? "-"} timeout_risk=${Boolean(budget.timeout_risk)}`);
-console.log("\nFiles:");
-for (const status of statuses) {
-  console.log(`- ${status.path}: ${status.exists ? "OK" : "MISSING"} generated_at=${status.generated_at || "-"} stale=${status.stale}`);
+for (const [label, id, generatedAt, generatedBy] of rows) {
+  console.log(`${label}: run_id=${id || "-"} generated_at=${generatedAt || "-"} generated_by=${generatedBy || "-"} age_hours=${ageHours(generatedAt) ?? "-"}`);
 }
-console.log(`\nDeploy whitelist missing: ${deployMissing.length ? deployMissing.join(", ") : "none"}`);
-console.log(`Problems: ${problems.length ? problems.join("; ") : "none"}`);
+console.log("");
+console.log(`mixed_tier_status=${Boolean(updateTiers.mixed_tier_status)} note=${updateTiers.mixed_tier_note || "-"}`);
+console.log(`status_summary_current=${statusSummaryFresh}`);
+console.log(`source_collection_status_stale=${stale.source_collection_status} allowed_mixed_tier=${stale.source_collection_status && updateTiers.mixed_tier_status !== false}`);
+console.log(`source_quality_score_stale=${stale.source_quality_score}`);
+console.log(`aux_latest_stale=${stale.aux_latest} reused_from_cache=${Boolean(auxLatest.reused_from_cache)}`);
+console.log(`enrichment_latest_stale=${stale.enrichment_latest} reused_from_cache=${Boolean(enrichmentLatest.reused_from_cache)}`);
+console.log(`local_overwrote_github_aux_state=${Boolean(sourceQualityOverwrite || auxIndexOverwrite || utilizationOverwrite)}`);
+console.log(`ownership_issues=${ownershipIssues.length ? ownershipIssues.join("; ") : "none"}`);
+console.log(`problems=${problems.length ? problems.join("; ") : "none"}`);
+console.log(`recommended_fix=${recommendedFix}`);
 
 if (problems.length) process.exit(1);

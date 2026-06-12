@@ -21,6 +21,7 @@ import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.
 import { buildSourceDataEnrichmentPayloads } from "./lib/source-data-enrichment-engine.js";
 import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
 import {
+  AUXILIARY_CACHE_SOURCE_KEYS,
   buildAuxiliarySourceCacheStatusPayload,
   readAuxiliarySourceCacheStatus,
   writeAuxiliarySourceCacheStatus
@@ -72,6 +73,20 @@ const SOURCE_CSV_MODE = String(process.env.SOURCE_CSV_MODE || (UPDATE_MODE === "
 const RUN_HEAVY_AUDITS = String(process.env.RUN_HEAVY_AUDITS || (UPDATE_MODE === "core" ? "false" : "true")).toLowerCase() === "true";
 const IS_CORE_UPDATE = ["core", "core_update"].includes(UPDATE_MODE);
 const RUN_FULL_ENRICHMENT = !IS_CORE_UPDATE && ENRICHMENT_MODE === "full";
+const IS_GITHUB_ACTIONS_RUNTIME = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
+const GENERATED_BY = IS_GITHUB_ACTIONS_RUNTIME ? "github_actions" : "local";
+const PRESERVE_AUX_DIAGNOSTICS_IN_CORE = IS_CORE_UPDATE && ENRICHMENT_MODE === "lightweight_apply_cache";
+const CORE_SOURCE_KEYS = new Set(["port_operation"]);
+const AUXILIARY_DIAGNOSTIC_SOURCE_KEYS = new Set([
+  ...AUXILIARY_CACHE_SOURCE_KEYS,
+  "mof_ais_stat",
+  "ulsan_core",
+  "ulsan_berth_detail",
+  "ulsan_cargo_plan",
+  "ulsan_berth_operation",
+  "ulsan_terminal_process"
+]);
+const AUXILIARY_QUALITY_PRESERVATION_NOTE = "Auxiliary source quality preserved from previous GitHub Actions run because local core mode cannot access secrets.";
 const RUNTIME_BUDGET_STARTED_AT = new Date();
 const RUNTIME_BUDGET_STAGES = [];
 const RUNTIME_SKIPPED_OPTIONAL_STAGES = [];
@@ -3553,6 +3568,326 @@ function readJsonSafe(filePath, fallback = null) {
   }
 }
 
+function shouldPreserveAuxDiagnosticsForCore() {
+  return PRESERVE_AUX_DIAGNOSTICS_IN_CORE && GENERATED_BY === "local";
+}
+
+function sourceOwnerTier(sourceKey = "") {
+  const key = String(sourceKey || "");
+  if (CORE_SOURCE_KEYS.has(key)) return "core";
+  if (key === "source_csv") return "reference_enrichment";
+  return "fast_aux";
+}
+
+function sourceMayUpdateInCore(sourceKey = "") {
+  return CORE_SOURCE_KEYS.has(String(sourceKey || ""));
+}
+
+function mapItemsBySourceKey(items = []) {
+  return new Map((Array.isArray(items) ? items : [])
+    .filter(item => item && typeof item === "object" && item.source_key)
+    .map(item => [String(item.source_key), item]));
+}
+
+function qualityCountsFromItems(items = []) {
+  return (Array.isArray(items) ? items : []).reduce((acc, item) => {
+    const label = item?.quality_label || "UNKNOWN";
+    acc[label] = (acc[label] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function averageUtilizationScore(items = []) {
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) return 0;
+  return Math.round(rows.reduce((sum, item) => sum + Number(item?.utilization_score || 0), 0) / rows.length);
+}
+
+function sourceQualityItemLooksLocalMissing(item = {}) {
+  if (!item || typeof item !== "object") return false;
+  if (!AUXILIARY_DIAGNOSTIC_SOURCE_KEYS.has(String(item.source_key || ""))) return false;
+  const blocker = String(item.blocker_reason || item.recommended_fix || "").toLowerCase();
+  const rows = Number(item.rows_collected || 0) + Number(item.rows_normalized || 0) + Number(item.rows_matched_to_vessels || 0);
+  return rows <= 0 &&
+    item.configured === false &&
+    item.attempted === false &&
+    String(item.quality_label || "").toUpperCase() === "FAILED" &&
+    /missing_env|missing_api|not_configured|set /.test(blocker);
+}
+
+function annotateSourceCollectionOwnership(payload = {}, { reusedFromCache = false, generatedAt = null, coreRunId = null } = {}) {
+  const items = (Array.isArray(payload.items) ? payload.items : []).map(item => {
+    const ownerTier = sourceOwnerTier(item.source_key);
+    return {
+      ...item,
+      owner_tier: ownerTier,
+      core_may_update: sourceMayUpdateInCore(item.source_key),
+      ...(reusedFromCache && ownerTier !== "core" ? {
+        reused_from_cache: true,
+        cache_reused_at: generatedAt,
+        core_run_id: coreRunId,
+        preservation_reason: AUXILIARY_QUALITY_PRESERVATION_NOTE
+      } : {})
+    };
+  });
+  return {
+    ...payload,
+    owner_tier: "mixed",
+    core_may_update: "core_sources_only",
+    owner_tier_by_source: Object.fromEntries(items.map(item => [item.source_key, item.owner_tier])),
+    items
+  };
+}
+
+function mergeSourceCollectionForCoreDiagnostics({ current = {}, previous = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  const shouldPreserve = shouldPreserveAuxDiagnosticsForCore();
+  const previousItems = Array.isArray(previous?.items) ? previous.items : [];
+  if (!shouldPreserve || !previousItems.length) {
+    return annotateSourceCollectionOwnership(current || {}, {
+      reusedFromCache: false,
+      generatedAt,
+      coreRunId: origin.run_id || runId
+    });
+  }
+  const previousByKey = mapItemsBySourceKey(previousItems);
+  const currentByKey = mapItemsBySourceKey(current?.items || []);
+  const keys = [...new Set([
+    ...previousItems.map(item => item.source_key).filter(Boolean),
+    ...(Array.isArray(current?.items) ? current.items.map(item => item.source_key).filter(Boolean) : [])
+  ])];
+  const items = keys.map(sourceKey => {
+    const currentItem = currentByKey.get(sourceKey);
+    const previousItem = previousByKey.get(sourceKey);
+    if (CORE_SOURCE_KEYS.has(sourceKey) && currentItem) return currentItem;
+    return previousItem || currentItem;
+  }).filter(Boolean);
+  return annotateSourceCollectionOwnership({
+    ...(previous || {}),
+    schema_version: current?.schema_version || previous?.schema_version || PUBLIC_API_SCHEMA_VERSION,
+    generated_at: previous?.generated_at || current?.generated_at || generatedAt,
+    run_id: previous?.run_id || previous?.status_run_id || current?.run_id || null,
+    status_run_id: previous?.status_run_id || previous?.run_id || current?.status_run_id || null,
+    source_run_id: previous?.source_run_id || previous?.run_id || current?.source_run_id || null,
+    generated_by: previous?.generated_by || "github_actions",
+    is_github_actions: previous?.is_github_actions ?? true,
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    core_run_id: origin.run_id || current?.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    mixed_tier_status: true,
+    mixed_tier_note: "Core diagnostics used the current core source state and preserved the last canonical auxiliary source-collection state.",
+    items,
+    record_count: items.length,
+    item_count: items.length
+  }, {
+    reusedFromCache: true,
+    generatedAt,
+    coreRunId: origin.run_id || current?.run_id || runId
+  });
+}
+
+function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxIndex = {}, enrichmentIndex = {}, sourceCollectionStatus = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  if (!shouldPreserveAuxDiagnosticsForCore()) {
+    return {
+      ...payload,
+      owner_tier: "fast_aux",
+      core_may_update: false,
+      owner_tier_by_source: Object.fromEntries(items.map(item => [item.source_key, sourceOwnerTier(item.source_key)])),
+      items: items.map(item => ({
+        ...item,
+        owner_tier: sourceOwnerTier(item.source_key),
+        core_may_update: sourceMayUpdateInCore(item.source_key)
+      }))
+    };
+  }
+  const previousByKey = mapItemsBySourceKey(previous?.items || []);
+  const mergedItems = items.map(item => {
+    const sourceKey = String(item.source_key || "");
+    if (CORE_SOURCE_KEYS.has(sourceKey)) {
+      return {
+        ...item,
+        owner_tier: "core",
+        core_may_update: true,
+        core_run_id: origin.run_id || payload.run_id || runId
+      };
+    }
+    const previousItem = previousByKey.get(sourceKey);
+    const usePrevious = previousItem && !sourceQualityItemLooksLocalMissing(previousItem);
+    const base = usePrevious ? previousItem : item;
+    return {
+      ...base,
+      source_key: sourceKey,
+      owner_tier: sourceOwnerTier(sourceKey),
+      core_may_update: false,
+      reused_from_cache: true,
+      cache_reused_at: generatedAt,
+      core_run_id: origin.run_id || payload.run_id || runId,
+      preserved_from_run_id: usePrevious
+        ? previous.source_run_id || previous.run_id || previous.status_run_id || null
+        : sourceCollectionStatus.source_run_id || sourceCollectionStatus.run_id || null,
+      preservation_reason: AUXILIARY_QUALITY_PRESERVATION_NOTE
+    };
+  });
+  return {
+    ...payload,
+    owner_tier: "fast_aux",
+    core_may_update: true,
+    core_update_policy: "lightweight_merge_core_sources_only",
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    core_run_id: origin.run_id || payload.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    aux_run_id: sourceCollectionStatus.run_id || auxIndex.aux_run_id || previous.aux_run_id || null,
+    enrichment_run_id: enrichmentIndex.enrichment_run_id || previous.enrichment_run_id || null,
+    fast_aux_run_id: sourceCollectionStatus.run_id || auxIndex.aux_run_id || null,
+    reference_enrichment_run_id: enrichmentIndex.enrichment_run_id || null,
+    preservation_note: AUXILIARY_QUALITY_PRESERVATION_NOTE,
+    notes: [...new Set([...(Array.isArray(payload.notes) ? payload.notes : []), AUXILIARY_QUALITY_PRESERVATION_NOTE])],
+    record_count: mergedItems.length,
+    item_count: mergedItems.length,
+    average_utilization_score: averageUtilizationScore(mergedItems),
+    quality_counts: qualityCountsFromItems(mergedItems),
+    owner_tier_by_source: Object.fromEntries(mergedItems.map(item => [item.source_key, item.owner_tier])),
+    items: mergedItems
+  };
+}
+
+function protectAuxDiagnosticPayloadForCore({ payload = {}, sourceCollectionStatus = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  if (!shouldPreserveAuxDiagnosticsForCore()) {
+    return {
+      ...payload,
+      owner_tier: "fast_aux",
+      core_may_update: false
+    };
+  }
+  const auxRunId = sourceCollectionStatus.run_id || sourceCollectionStatus.status_run_id || payload.aux_run_id || payload.run_id || null;
+  return {
+    ...payload,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    preservation_reason: AUXILIARY_QUALITY_PRESERVATION_NOTE,
+    core_run_id: origin.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    aux_run_id: payload.aux_run_id || auxRunId,
+    run_id: auxRunId,
+    status_run_id: auxRunId,
+    source_run_id: auxRunId,
+    active_run_id: auxRunId,
+    generated_at: sourceCollectionStatus.generated_at || payload.generated_at,
+    generated_by: sourceCollectionStatus.generated_by || payload.generated_by || "github_actions",
+    is_github_actions: sourceCollectionStatus.is_github_actions ?? payload.is_github_actions ?? true
+  };
+}
+
+function protectAuxLatestIndexForCore({ payload = {}, previous = {}, sourceCollectionStatus = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  const base = payload && typeof payload === "object" ? payload : {};
+  if (!shouldPreserveAuxDiagnosticsForCore()) {
+    return {
+      ...base,
+      owner_tier: "fast_aux",
+      core_may_update: false
+    };
+  }
+  const auxRunId = sourceCollectionStatus.run_id || sourceCollectionStatus.status_run_id || previous.aux_run_id || previous.run_id || base.aux_run_id || null;
+  const sourceStatus = Object.fromEntries((sourceCollectionStatus.items || []).map(item => [item.source_key, item.status]));
+  return {
+    ...previous,
+    ...base,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    preservation_reason: AUXILIARY_QUALITY_PRESERVATION_NOTE,
+    core_run_id: origin.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    aux_run_id: auxRunId,
+    run_id: auxRunId,
+    status_run_id: auxRunId,
+    source_run_id: auxRunId,
+    active_run_id: auxRunId,
+    generated_at: sourceCollectionStatus.generated_at || previous.generated_at || base.generated_at,
+    generated_by: sourceCollectionStatus.generated_by || previous.generated_by || "github_actions",
+    is_github_actions: sourceCollectionStatus.is_github_actions ?? previous.is_github_actions ?? true,
+    source_status: Object.keys(sourceStatus).length ? sourceStatus : base.source_status || previous.source_status || {},
+    source_count: (sourceCollectionStatus.items || []).length || base.source_count || previous.source_count || 0
+  };
+}
+
+function enrichmentUtilizationLooksLocalMissing(payload = {}) {
+  if (!payload || typeof payload !== "object") return false;
+  if (payload.generated_by !== "local") return false;
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  const auxItems = items.filter(item => AUXILIARY_DIAGNOSTIC_SOURCE_KEYS.has(String(item.source_key || "")));
+  return auxItems.length > 0 && auxItems.every(item =>
+    String(item.quality_label || "").toUpperCase() === "FAILED" &&
+    Number(item.matched_vessels || 0) <= 0 &&
+    (!Array.isArray(item.fields_added) || item.fields_added.length === 0)
+  );
+}
+
+function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sourceQualityScore = {}, enrichmentIndex = {}, cachedPatchResult = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  const shouldUsePrevious = shouldPreserveAuxDiagnosticsForCore() &&
+    previous &&
+    typeof previous === "object" &&
+    !enrichmentUtilizationLooksLocalMissing(previous);
+  const base = shouldUsePrevious ? previous : payload;
+  return {
+    ...base,
+    owner_tier: "reference_enrichment",
+    core_may_update: shouldPreserveAuxDiagnosticsForCore(),
+    core_update_policy: shouldPreserveAuxDiagnosticsForCore()
+      ? "display_cached_patch_counts_only"
+      : "reference_enrichment_owner",
+    reused_from_cache: shouldPreserveAuxDiagnosticsForCore(),
+    cache_reused_at: shouldPreserveAuxDiagnosticsForCore() ? generatedAt : base.cache_reused_at || null,
+    core_run_id: shouldPreserveAuxDiagnosticsForCore() ? origin.run_id || payload.run_id || runId : base.core_run_id || null,
+    core_generated_at: shouldPreserveAuxDiagnosticsForCore() ? generatedAt : base.core_generated_at || null,
+    core_generated_by: shouldPreserveAuxDiagnosticsForCore() ? GENERATED_BY : base.core_generated_by || null,
+    enrichment_run_id: enrichmentIndex.enrichment_run_id || base.enrichment_run_id || base.source_run_id || base.run_id || null,
+    source_quality_run_id: sourceQualityScore.run_id || sourceQualityScore.source_run_id || null,
+    cached_patch_available: cachedPatchResult?.available ?? base.cached_patch_available ?? null,
+    cached_patch_applied_count: Number(cachedPatchResult?.applied ?? base.cached_patch_applied_count ?? 0),
+    cached_patch_source_generated_at: cachedPatchResult?.source_generated_at || base.cached_patch_source_generated_at || null
+  };
+}
+
+function protectEnrichmentLatestIndexForCore({ payload = {}, previous = {}, summary = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  if (!shouldPreserveAuxDiagnosticsForCore()) {
+    return {
+      ...payload,
+      owner_tier: "reference_enrichment",
+      core_may_update: false
+    };
+  }
+  const enrichmentRunId = payload.enrichment_run_id || previous.enrichment_run_id || summary.run_id || previous.run_id || payload.run_id || null;
+  return {
+    ...previous,
+    ...payload,
+    owner_tier: "reference_enrichment",
+    core_may_update: false,
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    core_run_id: origin.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    enrichment_run_id: enrichmentRunId,
+    run_id: enrichmentRunId,
+    status_run_id: enrichmentRunId,
+    source_run_id: enrichmentRunId,
+    active_run_id: enrichmentRunId,
+    generated_at: summary.generated_at || previous.generated_at || payload.generated_at,
+    generated_by: summary.generated_by || previous.generated_by || payload.generated_by || "github_actions",
+    is_github_actions: summary.is_github_actions ?? previous.is_github_actions ?? payload.is_github_actions ?? true
+  };
+}
+
 function rowCountFromPayload(payload) {
   if (Array.isArray(payload)) return payload.length;
   if (payload && typeof payload === "object") {
@@ -6503,6 +6838,7 @@ const VERIFICATION_QUEUE_OUTPUT_LIMIT = 200;
 
 function contractDataMode(mode = "", report = {}) {
   const value = String(mode || report?.data_mode || report?.data_source_used || "").toLowerCase();
+  if (value === "local_static") return "local_static";
   if (/sample/.test(value)) return "sample";
   if (report?.fallback_used === true || /fallback|no_live|diagnostic|degraded|sample_mode_final/.test(value)) return "fallback";
   return "live";
@@ -8569,10 +8905,23 @@ function statusWarningSummary(report = {}) {
 
 function buildStatusSummaryPayload({ report = {}, generatedAt = new Date().toISOString(), dataMode = "live" } = {}) {
   const warningSummary = statusWarningSummary(report);
+  const localCoreRun = IS_CORE_UPDATE && GENERATED_BY === "local";
+  const rawSupabaseWriteStatus = report.supabase_write?.status || report.supabase_write_status || "unknown";
+  const supabaseWriteStatus = localCoreRun && !isSupabaseWriteCompleted(rawSupabaseWriteStatus)
+    ? "skipped_local"
+    : rawSupabaseWriteStatus;
+  const datasetPromotionStatus = localCoreRun && supabaseWriteStatus === "skipped_local"
+    ? "not_promoted"
+    : report.promotion_status || report.dataset_promotion_status || "unknown";
   return {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
-    data_mode: contractDataMode(dataMode, report),
+    owner_tier: "core",
+    core_may_update: true,
+    generated_by: GENERATED_BY,
+    is_github_actions: IS_GITHUB_ACTIONS_RUNTIME,
+    update_mode: UPDATE_MODE,
+    data_mode: contractDataMode(localCoreRun ? "local_static" : dataMode, report),
     record_count: rowCountFromPayload(report),
     item_count: 0,
     source_table: "status.json",
@@ -8587,8 +8936,9 @@ function buildStatusSummaryPayload({ report = {}, generatedAt = new Date().toISO
     selected_dataset_count: firstFiniteNumber(report.selected_dataset_count, report.record_count, 0),
     total_rows: firstFiniteNumber(report.total_rows, report.raw_rows, report.all_collected_vessel_count, 0),
     fallback_used: Boolean(report.fallback_used),
-    supabase_write_status: report.supabase_write?.status || report.supabase_write_status || "unknown",
-    dataset_promotion_status: report.promotion_status || report.dataset_promotion_status || "unknown",
+    supabase_write_status: supabaseWriteStatus,
+    dataset_promotion_status: datasetPromotionStatus,
+    local_core_non_promoted: localCoreRun,
     data_continuity: report.data_continuity ? {
       status: report.data_continuity.status || "unknown",
       storage_verification_status: report.data_continuity.storage_verification?.status || report.data_continuity.storage_verification || null,
@@ -17719,37 +18069,55 @@ function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enri
   const tiers = {
     core: {
       run_id: report.run_id || runId,
-      generated_at: generatedAt
+      generated_at: generatedAt,
+      generated_by: GENERATED_BY
     },
     fast_aux: {
-      run_id: UPDATE_MODE === "fast_aux" ? (report.run_id || runId) : previous.fast_aux_run_id || previous.fast_aux?.run_id || auxIndex.aux_run_id || null,
-      generated_at: UPDATE_MODE === "fast_aux" ? generatedAt : previous.fast_aux_generated_at || previous.fast_aux?.generated_at || auxIndex.generated_at || null
+      run_id: UPDATE_MODE === "fast_aux" ? (report.run_id || runId) : auxIndex.aux_run_id || previous.fast_aux_run_id || previous.fast_aux?.run_id || null,
+      generated_at: UPDATE_MODE === "fast_aux" ? generatedAt : auxIndex.generated_at || previous.fast_aux_generated_at || previous.fast_aux?.generated_at || null,
+      generated_by: UPDATE_MODE === "fast_aux" ? GENERATED_BY : auxIndex.generated_by || previous.fast_aux_generated_by || previous.fast_aux?.generated_by || null
     },
     reference_enrichment: {
-      run_id: UPDATE_MODE === "reference_enrichment" ? (report.run_id || runId) : previous.reference_enrichment_run_id || previous.reference_enrichment?.run_id || enrichmentIndex.enrichment_run_id || null,
-      generated_at: UPDATE_MODE === "reference_enrichment" ? generatedAt : previous.reference_enrichment_generated_at || previous.reference_enrichment?.generated_at || enrichmentIndex.generated_at || null
+      run_id: UPDATE_MODE === "reference_enrichment" ? (report.run_id || runId) : enrichmentIndex.enrichment_run_id || previous.reference_enrichment_run_id || previous.reference_enrichment?.run_id || null,
+      generated_at: UPDATE_MODE === "reference_enrichment" ? generatedAt : enrichmentIndex.generated_at || previous.reference_enrichment_generated_at || previous.reference_enrichment?.generated_at || null,
+      generated_by: UPDATE_MODE === "reference_enrichment" ? GENERATED_BY : enrichmentIndex.generated_by || previous.reference_enrichment_generated_by || previous.reference_enrichment?.generated_by || null
     },
     discovery_audit: {
       run_id: UPDATE_MODE === "discovery_audit" ? (report.run_id || runId) : previous.discovery_audit_run_id || previous.discovery_audit?.run_id || null,
-      generated_at: UPDATE_MODE === "discovery_audit" ? generatedAt : previous.discovery_audit_generated_at || previous.discovery_audit?.generated_at || null
+      generated_at: UPDATE_MODE === "discovery_audit" ? generatedAt : previous.discovery_audit_generated_at || previous.discovery_audit?.generated_at || null,
+      generated_by: UPDATE_MODE === "discovery_audit" ? GENERATED_BY : previous.discovery_audit_generated_by || previous.discovery_audit?.generated_by || null
     }
   };
   const staleWarnings = [];
   if (!tiers.fast_aux.generated_at) staleWarnings.push("fast_aux cache is not available yet.");
   if (!tiers.reference_enrichment.generated_at) staleWarnings.push("reference enrichment patch cache is not available yet.");
   if (!tiers.discovery_audit.generated_at) staleWarnings.push("discovery/audit reports have not been refreshed by the tiered workflow yet.");
+  const tierRunIds = [...new Set(Object.values(tiers).map(tier => tier.run_id).filter(Boolean))];
+  const mixedTierStatus = tierRunIds.length > 1;
   return {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
+    owner_tier: "core",
+    core_may_update: true,
     update_mode: UPDATE_MODE,
     core_run_id: tiers.core.run_id,
     core_generated_at: tiers.core.generated_at,
+    core_generated_by: tiers.core.generated_by,
     fast_aux_run_id: tiers.fast_aux.run_id,
     fast_aux_generated_at: tiers.fast_aux.generated_at,
+    fast_aux_generated_by: tiers.fast_aux.generated_by,
     reference_enrichment_run_id: tiers.reference_enrichment.run_id,
     reference_enrichment_generated_at: tiers.reference_enrichment.generated_at,
+    reference_enrichment_generated_by: tiers.reference_enrichment.generated_by,
     discovery_audit_run_id: tiers.discovery_audit.run_id,
     discovery_audit_generated_at: tiers.discovery_audit.generated_at,
+    discovery_audit_generated_by: tiers.discovery_audit.generated_by,
+    mixed_tier_status: mixedTierStatus,
+    mixed_tier_note: mixedTierStatus
+      ? "Core output was refreshed separately from auxiliary/enrichment/discovery diagnostics; older tier outputs are intentionally reused from cache."
+      : "All tier references currently point to the same run.",
+    aux_reused_from_cache: Boolean(auxIndex.reused_from_cache),
+    enrichment_reused_from_cache: Boolean(enrichmentIndex.reused_from_cache),
     active_aux_cache_available: fileExists("dashboard/api/aux/latest/index.json") || Boolean(auxIndex.generated_at),
     active_enrichment_patch_available: fileExists("dashboard/api/enrichment/latest/patches.json") || Boolean(enrichmentIndex.patches_available),
     stale_warnings: staleWarnings,
@@ -18304,7 +18672,20 @@ try {
   salesCandidates = targetCategorySummary.items;
   const targetSplitCounts = buildTargetSplitCounts(allCollectedVessels);
 
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && status !== "failed") {
+  if (!isGithubActionsRuntime && IS_CORE_UPDATE) {
+    supabaseWrite = {
+      status: "skipped_local",
+      promoted: false,
+      post_write_verification: {
+        status: "skipped_local",
+        promotion_status: "not_promoted",
+        errors: []
+      },
+      promotion_status: "not_promoted",
+      note: "Local core update writes static JSON only and does not promote Supabase datasets."
+    };
+    supabaseStatus = "skipped_local";
+  } else if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY && status !== "failed") {
     try {
       supabaseWrite = { status: "syncing" };
       supabaseWrite = await saveFinalDashboardDatasetToSupabase(allCollectedVessels, {
@@ -18765,15 +19146,29 @@ try {
     collectorDiagnostics: collectorDiagnosticsAfterCollection,
     generatedAt: completedAt
   });
-  const sourceCollectionStatusPayload = withRunOrigin(buildSourceCollectionStatus({
+  const sourceCollectionStatusPayload = annotateSourceCollectionOwnership(withRunOrigin(buildSourceCollectionStatus({
     report,
     collectorDiagnostics: collectorDiagnosticsAfterCollection,
     generatedAt: completedAt
-  }), finalRunOrigin);
+  }), finalRunOrigin), {
+    generatedAt: completedAt,
+    coreRunId: finalRunOrigin.run_id || runId
+  });
+  const previousSourceCollectionStatus = readJsonSafe("dashboard/api/source-collection-status.json", null);
+  const previousSourceQualityScore = readJsonSafe("dashboard/api/source-quality-score.json", null) || {};
+  const previousAuxLatestIndex = readJsonSafe("dashboard/api/aux/latest/index.json", null) || {};
+  const previousEnrichmentLatestIndex = readJsonSafe("dashboard/api/enrichment/latest/index.json", null) || {};
+  const previousEnrichmentUtilization = readJsonSafe("dashboard/api/enrichment-utilization.json", null) || {};
+  const sourceCollectionStatusForAuxDiagnostics = mergeSourceCollectionForCoreDiagnostics({
+    current: sourceCollectionStatusPayload,
+    previous: previousSourceCollectionStatus,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   sourceHealthRuntimeReport.source_collection_status = sourceCollectionStatusPayload;
-  const sourceCsvSummaryPayload = withRunOrigin({
+  let sourceCsvSummaryPayload = withRunOrigin({
     ...buildSourceCsvSummary({
-      sourceCollectionStatus: sourceCollectionStatusPayload,
+      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
       collectorDiagnostics: collectorDiagnosticsAfterCollection,
       cache: sourceCsvReferenceCache,
       generatedAt: completedAt
@@ -18829,8 +19224,14 @@ try {
     load_strategy: "lazy",
     startup_safe: false
   }, finalRunOrigin);
-  const sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+  sourceCsvSummaryPayload = protectAuxDiagnosticPayloadForCore({
+    payload: sourceCsvSummaryPayload,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
+  let sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     matchingDiagnostics,
     bootstrapKpis: {
       ...(dashboardSummary.kpis || {}),
@@ -18853,8 +19254,17 @@ try {
     sourceCsvQualityItem.coverage_label = sourceCsvQualityItem.quality_label;
     sourceCsvQualityItem.recommended_fix = Number(sourceCsvDryRunPayload.matched_vessels || 0) > 0 ? "No action required." : "Lightweight source_csv cache exists; improve match keys to apply enrichment.";
   }
+  sourceQualityScorePayload = protectSourceQualityScoreForCore({
+    payload: sourceQualityScorePayload,
+    previous: previousSourceQualityScore,
+    auxIndex: previousAuxLatestIndex,
+    enrichmentIndex: previousEnrichmentLatestIndex,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   const sourceEnrichmentMatrixPayload = withRunOrigin(buildSourceEnrichmentMatrixPayload({
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     sourceQualityScore: sourceQualityScorePayload,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
@@ -18934,7 +19344,7 @@ try {
     reviewQueuePayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.reviewQueuePayload, finalRunOrigin),
     summaryPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.summaryPayload, finalRunOrigin)
   };
-  const enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
+  let enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
     records: allCollectedVessels,
     sourceQualityScore: sourceQualityScorePayload,
     bootstrapKpis: {
@@ -18948,6 +19358,15 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot"
   }), finalRunOrigin);
+  enrichmentUtilizationPayload = protectEnrichmentUtilizationForCore({
+    payload: enrichmentUtilizationPayload,
+    previous: previousEnrichmentUtilization,
+    sourceQualityScore: sourceQualityScorePayload,
+    enrichmentIndex: previousEnrichmentLatestIndex,
+    cachedPatchResult: identityResolutionDiagnostics.cached_enrichment_patches || {},
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   const skipMatchReview = shouldSkipOptionalStage(
     "pilotage/berth match review queue",
     90000,
@@ -18972,7 +19391,7 @@ try {
     finalRunOrigin
   );
   const auxSummaryOptions = {
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "live",
     report,
@@ -18983,7 +19402,7 @@ try {
       berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
     }
   };
-  const auxSourceSummaryPayloads = {
+  const auxSourceSummaryPayloadsRaw = {
     "dashboard/api/aux/pilotage-summary.json": buildAuxSourceSummaryPayload({
       ...auxSummaryOptions,
       sourceKeys: ["pilot_sources"],
@@ -19015,8 +19434,18 @@ try {
       title: "선박 제원 보강 요약"
     })
   };
-  const auxiliarySourceCacheStatusPayload = withRunOrigin(buildAuxiliarySourceCacheStatusPayload({
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+  const auxSourceSummaryPayloads = Object.fromEntries(Object.entries(auxSourceSummaryPayloadsRaw).map(([filePath, payload]) => [
+    filePath,
+    protectAuxDiagnosticPayloadForCore({
+      payload,
+      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+      generatedAt: completedAt,
+      origin: finalRunOrigin
+    })
+  ]));
+  const auxiliarySourceCacheStatusPayload = protectAuxDiagnosticPayloadForCore({
+    payload: withRunOrigin(buildAuxiliarySourceCacheStatusPayload({
+      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     summaries: {
       source_csv: sourceCsvSummaryPayload,
       pilot_sources: auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
@@ -19029,17 +19458,21 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     report
-  }), finalRunOrigin);
+    }), finalRunOrigin),
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   writeAuxiliarySourceCacheStatus(auxiliarySourceCacheStatusPayload);
   const sourceSchedulePayload = withRunOrigin(buildSourceSchedulePayload({
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     sourceQualityScore: sourceQualityScorePayload,
     auxiliaryCacheStatus: auxiliarySourceCacheStatusPayload,
     previousSchedule: readJsonSafe("dashboard/api/aux/source-schedule.json", {}) || {},
     diagnostics: {
       bootstrap: dashboardSummary,
       status: report,
-      sourceCollectionStatus: sourceCollectionStatusPayload,
+      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
       sourceHealthRuntime: sourceHealthRuntimeReport,
       storageEfficiencyReport: readJsonSafe("dashboard/api/storage-efficiency-report.json", {}) || {}
     },
@@ -19739,13 +20172,20 @@ try {
     "dashboard/api/aux/latest/vessel-spec-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
     "dashboard/api/aux/latest/cache-status.json": auxiliarySourceCacheStatusPayload
   };
-  const auxLatestIndexPayload = withRunOrigin(buildAuxLatestIndex({
+  let auxLatestIndexPayload = withRunOrigin(buildAuxLatestIndex({
     generatedAt: completedAt,
     report,
     availableFiles: auxLatestFiles,
-    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     cacheStatus: auxiliarySourceCacheStatusPayload
   }), finalRunOrigin);
+  auxLatestIndexPayload = protectAuxLatestIndexForCore({
+    payload: auxLatestIndexPayload,
+    previous: previousAuxLatestIndex,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   for (const [filePath, payload] of Object.entries(auxLatestPayloads)) {
     writeApiJson(filePath, payload, report);
   }
@@ -19757,12 +20197,19 @@ try {
     load_strategy: "lazy",
     startup_safe: false
   }, finalRunOrigin);
-  const enrichmentLatestIndexPayload = withRunOrigin(buildEnrichmentLatestIndex({
+  let enrichmentLatestIndexPayload = withRunOrigin(buildEnrichmentLatestIndex({
     generatedAt: completedAt,
     summary: sourceDataEnrichmentPayloads.summaryPayload,
     patches: enrichmentPatchesPayload,
     reviewQueue: sourceDataEnrichmentPayloads.reviewQueuePayload
   }), finalRunOrigin);
+  enrichmentLatestIndexPayload = protectEnrichmentLatestIndexForCore({
+    payload: enrichmentLatestIndexPayload,
+    previous: previousEnrichmentLatestIndex,
+    summary: sourceDataEnrichmentPayloads.summaryPayload,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
+  });
   writeApiJson("dashboard/api/enrichment/latest/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
   writeApiJson("dashboard/api/enrichment/latest/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
   writeApiJson("dashboard/api/enrichment/latest/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "live",
-  "record_count": 1015,
+  "record_count": 1016,
   "source_table": "active_dataset_pointer,latest_successful_dataset_bundle,static_dashboard_snapshot",
   "items": [
     {
@@ -12,7 +12,7 @@
           "step": 1,
           "source": "active_dataset_pointer",
           "status": "available",
-          "rows": 1015
+          "rows": 1016
         },
         {
           "step": 2,
@@ -25,13 +25,13 @@
           "step": 3,
           "source": "latest_successful_dataset",
           "status": "available",
-          "rows": 1015
+          "rows": 1016
         },
         {
           "step": 4,
           "source": "latest_snapshot",
           "status": "available",
-          "rows": 1015
+          "rows": 1016
         },
         {
           "step": 5,
@@ -47,41 +47,12 @@
         }
       ],
       "storage_verification": {
-        "supabase_write_status": "completed",
-        "post_write_verification_status": "completed",
-        "promotion_status": "promoted",
-        "rows_written_by_table": {
-          "vessel_snapshots": 1015,
-          "source_collection_logs": 35,
-          "vessel_entities": 1015,
-          "vessel_master": 1015,
-          "port_call_master": 1015,
-          "opportunity_master": 1015,
-          "risk_history": 319,
-          "vessel_events": 4240,
-          "pilot_schedule_events": 0,
-          "port_congestion_snapshots": 8,
-          "enrichment_match_candidates": 0,
-          "commercial_leads": 1,
-          "private_sales_activity": 0,
-          "dashboard_summary_snapshots": 1,
-          "sales_candidates_current": 138,
-          "immediate_targets_current": 0,
-          "port_summary_current": 8,
-          "feature_store": 319,
-          "feature_snapshots": 319,
-          "rule_evaluations": 691,
-          "explainability_snapshots": 319,
-          "model_training_rows": 214,
-          "vessel_snapshot_daily": 1015,
-          "port_snapshot_daily": 8,
-          "operator_snapshot_daily": 10,
-          "route_snapshot_daily": 309,
-          "commercial_opportunity_daily": 31,
-          "vessel_universe_audit": 1
-        },
-        "successful_dataset_bundle_status": "saved",
-        "successful_dataset_rows": 1015,
+        "supabase_write_status": "skipped_local",
+        "post_write_verification_status": "skipped_local",
+        "promotion_status": "not_promoted",
+        "rows_written_by_table": {},
+        "successful_dataset_bundle_status": "skipped",
+        "successful_dataset_rows": 1016,
         "restore_status": "not_needed"
       },
       "operator_message_ko": "현재 실행 데이터가 정상이며, 성공 데이터 묶음 저장 대상입니다."
@@ -90,64 +61,35 @@
   "status": "healthy",
   "objective": "Dashboard must never become empty when collection or storage fails.",
   "current_run": {
-    "run_id": "run_20260612144845570_ce7e353f",
+    "run_id": "run_20260612155142519_efee8294",
     "data_mode": "static_snapshot",
     "data_status": "ready",
-    "rows": 1015,
+    "rows": 1016,
     "target_vessels_count": 32,
     "fallback_used": false,
     "fallback_reason": null
   },
   "storage_verification": {
-    "supabase_write_status": "completed",
-    "post_write_verification_status": "completed",
-    "promotion_status": "promoted",
-    "rows_written_by_table": {
-      "vessel_snapshots": 1015,
-      "source_collection_logs": 35,
-      "vessel_entities": 1015,
-      "vessel_master": 1015,
-      "port_call_master": 1015,
-      "opportunity_master": 1015,
-      "risk_history": 319,
-      "vessel_events": 4240,
-      "pilot_schedule_events": 0,
-      "port_congestion_snapshots": 8,
-      "enrichment_match_candidates": 0,
-      "commercial_leads": 1,
-      "private_sales_activity": 0,
-      "dashboard_summary_snapshots": 1,
-      "sales_candidates_current": 138,
-      "immediate_targets_current": 0,
-      "port_summary_current": 8,
-      "feature_store": 319,
-      "feature_snapshots": 319,
-      "rule_evaluations": 691,
-      "explainability_snapshots": 319,
-      "model_training_rows": 214,
-      "vessel_snapshot_daily": 1015,
-      "port_snapshot_daily": 8,
-      "operator_snapshot_daily": 10,
-      "route_snapshot_daily": 309,
-      "commercial_opportunity_daily": 31,
-      "vessel_universe_audit": 1
-    },
-    "successful_dataset_bundle_status": "saved",
-    "successful_dataset_rows": 1015,
+    "supabase_write_status": "skipped_local",
+    "post_write_verification_status": "skipped_local",
+    "promotion_status": "not_promoted",
+    "rows_written_by_table": {},
+    "successful_dataset_bundle_status": "skipped",
+    "successful_dataset_rows": 1016,
     "restore_status": "not_needed"
   },
   "health": {
     "api_health_status": "success",
-    "summary_generated_at": "2026-06-12T14:51:11.150Z",
-    "last_success_at": "2026-06-12T14:51:11.150Z",
-    "production_ready": true
+    "summary_generated_at": "2026-06-12T15:54:59.421Z",
+    "last_success_at": "2026-06-12T15:54:59.421Z",
+    "production_ready": false
   },
   "fallback_order": [
     {
       "step": 1,
       "source": "active_dataset_pointer",
       "status": "available",
-      "rows": 1015
+      "rows": 1016
     },
     {
       "step": 2,
@@ -160,13 +102,13 @@
       "step": 3,
       "source": "latest_successful_dataset",
       "status": "available",
-      "rows": 1015
+      "rows": 1016
     },
     {
       "step": 4,
       "source": "latest_snapshot",
       "status": "available",
-      "rows": 1015
+      "rows": 1016
     },
     {
       "step": 5,

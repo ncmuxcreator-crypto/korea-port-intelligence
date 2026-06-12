@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "live",
   "record_count": 200,
   "item_count": 5,
@@ -9,25 +9,66 @@
   "total_count": 200,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 188,
-    "50_69": 12,
+    "0_49": 187,
+    "50_69": 13,
     "70_84": 0,
     "85_100": 0,
     "unknown": 0
   },
   "priority_counts": {
+    "LOW": 189,
     "HOT": 1,
-    "WARM": 10,
-    "LOW": 189
+    "WARM": 10
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 54,
-    "MONITOR": 140,
+    "VERIFY_CONTACT": 53,
+    "MONITOR": 141,
     "CONTACT_NOW": 6
   },
   "items": [
     {
       "rank": 1,
+      "vessel_name": "우혁",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "DSMB",
+      "operator_display": "우림해운(주)",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "인천",
+          "울산항",
+          "울산"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 46,
+      "risk_score": 49,
+      "confidence_score": 42,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "우림해운(주)",
+      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+      "recommended_action": "ETA 48h 전 연락",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
+    },
+    {
+      "rank": 2,
       "vessel_name": "MINERAL HOPE",
       "imo": "",
       "mmsi": "",
@@ -68,7 +109,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 2,
+      "rank": 3,
       "vessel_name": "FIONAN",
       "imo": "",
       "mmsi": "",
@@ -109,7 +150,47 @@
       "display_name": "인천"
     },
     {
-      "rank": 3,
+      "rank": 4,
+      "vessel_name": "CMA CGM PLATINUM",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "9HA6318",
+      "operator_display": "CMA CGM",
+      "current_port": "부산",
+      "current_port_korean": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "TIANJIN XINGANG PT",
+          "부산항",
+          "부산"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 44,
+      "risk_score": 45,
+      "confidence_score": 32,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "CMA CGM",
+      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+      "recommended_action": "선박 스케줄 확인",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "rank": 5,
       "vessel_name": "EVER FORWARD",
       "imo": "",
       "mmsi": "",
@@ -132,7 +213,7 @@
       "priority_label": "LOW",
       "actionability_category": "MONITOR",
       "actionability_label": "모니터링",
-      "opportunity_score": 41,
+      "opportunity_score": 40,
       "risk_score": 45,
       "confidence_score": 32,
       "missing_fields": [
@@ -141,86 +222,6 @@
         "mmsi"
       ],
       "known_company": "EVERGREEN",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "선박 스케줄 확인",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "display_name": "부산"
-    },
-    {
-      "rank": 4,
-      "vessel_name": "MSC C. MONTAINE",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "5LFC4",
-      "operator_display": "MSC",
-      "current_port": "부산",
-      "current_port_korean": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "NINGBO",
-          "부산항",
-          "부산"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "opportunity_score": 37,
-      "risk_score": 45,
-      "confidence_score": 22,
-      "missing_fields": [
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "MSC",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "ETA 48h 전 연락",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "display_name": "부산"
-    },
-    {
-      "rank": 5,
-      "vessel_name": "HMM TURQUOISE",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "5LTT5",
-      "operator_display": "HMM",
-      "current_port": "부산",
-      "current_port_korean": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "OAKLAND",
-          "부산항",
-          "부산"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "opportunity_score": 51,
-      "risk_score": 45,
-      "confidence_score": 32,
-      "missing_fields": [
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "HMM",
       "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
       "recommended_action": "선박 스케줄 확인",
       "port_code": "020",

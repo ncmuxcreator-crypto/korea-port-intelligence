@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "live",
-  "record_count": 95,
+  "record_count": 98,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/030/vessels.json",
-  "total_count": 95,
+  "total_count": 98,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 94,
+    "0_49": 97,
     "50_69": 1,
     "70_84": 0,
     "85_100": 0,
@@ -17,13 +17,13 @@
   },
   "priority_counts": {
     "HOT": 1,
-    "LOW": 94
+    "LOW": 97
   },
   "actionability_counts": {
     "CONTACT_NOW": 1,
-    "VERIFY_CONTACT": 9,
-    "MONITOR": 78,
-    "HOLD": 7
+    "VERIFY_CONTACT": 10,
+    "MONITOR": 79,
+    "HOLD": 8
   },
   "items": [
     {
@@ -68,47 +68,6 @@
     },
     {
       "rank": 2,
-      "vessel_name": "ORION TRADER",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "DYTK",
-      "operator_display": "에스케이해운 주식회사",
-      "current_port": "인천",
-      "current_port_korean": "인천",
-      "normalized_port": {
-        "port_code": "030",
-        "port_name": "인천",
-        "display_name": "인천",
-        "raw_port": "Incheon",
-        "raw_aliases": [
-          "Incheon",
-          "인천",
-          "당진",
-          "인천항"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "opportunity_score": 65,
-      "risk_score": 45,
-      "confidence_score": 66,
-      "missing_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "에스케이해운 주식회사",
-      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "recommended_action": "운영선사 확인",
-      "port_code": "030",
-      "port_name": "인천",
-      "port_display_name": "인천",
-      "display_name": "인천"
-    },
-    {
-      "rank": 3,
       "vessel_name": "FIONAN",
       "imo": "",
       "mmsi": "",
@@ -149,7 +108,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 4,
+      "rank": 3,
       "vessel_name": "CF DIAMOND",
       "imo": "",
       "mmsi": "",
@@ -182,6 +141,47 @@
         "mmsi"
       ],
       "known_company": "한일상선(주)",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "030",
+      "port_name": "인천",
+      "port_display_name": "인천",
+      "display_name": "인천"
+    },
+    {
+      "rank": 4,
+      "vessel_name": "ORION TRADER",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "DYTK",
+      "operator_display": "에스케이해운 주식회사",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon",
+          "인천",
+          "당진",
+          "인천항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "에스케이해운 주식회사",
       "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
       "recommended_action": "운영선사 확인",
       "port_code": "030",
@@ -233,7 +233,7 @@
     {
       "severity": "INFO",
       "feature": "영흥 터미널 선박",
-      "message": "상세 95건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 98건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/030/vessels.json lazy load 사용"
     }
   ]

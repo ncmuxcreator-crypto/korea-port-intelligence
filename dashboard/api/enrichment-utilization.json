@@ -6,23 +6,23 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260612144845570_ce7e353f",
-  "active_run_id": "run_20260612144845570_ce7e353f",
-  "latest_successful_run_id": "run_20260612144845570_ce7e353f",
-  "latest_successful_summary_run_id": "run_20260612144845570_ce7e353f",
-  "source_run_id": "run_20260612144845570_ce7e353f",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "run_id": "run_20260612153026990_a1f0707a",
+  "active_run_id": "run_20260612153026990_a1f0707a",
+  "latest_successful_run_id": null,
+  "latest_successful_summary_run_id": null,
+  "source_run_id": "run_20260612082743789_e376b650",
+  "generated_at": "2026-06-12T15:34:15.376Z",
   "data_mode": "static_snapshot",
-  "total_vessels": 1015,
-  "display_vessel_count": 1015,
+  "total_vessels": 1016,
+  "display_vessel_count": 1016,
   "vessels_enriched_by_source": {
     "source_csv": 0,
     "pilot_sources": 0,
     "berth_sources": 0,
     "vessel_spec": 0,
-    "mof_ais_info": 0,
-    "mof_ais_dynamic": 0,
-    "port_operation": 1015
+    "mof_ais_info": 10,
+    "mof_ais_dynamic": 10,
+    "port_operation": 1016
   },
   "fields_recovered_by_source": {
     "source_csv": {},
@@ -32,22 +32,23 @@
     "mof_ais_info": {},
     "mof_ais_dynamic": {},
     "port_operation": {
-      "vessel_name": 1015,
+      "vessel_name": 1016,
       "current_port": "미확인 항만",
-      "eta": 549,
-      "ata": 1015,
-      "etd": 1012,
-      "atd": 551,
-      "berth": 1015,
+      "eta": 550,
+      "ata": 1016,
+      "etd": 1013,
+      "atd": 552,
+      "berth": 1016,
       "operator_display": 97,
       "port": "미확인 항만",
       "normalized_port": {
         "port_code": "UNKNOWN",
         "port_name": "미확인 항만",
         "display_name": "미확인 항만",
-        "raw_port": "1015",
+        "raw_port": "1016",
         "raw_aliases": [
-          "1015"
+          "1016",
+          "미확인 항만"
         ]
       },
       "port_code": "UNKNOWN",
@@ -57,13 +58,13 @@
     }
   },
   "count_reconciliation": {
-    "source_rows_collected": 7897,
-    "source_rows_normalized": 7897,
-    "source_rows_matched_to_vessels": 7897,
+    "source_rows_collected": 8358,
+    "source_rows_normalized": 8026,
+    "source_rows_matched_to_vessels": 7924,
     "enrichment_candidates_created": 0,
     "enrichment_patches_applied": 0,
     "vessel_display_records_updated": 0,
-    "ui_visible_records": 1015
+    "ui_visible_records": 1016
   },
   "pilotage_signal_count": 0,
   "pilotage_signal_display_count": 0,
@@ -78,33 +79,33 @@
   "enrichment_failures": [
     {
       "source_key": "source_csv",
-      "blocker_reason": "missing_env",
+      "blocker_reason": "API response too large: 72478261 bytes",
       "quality_label": "FAILED"
     },
     {
       "source_key": "pilot_sources",
-      "blocker_reason": "missing_env",
-      "quality_label": "FAILED"
+      "blocker_reason": "no_vessel_match_or_signal",
+      "quality_label": "HIGH"
     },
     {
       "source_key": "berth_sources",
-      "blocker_reason": "missing_env",
-      "quality_label": "FAILED"
+      "blocker_reason": "no_vessel_match_or_signal",
+      "quality_label": "MEDIUM"
     },
     {
       "source_key": "vessel_spec",
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED"
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+      "quality_label": "LOW"
     },
     {
       "source_key": "mof_ais_info",
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED"
+      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+      "quality_label": "HIGH"
     },
     {
       "source_key": "mof_ais_dynamic",
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED"
+      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+      "quality_label": "HIGH"
     }
   ],
   "record_count": 7,
@@ -118,49 +119,49 @@
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "mmsi",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "call_sign",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "operator_display",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "owner",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "manager",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "vessel_type",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "gt",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "dwt",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         },
         {
           "field": "flag",
-          "reason": "missing_env"
+          "reason": "API response too large: 72478261 bytes"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "missing_env",
+      "blocker_reason": "API response too large: 72478261 bytes",
       "quality_label": "FAILED",
-      "utilization_score": 5
+      "utilization_score": 28
     },
     {
       "source_key": "pilot_sources",
@@ -170,25 +171,25 @@
       "fields_blocked": [
         {
           "field": "pilotage_signal",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "pilotage_time",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "pilot_station",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "pilotage_direction",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "missing_env",
-      "quality_label": "FAILED",
-      "utilization_score": 5
+      "blocker_reason": "no_vessel_match_or_signal",
+      "quality_label": "HIGH",
+      "utilization_score": 83
     },
     {
       "source_key": "berth_sources",
@@ -198,23 +199,23 @@
       "fields_blocked": [
         {
           "field": "berth",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "terminal",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "etb",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "atb",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         },
         {
           "field": "berth_signal",
-          "reason": "missing_env"
+          "reason": "no_vessel_match_or_signal"
         }
       ],
       "sample_enriched_vessels": [
@@ -344,9 +345,9 @@
           "display_name": "인천"
         }
       ],
-      "blocker_reason": "missing_env",
-      "quality_label": "FAILED",
-      "utilization_score": 5
+      "blocker_reason": "no_vessel_match_or_signal",
+      "quality_label": "MEDIUM",
+      "utilization_score": 73
     },
     {
       "source_key": "vessel_spec",
@@ -356,137 +357,100 @@
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "mmsi",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "call_sign",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "vessel_type",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "gt",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "dwt",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         },
         {
           "field": "flag",
-          "reason": "missing_api_url"
+          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED",
-      "utilization_score": 5
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+      "quality_label": "LOW",
+      "utilization_score": 43
     },
     {
       "source_key": "mof_ais_info",
-      "matched_vessels": 0,
+      "matched_vessels": 10,
       "fields_added": [],
       "fields_updated": [],
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "missing_api_url"
+          "reason": "identifier_or_spec_field_not_visible_in_current_vessel_display"
         },
         {
           "field": "mmsi",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "call_sign",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "vessel_name",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "vessel_type",
-          "reason": "missing_api_url"
+          "reason": "identifier_or_spec_field_not_visible_in_current_vessel_display"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED",
-      "utilization_score": 5
+      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+      "quality_label": "HIGH",
+      "utilization_score": 82
     },
     {
       "source_key": "mof_ais_dynamic",
-      "matched_vessels": 0,
+      "matched_vessels": 10,
       "fields_added": [],
       "fields_updated": [],
-      "fields_blocked": [
-        {
-          "field": "mmsi",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "lat",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "lon",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "speed",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "course",
-          "reason": "missing_api_url"
-        },
-        {
-          "field": "last_seen_at",
-          "reason": "missing_api_url"
-        }
-      ],
+      "fields_blocked": [],
       "sample_enriched_vessels": [],
-      "blocker_reason": "missing_api_url",
-      "quality_label": "FAILED",
-      "utilization_score": 5
+      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+      "quality_label": "HIGH",
+      "utilization_score": 82
     },
     {
       "source_key": "port_operation",
-      "matched_vessels": 1015,
+      "matched_vessels": 1016,
       "fields_added": [
         {
           "field": "vessel_name",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "current_port",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "eta",
-          "count": 549
+          "count": 550
         },
         {
           "field": "ata",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "etd",
-          "count": 1012
+          "count": 1013
         },
         {
           "field": "atd",
-          "count": 551
+          "count": 552
         },
         {
           "field": "berth",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "operator_display",
@@ -494,37 +458,37 @@
         },
         {
           "field": "port",
-          "count": 1015
+          "count": 1016
         }
       ],
       "fields_updated": [
         {
           "field": "vessel_name",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "current_port",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "eta",
-          "count": 549
+          "count": 550
         },
         {
           "field": "ata",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "etd",
-          "count": 1012
+          "count": 1013
         },
         {
           "field": "atd",
-          "count": 551
+          "count": 552
         },
         {
           "field": "berth",
-          "count": 1015
+          "count": 1016
         },
         {
           "field": "operator_display",
@@ -532,7 +496,7 @@
         },
         {
           "field": "port",
-          "count": 1015
+          "count": 1016
         }
       ],
       "fields_blocked": [],
@@ -705,11 +669,24 @@
       ],
       "blocker_reason": "",
       "quality_label": "HIGH",
-      "utilization_score": 100
+      "utilization_score": 98
     }
   ],
-  "status_run_id": "run_20260612144845570_ce7e353f",
+  "status_run_id": "run_20260612153026990_a1f0707a",
   "stale_diagnostic": false,
   "stale_reason": "",
-  "placeholder": false
+  "placeholder": false,
+  "owner_tier": "reference_enrichment",
+  "core_may_update": true,
+  "core_update_policy": "display_cached_patch_counts_only",
+  "reused_from_cache": true,
+  "cache_reused_at": "2026-06-12T15:54:59.421Z",
+  "core_run_id": "run_20260612155142519_efee8294",
+  "core_generated_at": "2026-06-12T15:54:59.421Z",
+  "core_generated_by": "local",
+  "enrichment_run_id": "run_20260612141959474_6b6131f6",
+  "source_quality_run_id": "run_20260612155142519_efee8294",
+  "cached_patch_available": true,
+  "cached_patch_applied_count": 0,
+  "cached_patch_source_generated_at": "2026-06-12T14:22:44.751Z"
 }

@@ -6,18 +6,18 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260612144845570_ce7e353f",
-  "active_run_id": "run_20260612144845570_ce7e353f",
-  "latest_successful_run_id": "run_20260612144845570_ce7e353f",
-  "latest_successful_summary_run_id": "run_20260612144845570_ce7e353f",
-  "source_run_id": "run_20260612144845570_ce7e353f",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "run_id": "run_20260612155142519_efee8294",
+  "active_run_id": "run_20260612155142519_efee8294",
+  "latest_successful_run_id": null,
+  "latest_successful_summary_run_id": null,
+  "source_run_id": "run_20260612155142519_efee8294",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "static_snapshot",
   "record_count": 11,
   "item_count": 11,
   "summary": {
-    "active_sources": 1,
-    "blocked_sources": 10,
+    "active_sources": 6,
+    "blocked_sources": 8,
     "high_trust_sources": 8,
     "sources_with_match_keys": 11,
     "total_enrichable_fields": 58,
@@ -77,9 +77,9 @@
         "attempted": true,
         "collector_enabled": true,
         "collector_attempted": true,
-        "rows_collected": 7897,
-        "rows_normalized": 7897,
-        "rows_matched_to_vessels": 7897,
+        "rows_collected": 7907,
+        "rows_normalized": 7907,
+        "rows_matched_to_vessels": 7907,
         "fields_contributed": [
           "vessel_name",
           "port",
@@ -89,7 +89,7 @@
           "atd",
           "berth"
         ],
-        "freshness_minutes": 0,
+        "freshness_minutes": 47,
         "utilization_score": 100,
         "quality_label": "HIGH",
         "source_layer": "core",
@@ -144,27 +144,25 @@
       "update_policy": "TIER_2_AUXILIARY_CACHE_USE_LAST_SUCCESS_ON_FAILURE",
       "conflict_policy": "Verified rows can fill missing values. Do not overwrite manual or higher-confidence identifiers; send conflicts to review.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
+        "status": "SKIPPED",
+        "configured": true,
+        "attempted": true,
         "collector_enabled": false,
         "collector_attempted": false,
         "rows_collected": 0,
         "rows_normalized": 0,
         "rows_matched_to_vessels": 0,
         "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
+        "freshness_minutes": 419,
+        "utilization_score": 28,
         "quality_label": "FAILED",
         "source_layer": "auxiliary",
         "core_blocking": false,
-        "missing_env": [
-          "SOURCE_CSV_URL"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Core/auxiliary update does not fetch source_csv. Run reference enrichment with SOURCE_CSV_MODE=refresh to refresh a lightweight source_csv cache."
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
       },
-      "blocker_reason": "missing_env"
+      "blocker_reason": "API response too large: 72478261 bytes"
     },
     {
       "source_key": "pilot_sources",
@@ -197,27 +195,31 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
       "conflict_policy": "Auto-apply exact call sign or high-confidence name+port+time matches. Send weak name-only matches to review.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
-        "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 403,
+        "rows_normalized": 72,
         "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "fields_contributed": [
+          "vessel_name",
+          "call_sign",
+          "port",
+          "pilot_time",
+          "pilot_direction"
+        ],
+        "freshness_minutes": 419,
+        "utilization_score": 83,
+        "quality_label": "HIGH",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "PILOT_SOURCE_URLS"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Set PILOT_SOURCE_URLS"
+        "missing_env": [],
+        "present_env_count": 1,
+        "recommended_fix": "Improve exact call sign/name plus normalized port matching before applying weak matches."
       },
-      "blocker_reason": "missing_env"
+      "blocker_reason": "no_vessel_match_or_signal"
     },
     {
       "source_key": "berth_sources",
@@ -253,28 +255,28 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
       "conflict_policy": "Apply missing berth/terminal fields on high-confidence match. Review conflicts with newer port operation values.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
-        "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 30,
+        "rows_normalized": 30,
         "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "fields_contributed": [
+          "vessel_name",
+          "berth"
+        ],
+        "freshness_minutes": 419,
+        "utilization_score": 73,
+        "quality_label": "MEDIUM",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "BERTH_SOURCE_URLS",
-          "PNC_SOURCE_URLS"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS"
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Improve exact call sign/name plus normalized port matching before applying weak matches."
       },
-      "blocker_reason": "missing_env"
+      "blocker_reason": "no_vessel_match_or_signal"
     },
     {
       "source_key": "PNC_SOURCE_URLS",
@@ -309,28 +311,28 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_CACHE",
       "conflict_policy": "Prefer for berth and terminal. Use operator values as fallback only when current operator_display is missing.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
-        "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 30,
+        "rows_normalized": 30,
         "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "fields_contributed": [
+          "vessel_name",
+          "berth"
+        ],
+        "freshness_minutes": 419,
+        "utilization_score": 73,
+        "quality_label": "MEDIUM",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "BERTH_SOURCE_URLS",
-          "PNC_SOURCE_URLS"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS"
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Improve exact call sign/name plus normalized port matching before applying weak matches."
       },
-      "blocker_reason": "missing_env"
+      "blocker_reason": "no_vessel_match_or_signal"
     },
     {
       "source_key": "mof_ais_info",
@@ -365,28 +367,31 @@
       "update_policy": "TIER_1_HIGH_VALUE_TARGETED_ENRICHMENT",
       "conflict_policy": "Fill missing identifiers on exact key match. Do not overwrite existing non-empty identifiers unless verified confidence is higher.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
-        "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
-        "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "fields_contributed": [
+          "imo",
+          "mmsi",
+          "call_sign",
+          "vessel_name",
+          "vessel_type"
+        ],
+        "freshness_minutes": 419,
+        "utilization_score": 82,
+        "quality_label": "HIGH",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "MOF_AIS_INFO_API_URL",
-          "MOF_AIS_INFO_SERVICE_KEY"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Expand enrichment gradually: sales targets first, then detail eligible top 100."
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
       },
-      "blocker_reason": "missing_api_url"
+      "blocker_reason": ""
     },
     {
       "source_key": "mof_ais_dynamic",
@@ -419,28 +424,32 @@
       "update_policy": "TIER_2_TARGETED_SALES_TARGETS_FIRST",
       "conflict_policy": "Use as fresh movement signal. Do not override port operation berth/timing without stronger timestamp evidence.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
+        "status": "SKIPPED",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
         "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
-        "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "fields_contributed": [
+          "mmsi",
+          "lat",
+          "lon",
+          "speed",
+          "course",
+          "last_seen_at"
+        ],
+        "freshness_minutes": 419,
+        "utilization_score": 82,
+        "quality_label": "HIGH",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "MOF_AIS_DYNAMIC_API_URL",
-          "MOF_AIS_DYNAMIC_SERVICE_KEY"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Expand enrichment gradually: sales targets first, then detail eligible top 100."
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
       },
-      "blocker_reason": "missing_api_url"
+      "blocker_reason": "not_configured"
     },
     {
       "source_key": "mof_ais_stat",
@@ -470,12 +479,12 @@
       "update_policy": "TIER_2_MEDIUM_FREQUENCY_CACHE",
       "conflict_policy": "Use for aggregate behavior and repeat-caller signals. Do not overwrite vessel identity fields from statistics alone.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
-        "collector_attempted": false,
-        "rows_collected": 0,
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 10,
         "rows_normalized": 0,
         "rows_matched_to_vessels": 0,
         "fields_contributed": [],
@@ -484,14 +493,11 @@
         "quality_label": "LOW",
         "source_layer": "core",
         "core_blocking": true,
-        "missing_env": [
-          "MOF_AIS_STAT_API_URL",
-          "MOF_AIS_STAT_SERVICE_KEY"
-        ],
-        "present_env_count": 0,
+        "missing_env": [],
+        "present_env_count": 2,
         "recommended_fix": "Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY."
       },
-      "blocker_reason": "missing_api_url"
+      "blocker_reason": ""
     },
     {
       "source_key": "vessel_spec",
@@ -530,28 +536,25 @@
       "update_policy": "TIER_2_AUXILIARY_TARGETED_CACHE",
       "conflict_policy": "Prefer for vessel specification when parser output is normalized. Send inconsistent GT/DWT/identity values to review.",
       "current_utilization": {
-        "status": "NOT_CONFIGURED",
-        "configured": false,
-        "attempted": false,
-        "collector_enabled": false,
+        "status": "SKIPPED",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
         "collector_attempted": false,
-        "rows_collected": 0,
+        "rows_collected": 1,
         "rows_normalized": 0,
         "rows_matched_to_vessels": 0,
         "fields_contributed": [],
-        "freshness_minutes": 0,
-        "utilization_score": 5,
-        "quality_label": "FAILED",
+        "freshness_minutes": 419,
+        "utilization_score": 43,
+        "quality_label": "LOW",
         "source_layer": "auxiliary",
         "core_blocking": false,
-        "missing_env": [
-          "VESSEL_SPEC_SERVICE_KEY",
-          "VESSEL_SPEC_API_URL"
-        ],
-        "present_env_count": 0,
-        "recommended_fix": "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL."
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Add/adjust vessel_spec parser aliases using sanitized raw sample keys."
       },
-      "blocker_reason": "missing_api_url"
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
     },
     {
       "source_key": "VTS",
@@ -657,7 +660,7 @@
       "blocker_reason": "not_configured_or_not_collected"
     }
   ],
-  "status_run_id": "run_20260612144845570_ce7e353f",
+  "status_run_id": "run_20260612155142519_efee8294",
   "stale_diagnostic": false,
   "stale_reason": "",
   "placeholder": false

@@ -1,26 +1,26 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "live",
-  "record_count": 78,
+  "record_count": 79,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/620/vessels.json",
-  "total_count": 78,
+  "total_count": 79,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 69,
+    "0_49": 70,
     "50_69": 8,
     "70_84": 1,
     "85_100": 0,
     "unknown": 0
   },
   "priority_counts": {
-    "LOW": 78
+    "LOW": 79
   },
   "actionability_counts": {
     "VERIFY_CONTACT": 14,
-    "MONITOR": 64
+    "MONITOR": 65
   },
   "items": [
     {
@@ -231,7 +231,7 @@
     {
       "severity": "INFO",
       "feature": "여수·광양항 선박",
-      "message": "상세 78건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 79건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/620/vessels.json lazy load 사용"
     }
   ]

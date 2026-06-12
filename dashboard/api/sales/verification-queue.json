@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T14:51:11.150Z",
+  "generated_at": "2026-06-12T15:54:59.421Z",
   "data_mode": "live",
-  "record_count": 108,
+  "record_count": 112,
   "source_table": "operator_contact_history,commercial_leads,agent-followup-queue,sales_candidates_current,opportunity_master",
   "items": [
     {
@@ -13027,440 +13027,6 @@
     },
     {
       "rank": 31,
-      "vessel_name": "CHALLENGE PRELUDE",
-      "call_sign": "VRQC9",
-      "company": "(주)마린스트",
-      "commercial_data_confidence": 54,
-      "confidence_label": "MEDIUM",
-      "missing_critical_fields": [
-        "IMO/MMSI"
-      ],
-      "available_strong_fields": [
-        "선명",
-        "콜사인",
-        "운영사/회사",
-        "현재 항만",
-        "선석 신호",
-        "복수 데이터 출처"
-      ],
-      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-      "agent": "(주)마린스트",
-      "port": "대산",
-      "port_code": "621",
-      "port_name": "대산",
-      "port_display_name": "대산",
-      "normalized_port": {
-        "port_code": "621",
-        "port_name": "대산",
-        "display_name": "대산",
-        "raw_port": "Daesan",
-        "raw_aliases": [
-          "Daesan",
-          "대산"
-        ]
-      },
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 63,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "opportunity_score": 41,
-      "commercial_value_score": 41,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "LONG_ANCHORAGE_EXPOSURE",
-        "LOW_SPEED_EXPOSURE"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "(주)마린스트",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person",
-        "operator_display",
-        "imo",
-        "mmsi"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "vessel_display": {
-        "vessel_name": "CHALLENGE PRELUDE",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "VRQC9",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "(주)마린스트",
-        "operator_display": "(주)마린스트",
-        "operator_source": "company",
-        "operator_confidence": 70,
-        "company": "(주)마린스트",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "(주)마린스트",
-        "current_port": "대산",
-        "raw_current_port": "대산",
-        "current_port_korean": "대산",
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "Daesan",
-          "raw_aliases": [
-            "Daesan",
-            "대산"
-          ]
-        },
-        "port_display_name": "대산",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "commercial_data_confidence": 54,
-        "confidence_label": "MEDIUM",
-        "missing_critical_fields": [
-          "IMO/MMSI"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "콜사인",
-          "운영사/회사",
-          "현재 항만",
-          "선석 신호",
-          "복수 데이터 출처"
-        ],
-        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-        "opportunity_score": 41,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL",
-          "BULK_OR_TANKER",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "ANCHORAGE_CLASSIFIED",
-          "AGENT_IDENTIFIED",
-          "CONTACT_PATH_AVAILABLE",
-          "PREDICTED_CONGESTION_RISK",
-          "ANCHORAGE_PROBABILITY_HIGH"
-        ],
-        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
-        "confidence": "MEDIUM",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "대산",
-          "pilotage_port": "대산",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "621",
-            "port_name": "대산",
-            "display_name": "대산",
-            "raw_port": "대산",
-            "raw_aliases": [
-              "대산"
-            ]
-          },
-          "port_code": "621",
-          "port_name": "대산",
-          "port_display_name": "대산",
-          "display_name": "대산"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "대산",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "621",
-            "port_name": "대산",
-            "display_name": "대산",
-            "raw_port": "대산",
-            "raw_aliases": [
-              "대산"
-            ]
-          },
-          "port_code": "621",
-          "port_name": "대산",
-          "port_display_name": "대산",
-          "display_name": "대산"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "company_fallback",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 41,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "621",
-        "port_name": "대산",
-        "display_name": "대산"
-      },
-      "display_name": "대산"
-    },
-    {
-      "rank": 32,
       "vessel_name": "NEW FIRST",
       "call_sign": "5LBD9",
       "company": "신양상선(주)",
@@ -13892,6 +13458,440 @@
         "display_name": "울산"
       },
       "display_name": "울산"
+    },
+    {
+      "rank": 32,
+      "vessel_name": "CHALLENGE PRELUDE",
+      "call_sign": "VRQC9",
+      "company": "(주)마린스트",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "(주)마린스트",
+      "port": "대산",
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan",
+          "대산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 63,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 41,
+      "commercial_value_score": 41,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "HIGH_GT_VESSEL",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "(주)마린스트",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "CHALLENGE PRELUDE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "VRQC9",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "(주)마린스트",
+        "operator_display": "(주)마린스트",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "(주)마린스트",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "(주)마린스트",
+        "current_port": "대산",
+        "raw_current_port": "대산",
+        "current_port_korean": "대산",
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "Daesan",
+          "raw_aliases": [
+            "Daesan",
+            "대산"
+          ]
+        },
+        "port_display_name": "대산",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 41,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "HIGH_GT_VESSEL",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_CONGESTION_RISK",
+          "ANCHORAGE_PROBABILITY_HIGH"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "대산",
+          "pilotage_port": "대산",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_name": "대산",
+          "port_display_name": "대산",
+          "display_name": "대산"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "대산",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_name": "대산",
+          "port_display_name": "대산",
+          "display_name": "대산"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 41,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산"
+      },
+      "display_name": "대산"
     },
     {
       "rank": 33,
@@ -29953,6 +29953,440 @@
     },
     {
       "rank": 70,
+      "vessel_name": "제니스 퀸",
+      "call_sign": "D7FJ",
+      "company": "대호상선(주)",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "대호상선(주)",
+      "port": "마산/창원",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "마산/창원"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 63,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 33,
+      "commercial_value_score": 33,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "대호상선(주)",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "제니스 퀸",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "D7FJ",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "대호상선(주)",
+        "operator_display": "대호상선(주)",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "대호상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "대호상선(주)",
+        "current_port": "마산/창원",
+        "raw_current_port": "마산/창원",
+        "current_port_korean": "마산/창원",
+        "normalized_port": {
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "display_name": "마산/창원",
+          "raw_port": "South Gyeongsang",
+          "raw_aliases": [
+            "South Gyeongsang",
+            "마산/창원"
+          ]
+        },
+        "port_display_name": "마산/창원",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 33,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY",
+          "LOW_SPEED_EXPOSURE",
+          "BERTH_WINDOW_AVAILABLE",
+          "Low-speed or waiting condition",
+          "Workable UWC window available",
+          "GT_BELOW_5000_NOT_COMMERCIAL_TARGET"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "마산/창원",
+          "pilotage_port": "마산/창원",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "마산/창원",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 33,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원"
+      },
+      "display_name": "마산/창원"
+    },
+    {
+      "rank": 71,
       "vessel_name": "페가서스 테라",
       "call_sign": "D7BH",
       "company": "동영해운(주)",
@@ -30386,7 +30820,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 71,
+      "rank": 72,
       "vessel_name": "DAEJOO ARIRANG 2",
       "call_sign": "3EZP2",
       "company": "주식회사 웨스턴해운",
@@ -30820,7 +31254,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 72,
+      "rank": 73,
       "vessel_name": "BOW OLYMPUS",
       "call_sign": "LAFY8",
       "company": "한국오드펠유한회사",
@@ -31254,7 +31688,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 73,
+      "rank": 74,
       "vessel_name": "GRAND WINNER 7",
       "call_sign": "A8MR8",
       "company": "삼진에이전시",
@@ -31686,440 +32120,6 @@
         "display_name": "울산"
       },
       "display_name": "울산"
-    },
-    {
-      "rank": 74,
-      "vessel_name": "카리스(CHARIS)",
-      "call_sign": "230007",
-      "company": "주식회사 베드로",
-      "commercial_data_confidence": 54,
-      "confidence_label": "MEDIUM",
-      "missing_critical_fields": [
-        "IMO/MMSI"
-      ],
-      "available_strong_fields": [
-        "선명",
-        "콜사인",
-        "운영사/회사",
-        "현재 항만",
-        "선석 신호",
-        "복수 데이터 출처"
-      ],
-      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-      "agent": "주식회사 베드로",
-      "port": "부산",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "부산"
-        ]
-      },
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 61,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "opportunity_score": 32,
-      "commercial_value_score": 32,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "BULK_OR_TANKER",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "PREDICTED_ARRIVAL_OPPORTUNITY",
-        "ETA_24_72H_WINDOW",
-        "PREDICTED_CONGESTION_RISK",
-        "ANCHORAGE_PROBABILITY_HIGH",
-        "LONG_ANCHORAGE_EXPOSURE"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "주식회사 베드로",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person",
-        "operator_display",
-        "imo",
-        "mmsi"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "vessel_display": {
-        "vessel_name": "카리스(CHARIS)",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "230007",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "주식회사 베드로",
-        "operator_display": "주식회사 베드로",
-        "operator_source": "company",
-        "operator_confidence": 70,
-        "company": "주식회사 베드로",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "주식회사 베드로",
-        "current_port": "부산",
-        "raw_current_port": "부산",
-        "current_port_korean": "부산",
-        "normalized_port": {
-          "port_code": "020",
-          "port_name": "부산",
-          "display_name": "부산",
-          "raw_port": "Busan",
-          "raw_aliases": [
-            "Busan",
-            "부산"
-          ]
-        },
-        "port_display_name": "부산",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "commercial_data_confidence": 54,
-        "confidence_label": "MEDIUM",
-        "missing_critical_fields": [
-          "IMO/MMSI"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "콜사인",
-          "운영사/회사",
-          "현재 항만",
-          "선석 신호",
-          "복수 데이터 출처"
-        ],
-        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-        "opportunity_score": 32,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "BULK_OR_TANKER",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "ANCHORAGE_CLASSIFIED",
-          "AGENT_IDENTIFIED",
-          "CONTACT_PATH_AVAILABLE",
-          "PREDICTED_ARRIVAL_OPPORTUNITY",
-          "ETA_24_72H_WINDOW",
-          "PREDICTED_CONGESTION_RISK"
-        ],
-        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
-        "confidence": "MEDIUM",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "부산",
-          "pilotage_port": "부산",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "부산",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "company_fallback",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 32,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산"
-      },
-      "display_name": "부산"
     },
     {
       "rank": 75,
@@ -33859,6 +33859,440 @@
     },
     {
       "rank": 79,
+      "vessel_name": "카리스(CHARIS)",
+      "call_sign": "230007",
+      "company": "주식회사 베드로",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "주식회사 베드로",
+      "port": "부산",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "부산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 31,
+      "commercial_value_score": 31,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "BULK_OR_TANKER",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "ETA_24_72H_WINDOW",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "주식회사 베드로",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "카리스(CHARIS)",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "230007",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "주식회사 베드로",
+        "operator_display": "주식회사 베드로",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "주식회사 베드로",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "주식회사 베드로",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "Busan",
+          "raw_aliases": [
+            "Busan",
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 31,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "BULK_OR_TANKER",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY",
+          "ETA_24_72H_WINDOW",
+          "PREDICTED_CONGESTION_RISK"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "부산",
+          "pilotage_port": "부산",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "부산",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 31,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
+    },
+    {
+      "rank": 80,
       "vessel_name": "일신그린아이리스",
       "call_sign": "DSJA6",
       "company": "일신로지스틱스 주식회사",
@@ -34292,7 +34726,7 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 80,
+      "rank": 81,
       "vessel_name": "PACIFIC TIANJIN",
       "call_sign": "9V8011",
       "company": "흥아라인(주)",
@@ -34726,7 +35160,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 81,
+      "rank": 82,
       "vessel_name": "VAST OCEAN",
       "call_sign": "5LFT9",
       "company": "(주)신성해운",
@@ -35160,7 +35594,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 82,
+      "rank": 83,
       "vessel_name": "한유누리",
       "call_sign": "170009",
       "company": "(주)한유",
@@ -35594,7 +36028,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 83,
+      "rank": 84,
       "vessel_name": "3영호",
       "call_sign": "008346",
       "company": "(유)흥진해상",
@@ -36028,7 +36462,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 84,
+      "rank": 85,
       "vessel_name": "뉴 챌린지호",
       "call_sign": "DSQA4",
       "company": "(주)세바해운",
@@ -36462,7 +36896,441 @@
       "display_name": "대산"
     },
     {
-      "rank": 85,
+      "rank": 86,
+      "vessel_name": "ZENITH GREEN",
+      "call_sign": "3E8925",
+      "company": "대호상선(주)",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "대호상선(주)",
+      "port": "마산/창원",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "마산/창원"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 29,
+      "commercial_value_score": 29,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "VERIFY_AGENT"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "대호상선(주)",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "ZENITH GREEN",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8925",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "대호상선(주)",
+        "operator_display": "대호상선(주)",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "대호상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "대호상선(주)",
+        "current_port": "마산/창원",
+        "raw_current_port": "마산/창원",
+        "current_port_korean": "마산/창원",
+        "normalized_port": {
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "display_name": "마산/창원",
+          "raw_port": "South Gyeongsang",
+          "raw_aliases": [
+            "South Gyeongsang",
+            "마산/창원"
+          ]
+        },
+        "port_display_name": "마산/창원",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 29,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY",
+          "BERTH_WINDOW_AVAILABLE",
+          "Low-speed or waiting condition",
+          "Workable UWC window available",
+          "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+          "STAY_48H_PLUS"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "마산/창원",
+          "pilotage_port": "마산/창원",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "마산/창원",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 29,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원"
+      },
+      "display_name": "마산/창원"
+    },
+    {
+      "rank": 87,
       "vessel_name": "PETROLIMEX 09",
       "call_sign": "3WPG",
       "company": "(주)토탈마린",
@@ -36896,7 +37764,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 86,
+      "rank": 88,
       "vessel_name": "HUA YUN 1",
       "call_sign": "V3VQ6",
       "company": "씨레인보우인터내셔널(주)",
@@ -37330,7 +38198,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 87,
+      "rank": 89,
       "vessel_name": "NING FENG LENG 16",
       "call_sign": "BQBK7",
       "company": "케이엠에이전시",
@@ -37384,12 +38252,12 @@
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
         "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
         "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
-        "STAY_48H_PLUS",
-        "KNOWN_COMMERCIAL_SEGMENT"
+        "STAY_48H_PLUS"
       ],
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
       "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
@@ -37549,10 +38417,10 @@
           "AGENT_IDENTIFIED",
           "CONTACT_PATH_AVAILABLE",
           "LONG_PORT_STAY",
+          "LOW_SPEED_EXPOSURE",
           "BERTH_WINDOW_AVAILABLE",
           "Low-speed or waiting condition",
-          "Workable UWC window available",
-          "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT"
+          "Workable UWC window available"
         ],
         "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
         "confidence": "MEDIUM",
@@ -37764,7 +38632,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 88,
+      "rank": 90,
       "vessel_name": "해누리",
       "call_sign": "D7YA",
       "company": "비에스해운 주식회사",
@@ -38198,7 +39066,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 89,
+      "rank": 91,
       "vessel_name": "모닝 빅토리호",
       "call_sign": "170024",
       "company": "한라시멘트(주) 인천",
@@ -38632,7 +39500,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 90,
+      "rank": 92,
       "vessel_name": "HAFNIA YARRA",
       "call_sign": "9V3759",
       "company": "다산해운",
@@ -39066,7 +39934,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 91,
+      "rank": 93,
       "vessel_name": "두라7",
       "call_sign": "111002",
       "company": "두라해운(주)",
@@ -39500,7 +40368,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 92,
+      "rank": 94,
       "vessel_name": "우동",
       "call_sign": "D7BN",
       "company": "(주)세바해운",
@@ -39934,7 +40802,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 93,
+      "rank": 95,
       "vessel_name": "삼표 1",
       "call_sign": "170037",
       "company": "(주)삼표시멘트 해운",
@@ -40368,7 +41236,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 94,
+      "rank": 96,
       "vessel_name": "레이크 오로라",
       "call_sign": "D7UQ",
       "company": "프로토에스엠주식회사",
@@ -40802,7 +41670,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 95,
+      "rank": 97,
       "vessel_name": "미라클 알파",
       "call_sign": "151058",
       "company": "가나해운(주)",
@@ -41236,7 +42104,7 @@
       "display_name": "울산"
     },
     {
-      "rank": 96,
+      "rank": 98,
       "vessel_name": "화정에이스",
       "call_sign": "202813",
       "company": "와이앤지쉽핑",
@@ -41670,440 +42538,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 97,
-      "vessel_name": "HE HUI 12",
-      "call_sign": "BPDN8",
-      "company": "씨레인보우인터내셔널(주)",
-      "commercial_data_confidence": 54,
-      "confidence_label": "MEDIUM",
-      "missing_critical_fields": [
-        "IMO/MMSI"
-      ],
-      "available_strong_fields": [
-        "선명",
-        "콜사인",
-        "운영사/회사",
-        "현재 항만",
-        "선석 신호",
-        "복수 데이터 출처"
-      ],
-      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-      "agent": "씨레인보우인터내셔널(주)",
-      "port": "부산",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "부산"
-        ]
-      },
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 61,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "opportunity_score": 26,
-      "commercial_value_score": 26,
-      "confidence_score": 35,
-      "priority_label": "LOW",
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "LONG_PORT_STAY",
-        "Low-speed or waiting condition",
-        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
-        "STAY_48H_PLUS",
-        "KNOWN_COMMERCIAL_SEGMENT",
-        "VERIFY_AGENT"
-      ],
-      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
-      "verification_type": "OPERATOR",
-      "known_company": "씨레인보우인터내셔널(주)",
-      "missing_fields": [
-        "operator",
-        "owner",
-        "manager",
-        "contact_person",
-        "operator_display",
-        "imo",
-        "mmsi"
-      ],
-      "source_names": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "vessel_display": {
-        "vessel_name": "HE HUI 12",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "BPDN8",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "씨레인보우인터내셔널(주)",
-        "operator_display": "씨레인보우인터내셔널(주)",
-        "operator_source": "company",
-        "operator_confidence": 70,
-        "company": "씨레인보우인터내셔널(주)",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "씨레인보우인터내셔널(주)",
-        "current_port": "부산",
-        "raw_current_port": "부산",
-        "current_port_korean": "부산",
-        "normalized_port": {
-          "port_code": "020",
-          "port_name": "부산",
-          "display_name": "부산",
-          "raw_port": "Busan",
-          "raw_aliases": [
-            "Busan",
-            "부산"
-          ]
-        },
-        "port_display_name": "부산",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": 35,
-        "commercial_data_confidence": 54,
-        "confidence_label": "MEDIUM",
-        "missing_critical_fields": [
-          "IMO/MMSI"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "콜사인",
-          "운영사/회사",
-          "현재 항만",
-          "선석 신호",
-          "복수 데이터 출처"
-        ],
-        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
-        "opportunity_score": 26,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "HIGH_GT_VESSEL",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "AGENT_IDENTIFIED",
-          "CONTACT_PATH_AVAILABLE",
-          "LONG_PORT_STAY",
-          "Low-speed or waiting condition",
-          "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
-          "STAY_48H_PLUS",
-          "KNOWN_COMMERCIAL_SEGMENT"
-        ],
-        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
-        "confidence": "MEDIUM",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "부산",
-          "pilotage_port": "부산",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "부산",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "company_fallback",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 26,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산"
-      },
-      "display_name": "부산"
-    },
-    {
-      "rank": 98,
+      "rank": 99,
       "vessel_name": "금향호",
       "call_sign": "130024",
       "company": "세진유업",
@@ -42537,7 +42972,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 99,
+      "rank": 100,
       "vessel_name": "8001",
       "call_sign": "CSB8001",
       "company": "(주)세바해운",
@@ -42971,7 +43406,440 @@
       "display_name": "여수"
     },
     {
-      "rank": 100,
+      "rank": 101,
+      "vessel_name": "HE HUI 12",
+      "call_sign": "BPDN8",
+      "company": "씨레인보우인터내셔널(주)",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "씨레인보우인터내셔널(주)",
+      "port": "부산",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "부산"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 25,
+      "commercial_value_score": 25,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "Low-speed or waiting condition",
+        "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "VERIFY_AGENT"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "씨레인보우인터내셔널(주)",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "HE HUI 12",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "BPDN8",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "씨레인보우인터내셔널(주)",
+        "operator_display": "씨레인보우인터내셔널(주)",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "씨레인보우인터내셔널(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "씨레인보우인터내셔널(주)",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "Busan",
+          "raw_aliases": [
+            "Busan",
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 25,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY",
+          "Low-speed or waiting condition",
+          "COMMERCIAL_TARGET_SIGNALS_INSUFFICIENT",
+          "STAY_48H_PLUS",
+          "KNOWN_COMMERCIAL_SEGMENT"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "부산",
+          "pilotage_port": "부산",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "부산",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
+    },
+    {
+      "rank": 102,
       "vessel_name": "선진호",
       "call_sign": "211802",
       "company": "서현에너지",
@@ -43405,7 +44273,441 @@
       "display_name": "인천"
     },
     {
-      "rank": 101,
+      "rank": 103,
+      "vessel_name": "케이 가스",
+      "call_sign": "190025",
+      "company": "(주)에스제이탱커",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "(주)에스제이탱커",
+      "port": "인천",
+      "port_code": "030",
+      "port_name": "인천",
+      "port_display_name": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon",
+          "인천"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 23,
+      "commercial_value_score": 23,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "ETA_24_72H_WINDOW",
+        "PREDICTED_CONGESTION_RISK",
+        "ANCHORAGE_PROBABILITY_HIGH",
+        "LONG_ANCHORAGE_EXPOSURE",
+        "LOW_SPEED_EXPOSURE"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "(주)에스제이탱커",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "merged_port_operation",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "케이 가스",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "190025",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "(주)에스제이탱커",
+        "operator_display": "(주)에스제이탱커",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "(주)에스제이탱커",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "(주)에스제이탱커",
+        "current_port": "인천",
+        "raw_current_port": "인천",
+        "current_port_korean": "인천",
+        "normalized_port": {
+          "port_code": "030",
+          "port_name": "인천",
+          "display_name": "인천",
+          "raw_port": "Incheon",
+          "raw_aliases": [
+            "Incheon",
+            "인천"
+          ]
+        },
+        "port_display_name": "인천",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 23,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "LOW_SPEED_CONGESTION_PATTERN",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "ANCHORAGE_CLASSIFIED",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "PREDICTED_ARRIVAL_OPPORTUNITY",
+          "ETA_24_72H_WINDOW",
+          "PREDICTED_CONGESTION_RISK",
+          "ANCHORAGE_PROBABILITY_HIGH"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "인천",
+          "pilotage_port": "인천",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "인천",
+            "raw_aliases": [
+              "인천"
+            ]
+          },
+          "port_code": "030",
+          "port_name": "인천",
+          "port_display_name": "인천",
+          "display_name": "인천"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "인천",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "인천",
+            "raw_aliases": [
+              "인천"
+            ]
+          },
+          "port_code": "030",
+          "port_name": "인천",
+          "port_display_name": "인천",
+          "display_name": "인천"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 23,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천"
+      },
+      "display_name": "인천"
+    },
+    {
+      "rank": 104,
       "vessel_name": "한미르",
       "call_sign": "D7TQ",
       "company": "한국해양수산연수원",
@@ -43839,7 +45141,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 102,
+      "rank": 105,
       "vessel_name": "아라온(ARAON)",
       "call_sign": "DSQL7",
       "company": "(주)팬스코",
@@ -44273,7 +45575,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 103,
+      "rank": 106,
       "vessel_name": "20청우호",
       "call_sign": "202823",
       "company": "아시아해상급유 주식회사",
@@ -44707,7 +46009,7 @@
       "display_name": "여수"
     },
     {
-      "rank": 104,
+      "rank": 107,
       "vessel_name": "수성5",
       "call_sign": "DSFJ4",
       "company": "삼표해운 주식회사",
@@ -45141,7 +46443,440 @@
       "display_name": "마산/창원"
     },
     {
-      "rank": 105,
+      "rank": 108,
+      "vessel_name": "금양포스트호",
+      "call_sign": "DSPO7",
+      "company": "금양상선(주)",
+      "commercial_data_confidence": 54,
+      "confidence_label": "MEDIUM",
+      "missing_critical_fields": [
+        "IMO/MMSI"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "콜사인",
+        "운영사/회사",
+        "현재 항만",
+        "선석 신호",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+      "agent": "금양상선(주)",
+      "port": "마산/창원",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "마산/창원"
+        ]
+      },
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "opportunity_score": 19,
+      "commercial_value_score": 19,
+      "confidence_score": 35,
+      "priority_label": "LOW",
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "EXTENDED_IDLE_PERIOD",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "LONG_PORT_STAY",
+        "LOW_SPEED_EXPOSURE",
+        "Low-speed or waiting condition",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "STAY_48H_PLUS",
+        "KNOWN_COMMERCIAL_SEGMENT",
+        "VERIFY_AGENT"
+      ],
+      "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "next_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "verification_type": "OPERATOR",
+      "known_company": "금양상선(주)",
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo",
+        "mmsi"
+      ],
+      "source_names": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "data_sources": [
+        "Merged Port Operation port call",
+        "port_operation_south_gyeongsang_o",
+        "real_public_api_snapshot",
+        "port_operation",
+        "gt"
+      ],
+      "vessel_display": {
+        "vessel_name": "금양포스트호",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "DSPO7",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "금양상선(주)",
+        "operator_display": "금양상선(주)",
+        "operator_source": "company",
+        "operator_confidence": 70,
+        "company": "금양상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "금양상선(주)",
+        "current_port": "마산/창원",
+        "raw_current_port": "마산/창원",
+        "current_port_korean": "마산/창원",
+        "normalized_port": {
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "display_name": "마산/창원",
+          "raw_port": "South Gyeongsang",
+          "raw_aliases": [
+            "South Gyeongsang",
+            "마산/창원"
+          ]
+        },
+        "port_display_name": "마산/창원",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": 35,
+        "commercial_data_confidence": 54,
+        "confidence_label": "MEDIUM",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, 콜사인, 운영사/회사, 현재 항만, 선석 신호 확인; IMO/MMSI 보강 필요; 출처 5개",
+        "opportunity_score": 19,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "MASTER_DB_MATCH_FOUND",
+          "EXTENDED_IDLE_PERIOD",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "LONG_PORT_STAY",
+          "LOW_SPEED_EXPOSURE",
+          "Low-speed or waiting condition",
+          "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+          "STAY_48H_PLUS",
+          "KNOWN_COMMERCIAL_SEGMENT"
+        ],
+        "recommendedAction": "선사/에이전트 확인 후 영업 연락 준비",
+        "confidence": "MEDIUM",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "마산/창원",
+          "pilotage_port": "마산/창원",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "마산/창원",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "622",
+            "port_name": "마산/창원",
+            "display_name": "마산/창원",
+            "raw_port": "마산/창원",
+            "raw_aliases": [
+              "마산/창원"
+            ]
+          },
+          "port_code": "622",
+          "port_name": "마산/창원",
+          "port_display_name": "마산/창원",
+          "display_name": "마산/창원"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+        "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "company_fallback",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 19,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "Merged Port Operation port call",
+          "port_operation_south_gyeongsang_o",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원"
+      },
+      "display_name": "마산/창원"
+    },
+    {
+      "rank": 109,
       "vessel_name": "SUN LORD",
       "call_sign": "3EUS5",
       "company": "허브에이젠시(주)",
@@ -45574,7 +47309,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 106,
+      "rank": 110,
       "vessel_name": "티와이아이리스호",
       "call_sign": "DSOY4",
       "company": "세화해운 주식회사",
@@ -46006,7 +47741,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 107,
+      "rank": 111,
       "vessel_name": "JINHUA 9",
       "call_sign": "J5BE8",
       "company": "씨레인보우인터내셔널(주)",
@@ -46438,7 +48173,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 108,
+      "rank": 112,
       "vessel_name": "건룡호",
       "call_sign": "170014",
       "company": "(주)그린석유",
@@ -46872,7 +48607,7 @@
       "display_name": "부산"
     }
   ],
-  "total_count": 108,
-  "returned_count": 108,
-  "item_count": 108
+  "total_count": 112,
+  "returned_count": 112,
+  "item_count": 112
 }
