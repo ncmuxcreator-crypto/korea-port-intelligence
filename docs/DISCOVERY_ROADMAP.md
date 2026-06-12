@@ -1,0 +1,72 @@
+# Discovery Roadmap
+
+Generated at: 2026-06-12T12:02:47.754Z
+
+## Priority 0: Safety / consistency
+
+- Refresh stale endpoint dashboard/api/candidate-changes.json
+- Refresh stale endpoint dashboard/api/coverage-audit.json
+- Refresh stale endpoint dashboard/api/daily-enrichment-runtime.json
+- Refresh stale endpoint dashboard/api/ports/620-YEOSU/anchorage.json
+- Refresh stale endpoint dashboard/api/ports/620-YEOSU/berths.json
+- Refresh stale endpoint dashboard/api/ports/620-YEOSU/candidates.json
+- Refresh stale endpoint dashboard/api/ports/620-YEOSU/hull-cleaning.json
+- Refresh stale endpoint dashboard/api/ports/620-YEOSU/vessels-summary.json
+- Refresh stale endpoint dashboard/api/source-health.json
+
+## Priority 1: Revive existing value
+
+- Reconnect 입항 예정 (dashboard/api/arrival-pipeline-summary.json)
+- Reconnect 묘박/대기 (dashboard/api/anchorage-waiting-summary.json)
+- Reconnect 클리닝 적기 (dashboard/api/debug/intelligence/cleaning-window.json)
+- Reconnect 반복 영업 기회 (dashboard/api/debug/intelligence/opportunity-memory.json)
+- Reconnect 에이전트 인텔리전스 (dashboard/api/debug/intelligence/agent-intelligence.json)
+- Reconnect Source Data Enrichment (dashboard/api/debug/enrichment/applied.json)
+- Reconnect Source Quality Score (dashboard/api/debug/source-quality-score.json)
+- Reconnect Source Capability Matrix (dashboard/api/debug/enrichment/source-capability-matrix.json)
+- Reconnect Auxiliary Source Cache (dashboard/api/aux/cache-status.json)
+- Reconnect Auxiliary Source Schedule (dashboard/api/aux/source-schedule.json)
+- Reconnect DB Cleanup Plan (dashboard/api/db-cleanup-plan.json)
+- Reconnect alerts.latest (dashboard/api/alerts/latest.json)
+- Reconnect alerts.sales-alerts (dashboard/api/alerts/sales-alerts.json)
+- Reconnect all-collected-vessels-summary (dashboard/api/all-collected-vessels-summary.json)
+- Reconnect aux.aisDynamicSummary (dashboard/api/aux/ais-dynamic-summary.json)
+- Reconnect aux.aisInfoSummary (dashboard/api/aux/ais-info-summary.json)
+- Reconnect aux.berthSummary (dashboard/api/aux/berth-summary.json)
+- Reconnect aux.pilotageSummary (dashboard/api/aux/pilotage-summary.json)
+- Reconnect aux.vesselSpecSummary (dashboard/api/aux/vessel-spec-summary.json)
+- Reconnect backend-ops (dashboard/api/backend-ops.json)
+
+## Priority 2: Enrichment utilization
+
+- Improve mof_ais_stat: Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY.
+- Improve vessel_spec: HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.
+
+## Priority 3: Commercial intelligence
+
+- Surface/validate commercial intelligence: 영업 전환 파이프라인
+- Surface/validate commercial intelligence: 견적 기회 빌더
+- Surface/validate commercial intelligence: 관심 선박
+- Surface/validate commercial intelligence: 클리닝 적기
+- Surface/validate commercial intelligence: Compliance 노출도
+- Surface/validate commercial intelligence: 반복 영업 기회
+- Surface/validate commercial intelligence: 선대 인텔리전스
+- Surface/validate commercial intelligence: 선대 침투율
+- Surface/validate commercial intelligence: 선대 기회 갭
+- Surface/validate commercial intelligence: 선대 DNA
+- Surface/validate commercial intelligence: 예상 매출 기회
+- Surface/validate commercial intelligence: congestion-watchlist
+- Surface/validate commercial intelligence: fleet-opportunities
+- Surface/validate commercial intelligence: intelligence.customer-memory
+- Surface/validate commercial intelligence: intelligence.fleet-clusters
+- Surface/validate commercial intelligence: intelligence.fleet-expansion
+- Surface/validate commercial intelligence: intelligence.fleet-heatmap
+- Surface/validate commercial intelligence: intelligence.fleet-memory
+- Surface/validate commercial intelligence: intelligence.fleet-summary
+- Surface/validate commercial intelligence: intelligence.hull-cleaning-engine
+
+## Priority 4: Operational polish
+
+- Map/heatmap and port click-through polish
+- Mobile card density and advanced diagnostics separation
+- Navigation cleanup after hidden feature decisions
