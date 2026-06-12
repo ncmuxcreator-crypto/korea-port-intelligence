@@ -248,6 +248,47 @@ function sourceRowId(row = {}, sourceKey = "") {
   return row.source_row_id || row.raw_row_id || row.port_call_id || row.vessel_id || `${sourceKey}:${vesselKey(row)}`;
 }
 
+function targetVesselSummary(row = {}) {
+  const data = merged(row);
+  return {
+    vessel_key: vesselKey(row),
+    vessel_name: compactValue(data.vessel_name || data.name || data.normalized_vessel_name || null),
+    imo: compactValue(data.imo || null),
+    mmsi: compactValue(data.mmsi || null),
+    call_sign: compactValue(data.call_sign || null),
+    current_port: compactValue(data.current_port || data.port_name || data.port || null),
+    operator_display: compactValue(data.operator_display || data.operator || data.company || data.manager || null)
+  };
+}
+
+function inferConflictType({ fieldName = "", matchType = "", currentValue = null, candidateValue = null, confidence = 0 } = {}) {
+  if (fieldName === "imo" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "DIFFERENT_IMO";
+  if (fieldName === "mmsi" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "DIFFERENT_MMSI";
+  if (["operator_display", "owner", "manager", "fleet_group"].includes(fieldName) && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "OPERATOR_CONFLICT";
+  if (matchType === "VESSEL_NAME_ONLY") return "MULTIPLE_VESSEL_NAME_MATCHES";
+  if (matchType === "VESSEL_NAME_PORT_TIME" && confidence < 70) return "TIME_WINDOW_MISMATCH";
+  if (fieldName === "current_port" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "PORT_MISMATCH";
+  if (["WEAK", "VESSEL_NAME_ONLY"].includes(matchType) || confidence < 70) return "LOW_CONFIDENCE_FUZZY_MATCH";
+  if (hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "OPERATOR_CONFLICT";
+  return "LOW_CONFIDENCE_FUZZY_MATCH";
+}
+
+function recommendedReviewAction(candidate = {}) {
+  if (candidate.conflict_type === "DIFFERENT_IMO" || candidate.conflict_type === "DIFFERENT_MMSI") {
+    return "Do not apply automatically. Verify against a high-trust identity source.";
+  }
+  if (candidate.conflict_type === "MULTIPLE_VESSEL_NAME_MATCHES" || candidate.conflict_type === "LOW_CONFIDENCE_FUZZY_MATCH") {
+    return "Keep for manual review; require call sign, IMO, MMSI, or port/time evidence before applying.";
+  }
+  if (candidate.conflict_type === "TIME_WINDOW_MISMATCH" || candidate.conflict_type === "PORT_MISMATCH") {
+    return "Check latest port/timing source before applying.";
+  }
+  if (candidate.conflict_type === "OPERATOR_CONFLICT") {
+    return "Review company/operator evidence and preserve verified or manual values.";
+  }
+  return "Review source evidence before applying.";
+}
+
 function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, generatedAt = new Date().toISOString()) {
   const data = merged(row);
   const rule = FIELD_RULES[fieldName];
@@ -261,7 +302,7 @@ function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, g
   let action = "REJECT";
   if (confidence >= 85 && (isEmpty(currentValue) || valuesEqual(currentValue, candidateValue) || quality >= currentQuality(row, fieldName) + 20)) {
     action = trusted && !valuesEqual(currentValue, candidateValue) ? "REVIEW" : "APPLY";
-  } else if (confidence >= 65 && hasValue(candidateValue)) {
+  } else if (confidence >= 60 && hasValue(candidateValue)) {
     action = "REVIEW";
   }
   const payload = {
@@ -283,6 +324,8 @@ function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, g
     field_name: fieldName,
     current_value: compactValue(currentValue),
     candidate_value: compactValue(candidateValue),
+    raw_value: compactValue(candidateValue),
+    target_vessel: targetVesselSummary(row),
     candidate_quality: quality,
     action,
     reason,
@@ -293,6 +336,39 @@ function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, g
       source_row_id: sourceRowId(row, sourceKey)
     }
   };
+}
+
+function toReviewQueueItem(candidate = {}) {
+  const confidence = Number(candidate.match_confidence || 0);
+  const conflictType = inferConflictType({
+    fieldName: candidate.field_name,
+    matchType: candidate.match_type,
+    currentValue: candidate.current_value,
+    candidateValue: candidate.candidate_value,
+    confidence
+  });
+  const item = {
+    candidate_id: candidate.candidate_id,
+    source_key: candidate.source_key,
+    raw_value: compactValue(candidate.raw_value ?? candidate.candidate_value),
+    candidate_value: compactValue(candidate.candidate_value),
+    target_vessel: candidate.target_vessel || { vessel_key: candidate.target_vessel_key },
+    field_name: candidate.field_name,
+    current_value: compactValue(candidate.current_value),
+    confidence,
+    conflict_type: conflictType,
+    recommended_action: recommendedReviewAction({ ...candidate, conflict_type: conflictType }),
+    reason: candidate.reason,
+    source_name: candidate.source_name,
+    target_vessel_key: candidate.target_vessel_key,
+    match_type: candidate.match_type,
+    match_confidence: confidence,
+    candidate_quality: candidate.candidate_quality,
+    action: candidate.action,
+    source_timestamp: candidate.source_timestamp,
+    lineage: candidate.lineage
+  };
+  return item;
 }
 
 function candidateFieldsForSource(sourceKey = "") {
@@ -423,7 +499,7 @@ export function buildSourceDataEnrichmentPayloads({
     for (const row of rows) applyCandidate(row, candidate, generatedAt);
   }
   const applied = candidates.filter(candidate => candidate.action === "APPLY");
-  const review = candidates.filter(candidate => candidate.action === "REVIEW");
+  const review = candidates.filter(candidate => candidate.action === "REVIEW").map(toReviewQueueItem);
   const rejected = candidates.filter(candidate => candidate.action === "REJECT");
   const fieldsEnriched = {};
   const vesselsEnriched = new Set();
