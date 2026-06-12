@@ -525,6 +525,9 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const item = findSourceCsvItem(sourceCollectionStatus);
   const diagnostic = sourceCsvDiagnostic(collectorDiagnostics);
   const diag = flattenedDiagnostics(item, diagnostic);
+  const sourceCsvMode = String(process.env.SOURCE_CSV_MODE || "").toLowerCase();
+  const cacheOnlyMode = sourceCsvMode === "cache_only";
+  const offMode = sourceCsvMode === "off";
   const currentCache = cache || readSourceCsvReferenceCache();
   const rows = currentCache.items || [];
   const summary = summarizeSourceCsvReferenceRows(rows);
@@ -542,12 +545,24 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const headerFields = Array.isArray(diag.header_row_fields) ? diag.header_row_fields : Array.isArray(diag.sample_keys) ? diag.sample_keys : [];
   const isProbablyRaw = likelyRawCsv({ responseSizeBytes, headerFields, sourceTooLarge });
   const isProbablyLightweight = likelyLightweightCsv({ headerFields, rows });
-  const status = sourceTooLarge
+  const status = offMode
+    ? (previousCacheAvailable ? "OFF_PREVIOUS_CACHE" : "OFF_NO_CACHE")
+    : cacheOnlyMode
+      ? (previousCacheAvailable ? "CACHE_ONLY_PREVIOUS_CACHE" : "CACHE_ONLY_NO_CACHE")
+    : sourceTooLarge
     ? (previousCacheAvailable ? "USING_PREVIOUS_CACHE" : "SOURCE_TOO_LARGE")
     : summary.usable_reference_rows > 0
       ? "ACTIVE"
       : (item.status || (currentCache.status === "available" ? "CACHE_AVAILABLE" : "NOT_CONFIGURED"));
-  const recommendedFix = sourceTooLarge
+  const recommendedFix = offMode
+    ? (previousCacheAvailable
+      ? "source_csv is disabled for this tier and the previous lightweight cache remains available."
+      : "source_csv is disabled for this tier. Run reference enrichment with SOURCE_CSV_MODE=refresh to build the cache.")
+    : cacheOnlyMode
+    ? (previousCacheAvailable
+      ? "Core update is using the previous lightweight source_csv cache. Run heavy enrichment with SOURCE_CSV_MODE=refresh to refresh it."
+      : "Core update is cache-only and no source_csv cache exists. Create a smaller verified vessel reference CSV, then run heavy enrichment with SOURCE_CSV_MODE=refresh.")
+    : sourceTooLarge
     ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
     : previousCacheAvailable
       ? "Keep source_csv as a lightweight verified vessel reference cache."
@@ -556,6 +571,7 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     schema_version: "1.0",
     generated_at: generatedAt,
     status,
+    source_csv_mode: sourceCsvMode || "refresh",
     source_layer: item.source_layer || "auxiliary",
     core_blocking: false,
     configured: (item.present_env || []).includes("SOURCE_CSV_URL"),
@@ -565,7 +581,7 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     is_probably_large_raw_csv: isProbablyRaw,
     is_probably_lightweight_reference_csv: isProbablyLightweight,
     previous_cache_available: previousCacheAvailable,
-    using_previous_cache: sourceTooLarge && previousCacheAvailable,
+    using_previous_cache: (sourceTooLarge || cacheOnlyMode || offMode) && previousCacheAvailable,
     response_size_bytes: responseSizeBytes,
     max_allowed_bytes: maxAllowedBytes,
     content_type: diag.content_type || diag.response_content_type || null,

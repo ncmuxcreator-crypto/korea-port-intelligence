@@ -1,0 +1,82 @@
+name: Reference Enrichment
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 18 * * *"
+
+concurrency:
+  group: reference-enrichment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reference-enrichment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      CI: true
+      VALIDATION_MODE: production
+      UPDATE_MODE: reference_enrichment
+      SOURCE_CSV_MODE: refresh
+      ENRICHMENT_MODE: full
+      DISCOVERY_MODE: off
+      DB_AUDIT_MODE: off
+      RUN_HEAVY_AUDITS: "true"
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
+      ENABLE_SOURCE_CSV: ${{ vars.ENABLE_SOURCE_CSV || 'true' }}
+      PORT_OPERATION_SERVICE_KEY: ${{ secrets.PORT_OPERATION_SERVICE_KEY || secrets.PORT_OPERATION_API_KEY || secrets.DATA_GO_KR_API_KEY || secrets.SERVICE_KEY || secrets.SERVICEKEY || secrets.YGPA_SERVICE_KEY }}
+      PORT_OPERATION_API_URL: ${{ vars.PORT_OPERATION_API_URL || secrets.PORT_OPERATION_API_URL || 'http://apis.data.go.kr/1192000/VsslEtrynd5/Info5' }}
+      VESSEL_SPEC_SERVICE_KEY: ${{ secrets.VESSEL_SPEC_SERVICE_KEY }}
+      VESSEL_SPEC_API_URL: ${{ secrets.VESSEL_SPEC_API_URL }}
+      MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}
+      MOF_AIS_INFO_SERVICE_KEY: ${{ secrets.MOF_AIS_INFO_SERVICE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false
+
+      - name: Refresh reference enrichment
+        timeout-minutes: 30
+        run: npm run update:reference-enrichment
+
+      - name: Run enrichment checks
+        if: always()
+        run: |
+          npm run audit:source-csv-enrichment
+          npm run audit:enrichment-quality
+          npm run audit:source-quality
+
+      - name: Validate
+        if: always()
+        run: npm run validate
+
+      - name: Upload reference enrichment artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: korea-port-intelligence-reference-enrichment
+          retention-days: 14
+          path: |
+            dashboard/api/enrichment/latest/
+            dashboard/api/enrichment/summary.json
+            dashboard/api/enrichment/candidates.json
+            dashboard/api/enrichment/applied.json
+            dashboard/api/enrichment/review-queue.json
+            dashboard/api/cache/source-csv-reference.json
+            dashboard/api/cache/source-csv-index.json
+            dashboard/api/aux/source-csv-summary.json
+            dashboard/api/runtime/update-tiers.json

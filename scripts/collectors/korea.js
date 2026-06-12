@@ -320,6 +320,8 @@ function portOperationPreflightFailureReason(failures = [], { validationMode = "
 }
 
 function sourceCsvEnabled() {
+  const mode = String(process.env.SOURCE_CSV_MODE || "").toLowerCase();
+  if (mode === "cache_only" || mode === "off") return false;
   return String(process.env.ENABLE_SOURCE_CSV || "").toLowerCase() === "true";
 }
 

@@ -63,6 +63,18 @@ const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
 const DEFAULT_CLEANING_REVENUE_USD = Number(process.env.DEFAULT_CLEANING_REVENUE_USD || 15000);
 const VALIDATION_MODE = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
+const DEFAULT_UPDATE_MODE = process.env.GITHUB_ACTIONS === "true" ? "core" : "scheduled";
+const UPDATE_MODE = String(process.env.UPDATE_MODE || DEFAULT_UPDATE_MODE).toLowerCase();
+const ENRICHMENT_MODE = String(process.env.ENRICHMENT_MODE || (UPDATE_MODE === "core" ? "lightweight" : "full")).toLowerCase();
+const DISCOVERY_MODE = String(process.env.DISCOVERY_MODE || (UPDATE_MODE === "core" ? "off" : "available")).toLowerCase();
+const DB_AUDIT_MODE = String(process.env.DB_AUDIT_MODE || (UPDATE_MODE === "core" ? "off" : "available")).toLowerCase();
+const SOURCE_CSV_MODE = String(process.env.SOURCE_CSV_MODE || (UPDATE_MODE === "core" ? "cache_only" : "refresh")).toLowerCase();
+const RUN_HEAVY_AUDITS = String(process.env.RUN_HEAVY_AUDITS || (UPDATE_MODE === "core" ? "false" : "true")).toLowerCase() === "true";
+const IS_CORE_UPDATE = ["core", "core_update"].includes(UPDATE_MODE);
+const RUN_FULL_ENRICHMENT = !IS_CORE_UPDATE && ENRICHMENT_MODE === "full";
+const RUNTIME_BUDGET_STARTED_AT = new Date();
+const RUNTIME_BUDGET_STAGES = [];
+const RUNTIME_SKIPPED_OPTIONAL_STAGES = [];
 const DEBUG_API_DIR = "dashboard/api/debug";
 const SUCCESSFUL_DATASET_DIR = "data/successful";
 const SUCCESSFUL_DATASET_MANIFEST = `${SUCCESSFUL_DATASET_DIR}/latest.json`;
@@ -3861,11 +3873,26 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["aux.cacheStatus", "dashboard/api/aux/cache-status.json"],
   ["aux.sourceSchedule", "dashboard/api/aux/source-schedule.json"],
+  ["aux.latestIndex", "dashboard/api/aux/latest/index.json"],
+  ["aux.latestPilotage", "dashboard/api/aux/latest/pilotage-summary.json"],
+  ["aux.latestBerth", "dashboard/api/aux/latest/berth-summary.json"],
+  ["aux.latestAisInfo", "dashboard/api/aux/latest/ais-info-summary.json"],
+  ["aux.latestAisDynamic", "dashboard/api/aux/latest/ais-dynamic-summary.json"],
+  ["aux.latestVesselSpec", "dashboard/api/aux/latest/vessel-spec-summary.json"],
+  ["aux.latestCacheStatus", "dashboard/api/aux/latest/cache-status.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
+  ["enrichment.latestIndex", "dashboard/api/enrichment/latest/index.json"],
+  ["enrichment.latestSummary", "dashboard/api/enrichment/latest/summary.json"],
+  ["enrichment.latestCandidates", "dashboard/api/enrichment/latest/candidates.json"],
+  ["enrichment.latestApplied", "dashboard/api/enrichment/latest/applied.json"],
+  ["enrichment.latestReviewQueue", "dashboard/api/enrichment/latest/review-queue.json"],
+  ["enrichment.latestPatches", "dashboard/api/enrichment/latest/patches.json"],
   ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
+  ["runtime.budget", "dashboard/api/runtime-budget-report.json"],
+  ["runtime.updateTiers", "dashboard/api/runtime/update-tiers.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["storage.cleanupPlan", "dashboard/api/db-cleanup-plan.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
@@ -3893,7 +3920,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|enrichment-utilization|storage-efficiency-report|db-cleanup-plan|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|enrichment-utilization|runtime-budget-report|storage-efficiency-report|db-cleanup-plan|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -17524,21 +17551,275 @@ function buildBackendStabilityBatch(records = [], apiSources = [], reportBase = 
 }
 
 function buildRuntimeBudget() {
-  const updateMode = process.env.UPDATE_MODE || "scheduled";
+  const updateMode = UPDATE_MODE;
   const updateTimeoutMs = Number(process.env.UPDATE_TIMEOUT_MS || 600000);
   const sourceTimeoutMs = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
   const maxRows = Number(process.env.MAX_OUTPUT_ROWS || 500);
   return {
     policy_version: "runtime-budget-v17.7",
     update_mode: updateMode,
+    enrichment_mode: ENRICHMENT_MODE,
+    discovery_mode: DISCOVERY_MODE,
+    db_audit_mode: DB_AUDIT_MODE,
+    source_csv_mode: SOURCE_CSV_MODE,
+    run_heavy_audits: RUN_HEAVY_AUDITS,
     update_timeout_ms: updateTimeoutMs,
     source_timeout_ms: sourceTimeoutMs,
     max_output_rows: maxRows,
-    collector_policy: updateMode === "fast"
-      ? "Run lightweight public-data collectors first; skip slow optional sources; never block dashboard generation."
-      : "Run scheduled public-data collection with a realistic per-source timeout; never block dashboard generation if one source fails.",
+    collector_policy: IS_CORE_UPDATE
+      ? "Run core public-data collectors and lightweight summaries only; skip heavy enrichment, discovery, and DB audits."
+      : updateMode === "fast"
+        ? "Run lightweight public-data collectors first; skip slow optional sources; never block dashboard generation."
+        : "Run scheduled public-data collection with a realistic per-source timeout; never block dashboard generation if one source fails.",
     paid_ais_policy: "MarineTraffic/VesselFinder/AISStream stay optional and should not block Korea candidate detection.",
     failure_policy: "If collectors fail or time out, publish empty live outputs with diagnostics. Do not synthesize vessels."
+  };
+}
+
+function runtimeRemainingMs() {
+  const budget = Number(process.env.UPDATE_TIMEOUT_MS || 600000);
+  return Math.max(0, budget - (Date.now() - RUNTIME_BUDGET_STARTED_AT.getTime()));
+}
+
+function beginRuntimeStage(name) {
+  const stage = {
+    name,
+    started_at: new Date().toISOString(),
+    ended_at: null,
+    duration_ms: null,
+    status: "running",
+    skipped_reason: null
+  };
+  RUNTIME_BUDGET_STAGES.push(stage);
+  return stage;
+}
+
+function endRuntimeStage(stage, status = "completed", skippedReason = null) {
+  if (!stage) return;
+  stage.ended_at = new Date().toISOString();
+  stage.duration_ms = Math.max(0, Date.parse(stage.ended_at) - Date.parse(stage.started_at));
+  stage.status = status;
+  stage.skipped_reason = skippedReason;
+}
+
+function skipRuntimeStage(name, reason) {
+  const stage = {
+    name,
+    started_at: new Date().toISOString(),
+    ended_at: new Date().toISOString(),
+    duration_ms: 0,
+    status: "skipped",
+    skipped_reason: reason
+  };
+  RUNTIME_BUDGET_STAGES.push(stage);
+  RUNTIME_SKIPPED_OPTIONAL_STAGES.push({ name, reason });
+  return stage;
+}
+
+function shouldSkipOptionalStage(name, thresholdMs, modeReason = "") {
+  if (IS_CORE_UPDATE && modeReason) {
+    skipRuntimeStage(name, modeReason);
+    return true;
+  }
+  if (runtimeRemainingMs() < thresholdMs) {
+    skipRuntimeStage(name, `remaining runtime budget below ${thresholdMs}ms`);
+    return true;
+  }
+  return false;
+}
+
+function staleDiagnosticPayload(filePath, fallbackPayload, generatedAt, reason = "Generated by heavy workflow, not refreshed in core update.") {
+  const existing = readJsonSafe(filePath, null);
+  const base = existing && typeof existing === "object" && !Array.isArray(existing)
+    ? existing
+    : fallbackPayload;
+  return {
+    ...(base || {}),
+    schema_version: base?.schema_version || PUBLIC_API_SCHEMA_VERSION,
+    stale_diagnostic: true,
+    stale_reason: reason,
+    stale_checked_at: generatedAt,
+    update_mode: UPDATE_MODE,
+    load_strategy: "diagnostic_only",
+    startup_safe: false
+  };
+}
+
+function buildRuntimeBudgetReport({ startedAt, endedAt, status = "completed" } = {}) {
+  const startIso = startedAt || RUNTIME_BUDGET_STARTED_AT.toISOString();
+  const endIso = endedAt || new Date().toISOString();
+  const budgetMs = Number(process.env.UPDATE_TIMEOUT_MS || 600000);
+  const durationMs = Math.max(0, Date.parse(endIso) - Date.parse(startIso));
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: endIso,
+    workflow_name: process.env.GITHUB_WORKFLOW || "local",
+    update_mode: UPDATE_MODE,
+    enrichment_mode: ENRICHMENT_MODE,
+    discovery_mode: DISCOVERY_MODE,
+    db_audit_mode: DB_AUDIT_MODE,
+    source_csv_mode: SOURCE_CSV_MODE,
+    started_at: startIso,
+    ended_at: endIso,
+    duration_ms: durationMs,
+    budget_ms: budgetMs,
+    stages: RUNTIME_BUDGET_STAGES,
+    skipped_optional_stages: RUNTIME_SKIPPED_OPTIONAL_STAGES,
+    timeout_risk: durationMs > budgetMs * 0.85 || runtimeRemainingMs() < 120000,
+    finalization_status: status
+  };
+}
+
+function fileExists(relativePath) {
+  return fs.existsSync(String(relativePath || "").replace(/\\/g, "/"));
+}
+
+function cacheAgeHoursFrom(generatedAt, referenceAt = new Date().toISOString()) {
+  if (!generatedAt) return null;
+  const age = (Date.parse(referenceAt) - Date.parse(generatedAt)) / 36e5;
+  return Number.isFinite(age) ? Math.max(0, Math.round(age * 10) / 10) : null;
+}
+
+function buildAuxLatestIndex({ generatedAt, report = {}, availableFiles = [], sourceCollectionStatus = {}, cacheStatus = {} } = {}) {
+  const sources = Array.isArray(sourceCollectionStatus.items) ? sourceCollectionStatus.items : [];
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    aux_run_id: report.run_id || runId,
+    update_mode: UPDATE_MODE,
+    record_count: availableFiles.length,
+    item_count: availableFiles.length,
+    available_files: availableFiles,
+    source_status: Object.fromEntries(sources.map(item => [item.source_key, item.status])),
+    cache_age_hours: cacheStatus.cache_age_hours ?? null,
+    source_count: sources.length,
+    stale_sources: sources.filter(item => item.cache_stale_warning || item.stale_warning).map(item => item.source_key)
+  };
+}
+
+function buildEnrichmentLatestIndex({ generatedAt, summary = {}, patches = {}, reviewQueue = {} } = {}) {
+  const patchCount = Number(patches.record_count || patches.item_count || (Array.isArray(patches.items) ? patches.items.length : 0));
+  const reviewCount = Number(reviewQueue.record_count || reviewQueue.item_count || (Array.isArray(reviewQueue.items) ? reviewQueue.items.length : 0));
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    enrichment_run_id: summary.run_id || runId,
+    update_mode: UPDATE_MODE,
+    patches_available: patchCount > 0,
+    patch_count: patchCount,
+    applied_count: Number(summary.auto_applied || summary.applied_count || patches.applied_count || 0),
+    review_count: reviewCount,
+    cache_age_hours: cacheAgeHoursFrom(summary.generated_at, generatedAt),
+    stale_diagnostic: Boolean(summary.stale_diagnostic)
+  };
+}
+
+function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enrichmentIndex = {} } = {}) {
+  const previous = readJsonSafe("dashboard/api/runtime/update-tiers.json", {}) || {};
+  const tiers = {
+    core: {
+      run_id: report.run_id || runId,
+      generated_at: generatedAt
+    },
+    fast_aux: {
+      run_id: UPDATE_MODE === "fast_aux" ? (report.run_id || runId) : previous.fast_aux_run_id || previous.fast_aux?.run_id || auxIndex.aux_run_id || null,
+      generated_at: UPDATE_MODE === "fast_aux" ? generatedAt : previous.fast_aux_generated_at || previous.fast_aux?.generated_at || auxIndex.generated_at || null
+    },
+    reference_enrichment: {
+      run_id: UPDATE_MODE === "reference_enrichment" ? (report.run_id || runId) : previous.reference_enrichment_run_id || previous.reference_enrichment?.run_id || enrichmentIndex.enrichment_run_id || null,
+      generated_at: UPDATE_MODE === "reference_enrichment" ? generatedAt : previous.reference_enrichment_generated_at || previous.reference_enrichment?.generated_at || enrichmentIndex.generated_at || null
+    },
+    discovery_audit: {
+      run_id: UPDATE_MODE === "discovery_audit" ? (report.run_id || runId) : previous.discovery_audit_run_id || previous.discovery_audit?.run_id || null,
+      generated_at: UPDATE_MODE === "discovery_audit" ? generatedAt : previous.discovery_audit_generated_at || previous.discovery_audit?.generated_at || null
+    }
+  };
+  const staleWarnings = [];
+  if (!tiers.fast_aux.generated_at) staleWarnings.push("fast_aux cache is not available yet.");
+  if (!tiers.reference_enrichment.generated_at) staleWarnings.push("reference enrichment patch cache is not available yet.");
+  if (!tiers.discovery_audit.generated_at) staleWarnings.push("discovery/audit reports have not been refreshed by the tiered workflow yet.");
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    update_mode: UPDATE_MODE,
+    core_run_id: tiers.core.run_id,
+    core_generated_at: tiers.core.generated_at,
+    fast_aux_run_id: tiers.fast_aux.run_id,
+    fast_aux_generated_at: tiers.fast_aux.generated_at,
+    reference_enrichment_run_id: tiers.reference_enrichment.run_id,
+    reference_enrichment_generated_at: tiers.reference_enrichment.generated_at,
+    discovery_audit_run_id: tiers.discovery_audit.run_id,
+    discovery_audit_generated_at: tiers.discovery_audit.generated_at,
+    active_aux_cache_available: fileExists("dashboard/api/aux/latest/index.json") || Boolean(auxIndex.generated_at),
+    active_enrichment_patch_available: fileExists("dashboard/api/enrichment/latest/patches.json") || Boolean(enrichmentIndex.patches_available),
+    stale_warnings: staleWarnings,
+    tiers
+  };
+}
+
+function vesselPatchKey(record = {}) {
+  return String(firstNonEmpty(
+    record.vessel_key,
+    record.hybrid_entity_key,
+    record.imo,
+    record.mmsi,
+    record.call_sign,
+    record.callsign,
+    record.clsgn,
+    record.vessel_display?.vessel_key,
+    record.vessel_display?.imo,
+    record.vessel_display?.mmsi,
+    record.vessel_display?.call_sign,
+    record.vessel_name,
+    record.name,
+    record.ship_name
+  ) || "").trim().toUpperCase();
+}
+
+function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().toISOString() } = {}) {
+  if (!IS_CORE_UPDATE && ENRICHMENT_MODE !== "lightweight_apply_cache") {
+    return { applied: 0, available: false, skipped_reason: "not_core_lightweight_mode" };
+  }
+  const payload = readJsonSafe("dashboard/api/enrichment/latest/patches.json", null) ||
+    readJsonSafe("dashboard/api/enrichment/applied.json", null);
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  if (!items.length) return { applied: 0, available: false, skipped_reason: "no_cached_patches" };
+  const allowedFields = new Set(["pilotage_signal", "berth_signal", "operator_display", "imo", "mmsi", "dwt", "flag", "vessel_type", "data_lineage"]);
+  const recordByKey = new Map();
+  for (const record of records) {
+    const key = vesselPatchKey(record);
+    if (key && !recordByKey.has(key)) recordByKey.set(key, record);
+  }
+  let applied = 0;
+  for (const item of items) {
+    if (String(item.action || "").toUpperCase() !== "APPLY") continue;
+    if (Number(item.match_confidence || 0) < 85) continue;
+    const field = String(item.field_name || "").trim();
+    if (!allowedFields.has(field)) continue;
+    const key = vesselPatchKey(item.target_vessel || { vessel_key: item.target_vessel_key });
+    const record = recordByKey.get(key);
+    if (!record) continue;
+    const candidateValue = item.candidate_value ?? item.raw_value;
+    if (candidateValue === undefined || candidateValue === null || String(candidateValue).trim() === "") continue;
+    const currentValue = record[field] ?? record.vessel_display?.[field];
+    const currentTrusted = record[`${field}_verified`] === true || record.manual === true || record.vessel_display?.data_lineage?.[field]?.verified === true;
+    if (currentTrusted) continue;
+    if (hasValue(currentValue) && String(currentValue) !== "-" && field !== "data_lineage") continue;
+    record[field] = candidateValue;
+    record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
+    record.data_lineage[field] = {
+      source: item.source_key || item.lineage?.raw_source || "enrichment_patch_cache",
+      confidence: Number(item.match_confidence || item.candidate_quality || 0) || null,
+      updated_at: item.source_timestamp || generatedAt,
+      cached_patch: true
+    };
+    applied += 1;
+  }
+  return {
+    applied,
+    available: true,
+    source_generated_at: payload.generated_at || null,
+    cache_age_hours: cacheAgeHoursFrom(payload.generated_at, generatedAt)
   };
 }
 
@@ -17647,12 +17928,21 @@ try {
   const apiSources = detectSecrets();
   console.log(`[Korea Port Intelligence] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
   const dictionaries = loadReferenceDictionaries();
-  collectedRows = await collectKoreaData({ apiSources });
+  const collectStage = beginRuntimeStage("collect core sources");
+  try {
+    collectedRows = await collectKoreaData({ apiSources });
+    endRuntimeStage(collectStage);
+  } catch (error) {
+    endRuntimeStage(collectStage, "failed", error?.message || String(error));
+    throw error;
+  }
   collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
+  const sourceCsvCacheStage = beginRuntimeStage("source_csv cache reuse");
   sourceCsvReferenceCache = updateSourceCsvReferenceCache({
     sourceRows: collectedRows.filter(row => String(row.source || row.source_name || "").toLowerCase() === "source_csv"),
     generatedAt: new Date().toISOString()
   });
+  endRuntimeStage(sourceCsvCacheStage);
   const sourceCsvReferenceRows = (sourceCsvReferenceCache.items || []).map(row => ({
     ...row,
     reference_source: "source_csv_cache",
@@ -17662,6 +17952,7 @@ try {
     ...enrichWithReferenceDictionaries(collectedRows, dictionaries),
     ...sourceCsvReferenceRows
   ];
+  const identityStage = beginRuntimeStage("normalize and identity enrichment");
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
   const identityResolution = await resolveImoMmsiCandidates(cacheResult.records, { referenceRows: referenceEnrichedRows });
@@ -17676,8 +17967,19 @@ try {
       dataSourceUsed: "supabase_normalized_snapshot"
     })
   );
+  const cachedPatchStage = beginRuntimeStage("apply cached aux/enrichment patches");
+  const cachedPatchResult = applyCachedEnrichmentPatches(vessels, { generatedAt: new Date().toISOString() });
+  endRuntimeStage(
+    cachedPatchStage,
+    cachedPatchResult.available ? "completed" : "skipped",
+    cachedPatchResult.skipped_reason || null
+  );
+  if (cachedPatchResult.available) {
+    identityResolutionDiagnostics.cached_enrichment_patches = cachedPatchResult;
+  }
   annotateTargetClassification(vessels);
   vessels.sort((a, b) => (b.cleaning_candidate_score || 0) - (a.cleaning_candidate_score || 0) || (b.risk_score || 0) - (a.risk_score || 0));
+  endRuntimeStage(identityStage);
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     supabaseWrite = {
@@ -18518,7 +18820,7 @@ try {
       records: sourceCsvTargetRecords,
       cache: sourceCsvReferenceCache,
       generatedAt: completedAt,
-      apply: true
+      apply: !IS_CORE_UPDATE
     }),
     data_mode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     record_count: 1,
@@ -18558,7 +18860,14 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     runId: report.run_id || finalRunOrigin.run_id || null
   }), finalRunOrigin);
-  const sourceDataEnrichmentRecords = [
+  const skipFullEnrichment = shouldSkipOptionalStage(
+    "full source-data enrichment",
+    120000,
+    IS_CORE_UPDATE || ENRICHMENT_MODE === "lightweight"
+      ? "CORE_UPDATE keeps enrichment lightweight; heavy enrichment workflow refreshes candidates/review queues."
+      : ""
+  );
+  const sourceDataEnrichmentRecords = skipFullEnrichment ? [] : [
     ...allCollectedVessels,
     ...vessels,
     ...targetVessels,
@@ -18570,14 +18879,54 @@ try {
     ...anchorageWaiting,
     ...stayingVessels
   ].filter(record => record && typeof record === "object");
-  const sourceDataEnrichmentPayloadsRaw = buildSourceDataEnrichmentPayloads({
-    records: sourceDataEnrichmentRecords,
-    sourceCollectionStatus: sourceCollectionStatusPayload,
-    sourceQualityScore: sourceQualityScorePayload,
-    generatedAt: completedAt,
-    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
-    report
-  });
+  const sourceDataEnrichmentPayloadsRaw = skipFullEnrichment
+    ? {
+      candidatesPayload: staleDiagnosticPayload("dashboard/api/enrichment/candidates.json", publicItemsEnvelope({
+        generatedAt: completedAt,
+        dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        report,
+        sourceTable: "enrichment_candidates",
+        items: []
+      }), completedAt),
+      appliedPayload: staleDiagnosticPayload("dashboard/api/enrichment/applied.json", publicItemsEnvelope({
+        generatedAt: completedAt,
+        dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        report,
+        sourceTable: "enrichment_applied",
+        items: []
+      }), completedAt),
+      reviewQueuePayload: staleDiagnosticPayload("dashboard/api/enrichment/review-queue.json", publicItemsEnvelope({
+        generatedAt: completedAt,
+        dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        report,
+        sourceTable: "enrichment_review_queue",
+        items: []
+      }), completedAt),
+      summaryPayload: staleDiagnosticPayload("dashboard/api/enrichment/summary.json", {
+        schema_version: PUBLIC_API_SCHEMA_VERSION,
+        generated_at: completedAt,
+        data_mode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        record_count: 0,
+        item_count: 0,
+        total_candidates: 0,
+        auto_applied: 0,
+        needs_review: 0,
+        rejected: 0,
+        fields_enriched: {},
+        vessels_enriched: 0,
+        by_source: {},
+        by_field: {},
+        conflicts_detected: 0
+      }, completedAt)
+    }
+    : buildSourceDataEnrichmentPayloads({
+      records: sourceDataEnrichmentRecords,
+      sourceCollectionStatus: sourceCollectionStatusPayload,
+      sourceQualityScore: sourceQualityScorePayload,
+      generatedAt: completedAt,
+      dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+      report
+    });
   const sourceDataEnrichmentPayloads = {
     ...sourceDataEnrichmentPayloadsRaw,
     candidatesPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.candidatesPayload, finalRunOrigin),
@@ -18599,13 +18948,29 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot"
   }), finalRunOrigin);
-  const pilotageBerthMatchReviewPayload = withRunOrigin(buildPilotageBerthMatchReviewPayload({
-    sourceRows: collectedRows,
-    vessels: allCollectedVessels,
-    generatedAt: completedAt,
-    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
-    report
-  }), finalRunOrigin);
+  const skipMatchReview = shouldSkipOptionalStage(
+    "pilotage/berth match review queue",
+    90000,
+    IS_CORE_UPDATE ? "CORE_UPDATE writes lightweight source summaries; match review is refreshed by heavy enrichment." : ""
+  );
+  const pilotageBerthMatchReviewPayload = withRunOrigin(
+    skipMatchReview
+      ? staleDiagnosticPayload("dashboard/api/review/pilotage-berth-matches.json", publicItemsEnvelope({
+        generatedAt: completedAt,
+        dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        report,
+        sourceTable: "pilotage_berth_match_review",
+        items: []
+      }), completedAt)
+      : buildPilotageBerthMatchReviewPayload({
+        sourceRows: collectedRows,
+        vessels: allCollectedVessels,
+        generatedAt: completedAt,
+        dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+        report
+      }),
+    finalRunOrigin
+  );
   const auxSummaryOptions = {
     sourceCollectionStatus: sourceCollectionStatusPayload,
     generatedAt: completedAt,
@@ -18993,13 +19358,29 @@ try {
     feature: "상위 영업 후보",
     scoreKeys: ["opportunity_score", "score", "cleaning_candidate_score"]
   });
-  const storageEfficiencyReportPayload = buildStorageEfficiencyReport({
-    report,
-    generatedAt: completedAt,
-    dataMode: report.data_mode,
-    referenceGeneratedAt: completedAt,
-    referenceRunId: report.run_id || runId
-  });
+  const skipStorageEfficiency = shouldSkipOptionalStage(
+    "storage efficiency audit",
+    60000,
+    IS_CORE_UPDATE || DB_AUDIT_MODE === "off"
+      ? "CORE_UPDATE skips DB/storage audit; discovery-audit workflow refreshes storage-efficiency-report."
+      : ""
+  );
+  const storageEfficiencyReportPayload = skipStorageEfficiency
+    ? staleDiagnosticPayload("dashboard/api/storage-efficiency-report.json", {
+      schema_version: PUBLIC_API_SCHEMA_VERSION,
+      generated_at: completedAt,
+      data_mode: report.data_mode,
+      record_count: 0,
+      item_count: 0,
+      warnings: ["Storage efficiency audit skipped in core update."]
+    }, completedAt)
+    : buildStorageEfficiencyReport({
+      report,
+      generatedAt: completedAt,
+      dataMode: report.data_mode,
+      referenceGeneratedAt: completedAt,
+      referenceRunId: report.run_id || runId
+    });
   const allCollectedVesselsSummaryPayload = buildListSummaryPayload({
     items: allCollectedVessels,
     generatedAt: completedAt,
@@ -19305,6 +19686,7 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "live"
   });
+  const outputWriteStage = beginRuntimeStage("generate dashboard JSON");
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
   writeApiJson("dashboard/api/status-summary.json", statusSummaryPayload, report);
   writeRuntimeDiagnosticJson("dashboard/api/health.json", healthPayload, finalRunOrigin);
@@ -19341,6 +19723,58 @@ try {
   }
   writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
   writeApiJson("dashboard/api/aux/source-schedule.json", sourceSchedulePayload, report);
+  const auxLatestFiles = [
+    "pilotage-summary.json",
+    "berth-summary.json",
+    "ais-info-summary.json",
+    "ais-dynamic-summary.json",
+    "vessel-spec-summary.json",
+    "cache-status.json"
+  ];
+  const auxLatestPayloads = {
+    "dashboard/api/aux/latest/pilotage-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
+    "dashboard/api/aux/latest/berth-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
+    "dashboard/api/aux/latest/ais-info-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
+    "dashboard/api/aux/latest/ais-dynamic-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
+    "dashboard/api/aux/latest/vessel-spec-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
+    "dashboard/api/aux/latest/cache-status.json": auxiliarySourceCacheStatusPayload
+  };
+  const auxLatestIndexPayload = withRunOrigin(buildAuxLatestIndex({
+    generatedAt: completedAt,
+    report,
+    availableFiles: auxLatestFiles,
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    cacheStatus: auxiliarySourceCacheStatusPayload
+  }), finalRunOrigin);
+  for (const [filePath, payload] of Object.entries(auxLatestPayloads)) {
+    writeApiJson(filePath, payload, report);
+  }
+  writeApiJson("dashboard/api/aux/latest/index.json", auxLatestIndexPayload, report);
+  const enrichmentPatchesPayload = withRunOrigin({
+    ...(sourceDataEnrichmentPayloads.appliedPayload || {}),
+    source_endpoint: "dashboard/api/enrichment/applied.json",
+    patch_policy: "High-confidence enrichment patches only; core update may apply lightweight fields from this cache.",
+    load_strategy: "lazy",
+    startup_safe: false
+  }, finalRunOrigin);
+  const enrichmentLatestIndexPayload = withRunOrigin(buildEnrichmentLatestIndex({
+    generatedAt: completedAt,
+    summary: sourceDataEnrichmentPayloads.summaryPayload,
+    patches: enrichmentPatchesPayload,
+    reviewQueue: sourceDataEnrichmentPayloads.reviewQueuePayload
+  }), finalRunOrigin);
+  writeApiJson("dashboard/api/enrichment/latest/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
+  writeApiJson("dashboard/api/enrichment/latest/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
+  writeApiJson("dashboard/api/enrichment/latest/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);
+  writeApiJson("dashboard/api/enrichment/latest/review-queue.json", sourceDataEnrichmentPayloads.reviewQueuePayload, report);
+  writeApiJson("dashboard/api/enrichment/latest/patches.json", enrichmentPatchesPayload, report);
+  writeApiJson("dashboard/api/enrichment/latest/index.json", enrichmentLatestIndexPayload, report);
+  writeApiJson("dashboard/api/runtime/update-tiers.json", withRunOrigin(buildUpdateTiersPayload({
+    generatedAt: completedAt,
+    report,
+    auxIndex: auxLatestIndexPayload,
+    enrichmentIndex: enrichmentLatestIndexPayload
+  }), finalRunOrigin), report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeApiJson("dashboard/api/all-collected-vessels-summary.json", allCollectedVesselsSummaryPayload, report);
@@ -19523,6 +19957,20 @@ try {
   }
   writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
   writeApiJson("dashboard/api/aux/source-schedule.json", sourceSchedulePayload, report);
+  endRuntimeStage(outputWriteStage);
+  const runtimeBudgetReportPayload = withRunOrigin(buildRuntimeBudgetReport({
+    startedAt,
+    endedAt: completedAt,
+    status
+  }), finalRunOrigin);
+  report.runtime_budget_report = {
+    duration_ms: runtimeBudgetReportPayload.duration_ms,
+    budget_ms: runtimeBudgetReportPayload.budget_ms,
+    timeout_risk: runtimeBudgetReportPayload.timeout_risk,
+    skipped_optional_stages: runtimeBudgetReportPayload.skipped_optional_stages
+  };
+  writeApiJson("dashboard/api/runtime-budget-report.json", runtimeBudgetReportPayload, report);
+  writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

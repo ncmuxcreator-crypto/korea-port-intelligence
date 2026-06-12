@@ -1,87 +1,242 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
-  "data_mode": "static_snapshot",
-  "title": "?? ?? ??",
-  "source_endpoint": "dashboard/api/vessels.json",
-  "detail_endpoint": "dashboard/api/vessels.json",
-  "summary": true,
-  "startup_safe": false,
-  "record_count": 31,
+  "generated_at": "2026-06-12T14:51:11.150Z",
+  "data_mode": "live",
+  "record_count": 32,
   "item_count": 5,
-  "total_item_count": 31,
+  "source_table": "vessel_snapshots",
+  "detail_endpoint": "dashboard/api/vessels.json",
+  "total_count": 32,
+  "returned_count": 5,
   "score_distribution": {
-    "very_high": 0,
-    "high": 0,
-    "medium": 24,
-    "low": 7,
-    "missing": 0
+    "0_49": 14,
+    "50_69": 17,
+    "70_84": 1,
+    "85_100": 0,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 961.1,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "HOT": 3,
+    "WARM": 9,
+    "LOW": 20
+  },
+  "actionability_counts": {
+    "VERIFY_CONTACT": 30,
+    "CONTACT_NOW": 2
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "PAN HOPE",
-      "call_sign": "3EZL9",
+      "vessel_name": "MINERAL HOPE",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "ONKD",
+      "operator_display": "상록해운주식회사",
+      "current_port": "평택·당진",
       "current_port_korean": "평택·당진",
-      "operator_display": "PAN OCEAN",
-      "opportunity_score": 68,
-      "priority_label": "우선 연락",
-      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 42점이며 평균 바이오파울링 노출 26점, 평균 체선노출 6점입니다. Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 6.4일째인 GT 92,080 벌크선으로, 출항 전 약 94시",
-      "recommended_action": "대리점 확인 후 견적 제안"
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "평택·당진",
+          "PORT HEDLAND",
+          "평택·당진항"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 69,
+      "risk_score": 64,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "상록해운주식회사",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "5BMI6",
+      "vessel_name": "MARCEL",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7B3347",
+      "operator_display": "명성통상",
+      "current_port": "부산",
       "current_port_korean": "부산",
-      "operator_display": "팬오션 주식회사",
-      "opportunity_score": 67,
-      "priority_label": "우선 연락",
-      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 23시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "부산",
+          "VANINO",
+          "부산항"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 65,
+      "risk_score": 51,
+      "confidence_score": 78,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "명성통상",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "KRUGER",
-      "call_sign": "3X2065",
-      "current_port_korean": "부산",
-      "operator_display": "케이앤제이오션(주)",
+      "vessel_name": "BERGE DOI INTHANON",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "HOYL",
+      "operator_display": "(주)협성상운",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "LONGVIEW",
+          "울산항"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
       "opportunity_score": 65,
-      "priority_label": "모니터링",
-      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 3.4일째인 GT 55,898 원유운반선으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 36시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 61,
+      "confidence_score": 78,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)협성상운",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "ADMIRAL SCHMIDT",
-      "call_sign": "8PSO1",
-      "current_port_korean": "부산",
-      "operator_display": "더블유케이해운(주)",
+      "vessel_name": "BEI HAI FENG HUANG",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "BOCT5",
+      "operator_display": "그레이트해운(주)",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "ZHOUSHAN",
+          "울산항"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
       "opportunity_score": 65,
-      "priority_label": "모니터링",
-      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 14.4일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 49,
+      "confidence_score": 78,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "그레이트해운(주)",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "OCEAN  BREEZE",
-      "call_sign": "CQ2401",
-      "current_port_korean": "대산",
-      "operator_display": "(주)토탈마린",
+      "vessel_name": "CF DIAMOND",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7JH8",
+      "operator_display": "한일상선(주)",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon",
+          "인천",
+          "울산",
+          "인천항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
       "opportunity_score": 65,
-      "priority_label": "모니터링",
-      "reason_summary": "Daesan W구역에서 체류 6.1일째인 GT 30,087 탱커으로, 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "한일상선(주)",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "030",
+      "port_name": "인천",
+      "port_display_name": "인천",
+      "display_name": "인천"
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "선박 상세",
+      "message": "상세 32건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/vessels.json lazy load 사용"
     }
   ]
 }

@@ -1,87 +1,236 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "live",
-  "title": "?? ?? ?? ??",
-  "source_endpoint": "dashboard/api/candidates/top.json",
-  "detail_endpoint": "dashboard/api/candidates/top.json",
-  "summary": true,
-  "startup_safe": false,
   "record_count": 50,
   "item_count": 5,
-  "total_item_count": 50,
+  "source_table": "commercial_opportunity_daily,candidates/top",
+  "detail_endpoint": "dashboard/api/candidates/top.json",
+  "total_count": 50,
+  "returned_count": 5,
   "score_distribution": {
-    "very_high": 1,
-    "high": 1,
-    "medium": 48,
-    "low": 0,
-    "missing": 0
+    "0_49": 0,
+    "50_69": 47,
+    "70_84": 3,
+    "85_100": 0,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 1792.3,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "HOT": 6,
+    "LOW": 26,
+    "WARM": 18
+  },
+  "actionability_counts": {
+    "CONTACT_NOW": 50
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "5BMI6",
-      "current_port_korean": "부산",
-      "operator_display": "팬오션 주식회사",
-      "opportunity_score": 85,
-      "priority_label": "우선 연락",
-      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 23시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "vessel_name": "MINERAL HOPE",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "ONKD",
+      "operator_display": "상록해운주식회사",
+      "current_port": "평택·당진",
+      "current_port_korean": "평택·당진",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "PORT HEDLAND",
+          "평택·당진항",
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 80,
+      "risk_score": 64,
+      "confidence_score": 66,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "상록해운주식회사",
+      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 113시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "GELBRAY EXPRESS",
-      "call_sign": "CQ2021",
-      "current_port_korean": "부산",
-      "operator_display": "세화해운 주식회사",
-      "opportunity_score": 71,
-      "priority_label": "모니터링",
-      "reason_summary": "Busan 남외항 N-4박지에서 묘박/대기 7일째인 GT 10,421 unknown으로, 출항도선 신호가 강하지 않습니다 · australia 항로 민감도가 있습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "vessel_name": "MINERAL HOPE",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "ONKD",
+      "operator_display": "상록해운주식회사",
+      "current_port": "평택·당진",
+      "current_port_korean": "평택·당진",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "PORT HEDLAND",
+          "평택·당진항",
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 76,
+      "risk_score": 64,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "상록해운주식회사",
+      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 113시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "5BMI6",
-      "current_port_korean": "부산",
-      "operator_display": "팬오션 주식회사",
-      "opportunity_score": 68,
-      "priority_label": "우선 연락",
-      "reason_summary": "Busan 남외항 N-5박지에서 묘박/대기 12일째인 GT 39,737 벌크선으로, 출항 전 약 23시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "vessel_name": "FIONAN",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "3E6928",
+      "operator_display": "대한해운(주)",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon",
+          "NEWCASTLE",
+          "인천항",
+          "인천"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 75,
+      "risk_score": 64,
+      "confidence_score": 66,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "대한해운(주)",
+      "reason_summary": "Incheon 영흥도 영흥화력3돌핀에서 체류 17일째인 GT 62,272 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · australia 항로 민감도가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "030",
+      "port_name": "인천",
+      "port_display_name": "인천",
+      "display_name": "인천"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "SM NAVIGATOR",
-      "call_sign": "3EKY5",
-      "current_port_korean": "울산",
-      "operator_display": "삼진에이전시",
-      "opportunity_score": 68,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 7.5일째인 GT 30,967 탱커으로, 출항 전 약 17시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "vessel_name": "VITUS BERING",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "8PSO2",
+      "operator_display": "(주)토탈마린",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu",
+          "VANINO",
+          "여수·광양항",
+          "여수"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 67,
+      "risk_score": 76,
+      "confidence_score": 78,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)토탈마린",
+      "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "620",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "PROTEUS RONG NA",
-      "call_sign": "9V8635",
-      "current_port_korean": "대산",
-      "operator_display": "(주)세바해운",
+      "vessel_name": "VITUS BERING",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "8PSO2",
+      "operator_display": "(주)토탈마린",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Yeosu",
+        "raw_aliases": [
+          "Yeosu",
+          "VANINO",
+          "여수·광양항",
+          "여수"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
       "opportunity_score": 67,
-      "priority_label": "모니터링",
-      "reason_summary": "Daesan D-1정박지에서 묘박/대기 14.6일째인 GT 66,970 원유운반선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 76,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)토탈마린",
+      "reason_summary": "Yeosu D-1정박지에서 묘박/대기 10.5일째인 GT 66,291 벌크선으로, 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다 · 연락 경로 단서가 있습니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "620",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "상위 영업 후보",
+      "message": "상세 50건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/candidates/top.json lazy load 사용"
     }
   ]
 }

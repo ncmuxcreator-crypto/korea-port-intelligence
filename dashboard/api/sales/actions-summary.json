@@ -1,87 +1,238 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "live",
-  "title": "?? ?? ??",
-  "source_endpoint": "dashboard/api/sales/actions.json",
-  "detail_endpoint": "dashboard/api/sales/actions.json",
-  "summary": true,
-  "startup_safe": false,
-  "record_count": 59,
+  "record_count": 62,
   "item_count": 5,
-  "total_item_count": 59,
+  "source_table": "sales/actions",
+  "detail_endpoint": "dashboard/api/sales/actions.json",
+  "total_count": 62,
+  "returned_count": 5,
   "score_distribution": {
-    "very_high": 1,
-    "high": 1,
-    "medium": 51,
-    "low": 6,
-    "missing": 0
+    "0_49": 0,
+    "50_69": 6,
+    "70_84": 26,
+    "85_100": 30,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 535.4,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "HOT": 6,
+    "WARM": 21,
+    "LOW": 35
+  },
+  "actionability_counts": {
+    "CONTACT_NOW": 35,
+    "VERIFY_CONTACT": 25,
+    "MONITOR": 2
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "5BMI6",
-      "current_port_korean": "부산",
-      "operator_display": "팬오션 주식회사",
-      "opportunity_score": 85,
-      "priority_label": "우선 연락",
+      "vessel_name": "MINERAL HOPE",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "ONKD",
+      "operator_display": "상록해운주식회사",
+      "current_port": "평택·당진",
+      "current_port_korean": "평택·당진",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "PORT HEDLAND",
+          "평택·당진항",
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 80,
+      "risk_score": 64,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "상록해운주식회사",
       "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-      "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "GELBRAY EXPRESS",
-      "call_sign": "CQ2021",
-      "current_port_korean": "부산",
-      "operator_display": "세화해운 주식회사",
-      "opportunity_score": 71,
-      "priority_label": "모니터링",
+      "vessel_name": "PAN PEGASUS",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "5LML3",
+      "operator_display": "PAN OCEAN",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "Incheon",
+        "raw_aliases": [
+          "Incheon",
+          "여수",
+          "인천항",
+          "인천"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 68,
+      "risk_score": 45,
+      "confidence_score": 90,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "PAN OCEAN",
       "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-      "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
+      "port_code": "030",
+      "port_name": "인천",
+      "port_display_name": "인천",
+      "display_name": "인천"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "PAN HOPE",
-      "call_sign": "3EZL9",
+      "vessel_name": "ERSOZ WEST",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7KU4",
+      "operator_display": "팬오션 주식회사",
+      "current_port": "평택·당진",
       "current_port_korean": "평택·당진",
-      "operator_display": "PAN OCEAN",
-      "opportunity_score": 68,
-      "priority_label": "우선 연락",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "포항",
+          "평택·당진항",
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "팬오션 주식회사",
       "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-      "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "SM NAVIGATOR",
-      "call_sign": "3EKY5",
-      "current_port_korean": "울산",
-      "operator_display": "삼진에이전시",
-      "opportunity_score": 68,
-      "priority_label": "모니터링",
+      "vessel_name": "에이치엘 오셔닉",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7A4617",
+      "operator_display": "에이치라인해운(주)",
+      "current_port": "평택·당진",
+      "current_port_korean": "평택·당진",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "Pyeongtaek-Dangjin",
+        "raw_aliases": [
+          "Pyeongtaek-Dangjin",
+          "PORT WALCOTT",
+          "평택·당진항",
+          "평택·당진"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "에이치라인해운(주)",
       "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-      "recommended_action": "기술감독 또는 에이전트에 즉시 연락"
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
+      "port_code": "031",
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "display_name": "평택·당진"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "PAN HOPE",
-      "call_sign": "3EZL9",
-      "current_port_korean": "평택·당진",
-      "operator_display": "PAN OCEAN",
-      "opportunity_score": 68,
-      "priority_label": "우선 연락",
+      "vessel_name": "스키야토스",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7A3508",
+      "operator_display": "선양해운 주식회사",
+      "current_port": "마산/창원",
+      "current_port_korean": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "OCEAN DISTRICT",
+          "하동항",
+          "마산/창원"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "CONTACT_NOW",
+      "actionability_label": "즉시 연락",
+      "opportunity_score": 65,
+      "risk_score": 45,
+      "confidence_score": 35,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "선양해운 주식회사",
       "reason_summary": "상업 신호와 현재 작업 가능 신호, 연락 경로가 함께 확인됩니다.",
-      "recommended_action": "대리점 확인 후 견적 제안"
+      "recommended_action": "기술감독 또는 에이전트에 즉시 연락",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "오늘의 영업 액션",
+      "message": "상세 62건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/sales/actions.json lazy load 사용"
     }
   ]
 }

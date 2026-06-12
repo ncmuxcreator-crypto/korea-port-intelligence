@@ -306,6 +306,9 @@ export function normalizeSourceCollectionStatusPayload(payload = {}) {
 
 function missingRequiredEnv(spec, env) {
   const missing = [];
+  if (spec.key === "source_csv" && ["cache_only", "off"].includes(String(env.SOURCE_CSV_MODE || "").toLowerCase())) {
+    return present(env, "SOURCE_CSV_URL") ? [] : ["SOURCE_CSV_URL"];
+  }
   for (const name of spec.required || []) {
     if (!present(env, name)) missing.push(name);
   }
@@ -319,11 +322,15 @@ function missingRequiredEnv(spec, env) {
 }
 
 function activationEnabled(spec, env) {
+  if (spec.key === "source_csv" && ["cache_only", "off"].includes(String(env.SOURCE_CSV_MODE || "").toLowerCase())) return false;
   if (!spec.activationEnv?.length) return true;
   return spec.activationEnv.every(name => String(env?.[name] || "").toLowerCase() === "true");
 }
 
 function exactFixInstruction(spec, env, missing = []) {
+  if (spec.key === "source_csv" && ["cache_only", "off"].includes(String(env.SOURCE_CSV_MODE || "").toLowerCase())) {
+    return "Core/auxiliary update does not fetch source_csv. Run reference enrichment with SOURCE_CSV_MODE=refresh to refresh a lightweight source_csv cache.";
+  }
   if (spec.key === "source_csv" && present(env, "SOURCE_CSV_URL") && String(env.ENABLE_SOURCE_CSV || "").toLowerCase() !== "true") {
     return "Set ENABLE_SOURCE_CSV=true";
   }
@@ -366,6 +373,10 @@ function statusForSpec({ spec, env, sources }) {
   if (spec.key === "source_csv" && present(env, "SOURCE_CSV_URL") && String(env.ENABLE_SOURCE_CSV || "").toLowerCase() !== "true") {
     status = "SKIPPED";
     skipReason = "disabled_by_default_enable_source_csv_true";
+  }
+  if (spec.key === "source_csv" && present(env, "SOURCE_CSV_URL") && ["cache_only", "off"].includes(String(env.SOURCE_CSV_MODE || "").toLowerCase())) {
+    status = "SKIPPED";
+    skipReason = String(env.SOURCE_CSV_MODE || "").toLowerCase() === "off" ? "source_csv_mode_off" : "cache_only_mode";
   }
   if (matched.length && skipped && rowsCollected === 0) {
     status = missing.length ? status : "SKIPPED";

@@ -1,51 +1,188 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:45:10.212Z",
-  "data_mode": "static_snapshot",
-  "title": "810 ?? ?? ??",
-  "source_endpoint": "dashboard/api/ports/810/vessels.json",
+  "generated_at": "2026-06-12T14:51:11.150Z",
+  "data_mode": "live",
+  "record_count": 4,
+  "item_count": 4,
+  "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/810/vessels.json",
-  "summary": true,
-  "startup_safe": false,
-  "record_count": 2,
-  "item_count": 2,
-  "total_item_count": 2,
+  "total_count": 4,
+  "returned_count": 4,
   "score_distribution": {
-    "very_high": 0,
-    "high": 0,
-    "medium": 0,
-    "low": 2,
-    "missing": 0
+    "0_49": 4,
+    "50_69": 0,
+    "70_84": 0,
+    "85_100": 0,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 57.4,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "LOW": 4
+  },
+  "actionability_counts": {
+    "MONITOR": 4
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "TOKYO CAR",
-      "call_sign": "D5FF4",
+      "vessel_name": "GRAND DAHLIA",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "3FRA8",
+      "operator_display": "삼화에이전시(주)",
+      "current_port": "포항",
       "current_port_korean": "포항",
-      "operator_display": "우성마리타임(주)",
-      "opportunity_score": 40,
-      "priority_label": "모니터링",
-      "reason_summary": "Pohang 가포신항부두 3선석에서 현재 항만 체류 중인 GT 46,800 자동차운반선으로, 출항 전 약 46시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "normalized_port": {
+        "port_code": "810",
+        "port_name": "포항",
+        "display_name": "포항",
+        "raw_port": "Pohang",
+        "raw_aliases": [
+          "Pohang",
+          "포항",
+          "KOBE",
+          "포항항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 41,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "삼화에이전시(주)",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "810",
+      "port_name": "포항",
+      "port_display_name": "포항",
+      "display_name": "포항"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "AAL DAMMAM",
-      "call_sign": "CQ2193",
+      "vessel_name": "SHANGHAI HIGHWAY",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "3ECE2",
+      "operator_display": "(주)케이라인마리타임코리아",
+      "current_port": "포항",
       "current_port_korean": "포항",
-      "operator_display": "태성해운(주)",
-      "opportunity_score": 31,
-      "priority_label": "모니터링",
-      "reason_summary": "Pohang 가포신항부두 2선석에서 체류 4.8일째인 GT 25,784 general_cargo으로, 출항 전 약 26시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "normalized_port": {
+        "port_code": "810",
+        "port_name": "포항",
+        "display_name": "포항",
+        "raw_port": "Pohang",
+        "raw_aliases": [
+          "Pohang",
+          "포항",
+          "포항항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 40,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)케이라인마리타임코리아",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "810",
+      "port_name": "포항",
+      "port_display_name": "포항",
+      "display_name": "포항"
+    },
+    {
+      "rank": 3,
+      "vessel_name": "TOKYO CAR",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "D5FF4",
+      "operator_display": "우성마리타임(주)",
+      "current_port": "포항",
+      "current_port_korean": "포항",
+      "normalized_port": {
+        "port_code": "810",
+        "port_name": "포항",
+        "display_name": "포항",
+        "raw_port": "Pohang",
+        "raw_aliases": [
+          "Pohang",
+          "포항",
+          "포항항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 33,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "우성마리타임(주)",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "810",
+      "port_name": "포항",
+      "port_display_name": "포항",
+      "display_name": "포항"
+    },
+    {
+      "rank": 4,
+      "vessel_name": "KAIROS TRIUMPH",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "D5KW6",
+      "operator_display": "(유)영화십핑",
+      "current_port": "포항",
+      "current_port_korean": "포항",
+      "normalized_port": {
+        "port_code": "810",
+        "port_name": "포항",
+        "display_name": "포항",
+        "raw_port": "Pohang",
+        "raw_aliases": [
+          "Pohang",
+          "포항",
+          "포항항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 29,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(유)영화십핑",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "810",
+      "port_name": "포항",
+      "port_display_name": "포항",
+      "display_name": "포항"
     }
-  ]
+  ],
+  "warning_summary": []
 }

@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-11T09:44:47.257Z",
+  "generated_at": "2026-06-12T14:51:49.732Z",
   "audit_type": "dataset_generation",
   "base_dataset_empty": false,
   "derived_from_empty_dataset": false,
-  "source_vessel_dataset_count": 968,
+  "source_vessel_dataset_count": 1015,
   "base_dataset_empty_reasons": [],
   "ok": true,
   "root_cause": "dataset_generation_completed",
@@ -11,18 +11,18 @@
   "counts_by_stage": {
     "enabled_ports_count": 22,
     "ports_attempted_count": 12,
-    "source_rows_collected": 2402,
-    "port_operation_source_rows_collected": 7053,
-    "normalized_rows": 968,
-    "all_vessels_generated": 968,
-    "port_call_master_count": 968,
-    "watchlist_generated": 38,
-    "sales_targets_generated": 31,
-    "immediate_targets_generated": 12,
-    "static_all_collected_rows": 968,
-    "static_target_rows": 31,
-    "vessels_json_rows": 31,
-    "candidates_json_rows": 31
+    "source_rows_collected": 2635,
+    "port_operation_source_rows_collected": 7897,
+    "normalized_rows": 1015,
+    "all_vessels_generated": 1015,
+    "port_call_master_count": 1015,
+    "watchlist_generated": 36,
+    "sales_targets_generated": 32,
+    "immediate_targets_generated": 10,
+    "static_all_collected_rows": 1015,
+    "static_target_rows": 32,
+    "vessels_json_rows": 32,
+    "candidates_json_rows": 32
   },
   "enabled_ports_count": 22,
   "preflight_status": "passed",
@@ -33,9 +33,9 @@
   "port_operation_smoke_test": {
     "smoke_test_status": "passed",
     "smoke_test_failure_reason": null,
-    "started_at": "2026-06-11T09:40:49.222Z",
-    "finished_at": "2026-06-11T09:40:50.140Z",
-    "duration_ms": 918,
+    "started_at": "2026-06-12T14:48:45.591Z",
+    "finished_at": "2026-06-12T14:48:47.008Z",
+    "duration_ms": 1417,
     "source_name": "port_operation_busan_i",
     "label": "PORT-MIS VsslEtrynd5 Busan I",
     "prtAgCd": "020",
@@ -44,21 +44,21 @@
     "deGb": "I",
     "http_status": 200,
     "response_content_type": "application/xhtml+xml; charset=UTF-8",
-    "latency_ms": 915,
+    "latency_ms": 1412,
     "item_count": 1,
-    "total_count": 665,
+    "total_count": 729,
     "valid_empty_response": false,
     "result_meta": {
       "resultCode": "00",
       "resultMsg": "NORMAL_SERVICE",
-      "totalCount": "665"
+      "totalCount": "729"
     },
-    "requested_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260608&ede=20260618&deGb=I",
+    "requested_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260609&ede=20260619&deGb=I",
     "redacted_response_sample": {
-      "request_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260608&ede=20260618&deGb=I",
+      "request_url_without_service_key": "http://apis.data.go.kr/1192000/VsslEtrynd5/Info5?serviceKey=***&pageNo=1&numOfRows=1&portCode=020&prtAgCd=020&sde=20260609&ede=20260619&deGb=I",
       "response_status": 200,
       "response_content_type": "application/xhtml+xml; charset=UTF-8",
-      "first_500_chars": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<response>\n    <header>\n        <resultCode>00</resultCode>\n        <resultMsg>NORMAL_SERVICE</resultMsg>\n    </header>\n    <body>\n        <items>\n            <item>\n                <prtAgCd>020</prtAgCd>\n                <prtAgNm>부산</prtAgNm>\n                <etryptYear>2026</etryptYear>\n                <etryptCo>044</etryptCo>\n                <clsgn>230025</clsgn>\n                <vsslNm>부광9호</vsslNm>\n                <vsslNltyCd>KR</vsslNl",
+      "first_500_chars": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<response>\n    <header>\n        <resultCode>00</resultCode>\n        <resultMsg>NORMAL_SERVICE</resultMsg>\n    </header>\n    <body>\n        <items>\n            <item>\n                <prtAgCd>020</prtAgCd>\n                <prtAgNm>부산</prtAgNm>\n                <etryptYear>2026</etryptYear>\n                <etryptCo>007</etryptCo>\n                <clsgn>210041</clsgn>\n                <vsslNm>한유울산</vsslNm>\n                <vsslNltyCd>KR</vsslNl",
       "parsed_item_count": 1,
       "parse_error": null
     },
@@ -117,23 +117,23 @@
       "sub_port": "인천항/영흥 터미널"
     }
   ],
-  "source_rows_collected": 2402,
-  "normalized_rows": 968,
-  "all_vessels_generated": 968,
-  "port_call_master_count": 968,
-  "watchlist_generated": 38,
-  "sales_targets_generated": 31,
-  "immediate_targets_generated": 12,
-  "target_vessels_generated": 31,
-  "static_all_collected_rows": 968,
-  "static_target_rows": 31,
-  "vessels_json_rows": 31,
-  "candidates_json_rows": 31,
+  "source_rows_collected": 2635,
+  "normalized_rows": 1015,
+  "all_vessels_generated": 1015,
+  "port_call_master_count": 1015,
+  "watchlist_generated": 36,
+  "sales_targets_generated": 32,
+  "immediate_targets_generated": 10,
+  "target_vessels_generated": 32,
+  "static_all_collected_rows": 1015,
+  "static_target_rows": 32,
+  "vessels_json_rows": 32,
+  "candidates_json_rows": 32,
   "active_dataset_audit": {
-    "status_json_run_id": "run_20260611094049200_540e1000",
+    "status_json_run_id": "run_20260612144845570_ce7e353f",
     "latest_successful_run": null,
-    "current_run": "run_20260611094049200_540e1000",
-    "status_json_generated_at": "2026-06-11T09:44:10.845Z",
+    "current_run": "run_20260612144845570_ce7e353f",
+    "status_json_generated_at": "2026-06-12T14:51:11.150Z",
     "vessels_json_basis": "dashboard/api/vessels.json is a static export of targetVessels from this run",
     "candidates_json_basis": "dashboard/api/candidates.json is a static export of candidateList from this run",
     "production_serving_rule": "Worker APIs should read Supabase active_dataset_pointer and latest successful summary snapshots; local no_live_data JSON must not be treated as production data."
@@ -179,7 +179,11 @@
   "collectors_skipped": [
     {
       "source_name": "source_csv",
-      "reason": "unknown_error"
+      "reason": "source_schedule_window_not_due"
+    },
+    {
+      "source_name": "vessel_spec",
+      "reason": "source_schedule_window_not_due"
     },
     {
       "source_name": "ulsan_core",
@@ -203,7 +207,7 @@
     },
     {
       "source_name": "mof_ais_dynamic",
-      "reason": "missing_api_url"
+      "reason": "source_schedule_window_not_due"
     },
     {
       "source_name": "mof_ais_info",
@@ -219,11 +223,11 @@
     }
   ],
   "static_outputs_generated": {
-    "dashboard/api/vessels.json": 31,
-    "dashboard/api/all-collected-vessels.json": 968,
-    "dashboard/api/target-vessels.json": 31,
-    "dashboard/api/candidates.json": 31,
-    "dashboard/api/dashboard-summary.json": 31
+    "dashboard/api/vessels.json": 32,
+    "dashboard/api/all-collected-vessels.json": 1015,
+    "dashboard/api/target-vessels.json": 32,
+    "dashboard/api/candidates.json": 32,
+    "dashboard/api/dashboard-summary.json": 32
   },
   "production_promotion_blocked": false,
   "previous_successful_dataset_available": true,

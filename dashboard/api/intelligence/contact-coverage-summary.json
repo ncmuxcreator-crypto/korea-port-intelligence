@@ -1,87 +1,222 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "live",
-  "title": "?? ??? / ??? ???? ??",
-  "source_endpoint": "dashboard/api/intelligence/contact-coverage.json",
-  "detail_endpoint": "dashboard/api/intelligence/contact-coverage.json",
-  "summary": true,
-  "startup_safe": false,
   "record_count": 100,
   "item_count": 5,
-  "total_item_count": 100,
-  "score_distribution": {
-    "very_high": 1,
-    "high": 1,
-    "medium": 30,
-    "low": 68,
-    "missing": 0
+  "source_table": "sales_candidates_current,quote-opportunities,verification-queue,operator_contact_history,commercial_leads",
+  "detail_endpoint": "dashboard/api/intelligence/contact-coverage.json",
+  "status": "active",
+  "portfolio_metrics": {
+    "imo_coverage_pct": 0,
+    "mmsi_coverage_pct": 0,
+    "call_sign_coverage_pct": 100,
+    "operator_display_coverage_pct": 100,
+    "owner_coverage_pct": 0,
+    "manager_coverage_pct": 0,
+    "agent_coverage_pct": 100,
+    "contact_person_coverage_pct": 0,
+    "quote_ready_pct": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 677.3,
-    "note": "?? ???? ?? ? ?? ?????."
+  "top_missing_fields": [
+    {
+      "field": "IMO",
+      "count": 100
+    },
+    {
+      "field": "MMSI",
+      "count": 100
+    },
+    {
+      "field": "선주",
+      "count": 100
+    },
+    {
+      "field": "관리사",
+      "count": 100
+    },
+    {
+      "field": "담당자",
+      "count": 100
+    },
+    {
+      "field": "견적 준비",
+      "count": 100
+    },
+    {
+      "field": "콜사인",
+      "count": 0
+    },
+    {
+      "field": "운영사/회사",
+      "count": 0
+    }
+  ],
+  "target_count": 100,
+  "high_count": 0,
+  "medium_count": 100,
+  "low_count": 0,
+  "verification_queue_count": 108,
+  "score_distribution": {
+    "0_49": 100,
+    "50_69": 0,
+    "70_84": 0,
+    "85_100": 0,
+    "unknown": 0
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "5BMI6",
-      "current_port_korean": "부산",
-      "operator_display": "팬오션 주식회사",
-      "opportunity_score": 85,
-      "priority_label": "우선 연락",
+      "vessel_name": "MINERAL HOPE",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "ONKD",
+      "operator_display": "상록해운주식회사",
+      "current_port": "평택·당진",
+      "current_port_korean": "평택·당진",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "평택·당진",
+        "raw_aliases": [
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 80,
+      "risk_score": 64,
+      "confidence_score": 35,
+      "missing_fields": [],
+      "known_company": "상록해운주식회사",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
       "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "GELBRAY EXPRESS",
-      "call_sign": "CQ2021",
-      "current_port_korean": "부산",
-      "operator_display": "세화해운 주식회사",
-      "opportunity_score": 71,
-      "priority_label": "모니터링",
+      "vessel_name": "PAN PEGASUS",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "5LML3",
+      "operator_display": "PAN OCEAN",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "인천",
+        "raw_aliases": [
+          "인천"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 68,
+      "risk_score": 45,
+      "confidence_score": 90,
+      "missing_fields": [],
+      "known_company": "PAN OCEAN",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
-      "recommended_action": "모니터링하면서 부족한 연락 정보를 보강하세요."
+      "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "PAN HOPE",
-      "call_sign": "3EZL9",
+      "vessel_name": "ERSOZ WEST",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7KU4",
+      "operator_display": "팬오션 주식회사",
+      "current_port": "평택·당진",
       "current_port_korean": "평택·당진",
-      "operator_display": "PAN OCEAN",
-      "opportunity_score": 68,
-      "priority_label": "우선 연락",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "평택·당진",
+        "raw_aliases": [
+          "평택·당진"
+        ]
+      },
+      "priority_label": "HOT",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 65,
+      "risk_score": 100,
+      "confidence_score": 35,
+      "missing_fields": [],
+      "known_company": "팬오션 주식회사",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
       "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "SM NAVIGATOR",
-      "call_sign": "3EKY5",
-      "current_port_korean": "울산",
-      "operator_display": "삼진에이전시",
-      "opportunity_score": 68,
-      "priority_label": "모니터링",
+      "vessel_name": "FIONAN",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "3E6928",
+      "operator_display": "대한해운(주)",
+      "current_port": "인천",
+      "current_port_korean": "인천",
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "인천",
+        "raw_aliases": [
+          "인천"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 75,
+      "risk_score": 100,
+      "confidence_score": 66,
+      "missing_fields": [],
+      "known_company": "대한해운(주)",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
       "recommended_action": "모니터링하면서 부족한 연락 정보를 보강하세요."
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "YUAN JU WAN",
-      "call_sign": "BONH2",
-      "current_port_korean": "대산",
-      "operator_display": "(주)신성해운",
+      "vessel_name": "VITUS BERING",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "8PSO2",
+      "operator_display": "(주)토탈마린",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
       "opportunity_score": 67,
-      "priority_label": "검토",
+      "risk_score": 100,
+      "confidence_score": 35,
+      "missing_fields": [],
+      "known_company": "(주)토탈마린",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
-      "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
+      "recommended_action": "모니터링하면서 부족한 연락 정보를 보강하세요."
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "연락 가능성 / 데이터 커버리지",
+      "message": "상세 100건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/intelligence/contact-coverage.json lazy load 사용"
     }
   ]
 }

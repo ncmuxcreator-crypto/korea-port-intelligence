@@ -1,87 +1,237 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:45:09.947Z",
-  "data_mode": "static_snapshot",
-  "title": "820 ?? ?? ??",
-  "source_endpoint": "dashboard/api/ports/820/vessels.json",
-  "detail_endpoint": "dashboard/api/ports/820/vessels.json",
-  "summary": true,
-  "startup_safe": false,
-  "record_count": 8,
+  "generated_at": "2026-06-12T14:51:11.150Z",
+  "data_mode": "live",
+  "record_count": 13,
   "item_count": 5,
-  "total_item_count": 8,
+  "source_table": "port_vessels",
+  "detail_endpoint": "dashboard/api/ports/820/vessels.json",
+  "total_count": 13,
+  "returned_count": 5,
   "score_distribution": {
-    "very_high": 0,
-    "high": 0,
-    "medium": 0,
-    "low": 8,
-    "missing": 0
+    "0_49": 13,
+    "50_69": 0,
+    "70_84": 0,
+    "85_100": 0,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 229.4,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "LOW": 13
+  },
+  "actionability_counts": {
+    "VERIFY_CONTACT": 2,
+    "MONITOR": 11
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
       "vessel_name": "TEAL BULKER",
+      "imo": "",
+      "mmsi": "",
       "call_sign": "3FTV3",
-      "current_port_korean": "울산",
       "operator_display": "세화해운 주식회사",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "NIIHAMA",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
       "opportunity_score": 44,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 143시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "세화해운 주식회사",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "FUJI GALAXY",
-      "call_sign": "V7UF2",
+      "vessel_name": "KMTC SHIMIZU",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "D5YE8",
+      "operator_display": "KMTC",
+      "current_port": "울산",
       "current_port_korean": "울산",
-      "operator_display": "동진상운(주)",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "부산",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
       "opportunity_score": 35,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 263시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "KMTC",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "선박 스케줄 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "째즈",
-      "call_sign": "9V5491",
+      "vessel_name": "VARI TRADER",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "H3XM",
+      "operator_display": "(주)울산마리타임",
+      "current_port": "울산",
       "current_port_korean": "울산",
-      "operator_display": "동진상운(주)",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "군산",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
       "opportunity_score": 35,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 출항 전 약 239시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)울산마리타임",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "VARI TRADER",
-      "call_sign": "H3XM",
+      "vessel_name": "FUJI GALAXY",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7UF2",
+      "operator_display": "동진상운(주)",
+      "current_port": "울산",
       "current_port_korean": "울산",
-      "operator_display": "(주)울산마리타임",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
       "opportunity_score": 35,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 83시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "운영선사 확인"
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "동진상운(주)",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "EVER CALM",
-      "call_sign": "H3OA",
+      "vessel_name": "째즈",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "9V5491",
+      "operator_display": "동진상운(주)",
+      "current_port": "울산",
       "current_port_korean": "울산",
-      "operator_display": "EVERGREEN",
-      "opportunity_score": 34,
-      "priority_label": "모니터링",
-      "reason_summary": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 58시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-      "recommended_action": "선박 스케줄 확인"
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 35,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "동진상운(주)",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "부산신항 선박",
+      "message": "상세 13건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/ports/820/vessels.json lazy load 사용"
     }
   ]
 }

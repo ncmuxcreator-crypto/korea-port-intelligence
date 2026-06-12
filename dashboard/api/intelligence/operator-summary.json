@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 2,
@@ -11,27 +11,27 @@
       "vessel_count": 1,
       "top_vessels": [
         {
-          "vessel_name": "PAN HOPE",
-          "port_name": "평택·당진",
+          "vessel_name": "PAN PEGASUS",
+          "port_name": "인천",
           "commercial_value_score": 68,
           "candidate_band": "sales_target",
           "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "Pyeongtaek-Dangjin",
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "Incheon",
             "raw_aliases": [
-              "Pyeongtaek-Dangjin"
+              "Incheon"
             ]
           },
-          "port_code": "031",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
+          "port_code": "030",
+          "port_display_name": "인천",
+          "display_name": "인천"
         }
       ],
-      "opportunity_score": 23,
+      "opportunity_score": 24,
       "top_factors": [],
-      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 32점이며 평균 바이오파울링 노출 44점, 평균 체선노출 30점입니다.",
       "recommended_action": "운영선사 선대 담당팀 접촉",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -90,6 +90,7 @@
           ]
         },
         "port_display_name": "미확인 항만",
+        "terminal": "-",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -114,7 +115,20 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
-        "opportunity_score": 23,
+        "commercial_data_confidence": 30,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
+        "opportunity_score": 24,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -154,36 +168,218 @@
         "slowSteamingHours": null,
         "riskReasons": [],
         "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
+        "confidence": "LOW",
         "contact_readiness_score": null,
         "priority_label": "LOW",
         "priority_label_ko": "모니터링",
         "target_categories": [],
         "pilotage_signal": {
           "has_pilotage": false,
+          "status": "UNKNOWN",
           "pilotage_status": "UNKNOWN",
           "pilotage_time": null,
           "pilotage_time_text": null,
-          "pilotage_direction": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
+          "port": "미확인 항만",
           "pilotage_port": "미확인 항만",
+          "source": null,
           "pilotage_source": null,
+          "confidence": null,
           "pilotage_confidence": null,
           "match_type": "",
           "arrival_window": null,
-          "reason": ""
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "미확인 항만",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 34점이며 평균 바이오파울링 노출 51점, 평균 체선노출 36점입니다.",
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 32점이며 평균 바이오파울링 노출 44점, 평균 체선노출 30점입니다.",
         "recommended_action": "운영선사 선대 담당팀 접촉",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 24,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
         "data_sources": [],
         "enrichment_sources": [],
         "port_code": "UNKNOWN",
         "port_name": "미확인 항만",
         "display_name": "미확인 항만"
       },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
       "display_name": "미확인 항만"
     },
     {
@@ -194,7 +390,7 @@
         {
           "vessel_name": "HMM TOPAZ",
           "port_name": "부산",
-          "commercial_value_score": 59,
+          "commercial_value_score": 48,
           "candidate_band": "sales_target",
           "normalized_port": {
             "port_code": "020",
@@ -212,7 +408,7 @@
       ],
       "opportunity_score": 20,
       "top_factors": [],
-      "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 56점, 평균 체선노출 33점입니다.",
+      "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 24점이며 평균 바이오파울링 노출 33점, 평균 체선노출 0점입니다.",
       "recommended_action": "운영선사 선대 담당팀 접촉",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -271,6 +467,7 @@
           ]
         },
         "port_display_name": "미확인 항만",
+        "terminal": "-",
         "berth": "-",
         "anchorage": "-",
         "eta": "-",
@@ -295,6 +492,19 @@
         "identity_match_type": "-",
         "identity_conflict": null,
         "confidence_score": null,
+        "commercial_data_confidence": 30,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "운영사/회사",
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
         "opportunity_score": 20,
         "risk_score": null,
         "biofouling_score": null,
@@ -335,36 +545,218 @@
         "slowSteamingHours": null,
         "riskReasons": [],
         "recommendedAction": "운영선사 선대 담당팀 접촉",
-        "confidence": "-",
+        "confidence": "LOW",
         "contact_readiness_score": null,
         "priority_label": "LOW",
         "priority_label_ko": "모니터링",
         "target_categories": [],
         "pilotage_signal": {
           "has_pilotage": false,
+          "status": "UNKNOWN",
           "pilotage_status": "UNKNOWN",
           "pilotage_time": null,
           "pilotage_time_text": null,
-          "pilotage_direction": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
+          "port": "미확인 항만",
           "pilotage_port": "미확인 항만",
+          "source": null,
           "pilotage_source": null,
+          "confidence": null,
           "pilotage_confidence": null,
           "match_type": "",
           "arrival_window": null,
-          "reason": ""
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "미확인 항만",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 36점이며 평균 바이오파울링 노출 56점, 평균 체선노출 33점입니다.",
+        "reason_summary": "HMM 선사는 현재 한국 항만에 1척이 확인되며, 영업대상 0척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 24점이며 평균 바이오파울링 노출 33점, 평균 체선노출 0점입니다.",
         "recommended_action": "운영선사 선대 담당팀 접촉",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 20,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
         "data_sources": [],
         "enrichment_sources": [],
         "port_code": "UNKNOWN",
         "port_name": "미확인 항만",
         "display_name": "미확인 항만"
       },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
       "display_name": "미확인 항만"
     }
   ],

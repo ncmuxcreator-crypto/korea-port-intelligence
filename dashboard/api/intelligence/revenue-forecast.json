@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 1,
@@ -8,24 +8,24 @@
     {
       "rank": 1,
       "operator_name": "전체 영업 퍼널",
-      "target_count": 31,
-      "total_targets": 31,
-      "hot_targets": 1,
-      "warm_targets": 29,
-      "low_targets": 1,
-      "conservative_revenue": 44640,
-      "expected_revenue": 89280,
-      "aggressive_revenue": 156240,
-      "estimated_revenue_low": 44640,
-      "estimated_revenue_high": 156240,
+      "target_count": 32,
+      "total_targets": 32,
+      "hot_targets": 2,
+      "warm_targets": 26,
+      "low_targets": 4,
+      "conservative_revenue": 46080,
+      "expected_revenue": 92160,
+      "aggressive_revenue": 161280,
+      "estimated_revenue_low": 46080,
+      "estimated_revenue_high": 161280,
       "portfolio": {
-        "total_targets": 31,
-        "hot_targets": 1,
-        "warm_targets": 29,
-        "low_targets": 1,
-        "conservative_revenue": 44640,
-        "expected_revenue": 89280,
-        "aggressive_revenue": 156240
+        "total_targets": 32,
+        "hot_targets": 2,
+        "warm_targets": 26,
+        "low_targets": 4,
+        "conservative_revenue": 46080,
+        "expected_revenue": 92160,
+        "aggressive_revenue": 161280
       },
       "by_operator": [
         {
@@ -46,9 +46,9 @@
       "by_port": [
         {
           "port_name": "부산",
-          "target_count": 11,
-          "hot_count": 1,
-          "expected_revenue": 31680,
+          "target_count": 9,
+          "hot_count": 0,
+          "expected_revenue": 25920,
           "normalized_port": {
             "port_code": "020",
             "port_name": "부산",
@@ -63,28 +63,10 @@
           "display_name": "부산"
         },
         {
-          "port_name": "대산",
-          "target_count": 5,
-          "hot_count": 0,
-          "expected_revenue": 14400,
-          "normalized_port": {
-            "port_code": "621",
-            "port_name": "대산",
-            "display_name": "대산",
-            "raw_port": "대산",
-            "raw_aliases": [
-              "대산"
-            ]
-          },
-          "port_code": "621",
-          "port_display_name": "대산",
-          "display_name": "대산"
-        },
-        {
           "port_name": "여수",
-          "target_count": 5,
+          "target_count": 7,
           "hot_count": 0,
-          "expected_revenue": 14400,
+          "expected_revenue": 20160,
           "normalized_port": {
             "port_code": "620-YEOSU",
             "port_name": "여수",
@@ -99,10 +81,28 @@
           "display_name": "여수"
         },
         {
+          "port_name": "인천",
+          "target_count": 4,
+          "hot_count": 1,
+          "expected_revenue": 11520,
+          "normalized_port": {
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "인천",
+            "raw_aliases": [
+              "인천"
+            ]
+          },
+          "port_code": "030",
+          "port_display_name": "인천",
+          "display_name": "인천"
+        },
+        {
           "port_name": "울산",
-          "target_count": 3,
+          "target_count": 4,
           "hot_count": 0,
-          "expected_revenue": 8640,
+          "expected_revenue": 11520,
           "normalized_port": {
             "port_code": "820",
             "port_name": "울산",
@@ -119,7 +119,7 @@
         {
           "port_name": "평택·당진",
           "target_count": 3,
-          "hot_count": 0,
+          "hot_count": 1,
           "expected_revenue": 8640,
           "normalized_port": {
             "port_code": "031",
@@ -135,10 +135,28 @@
           "display_name": "평택·당진"
         },
         {
-          "port_name": "미확인 항만",
+          "port_name": "대산",
           "target_count": 3,
           "hot_count": 0,
           "expected_revenue": 8640,
+          "normalized_port": {
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
+            "raw_aliases": [
+              "대산"
+            ]
+          },
+          "port_code": "621",
+          "port_display_name": "대산",
+          "display_name": "대산"
+        },
+        {
+          "port_name": "미확인 항만",
+          "target_count": 2,
+          "hot_count": 0,
+          "expected_revenue": 5760,
           "normalized_port": {
             "port_code": "UNKNOWN",
             "port_name": "미확인 항만",
@@ -151,61 +169,43 @@
           "port_code": "UNKNOWN",
           "port_display_name": "미확인 항만",
           "display_name": "미확인 항만"
-        },
-        {
-          "port_name": "인천",
-          "target_count": 1,
-          "hot_count": 0,
-          "expected_revenue": 2880,
-          "normalized_port": {
-            "port_code": "030",
-            "port_name": "인천",
-            "display_name": "인천",
-            "raw_port": "인천",
-            "raw_aliases": [
-              "인천"
-            ]
-          },
-          "port_code": "030",
-          "port_display_name": "인천",
-          "display_name": "인천"
         }
       ],
       "by_category": [
         {
           "category_code": "MONITOR",
           "category_label": "모니터링",
-          "target_count": 31,
-          "expected_revenue": 89280,
+          "target_count": 32,
+          "expected_revenue": 92160,
           "korean_label": "모니터링"
         }
       ],
       "sections": {
         "HOT": {
-          "target_count": 1,
-          "estimated_revenue_low": 9000,
-          "estimated_revenue_high": 28000
+          "target_count": 2,
+          "estimated_revenue_low": 18000,
+          "estimated_revenue_high": 56000
         },
         "WARM": {
-          "target_count": 29,
-          "estimated_revenue_low": 145000,
-          "estimated_revenue_high": 464000
+          "target_count": 26,
+          "estimated_revenue_low": 130000,
+          "estimated_revenue_high": 416000
         },
         "portfolio": {
-          "total_targets": 31,
-          "hot_targets": 1,
-          "warm_targets": 29,
-          "low_targets": 1,
-          "conservative_revenue": 44640,
-          "expected_revenue": 89280,
-          "aggressive_revenue": 156240
+          "total_targets": 32,
+          "hot_targets": 2,
+          "warm_targets": 26,
+          "low_targets": 4,
+          "conservative_revenue": 46080,
+          "expected_revenue": 92160,
+          "aggressive_revenue": 161280
         },
         "by_port": [
           {
             "port_name": "부산",
-            "target_count": 11,
-            "hot_count": 1,
-            "expected_revenue": 31680,
+            "target_count": 9,
+            "hot_count": 0,
+            "expected_revenue": 25920,
             "normalized_port": {
               "port_code": "020",
               "port_name": "부산",
@@ -220,28 +220,10 @@
             "display_name": "부산"
           },
           {
-            "port_name": "대산",
-            "target_count": 5,
-            "hot_count": 0,
-            "expected_revenue": 14400,
-            "normalized_port": {
-              "port_code": "621",
-              "port_name": "대산",
-              "display_name": "대산",
-              "raw_port": "대산",
-              "raw_aliases": [
-                "대산"
-              ]
-            },
-            "port_code": "621",
-            "port_display_name": "대산",
-            "display_name": "대산"
-          },
-          {
             "port_name": "여수",
-            "target_count": 5,
+            "target_count": 7,
             "hot_count": 0,
-            "expected_revenue": 14400,
+            "expected_revenue": 20160,
             "normalized_port": {
               "port_code": "620-YEOSU",
               "port_name": "여수",
@@ -256,10 +238,28 @@
             "display_name": "여수"
           },
           {
+            "port_name": "인천",
+            "target_count": 4,
+            "hot_count": 1,
+            "expected_revenue": 11520,
+            "normalized_port": {
+              "port_code": "030",
+              "port_name": "인천",
+              "display_name": "인천",
+              "raw_port": "인천",
+              "raw_aliases": [
+                "인천"
+              ]
+            },
+            "port_code": "030",
+            "port_display_name": "인천",
+            "display_name": "인천"
+          },
+          {
             "port_name": "울산",
-            "target_count": 3,
+            "target_count": 4,
             "hot_count": 0,
-            "expected_revenue": 8640,
+            "expected_revenue": 11520,
             "normalized_port": {
               "port_code": "820",
               "port_name": "울산",
@@ -276,7 +276,7 @@
           {
             "port_name": "평택·당진",
             "target_count": 3,
-            "hot_count": 0,
+            "hot_count": 1,
             "expected_revenue": 8640,
             "normalized_port": {
               "port_code": "031",
@@ -292,10 +292,28 @@
             "display_name": "평택·당진"
           },
           {
-            "port_name": "미확인 항만",
+            "port_name": "대산",
             "target_count": 3,
             "hot_count": 0,
             "expected_revenue": 8640,
+            "normalized_port": {
+              "port_code": "621",
+              "port_name": "대산",
+              "display_name": "대산",
+              "raw_port": "대산",
+              "raw_aliases": [
+                "대산"
+              ]
+            },
+            "port_code": "621",
+            "port_display_name": "대산",
+            "display_name": "대산"
+          },
+          {
+            "port_name": "미확인 항만",
+            "target_count": 2,
+            "hot_count": 0,
+            "expected_revenue": 5760,
             "normalized_port": {
               "port_code": "UNKNOWN",
               "port_name": "미확인 항만",
@@ -308,24 +326,6 @@
             "port_code": "UNKNOWN",
             "port_display_name": "미확인 항만",
             "display_name": "미확인 항만"
-          },
-          {
-            "port_name": "인천",
-            "target_count": 1,
-            "hot_count": 0,
-            "expected_revenue": 2880,
-            "normalized_port": {
-              "port_code": "030",
-              "port_name": "인천",
-              "display_name": "인천",
-              "raw_port": "인천",
-              "raw_aliases": [
-                "인천"
-              ]
-            },
-            "port_code": "030",
-            "port_display_name": "인천",
-            "display_name": "인천"
           }
         ],
         "by_operator": [
@@ -348,8 +348,8 @@
           {
             "category_code": "MONITOR",
             "category_label": "모니터링",
-            "target_count": 31,
-            "expected_revenue": 89280,
+            "target_count": 32,
+            "expected_revenue": 92160,
             "korean_label": "모니터링"
           }
         ],
@@ -363,36 +363,36 @@
         },
         "disclaimer": "Estimated Opportunity Only"
       },
-      "reason_summary": "Estimated Opportunity Only: HOT 1척, WARM 29척, LOW 1척 기준의 예상 영업 기회",
+      "reason_summary": "Estimated Opportunity Only: HOT 2척, WARM 26척, LOW 4척 기준의 예상 영업 기회",
       "recommended_action": "보장 매출이 아니라 영업 우선순위 산정용입니다. HOT 후보부터 연락 가능성과 작업 가능 시간을 확인하세요."
     }
   ],
   "sections": {
     "HOT": {
-      "target_count": 1,
-      "estimated_revenue_low": 9000,
-      "estimated_revenue_high": 28000
+      "target_count": 2,
+      "estimated_revenue_low": 18000,
+      "estimated_revenue_high": 56000
     },
     "WARM": {
-      "target_count": 29,
-      "estimated_revenue_low": 145000,
-      "estimated_revenue_high": 464000
+      "target_count": 26,
+      "estimated_revenue_low": 130000,
+      "estimated_revenue_high": 416000
     },
     "portfolio": {
-      "total_targets": 31,
-      "hot_targets": 1,
-      "warm_targets": 29,
-      "low_targets": 1,
-      "conservative_revenue": 44640,
-      "expected_revenue": 89280,
-      "aggressive_revenue": 156240
+      "total_targets": 32,
+      "hot_targets": 2,
+      "warm_targets": 26,
+      "low_targets": 4,
+      "conservative_revenue": 46080,
+      "expected_revenue": 92160,
+      "aggressive_revenue": 161280
     },
     "by_port": [
       {
         "port_name": "부산",
-        "target_count": 11,
-        "hot_count": 1,
-        "expected_revenue": 31680,
+        "target_count": 9,
+        "hot_count": 0,
+        "expected_revenue": 25920,
         "normalized_port": {
           "port_code": "020",
           "port_name": "부산",
@@ -407,28 +407,10 @@
         "display_name": "부산"
       },
       {
-        "port_name": "대산",
-        "target_count": 5,
-        "hot_count": 0,
-        "expected_revenue": 14400,
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "대산",
-          "raw_aliases": [
-            "대산"
-          ]
-        },
-        "port_code": "621",
-        "port_display_name": "대산",
-        "display_name": "대산"
-      },
-      {
         "port_name": "여수",
-        "target_count": 5,
+        "target_count": 7,
         "hot_count": 0,
-        "expected_revenue": 14400,
+        "expected_revenue": 20160,
         "normalized_port": {
           "port_code": "620-YEOSU",
           "port_name": "여수",
@@ -443,10 +425,28 @@
         "display_name": "여수"
       },
       {
+        "port_name": "인천",
+        "target_count": 4,
+        "hot_count": 1,
+        "expected_revenue": 11520,
+        "normalized_port": {
+          "port_code": "030",
+          "port_name": "인천",
+          "display_name": "인천",
+          "raw_port": "인천",
+          "raw_aliases": [
+            "인천"
+          ]
+        },
+        "port_code": "030",
+        "port_display_name": "인천",
+        "display_name": "인천"
+      },
+      {
         "port_name": "울산",
-        "target_count": 3,
+        "target_count": 4,
         "hot_count": 0,
-        "expected_revenue": 8640,
+        "expected_revenue": 11520,
         "normalized_port": {
           "port_code": "820",
           "port_name": "울산",
@@ -463,7 +463,7 @@
       {
         "port_name": "평택·당진",
         "target_count": 3,
-        "hot_count": 0,
+        "hot_count": 1,
         "expected_revenue": 8640,
         "normalized_port": {
           "port_code": "031",
@@ -479,10 +479,28 @@
         "display_name": "평택·당진"
       },
       {
-        "port_name": "미확인 항만",
+        "port_name": "대산",
         "target_count": 3,
         "hot_count": 0,
         "expected_revenue": 8640,
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산"
+          ]
+        },
+        "port_code": "621",
+        "port_display_name": "대산",
+        "display_name": "대산"
+      },
+      {
+        "port_name": "미확인 항만",
+        "target_count": 2,
+        "hot_count": 0,
+        "expected_revenue": 5760,
         "normalized_port": {
           "port_code": "UNKNOWN",
           "port_name": "미확인 항만",
@@ -495,24 +513,6 @@
         "port_code": "UNKNOWN",
         "port_display_name": "미확인 항만",
         "display_name": "미확인 항만"
-      },
-      {
-        "port_name": "인천",
-        "target_count": 1,
-        "hot_count": 0,
-        "expected_revenue": 2880,
-        "normalized_port": {
-          "port_code": "030",
-          "port_name": "인천",
-          "display_name": "인천",
-          "raw_port": "인천",
-          "raw_aliases": [
-            "인천"
-          ]
-        },
-        "port_code": "030",
-        "port_display_name": "인천",
-        "display_name": "인천"
       }
     ],
     "by_operator": [
@@ -535,8 +535,8 @@
       {
         "category_code": "MONITOR",
         "category_label": "모니터링",
-        "target_count": 31,
-        "expected_revenue": 89280,
+        "target_count": 32,
+        "expected_revenue": 92160,
         "korean_label": "모니터링"
       }
     ],
@@ -551,13 +551,13 @@
     "disclaimer": "Estimated Opportunity Only"
   },
   "portfolio": {
-    "total_targets": 31,
-    "hot_targets": 1,
-    "warm_targets": 29,
-    "low_targets": 1,
-    "conservative_revenue": 44640,
-    "expected_revenue": 89280,
-    "aggressive_revenue": 156240
+    "total_targets": 32,
+    "hot_targets": 2,
+    "warm_targets": 26,
+    "low_targets": 4,
+    "conservative_revenue": 46080,
+    "expected_revenue": 92160,
+    "aggressive_revenue": 161280
   },
   "by_operator": [
     {
@@ -578,9 +578,9 @@
   "by_port": [
     {
       "port_name": "부산",
-      "target_count": 11,
-      "hot_count": 1,
-      "expected_revenue": 31680,
+      "target_count": 9,
+      "hot_count": 0,
+      "expected_revenue": 25920,
       "normalized_port": {
         "port_code": "020",
         "port_name": "부산",
@@ -595,28 +595,10 @@
       "display_name": "부산"
     },
     {
-      "port_name": "대산",
-      "target_count": 5,
-      "hot_count": 0,
-      "expected_revenue": 14400,
-      "normalized_port": {
-        "port_code": "621",
-        "port_name": "대산",
-        "display_name": "대산",
-        "raw_port": "대산",
-        "raw_aliases": [
-          "대산"
-        ]
-      },
-      "port_code": "621",
-      "port_display_name": "대산",
-      "display_name": "대산"
-    },
-    {
       "port_name": "여수",
-      "target_count": 5,
+      "target_count": 7,
       "hot_count": 0,
-      "expected_revenue": 14400,
+      "expected_revenue": 20160,
       "normalized_port": {
         "port_code": "620-YEOSU",
         "port_name": "여수",
@@ -631,10 +613,28 @@
       "display_name": "여수"
     },
     {
+      "port_name": "인천",
+      "target_count": 4,
+      "hot_count": 1,
+      "expected_revenue": 11520,
+      "normalized_port": {
+        "port_code": "030",
+        "port_name": "인천",
+        "display_name": "인천",
+        "raw_port": "인천",
+        "raw_aliases": [
+          "인천"
+        ]
+      },
+      "port_code": "030",
+      "port_display_name": "인천",
+      "display_name": "인천"
+    },
+    {
       "port_name": "울산",
-      "target_count": 3,
+      "target_count": 4,
       "hot_count": 0,
-      "expected_revenue": 8640,
+      "expected_revenue": 11520,
       "normalized_port": {
         "port_code": "820",
         "port_name": "울산",
@@ -651,7 +651,7 @@
     {
       "port_name": "평택·당진",
       "target_count": 3,
-      "hot_count": 0,
+      "hot_count": 1,
       "expected_revenue": 8640,
       "normalized_port": {
         "port_code": "031",
@@ -667,10 +667,28 @@
       "display_name": "평택·당진"
     },
     {
-      "port_name": "미확인 항만",
+      "port_name": "대산",
       "target_count": 3,
       "hot_count": 0,
       "expected_revenue": 8640,
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "대산",
+        "raw_aliases": [
+          "대산"
+        ]
+      },
+      "port_code": "621",
+      "port_display_name": "대산",
+      "display_name": "대산"
+    },
+    {
+      "port_name": "미확인 항만",
+      "target_count": 2,
+      "hot_count": 0,
+      "expected_revenue": 5760,
       "normalized_port": {
         "port_code": "UNKNOWN",
         "port_name": "미확인 항만",
@@ -683,32 +701,14 @@
       "port_code": "UNKNOWN",
       "port_display_name": "미확인 항만",
       "display_name": "미확인 항만"
-    },
-    {
-      "port_name": "인천",
-      "target_count": 1,
-      "hot_count": 0,
-      "expected_revenue": 2880,
-      "normalized_port": {
-        "port_code": "030",
-        "port_name": "인천",
-        "display_name": "인천",
-        "raw_port": "인천",
-        "raw_aliases": [
-          "인천"
-        ]
-      },
-      "port_code": "030",
-      "port_display_name": "인천",
-      "display_name": "인천"
     }
   ],
   "by_category": [
     {
       "category_code": "MONITOR",
       "category_label": "모니터링",
-      "target_count": 31,
-      "expected_revenue": 89280,
+      "target_count": 32,
+      "expected_revenue": 92160,
       "korean_label": "모니터링"
     }
   ],
@@ -723,30 +723,30 @@
   "disclaimer": "Estimated Opportunity Only",
   "summary": {
     "HOT": {
-      "target_count": 1,
-      "estimated_revenue_low": 9000,
-      "estimated_revenue_high": 28000
+      "target_count": 2,
+      "estimated_revenue_low": 18000,
+      "estimated_revenue_high": 56000
     },
     "WARM": {
-      "target_count": 29,
-      "estimated_revenue_low": 145000,
-      "estimated_revenue_high": 464000
+      "target_count": 26,
+      "estimated_revenue_low": 130000,
+      "estimated_revenue_high": 416000
     },
     "portfolio": {
-      "total_targets": 31,
-      "hot_targets": 1,
-      "warm_targets": 29,
-      "low_targets": 1,
-      "conservative_revenue": 44640,
-      "expected_revenue": 89280,
-      "aggressive_revenue": 156240
+      "total_targets": 32,
+      "hot_targets": 2,
+      "warm_targets": 26,
+      "low_targets": 4,
+      "conservative_revenue": 46080,
+      "expected_revenue": 92160,
+      "aggressive_revenue": 161280
     },
     "by_port": [
       {
         "port_name": "부산",
-        "target_count": 11,
-        "hot_count": 1,
-        "expected_revenue": 31680,
+        "target_count": 9,
+        "hot_count": 0,
+        "expected_revenue": 25920,
         "normalized_port": {
           "port_code": "020",
           "port_name": "부산",
@@ -761,28 +761,10 @@
         "display_name": "부산"
       },
       {
-        "port_name": "대산",
-        "target_count": 5,
-        "hot_count": 0,
-        "expected_revenue": 14400,
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "대산",
-          "raw_aliases": [
-            "대산"
-          ]
-        },
-        "port_code": "621",
-        "port_display_name": "대산",
-        "display_name": "대산"
-      },
-      {
         "port_name": "여수",
-        "target_count": 5,
+        "target_count": 7,
         "hot_count": 0,
-        "expected_revenue": 14400,
+        "expected_revenue": 20160,
         "normalized_port": {
           "port_code": "620-YEOSU",
           "port_name": "여수",
@@ -797,10 +779,28 @@
         "display_name": "여수"
       },
       {
+        "port_name": "인천",
+        "target_count": 4,
+        "hot_count": 1,
+        "expected_revenue": 11520,
+        "normalized_port": {
+          "port_code": "030",
+          "port_name": "인천",
+          "display_name": "인천",
+          "raw_port": "인천",
+          "raw_aliases": [
+            "인천"
+          ]
+        },
+        "port_code": "030",
+        "port_display_name": "인천",
+        "display_name": "인천"
+      },
+      {
         "port_name": "울산",
-        "target_count": 3,
+        "target_count": 4,
         "hot_count": 0,
-        "expected_revenue": 8640,
+        "expected_revenue": 11520,
         "normalized_port": {
           "port_code": "820",
           "port_name": "울산",
@@ -817,7 +817,7 @@
       {
         "port_name": "평택·당진",
         "target_count": 3,
-        "hot_count": 0,
+        "hot_count": 1,
         "expected_revenue": 8640,
         "normalized_port": {
           "port_code": "031",
@@ -833,10 +833,28 @@
         "display_name": "평택·당진"
       },
       {
-        "port_name": "미확인 항만",
+        "port_name": "대산",
         "target_count": 3,
         "hot_count": 0,
         "expected_revenue": 8640,
+        "normalized_port": {
+          "port_code": "621",
+          "port_name": "대산",
+          "display_name": "대산",
+          "raw_port": "대산",
+          "raw_aliases": [
+            "대산"
+          ]
+        },
+        "port_code": "621",
+        "port_display_name": "대산",
+        "display_name": "대산"
+      },
+      {
+        "port_name": "미확인 항만",
+        "target_count": 2,
+        "hot_count": 0,
+        "expected_revenue": 5760,
         "normalized_port": {
           "port_code": "UNKNOWN",
           "port_name": "미확인 항만",
@@ -849,24 +867,6 @@
         "port_code": "UNKNOWN",
         "port_display_name": "미확인 항만",
         "display_name": "미확인 항만"
-      },
-      {
-        "port_name": "인천",
-        "target_count": 1,
-        "hot_count": 0,
-        "expected_revenue": 2880,
-        "normalized_port": {
-          "port_code": "030",
-          "port_name": "인천",
-          "display_name": "인천",
-          "raw_port": "인천",
-          "raw_aliases": [
-            "인천"
-          ]
-        },
-        "port_code": "030",
-        "port_display_name": "인천",
-        "display_name": "인천"
       }
     ],
     "by_operator": [
@@ -889,8 +889,8 @@
       {
         "category_code": "MONITOR",
         "category_label": "모니터링",
-        "target_count": 31,
-        "expected_revenue": 89280,
+        "target_count": 32,
+        "expected_revenue": 92160,
         "korean_label": "모니터링"
       }
     ],

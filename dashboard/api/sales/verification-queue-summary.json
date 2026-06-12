@@ -1,87 +1,234 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "live",
-  "title": "??? ?? ? ??",
-  "source_endpoint": "dashboard/api/sales/verification-queue.json",
-  "detail_endpoint": "dashboard/api/sales/verification-queue.json",
-  "summary": true,
-  "startup_safe": false,
-  "record_count": 113,
+  "record_count": 108,
   "item_count": 5,
-  "total_item_count": 113,
-  "score_distribution": {
-    "very_high": 0,
-    "high": 0,
-    "medium": 1,
-    "low": 112,
-    "missing": 0
-  },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 859.8,
-    "note": "?? ???? ?? ? ?? ?????."
-  },
+  "source_table": "operator_contact_history,commercial_leads,agent-followup-queue,sales_candidates_current,opportunity_master",
+  "detail_endpoint": "dashboard/api/sales/verification-queue.json",
+  "total_count": 108,
+  "returned_count": 5,
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "DHT REDWOOD",
-      "call_sign": "V7A3317",
-      "current_port_korean": "대산",
-      "operator_display": "(주)세바해운",
-      "opportunity_score": 52,
-      "priority_label": "모니터링",
+      "vessel_name": "CONDOR",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "9VEQ7",
+      "operator_display": "브라이트마린(주)",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 54,
+      "risk_score": null,
+      "confidence_score": 35,
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo"
+      ],
+      "known_company": "브라이트마린(주)",
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "ARDMORE PURSUIT",
-      "call_sign": "V7A4485",
+      "vessel_name": "DHT REDWOOD",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7A3317",
+      "operator_display": "(주)세바해운",
+      "current_port": "대산",
       "current_port_korean": "대산",
-      "operator_display": "(주)신성해운",
-      "opportunity_score": 49,
-      "priority_label": "모니터링",
+      "normalized_port": {
+        "port_code": "621",
+        "port_name": "대산",
+        "display_name": "대산",
+        "raw_port": "Daesan",
+        "raw_aliases": [
+          "Daesan",
+          "대산"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 52,
+      "risk_score": null,
+      "confidence_score": 35,
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo"
+      ],
+      "known_company": "(주)세바해운",
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "port_code": "621",
+      "port_name": "대산",
+      "port_display_name": "대산",
+      "display_name": "대산"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "스카이 글로리",
-      "call_sign": "DSQP3",
-      "current_port_korean": "부산",
-      "operator_display": "천경해운(주)",
-      "opportunity_score": 48,
-      "priority_label": "모니터링",
+      "vessel_name": "CORAL ALICIA",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "PCPA",
+      "operator_display": "세화해운 주식회사",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 51,
+      "risk_score": null,
+      "confidence_score": 35,
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo"
+      ],
+      "known_company": "세화해운 주식회사",
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "영흥",
-      "call_sign": "V7MA7",
-      "current_port_korean": "인천",
-      "operator_display": "대한상선(주)",
-      "opportunity_score": 48,
-      "priority_label": "모니터링",
+      "vessel_name": "세양글로리",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "140052",
+      "operator_display": "세양쉬핑(주)",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 50,
+      "risk_score": null,
+      "confidence_score": 35,
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo"
+      ],
+      "known_company": "세양쉬핑(주)",
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "MARCEL",
-      "call_sign": "V7B3347",
-      "current_port_korean": "부산",
-      "operator_display": "명성통상",
-      "opportunity_score": 47,
-      "priority_label": "모니터링",
+      "vessel_name": "에이치엘 그린",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "3FES7",
+      "operator_display": "에이치라인해운(주)",
+      "current_port": "마산/창원",
+      "current_port_korean": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "마산/창원"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 50,
+      "risk_score": null,
+      "confidence_score": 35,
+      "missing_fields": [
+        "operator",
+        "owner",
+        "manager",
+        "contact_person",
+        "operator_display",
+        "imo"
+      ],
+      "known_company": "에이치라인해운(주)",
       "reason_summary": "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
-      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비"
+      "recommended_action": "선사/에이전트 확인 후 영업 연락 준비",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
     }
-  ]
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "연락처 확인 필요",
+      "message": "상세 108건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "상세 목록은 verification-queue.json lazy load 사용"
+    }
+  ],
+  "run_id": "run_20260612144845570_ce7e353f",
+  "source_run_id": "run_20260612144845570_ce7e353f",
+  "snapshot_context": {
+    "run_id": "run_20260612144845570_ce7e353f",
+    "generated_at": "2026-06-12T14:51:11.150Z",
+    "data_mode": "live",
+    "source_run_id": "run_20260612144845570_ce7e353f"
+  }
 }

@@ -1,87 +1,205 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-11T09:44:10.845Z",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "live",
-  "title": "???? ?? ?? ??",
-  "source_endpoint": "dashboard/api/biofouling/vessel-risk-scores.json",
-  "detail_endpoint": "dashboard/api/biofouling/vessel-risk-scores.json",
-  "summary": true,
-  "startup_safe": false,
   "record_count": 100,
   "item_count": 5,
-  "total_item_count": 100,
+  "source_table": "biofouling/vessel-risk-scores",
+  "detail_endpoint": "dashboard/api/biofouling/vessel-risk-scores.json",
+  "total_count": 100,
+  "returned_count": 5,
   "score_distribution": {
-    "very_high": 0,
-    "high": 0,
-    "medium": 21,
-    "low": 79,
-    "missing": 0
+    "0_49": 54,
+    "50_69": 46,
+    "70_84": 0,
+    "85_100": 0,
+    "unknown": 0
   },
-  "warning_summary": {
-    "large_detail_endpoint": true,
-    "detail_size_kb": 767.8,
-    "note": "?? ???? ?? ? ?? ?????."
+  "priority_counts": {
+    "WARM": 15,
+    "LOW": 85
+  },
+  "actionability_counts": {
+    "": 100
   },
   "items": [
     {
       "rank": 1,
-      "vessel_key": null,
-      "vessel_name": "PAN HOPE",
-      "call_sign": "-",
-      "current_port_korean": "평택·당진",
-      "operator_display": "-",
-      "opportunity_score": 68,
-      "priority_label": "검토",
-      "reason_summary": "SST anomaly 0.6, AIS dwell 153h, salinity proxy 0.81 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+      "vessel_name": "VITUS BERING",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수",
+          "VANINO"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 65,
+      "risk_score": 52,
+      "confidence_score": null,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "SST anomaly 0.9, AIS dwell 251h, salinity proxy 0.88 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "rank": 2,
-      "vessel_key": null,
-      "vessel_name": "KONA TRADER",
-      "call_sign": "-",
-      "current_port_korean": "부산",
-      "operator_display": "-",
-      "opportunity_score": 67,
-      "priority_label": "검토",
-      "reason_summary": "SST anomaly 0.8, AIS dwell 287h, salinity proxy 0.9 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+      "vessel_name": "KITHNOS",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수",
+          "SINGAPORE"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 35,
+      "risk_score": 52,
+      "confidence_score": null,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "SST anomaly 0.9, AIS dwell 379h, salinity proxy 0.88 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "rank": 3,
-      "vessel_key": null,
-      "vessel_name": "VITUS BERING",
-      "call_sign": "-",
+      "vessel_name": "아라온(ARAON)",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "여수",
       "current_port_korean": "여수",
-      "operator_display": "-",
-      "opportunity_score": 65,
-      "priority_label": "검토",
-      "reason_summary": "SST anomaly 0.9, AIS dwell 251h, salinity proxy 0.88 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수",
+          "광양"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 21,
+      "risk_score": 52,
+      "confidence_score": null,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "SST anomaly 0.9, AIS dwell 808h, salinity proxy 0.88 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "port_code": "620-YEOSU",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
     },
     {
       "rank": 4,
-      "vessel_key": null,
-      "vessel_name": "ADMIRAL SCHMIDT",
-      "call_sign": "-",
+      "vessel_name": "한유울산",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "부산",
       "current_port_korean": "부산",
-      "operator_display": "-",
-      "opportunity_score": 65,
-      "priority_label": "검토",
-      "reason_summary": "SST anomaly 0.8, AIS dwell 346h, salinity proxy 0.9 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산",
+          "울산"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 51,
+      "risk_score": 51,
+      "confidence_score": null,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 432h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
     },
     {
       "rank": 5,
-      "vessel_key": null,
-      "vessel_name": "SM NAVIGATOR",
-      "call_sign": "-",
-      "current_port_korean": "울산",
-      "operator_display": "-",
-      "opportunity_score": 65,
-      "priority_label": "검토",
-      "reason_summary": "SST anomaly 0.7, AIS dwell 181h, salinity proxy 0.91 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비"
+      "vessel_name": "KOHSEI MARU",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "부산",
+      "current_port_korean": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "부산",
+        "raw_aliases": [
+          "부산",
+          "KIKUMA"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 37,
+      "risk_score": 51,
+      "confidence_score": null,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 266h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    }
+  ],
+  "warning_summary": [
+    {
+      "severity": "INFO",
+      "feature": "부착생물 선박 위험",
+      "message": "상세 100건 중 상위 5건만 요약 파일에 포함",
+      "recommended_fix": "dashboard/api/biofouling/vessel-risk-scores.json lazy load 사용"
     }
   ]
 }

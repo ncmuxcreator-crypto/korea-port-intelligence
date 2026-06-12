@@ -1,0 +1,79 @@
+name: Fast Auxiliary Update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "45 */4 * * *"
+
+concurrency:
+  group: fast-aux-update-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast-aux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      CI: true
+      VALIDATION_MODE: production
+      UPDATE_MODE: fast_aux
+      SOURCE_CSV_MODE: off
+      ENRICHMENT_MODE: lightweight
+      DISCOVERY_MODE: off
+      DB_AUDIT_MODE: off
+      RUN_HEAVY_AUDITS: "false"
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PORT_OPERATION_SERVICE_KEY: ${{ secrets.PORT_OPERATION_SERVICE_KEY || secrets.PORT_OPERATION_API_KEY || secrets.DATA_GO_KR_API_KEY || secrets.SERVICE_KEY || secrets.SERVICEKEY || secrets.YGPA_SERVICE_KEY }}
+      PORT_OPERATION_API_URL: ${{ vars.PORT_OPERATION_API_URL || secrets.PORT_OPERATION_API_URL || 'http://apis.data.go.kr/1192000/VsslEtrynd5/Info5' }}
+      PILOT_SOURCE_URLS: ${{ secrets.PILOT_SOURCE_URLS }}
+      BERTH_SOURCE_URLS: ${{ secrets.BERTH_SOURCE_URLS }}
+      PNC_SOURCE_URLS: ${{ secrets.PNC_SOURCE_URLS }}
+      VESSEL_SPEC_SERVICE_KEY: ${{ secrets.VESSEL_SPEC_SERVICE_KEY }}
+      VESSEL_SPEC_API_URL: ${{ secrets.VESSEL_SPEC_API_URL }}
+      MOF_AIS_DYNAMIC_API_URL: ${{ secrets.MOF_AIS_DYNAMIC_API_URL }}
+      MOF_AIS_DYNAMIC_SERVICE_KEY: ${{ secrets.MOF_AIS_DYNAMIC_SERVICE_KEY }}
+      MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}
+      MOF_AIS_INFO_SERVICE_KEY: ${{ secrets.MOF_AIS_INFO_SERVICE_KEY }}
+      MOF_AIS_STAT_API_URL: ${{ secrets.MOF_AIS_STAT_API_URL }}
+      MOF_AIS_STAT_SERVICE_KEY: ${{ secrets.MOF_AIS_STAT_SERVICE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false
+
+      - name: Refresh fast auxiliary summaries
+        timeout-minutes: 15
+        run: npm run update:fast-aux
+
+      - name: Validate
+        if: always()
+        run: npm run validate
+
+      - name: Upload auxiliary cache artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: korea-port-intelligence-fast-aux-cache
+          retention-days: 14
+          path: |
+            dashboard/api/aux/latest/
+            dashboard/api/aux/pilotage-summary.json
+            dashboard/api/aux/berth-summary.json
+            dashboard/api/aux/ais-info-summary.json
+            dashboard/api/aux/ais-dynamic-summary.json
+            dashboard/api/aux/vessel-spec-summary.json
+            dashboard/api/aux/cache-status.json
+            dashboard/api/runtime/update-tiers.json

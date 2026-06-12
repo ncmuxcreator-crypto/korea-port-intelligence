@@ -1,55 +1,76 @@
 {
-  "generated_by": "github_actions",
-  "is_github_actions": true,
-  "validation_mode": "production",
-  "serving_mode": "static_json",
-  "GITHUB_RUN_ID": "27400108666",
-  "GITHUB_WORKFLOW": "Longterm Update",
-  "run_id": "run_20260612065952169_5b648f9d",
-  "status_run_id": "run_20260612065952169_5b648f9d",
-  "active_run_id": "run_20260612065952169_5b648f9d",
-  "stale_diagnostic": false,
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T07:06:16.970Z",
+  "generated_by": "local",
+  "is_github_actions": false,
+  "validation_mode": "local",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": null,
+  "GITHUB_WORKFLOW": null,
+  "run_id": "run_20260612144845570_ce7e353f",
+  "active_run_id": "run_20260612144845570_ce7e353f",
+  "latest_successful_run_id": "run_20260612144845570_ce7e353f",
+  "latest_successful_summary_run_id": "run_20260612144845570_ce7e353f",
+  "source_run_id": "run_20260612144845570_ce7e353f",
+  "generated_at": "2026-06-12T14:51:11.150Z",
   "data_mode": "static_snapshot",
-  "source_run_id": "run_20260612065952169_5b648f9d",
-  "total_vessels": 1025,
-  "display_vessel_count": 664,
+  "total_vessels": 1015,
+  "display_vessel_count": 1015,
   "vessels_enriched_by_source": {
     "source_csv": 0,
-    "pilot_sources": 8,
-    "berth_sources": 19,
+    "pilot_sources": 0,
+    "berth_sources": 0,
     "vessel_spec": 0,
-    "mof_ais_info": 10,
-    "mof_ais_dynamic": 10,
-    "port_operation": 664
+    "mof_ais_info": 0,
+    "mof_ais_dynamic": 0,
+    "port_operation": 1015
   },
   "fields_recovered_by_source": {
     "source_csv": {},
     "pilot_sources": {},
-    "berth_sources": {
-      "berth": 19,
-      "berth_signal": 19
-    },
+    "berth_sources": {},
     "vessel_spec": {},
     "mof_ais_info": {},
     "mof_ais_dynamic": {},
     "port_operation": {
-      "vessel_name": 664,
-      "current_port": 664,
-      "eta": 379,
-      "ata": 664,
-      "etd": 662,
-      "atd": 380,
-      "berth": 664,
-      "operator_display": 664
+      "vessel_name": 1015,
+      "current_port": "미확인 항만",
+      "eta": 549,
+      "ata": 1015,
+      "etd": 1012,
+      "atd": 551,
+      "berth": 1015,
+      "operator_display": 97,
+      "port": "미확인 항만",
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "1015",
+        "raw_aliases": [
+          "1015"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_name": "미확인 항만",
+      "port_display_name": "미확인 항만",
+      "display_name": "미확인 항만"
     }
   },
-  "pilotage_signal_count": 8,
+  "count_reconciliation": {
+    "source_rows_collected": 7897,
+    "source_rows_normalized": 7897,
+    "source_rows_matched_to_vessels": 7897,
+    "enrichment_candidates_created": 0,
+    "enrichment_patches_applied": 0,
+    "vessel_display_records_updated": 0,
+    "ui_visible_records": 1015
+  },
+  "pilotage_signal_count": 0,
   "pilotage_signal_display_count": 0,
-  "berth_signal_count": 19,
+  "berth_signal_count": 0,
   "berth_signal_display_count": 0,
-  "operator_recovered_count": 664,
+  "display_gap_explanations": [],
+  "operator_recovered_count": 97,
   "imo_recovered_count": 0,
   "mmsi_recovered_count": 0,
   "dwt_recovered_count": 0,
@@ -57,28 +78,33 @@
   "enrichment_failures": [
     {
       "source_key": "source_csv",
-      "blocker_reason": "API response too large: 72478261 bytes",
+      "blocker_reason": "missing_env",
       "quality_label": "FAILED"
     },
     {
       "source_key": "pilot_sources",
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH"
+      "blocker_reason": "missing_env",
+      "quality_label": "FAILED"
+    },
+    {
+      "source_key": "berth_sources",
+      "blocker_reason": "missing_env",
+      "quality_label": "FAILED"
     },
     {
       "source_key": "vessel_spec",
-      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
-      "quality_label": "LOW"
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED"
     },
     {
       "source_key": "mof_ais_info",
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH"
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED"
     },
     {
       "source_key": "mof_ais_dynamic",
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH"
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED"
     }
   ],
   "record_count": 7,
@@ -92,150 +118,235 @@
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "mmsi",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "call_sign",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "operator_display",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "owner",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "manager",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "vessel_type",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "gt",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "dwt",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         },
         {
           "field": "flag",
-          "reason": "API response too large: 72478261 bytes"
+          "reason": "missing_env"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "API response too large: 72478261 bytes",
+      "blocker_reason": "missing_env",
       "quality_label": "FAILED",
-      "utilization_score": 30
+      "utilization_score": 5
     },
     {
       "source_key": "pilot_sources",
-      "matched_vessels": 8,
+      "matched_vessels": 0,
       "fields_added": [],
       "fields_updated": [],
-      "fields_blocked": [],
+      "fields_blocked": [
+        {
+          "field": "pilotage_signal",
+          "reason": "missing_env"
+        },
+        {
+          "field": "pilotage_time",
+          "reason": "missing_env"
+        },
+        {
+          "field": "pilot_station",
+          "reason": "missing_env"
+        },
+        {
+          "field": "pilotage_direction",
+          "reason": "missing_env"
+        }
+      ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH",
-      "utilization_score": 92
+      "blocker_reason": "missing_env",
+      "quality_label": "FAILED",
+      "utilization_score": 5
     },
     {
       "source_key": "berth_sources",
-      "matched_vessels": 19,
-      "fields_added": [
+      "matched_vessels": 0,
+      "fields_added": [],
+      "fields_updated": [],
+      "fields_blocked": [
         {
           "field": "berth",
-          "count": 19
+          "reason": "missing_env"
+        },
+        {
+          "field": "terminal",
+          "reason": "missing_env"
+        },
+        {
+          "field": "etb",
+          "reason": "missing_env"
+        },
+        {
+          "field": "atb",
+          "reason": "missing_env"
         },
         {
           "field": "berth_signal",
-          "count": 19
+          "reason": "missing_env"
         }
       ],
-      "fields_updated": [
-        {
-          "field": "berth",
-          "count": 19
-        },
-        {
-          "field": "berth_signal",
-          "count": 19
-        }
-      ],
-      "fields_blocked": [],
       "sample_enriched_vessels": [
         {
-          "vessel_key": "5BMI6",
-          "vessel_name": "KONA TRADER",
+          "vessel_key": "ONKD",
+          "vessel_name": "MINERAL HOPE",
           "imo": "-",
           "mmsi": "-",
-          "call_sign": "5BMI6",
+          "call_sign": "ONKD",
+          "current_port": "평택·당진",
+          "operator_display": "상록해운주식회사",
+          "fields_added": [
+            "berth"
+          ],
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        },
+        {
+          "vessel_key": "V7B3347",
+          "vessel_name": "MARCEL",
+          "imo": "-",
+          "mmsi": "-",
+          "call_sign": "V7B3347",
           "current_port": "부산",
-          "operator_display": "팬오션 주식회사",
+          "operator_display": "명성통상",
           "fields_added": [
             "berth"
-          ]
+          ],
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
-          "vessel_key": "3X2065",
-          "vessel_name": "KRUGER",
+          "vessel_key": "HOYL",
+          "vessel_name": "BERGE DOI INTHANON",
           "imo": "-",
           "mmsi": "-",
-          "call_sign": "3X2065",
-          "current_port": "부산",
-          "operator_display": "케이앤제이오션(주)",
-          "fields_added": [
-            "berth"
-          ]
-        },
-        {
-          "vessel_key": "8PSO1",
-          "vessel_name": "ADMIRAL SCHMIDT",
-          "imo": "-",
-          "mmsi": "-",
-          "call_sign": "8PSO1",
-          "current_port": "부산",
-          "operator_display": "더블유케이해운(주)",
-          "fields_added": [
-            "berth"
-          ]
-        },
-        {
-          "vessel_key": "CQ2401",
-          "vessel_name": "OCEAN  BREEZE",
-          "imo": "-",
-          "mmsi": "-",
-          "call_sign": "CQ2401",
-          "current_port": "대산",
-          "operator_display": "(주)토탈마린",
-          "fields_added": [
-            "berth"
-          ]
-        },
-        {
-          "vessel_key": "HOA7380",
-          "vessel_name": "자리브",
-          "imo": "-",
-          "mmsi": "-",
-          "call_sign": "HOA7380",
+          "call_sign": "HOYL",
           "current_port": "울산",
-          "operator_display": "팬오션 주식회사",
+          "operator_display": "(주)협성상운",
           "fields_added": [
             "berth"
-          ]
+          ],
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_name": "울산",
+          "port_display_name": "울산",
+          "display_name": "울산"
+        },
+        {
+          "vessel_key": "BOCT5",
+          "vessel_name": "BEI HAI FENG HUANG",
+          "imo": "-",
+          "mmsi": "-",
+          "call_sign": "BOCT5",
+          "current_port": "울산",
+          "operator_display": "그레이트해운(주)",
+          "fields_added": [
+            "berth"
+          ],
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_name": "울산",
+          "port_display_name": "울산",
+          "display_name": "울산"
+        },
+        {
+          "vessel_key": "V7JH8",
+          "vessel_name": "CF DIAMOND",
+          "imo": "-",
+          "mmsi": "-",
+          "call_sign": "V7JH8",
+          "current_port": "인천",
+          "operator_display": "한일상선(주)",
+          "fields_added": [
+            "berth"
+          ],
+          "normalized_port": {
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "인천",
+            "raw_aliases": [
+              "인천"
+            ]
+          },
+          "port_code": "030",
+          "port_name": "인천",
+          "port_display_name": "인천",
+          "display_name": "인천"
         }
       ],
-      "blocker_reason": "",
-      "quality_label": "HIGH",
-      "utilization_score": 84
+      "blocker_reason": "missing_env",
+      "quality_label": "FAILED",
+      "utilization_score": 5
     },
     {
       "source_key": "vessel_spec",
@@ -245,150 +356,195 @@
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "mmsi",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "call_sign",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "vessel_type",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "gt",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "dwt",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         },
         {
           "field": "flag",
-          "reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+          "reason": "missing_api_url"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
-      "quality_label": "LOW",
-      "utilization_score": 45
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED",
+      "utilization_score": 5
     },
     {
       "source_key": "mof_ais_info",
-      "matched_vessels": 10,
+      "matched_vessels": 0,
       "fields_added": [],
       "fields_updated": [],
       "fields_blocked": [
         {
           "field": "imo",
-          "reason": "identifier_or_spec_field_not_visible_in_current_vessel_display"
+          "reason": "missing_api_url"
         },
         {
           "field": "mmsi",
-          "reason": "identifier_or_spec_field_not_visible_in_current_vessel_display"
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "call_sign",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "vessel_name",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "vessel_type",
+          "reason": "missing_api_url"
         }
       ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH",
-      "utilization_score": 84
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED",
+      "utilization_score": 5
     },
     {
       "source_key": "mof_ais_dynamic",
-      "matched_vessels": 10,
+      "matched_vessels": 0,
       "fields_added": [],
       "fields_updated": [],
-      "fields_blocked": [],
+      "fields_blocked": [
+        {
+          "field": "mmsi",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "lat",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "lon",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "speed",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "course",
+          "reason": "missing_api_url"
+        },
+        {
+          "field": "last_seen_at",
+          "reason": "missing_api_url"
+        }
+      ],
       "sample_enriched_vessels": [],
-      "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
-      "quality_label": "HIGH",
-      "utilization_score": 84
+      "blocker_reason": "missing_api_url",
+      "quality_label": "FAILED",
+      "utilization_score": 5
     },
     {
       "source_key": "port_operation",
-      "matched_vessels": 664,
+      "matched_vessels": 1015,
       "fields_added": [
         {
           "field": "vessel_name",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "current_port",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "eta",
-          "count": 379
+          "count": 549
         },
         {
           "field": "ata",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "etd",
-          "count": 662
+          "count": 1012
         },
         {
           "field": "atd",
-          "count": 380
+          "count": 551
         },
         {
           "field": "berth",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "operator_display",
-          "count": 664
+          "count": 97
+        },
+        {
+          "field": "port",
+          "count": 1015
         }
       ],
       "fields_updated": [
         {
           "field": "vessel_name",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "current_port",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "eta",
-          "count": 379
+          "count": 549
         },
         {
           "field": "ata",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "etd",
-          "count": 662
+          "count": 1012
         },
         {
           "field": "atd",
-          "count": 380
+          "count": 551
         },
         {
           "field": "berth",
-          "count": 664
+          "count": 1015
         },
         {
           "field": "operator_display",
-          "count": 664
+          "count": 97
+        },
+        {
+          "field": "port",
+          "count": 1015
         }
       ],
       "fields_blocked": [],
       "sample_enriched_vessels": [
         {
-          "vessel_key": "5BMI6",
-          "vessel_name": "KONA TRADER",
+          "vessel_key": "ONKD",
+          "vessel_name": "MINERAL HOPE",
           "imo": "-",
           "mmsi": "-",
-          "call_sign": "5BMI6",
-          "current_port": "부산",
-          "operator_display": "팬오션 주식회사",
+          "call_sign": "ONKD",
+          "current_port": "평택·당진",
+          "operator_display": "상록해운주식회사",
           "fields_added": [
             "vessel_name",
             "current_port",
@@ -397,34 +553,31 @@
             "etd",
             "atd",
             "berth",
-            "operator_display"
-          ]
+            "operator_display",
+            "port"
+          ],
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
         },
         {
-          "vessel_key": "3X2065",
-          "vessel_name": "KRUGER",
+          "vessel_key": "V7B3347",
+          "vessel_name": "MARCEL",
           "imo": "-",
           "mmsi": "-",
-          "call_sign": "3X2065",
+          "call_sign": "V7B3347",
           "current_port": "부산",
-          "operator_display": "케이앤제이오션(주)",
-          "fields_added": [
-            "vessel_name",
-            "current_port",
-            "ata",
-            "etd",
-            "berth",
-            "operator_display"
-          ]
-        },
-        {
-          "vessel_key": "8PSO1",
-          "vessel_name": "ADMIRAL SCHMIDT",
-          "imo": "-",
-          "mmsi": "-",
-          "call_sign": "8PSO1",
-          "current_port": "부산",
-          "operator_display": "더블유케이해운(주)",
+          "operator_display": "명성통상",
           "fields_added": [
             "vessel_name",
             "current_port",
@@ -433,36 +586,31 @@
             "etd",
             "atd",
             "berth",
-            "operator_display"
-          ]
+            "operator_display",
+            "port"
+          ],
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
         },
         {
-          "vessel_key": "CQ2401",
-          "vessel_name": "OCEAN  BREEZE",
+          "vessel_key": "HOYL",
+          "vessel_name": "BERGE DOI INTHANON",
           "imo": "-",
           "mmsi": "-",
-          "call_sign": "CQ2401",
-          "current_port": "대산",
-          "operator_display": "(주)토탈마린",
-          "fields_added": [
-            "vessel_name",
-            "current_port",
-            "eta",
-            "ata",
-            "etd",
-            "atd",
-            "berth",
-            "operator_display"
-          ]
-        },
-        {
-          "vessel_key": "HOA7380",
-          "vessel_name": "자리브",
-          "imo": "-",
-          "mmsi": "-",
-          "call_sign": "HOA7380",
+          "call_sign": "HOYL",
           "current_port": "울산",
-          "operator_display": "팬오션 주식회사",
+          "operator_display": "(주)협성상운",
           "fields_added": [
             "vessel_name",
             "current_port",
@@ -471,13 +619,97 @@
             "etd",
             "atd",
             "berth",
-            "operator_display"
-          ]
+            "operator_display",
+            "port"
+          ],
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_name": "울산",
+          "port_display_name": "울산",
+          "display_name": "울산"
+        },
+        {
+          "vessel_key": "BOCT5",
+          "vessel_name": "BEI HAI FENG HUANG",
+          "imo": "-",
+          "mmsi": "-",
+          "call_sign": "BOCT5",
+          "current_port": "울산",
+          "operator_display": "그레이트해운(주)",
+          "fields_added": [
+            "vessel_name",
+            "current_port",
+            "eta",
+            "ata",
+            "etd",
+            "atd",
+            "berth",
+            "operator_display",
+            "port"
+          ],
+          "normalized_port": {
+            "port_code": "820",
+            "port_name": "울산",
+            "display_name": "울산",
+            "raw_port": "울산",
+            "raw_aliases": [
+              "울산"
+            ]
+          },
+          "port_code": "820",
+          "port_name": "울산",
+          "port_display_name": "울산",
+          "display_name": "울산"
+        },
+        {
+          "vessel_key": "V7JH8",
+          "vessel_name": "CF DIAMOND",
+          "imo": "-",
+          "mmsi": "-",
+          "call_sign": "V7JH8",
+          "current_port": "인천",
+          "operator_display": "한일상선(주)",
+          "fields_added": [
+            "vessel_name",
+            "current_port",
+            "eta",
+            "ata",
+            "etd",
+            "atd",
+            "berth",
+            "operator_display",
+            "port"
+          ],
+          "normalized_port": {
+            "port_code": "030",
+            "port_name": "인천",
+            "display_name": "인천",
+            "raw_port": "인천",
+            "raw_aliases": [
+              "인천"
+            ]
+          },
+          "port_code": "030",
+          "port_name": "인천",
+          "port_display_name": "인천",
+          "display_name": "인천"
         }
       ],
       "blocker_reason": "",
       "quality_label": "HIGH",
       "utilization_score": 100
     }
-  ]
+  ],
+  "status_run_id": "run_20260612144845570_ce7e353f",
+  "stale_diagnostic": false,
+  "stale_reason": "",
+  "placeholder": false
 }

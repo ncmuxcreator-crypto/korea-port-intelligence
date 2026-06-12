@@ -32,7 +32,16 @@ jobs:
       NPM_CONFIG_FUND: "false"
       NPM_CONFIG_PROGRESS: "false"
       NPM_CONFIG_LEGACY_PEER_DEPS: "true"
-      UPDATE_MODE: scheduled
+      UPDATE_MODE: core
+      ENRICHMENT_MODE: lightweight_apply_cache
+      DISCOVERY_MODE: off
+      DB_AUDIT_MODE: off
+      SOURCE_CSV_MODE: cache_only
+      RUN_HEAVY_AUDITS: "false"
+      RUN_DISCOVERY: "false"
+      RUN_DB_CLEANUP_AUDIT: "false"
+      RUN_DATA_UTILIZATION_AUDIT: "false"
+      RUN_HIDDEN_FEATURE_AUDIT: "false"
       UPDATE_TIMEOUT_MS: 900000
       SOURCE_TIMEOUT_MS: 30000
       MAX_PORTS_PER_RUN: 50
@@ -222,7 +231,7 @@ jobs:
         run: |
           echo "Starting Korea Port Intelligence public-data collection pipeline"
           echo "Collectors are executed inside scripts/update.js -> collectKoreaData()"
-          npm run update
+          npm run update:core
 
       - name: Generate Biofouling Next 4 Days GeoJSON
         if: always()
@@ -332,10 +341,6 @@ jobs:
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
-      - name: Run health audit
-        timeout-minutes: 2
-        run: npm run health
-
       - name: Deploy Cloudflare Worker
         timeout-minutes: 5
         run: |
@@ -357,6 +362,24 @@ jobs:
               status.json \
               source-health-runtime.json \
               source-collection-status.json \
+              source-quality-score.json \
+              enrichment-utilization.json \
+              runtime-budget-report.json \
+              runtime/update-tiers.json \
+              aux/latest/index.json \
+              aux/latest/pilotage-summary.json \
+              aux/latest/berth-summary.json \
+              aux/latest/ais-info-summary.json \
+              aux/latest/ais-dynamic-summary.json \
+              aux/latest/vessel-spec-summary.json \
+              aux/latest/cache-status.json \
+              aux/source-csv-summary.json \
+              enrichment/latest/index.json \
+              enrichment/latest/summary.json \
+              enrichment/latest/patches.json \
+              enrichment/latest/review-queue.json \
+              enrichment/summary.json \
+              enrichment/review-queue.json \
               data-continuity.json \
               health/pipeline.json \
               candidates/top.json \

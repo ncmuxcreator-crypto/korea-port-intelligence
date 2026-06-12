@@ -1,0 +1,70 @@
+name: Discovery Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "45 19 * * 0"
+
+concurrency:
+  group: discovery-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    env:
+      CI: true
+      VALIDATION_MODE: production
+      UPDATE_MODE: discovery_audit
+      DISCOVERY_MODE: full
+      DB_AUDIT_MODE: full
+      RUN_DISCOVERY: "true"
+      RUN_DB_CLEANUP_AUDIT: "true"
+      RUN_DATA_UTILIZATION_AUDIT: "true"
+      RUN_HIDDEN_FEATURE_AUDIT: "true"
+      RUN_HEAVY_AUDITS: "true"
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_PROGRESS: "false"
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund --progress=false
+
+      - name: Run discovery and heavy audits
+        timeout-minutes: 25
+        run: |
+          npm run discover:features-and-apis
+          npm run audit:db-cleanup
+          npm run audit:data-utilization
+          npm run audit:hidden-features
+
+      - name: Validate and build
+        if: always()
+        run: |
+          npm run validate
+          npm run build
+
+      - name: Upload discovery artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: korea-port-intelligence-discovery-audit
+          retention-days: 14
+          path: |
+            docs/
+            dashboard/api/discovery/
+            dashboard/api/storage-efficiency-report.json
+            dashboard/api/db-cleanup-plan.json
