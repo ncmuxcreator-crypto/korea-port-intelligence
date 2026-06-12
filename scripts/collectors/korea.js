@@ -2454,11 +2454,10 @@ async function collectRealRows() {
   diagnostics.smoke_test_status = smokeTest.smoke_test_status;
   diagnostics.smoke_test_failure_reason = smokeTest.smoke_test_failure_reason || null;
   if (needsPortOperationSmokeTest && smokeTest.smoke_test_status !== "passed") {
-    diagnostics.fallback_used = true;
-    diagnostics.skip_reason = "unknown_error";
-    diagnostics.attempted_count = 1;
-    diagnostics.failed_count = 1;
-    diagnostics.skipped_count = preflight.enabled_ports_passed_to_collector_count * Math.max(1, preflight.deGb_values.length);
+    diagnostics.smoke_test_non_blocking = true;
+    diagnostics.smoke_test_recovery_action = "continue_full_port_operation_collection";
+    diagnostics.attempted_count += 1;
+    diagnostics.failed_count += 1;
     diagnostics.sources = [
       {
         key: "port_operation_smoke_test",
@@ -2483,30 +2482,9 @@ async function collectRealRows() {
         smoke_test_failure_reason: smokeTest.smoke_test_failure_reason,
         http_status: smokeTest.http_status || null,
         prtAgCd: smokeTest.prtAgCd || null
-      },
-      ...preflight.planned_port_operation_sources.map(source => ({
-        ...source,
-        started_at: now,
-        finished_at: now,
-        duration_ms: 0,
-        status: "skipped",
-        success: false,
-        row_count: 0,
-        normalized_count: 0,
-        rows_collected: 0,
-        rows_normalized: 0,
-        rows_matched: 0,
-        actionable_count: 0,
-        retry_count: 0,
-        skip_reason: "unknown_error",
-        reason: "unknown_error",
-        raw_skip_reason: smokeTest.smoke_test_failure_reason
-      }))
+      }
     ];
-    diagnostics.coverage.port_operation_skip_reason_breakdown = { unknown_error: preflight.planned_port_operation_sources.length };
-    const error = new Error(`Port Operation smoke test failed: ${smokeTest.smoke_test_failure_reason}`);
-    error.smoke_test = smokeTest;
-    throw error;
+    diagnostics.coverage.port_operation_smoke_test_warning = smokeTest.smoke_test_failure_reason;
   }
 
   for (const source of configuredSources.filter(source => !debugOnly || source.key === debugOnly)) {
