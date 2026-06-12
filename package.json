@@ -98,6 +98,8 @@
     "discover:features-and-apis": "node scripts/discover-features-and-apis.js",
     "audit:discovery": "node scripts/discover-features-and-apis.js",
     "plan:db-cleanup": "node scripts/plan-db-cleanup.js",
+    "db:cleanup:dry-run": "node scripts/with-env.js scripts/apply-db-cleanup-plan.js",
+    "db:cleanup:apply": "node scripts/with-env.js scripts/apply-db-cleanup-plan.js --apply",
     "audit:source-csv": "node scripts/with-env.js scripts/audit-source-csv.js",
     "audit:vessel-spec": "node scripts/with-env.js scripts/audit-vessel-spec.js",
     "db:migrate": "node scripts/apply-migrations.js",
