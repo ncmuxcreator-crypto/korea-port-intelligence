@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T17:38:10.503Z",
+  "generated_at": "2026-06-12T18:12:31.333Z",
   "owner_tier": "core",
   "core_may_update": true,
   "generated_by": "github_actions",
@@ -13,17 +13,17 @@
   "detail_endpoint": "dashboard/api/status.json",
   "status": "success",
   "health_status": "success",
-  "run_id": "run_20260612173214161_14ba8756",
-  "active_run_id": "run_20260612173214161_14ba8756",
-  "latest_successful_run_id": "run_20260612173214161_14ba8756",
-  "last_success_at": "2026-06-12T17:38:10.503Z",
+  "run_id": "run_20260612180712000_4efc3b84",
+  "active_run_id": "run_20260612180712000_4efc3b84",
+  "latest_successful_run_id": "run_20260612180712000_4efc3b84",
+  "last_success_at": "2026-06-12T18:12:31.333Z",
   "current_rows": 32,
   "selected_dataset_count": 32,
-  "total_rows": 1014,
+  "total_rows": 1010,
   "fallback_used": false,
   "supabase_write_status": "completed",
   "dataset_promotion_status": "promoted",
-  "local_core_non_promoted": true,
+  "local_core_non_promoted": false,
   "data_continuity": {
     "status": "healthy",
     "storage_verification_status": {
@@ -31,14 +31,14 @@
       "post_write_verification_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 1014,
+        "vessel_snapshots": 1010,
         "source_collection_logs": 24,
-        "vessel_entities": 1014,
-        "vessel_master": 1014,
-        "port_call_master": 1014,
-        "opportunity_master": 1014,
-        "risk_history": 316,
-        "vessel_events": 4240,
+        "vessel_entities": 1010,
+        "vessel_master": 1010,
+        "port_call_master": 1010,
+        "opportunity_master": 1010,
+        "risk_history": 314,
+        "vessel_events": 4224,
         "pilot_schedule_events": 0,
         "port_congestion_snapshots": 8,
         "enrichment_match_candidates": 0,
@@ -48,20 +48,20 @@
         "sales_candidates_current": 140,
         "immediate_targets_current": 0,
         "port_summary_current": 8,
-        "feature_store": 316,
-        "feature_snapshots": 316,
-        "rule_evaluations": 681,
-        "explainability_snapshots": 316,
+        "feature_store": 314,
+        "feature_snapshots": 314,
+        "rule_evaluations": 680,
+        "explainability_snapshots": 314,
         "model_training_rows": 211,
-        "vessel_snapshot_daily": 1014,
+        "vessel_snapshot_daily": 1010,
         "port_snapshot_daily": 8,
         "operator_snapshot_daily": 10,
-        "route_snapshot_daily": 311,
+        "route_snapshot_daily": 308,
         "commercial_opportunity_daily": 31,
         "vessel_universe_audit": 1
       },
       "successful_dataset_bundle_status": "saved",
-      "successful_dataset_rows": 1014,
+      "successful_dataset_rows": 1010,
       "restore_status": "not_needed"
     },
     "fallback_order": [
@@ -69,26 +69,26 @@
         "step": 1,
         "source": "active_dataset_pointer",
         "status": "available",
-        "rows": 1014
+        "rows": 1010
       },
       {
         "step": 2,
         "source": "latest_successful_dataset_bundle",
         "status": "available",
-        "rows": 1014,
-        "run_id": "run_20260612173214161_14ba8756"
+        "rows": 1010,
+        "run_id": "run_20260612180712000_4efc3b84"
       },
       {
         "step": 3,
         "source": "latest_successful_dataset",
         "status": "available",
-        "rows": 1015
+        "rows": 1010
       },
       {
         "step": 4,
         "source": "latest_snapshot",
         "status": "available",
-        "rows": 1015
+        "rows": 1010
       },
       {
         "step": 5,
@@ -100,18 +100,11 @@
   },
   "warning_count": 0,
   "warning_summary": [],
-  "source_run_id": "run_20260612173214161_14ba8756",
+  "source_run_id": "run_20260612180712000_4efc3b84",
   "snapshot_context": {
-    "run_id": "run_20260612173214161_14ba8756",
-    "generated_at": "2026-06-12T17:38:10.503Z",
+    "run_id": "run_20260612180712000_4efc3b84",
+    "generated_at": "2026-06-12T18:12:31.333Z",
     "data_mode": "live",
-    "source_run_id": "run_20260612173214161_14ba8756"
-  },
-  "local_core_run_id": "run_20260612175908816_801fb42c",
-  "local_core_generated_at": "2026-06-12T18:03:42.049Z",
-  "local_core_generated_by": "local",
-  "local_core_status_summary_preserved": true,
-  "local_core_note": "Local core diagnostics were generated, but production status-summary remains canonical until a GitHub Actions production run promotes the dataset.",
-  "mixed_tier_status": true,
-  "mixed_tier_note": "Production status-summary is preserved while local core diagnostics are non-promoted."
+    "source_run_id": "run_20260612180712000_4efc3b84"
+  }
 }
