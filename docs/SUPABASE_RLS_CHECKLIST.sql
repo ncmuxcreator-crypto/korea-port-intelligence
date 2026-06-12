@@ -1,4 +1,4 @@
--- HWK v17.7 Supabase RLS checklist
+-- Korea Port Intelligence v17.7 Supabase RLS checklist
 -- Run after confirming backend/service-role read-write path.
 
 ALTER TABLE IF EXISTS public.vessels ENABLE ROW LEVEL SECURITY;

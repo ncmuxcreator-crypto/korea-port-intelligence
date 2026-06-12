@@ -1,4 +1,4 @@
-HWK v3 BUILD
+Korea Port Intelligence v3 BUILD
 
 포함:
 - 자동 6시간 업데이트

@@ -1889,7 +1889,7 @@ select
 from pg_stat_user_tables
 order by pg_total_relation_size(relid) desc;
 
-comment on view hwk_storage_table_sizes is 'HWK Supabase storage triage view. Shows estimated rows and table/index/toast size by table.';
+comment on view hwk_storage_table_sizes is 'Korea Port Intelligence Supabase storage triage view. Shows estimated rows and table/index/toast size by table.';
 
 create index if not exists idx_pipeline_runs_started_at on pipeline_runs(run_started_at desc);
 create index if not exists idx_data_collection_runs_started_at on data_collection_runs(started_at desc);

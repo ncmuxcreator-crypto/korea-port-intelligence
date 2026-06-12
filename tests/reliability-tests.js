@@ -511,7 +511,7 @@ for (const marker of [
 assert(!/ReferenceError/.test(JSON.stringify(status.error_summary || {})), "Status must not contain ReferenceError from fallback logic.");
 
 const opportunities = rows(topPayload);
-assert(topPayload.focus_question === "Which vessel should HullWiper Korea contact next and why?", "Top candidates must keep the sales-intelligence focus question.");
+assert(topPayload.focus_question === "Which vessel should Korea Port Intelligence contact next and why?", "Top candidates must keep the sales-intelligence focus question.");
 assert(topPayload.ranking_model === "sales_priority_v3" || opportunities.length === 0, "Top candidates must expose sales_priority_v3 ranking model when candidates exist.");
 assertSortedDescending(opportunities, "opportunity_score", "Top candidates");
 for (const [index, candidate] of opportunities.slice(0, 10).entries()) {
@@ -674,9 +674,9 @@ if (continuityOrder.length) {
 }
 
 if (failures.length) {
-  console.error("[HWK] reliability test failures");
+  console.error("[Korea Port Intelligence] reliability test failures");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log("[HWK] reliability tests passed");
+console.log("[Korea Port Intelligence] reliability tests passed");

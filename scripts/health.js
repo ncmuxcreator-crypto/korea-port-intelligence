@@ -53,12 +53,12 @@ const runtimeStatus = readJson("dashboard/api/status.json", {});
 const localNoLiveData = validationMode !== "production" && String(runtimeStatus.data_mode || "").toLowerCase() === "no_live_data";
 
 if (failures.length && !localNoLiveData) {
-  console.error("[HWK] health failed", failures);
+  console.error("[Korea Port Intelligence] health failed", failures);
   process.exit(1);
 }
 
 if (failures.length && localNoLiveData) {
-  console.warn("[HWK] health diagnostics completed with local no-live-data warnings", failures);
+  console.warn("[Korea Port Intelligence] health diagnostics completed with local no-live-data warnings", failures);
 } else {
-  console.log("[HWK] health checks passed");
+  console.log("[Korea Port Intelligence] health checks passed");
 }

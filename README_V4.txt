@@ -1,4 +1,4 @@
-HWK V4 BUILD
+Korea Port Intelligence V4 BUILD
 
 포함 기능:
 - Risk Engine

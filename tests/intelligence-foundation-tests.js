@@ -66,9 +66,9 @@ assert(resolvePortCount({
 }) === 2, "Port KPI must recover from zero summary count using vessel rows.");
 
 if (failures.length) {
-  console.error("[HWK] intelligence foundation test failures");
+  console.error("[Korea Port Intelligence] intelligence foundation test failures");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log("[HWK] intelligence foundation tests passed");
+console.log("[Korea Port Intelligence] intelligence foundation tests passed");

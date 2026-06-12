@@ -1,10 +1,10 @@
 import { archiveRawToGDrive } from "./lib/gdrive.js";
 
 const result = await archiveRawToGDrive({
-  check: "hwk-google-drive-archive",
+  check: "korea-port-intelligence-google-drive-archive",
   generated_at: new Date().toISOString(),
-  note: "Small upload test for HWK raw data archive."
-}, { namePrefix: "hwk-gdrive-check" });
+  note: "Small upload test for Korea Port Intelligence raw data archive."
+}, { namePrefix: "korea-port-intelligence-gdrive-check" });
 
 console.log(JSON.stringify(result, null, 2));
 

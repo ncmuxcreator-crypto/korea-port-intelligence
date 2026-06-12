@@ -2239,7 +2239,7 @@ async function collectRealRows() {
     throw error;
   }
   if (env("COLLECTOR_DEBUG_ONLY") || debugVerboseEnabled()) {
-    console.log("[HWK] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
+    console.log("[Korea Port Intelligence] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
   }
 
   const debugOnly = env("COLLECTOR_DEBUG_ONLY");

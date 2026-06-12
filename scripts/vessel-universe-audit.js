@@ -343,7 +343,7 @@ async function main() {
     dataset = await loadSupabaseDataset();
   } catch (error) {
     dataset = null;
-    console.warn(`[HWK] Supabase audit skipped: ${error.message}`);
+    console.warn(`[Korea Port Intelligence] Supabase audit skipped: ${error.message}`);
   }
   if (!dataset) dataset = loadLocalDataset();
 
@@ -351,7 +351,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT_MD), { recursive: true });
   fs.writeFileSync(OUT_JSON, JSON.stringify(audit, null, 2));
   fs.writeFileSync(OUT_MD, renderMarkdown(audit));
-  console.log(`[HWK] Vessel universe audit written to ${path.relative(ROOT, OUT_MD)}`);
+  console.log(`[Korea Port Intelligence] Vessel universe audit written to ${path.relative(ROOT, OUT_MD)}`);
   console.log(JSON.stringify({
     dataset_source: audit.dataset_source,
     run_id: audit.run_id,

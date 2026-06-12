@@ -220,7 +220,7 @@ jobs:
       - name: Collect public port data and build dashboard
         timeout-minutes: 20
         run: |
-          echo "Starting HWK public-data collection pipeline"
+          echo "Starting Korea Port Intelligence public-data collection pipeline"
           echo "Collectors are executed inside scripts/update.js -> collectKoreaData()"
           npm run update
 
@@ -241,7 +241,7 @@ jobs:
           }
           const status = JSON.parse(fs.readFileSync(path, "utf8"));
           const diag = status.collector_diagnostics || {};
-          console.log("=== HWK Collector Diagnostics ===");
+          console.log("=== Korea Port Intelligence Collector Diagnostics ===");
           console.log(`status=${status.status || "unknown"}`);
           if (status.error) console.log(`error=${status.error}`);
           console.log(`data_mode=${status.data_mode}`);
@@ -299,7 +299,7 @@ jobs:
           const fs = require("fs");
           for (const file of ["dashboard/api/source-health-runtime.json", "dashboard/api/source-collection-status.json"]) {
             if (!fs.existsSync(file)) {
-              console.log(`::warning::${file} missing; check update output and hwk-generated-snapshot artifact.`);
+              console.log(`::warning::${file} missing; check update output and korea-port-intelligence-generated-snapshot artifact.`);
               continue;
             }
             const payload = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -309,7 +309,7 @@ jobs:
             const workflow = payload.GITHUB_WORKFLOW || null;
             console.log(`${file}: generated_by=${generatedBy}; is_github_actions=${isGithubActions}; GITHUB_RUN_ID=${runId || "null"}; GITHUB_WORKFLOW=${workflow || "null"}; run_id=${payload.run_id || "null"}`);
             if (generatedBy === "local" || !isGithubActions || !runId || !workflow) {
-              console.log(`::warning::Repo source diagnostics may not reflect GitHub Actions secrets. Check hwk-generated-snapshot artifact.`);
+              console.log(`::warning::Repo source diagnostics may not reflect GitHub Actions secrets. Check korea-port-intelligence-generated-snapshot artifact.`);
             }
           }
           NODE
@@ -433,7 +433,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hwk-generated-snapshot
+          name: korea-port-intelligence-generated-snapshot
           retention-days: 14
           path: |
             data/latest-lite.json

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HWK Intelligence v15.9</title>
+<title>Korea Port Intelligence v15.9</title>
 <style>
 :root{--bg:#020617;--card:#0f172a;--line:#1e293b;--text:#f8fafc;--muted:#94a3b8;--blue:#38bdf8;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#a855f7}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#0b2447 0,#020617 46%);color:var(--text);font-family:Arial,system-ui,sans-serif;padding:28px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.eyebrow{color:var(--blue);font-weight:700;letter-spacing:.08em;font-size:12px;text-transform:uppercase}.title{font-size:34px;margin:6px 0}.meta{color:var(--muted);font-size:13px}.badge{padding:10px 16px;background:#14532d;border:1px solid #166534;border-radius:999px;color:#bbf7d0;font-weight:700}.badge.error{background:#7f1d1d;color:#fecaca;border-color:#991b1b}.badge.warn{background:#78350f;color:#fde68a;border-color:#92400e}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:24px}.metric{background:rgba(15,23,42,.92);padding:18px;border-radius:18px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.24)}.metric span{display:block;color:var(--muted);font-size:13px}.metric strong{display:block;margin-top:8px;font-size:30px;color:var(--blue)}.section{margin-top:26px}.section h2{font-size:18px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}.card{background:rgba(15,23,42,.94);padding:20px;border-radius:20px;border:1px solid var(--line)}.vessel-card.critical{border-color:#ef4444;box-shadow:0 0 0 1px rgba(239,68,68,.25)}.vessel-card.high{border-color:#7c3aed}.score{font-size:42px;font-weight:800;color:var(--blue);line-height:1}.chip{display:inline-block;margin:8px 6px 0 0;padding:6px 10px;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:12px}.chip.hot{background:#3b0764;color:#e9d5ff}.chip.critical{background:#7f1d1d;color:#fecaca}.chip.compliance{background:#422006;color:#fde68a}.chip.action{background:#082f49;color:#bae6fd}.chip.pass{background:#14532d;color:#bbf7d0}.chip.warn{background:#78350f;color:#fde68a}.chip.fail{background:#7f1d1d;color:#fecaca}.chip.info{background:#172554;color:#bfdbfe}.port-table{width:100%;border-collapse:collapse;background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:18px;overflow:hidden}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);font-size:14px}th{color:#93c5fd;background:#0b1220}.reason{margin:10px 0 0;padding-left:18px;color:#cbd5e1}.reason li{margin:4px 0}.footer{margin-top:28px;color:var(--muted);font-size:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.toolbar input,.toolbar select,.toolbar button{background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-width:160px}.toolbar button{cursor:pointer;color:#bae6fd}.empty{border:1px dashed var(--line);border-radius:18px;padding:22px;color:var(--muted)}.money{color:#86efac;font-weight:700}.small{font-size:12px;color:var(--muted)}.readiness{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.check{border:1px solid var(--line);border-radius:16px;padding:14px;background:#0b1220}.check b{display:block;margin-bottom:6px}.copy{font-size:12px;color:#93c5fd;cursor:pointer;margin-top:8px;display:inline-block}.note{background:#082f49;border:1px solid #075985;border-radius:16px;padding:14px;color:#dbeafe;margin-top:12px}.stale{color:#fde68a}.ok{color:#bbf7d0}
@@ -12,8 +12,8 @@
 <body>
 <div class="header">
   <div>
-    <div class="eyebrow">HullWiper Korea Market Intelligence</div>
-    <h1 class="title">HWK Intelligence v15.9</h1>
+    <div class="eyebrow">Korea Port Intelligence Market Intelligence</div>
+    <h1 class="title">Korea Port Intelligence v15.9</h1>
     <p class="meta">Collector manifest · Source registry · Public API first · Sales action queue</p>
   </div>
   <div id="statusBadge" class="badge">Loading status...</div>
@@ -255,7 +255,7 @@ function exportCsv(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `hwk_sales_priority_v${statusCache.version || "15.9"}.csv`;
+  a.download = `korea-port-intelligence-sales-priority-v${statusCache.version || "15.9"}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }

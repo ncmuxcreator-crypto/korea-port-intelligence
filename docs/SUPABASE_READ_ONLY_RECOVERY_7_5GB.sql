@@ -1,4 +1,4 @@
--- HWK Supabase read-only recovery for Pro 7.5GB operation
+-- Korea Port Intelligence Supabase read-only recovery for Pro 7.5GB operation
 --
 -- Use when Supabase has put the project into read-only mode because storage
 -- limits were exceeded. This follows Supabase's documented recovery sequence:

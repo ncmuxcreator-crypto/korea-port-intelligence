@@ -1,4 +1,4 @@
-﻿const API_CACHE_SECONDS = 300;
+const API_CACHE_SECONDS = 300;
 const AUTO_UPDATE_INTERVAL_HOURS = 4;
 const PUBLIC_API_SCHEMA_VERSION = "1.0";
 const VERIFICATION_QUEUE_OUTPUT_LIMIT = 200;
@@ -6077,7 +6077,7 @@ function topCandidatesPayloadFromRecords(records = [], source = {}, generatedAt 
     record_count: opportunities.length,
     source_table: "opportunity_master",
     items: opportunities,
-    focus_question: "Which vessel should HullWiper Korea contact next and why?",
+    focus_question: "Which vessel should Korea Port Intelligence contact next and why?",
     ranking_model: "sales_priority_v3",
     immediate_targets: opportunities.filter(v => v.sales_priority_band === "HOT" || v.is_immediate_candidate || commercialScore(v) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 10),
     opportunities,
@@ -7945,7 +7945,7 @@ async function apiResponse(url, env) {
         opportunity_count: summary.opportunity_count,
         immediate_targets: summaryOpportunities.filter(item => item.sales_priority_band === "HOT" || item.is_immediate_candidate).slice(0, 10),
         opportunities: summaryOpportunities,
-        focus_question: "Which vessel should HullWiper Korea contact next and why?",
+        focus_question: "Which vessel should Korea Port Intelligence contact next and why?",
         ranking_model: "sales_priority_v3"
       }, { headers: corsHeaders() });
       }
@@ -8353,7 +8353,7 @@ async function apiResponse(url, env) {
       headers: {
         ...corsHeaders(),
         "content-type": "text/csv; charset=utf-8",
-        "content-disposition": `attachment; filename="hwk-${group === "all" ? "monitoring-vessels" : "sales-target-vessels"}.csv"`
+        "content-disposition": `attachment; filename="korea-port-intelligence-${group === "all" ? "monitoring-vessels" : "sales-target-vessels"}.csv"`
       }
     });
   }
@@ -8447,7 +8447,7 @@ async function apiResponse(url, env) {
         opportunity_count: summary.opportunity_count,
         immediate_targets: summaryOpportunities.filter(item => item.sales_priority_band === "HOT" || item.is_immediate_candidate).slice(0, 10),
         opportunities: summaryOpportunities,
-        focus_question: "Which vessel should HullWiper Korea contact next and why?",
+        focus_question: "Which vessel should Korea Port Intelligence contact next and why?",
         ranking_model: "sales_priority_v3"
       }, { headers: corsHeaders() });
     }

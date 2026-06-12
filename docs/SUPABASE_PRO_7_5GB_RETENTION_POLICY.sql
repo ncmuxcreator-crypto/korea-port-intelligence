@@ -1,4 +1,4 @@
--- HWK Supabase Pro 7.5GB Retention Policy
+-- Korea Port Intelligence Supabase Pro 7.5GB Retention Policy
 -- Goal: operate below a 7.5GB database cap while preserving useful sales
 -- intelligence history.
 --

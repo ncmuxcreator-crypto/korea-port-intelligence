@@ -102,7 +102,7 @@ async function selectRowsWithSchemaCompatibility({ table, columns = [], buildQue
     stripped.add(missingColumn);
     activeColumns = activeColumns.filter(column => column !== missingColumn);
     retryCount += 1;
-    console.warn(`[HWK] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
+    console.warn(`[Korea Port Intelligence] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
   }
 }
 
@@ -500,7 +500,7 @@ async function upsertRows(supabase, table, rows, options = {}) {
       const missingColumn = missingSchemaColumnName(error);
       if (!missingColumn || !optionalColumns.has(missingColumn) || strippedColumns.has(missingColumn)) throw error;
       strippedColumns.add(missingColumn);
-      console.warn(`[HWK] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying write without optional column.`);
+      console.warn(`[Korea Port Intelligence] Daily enrichment schema compatibility: ${table}.${missingColumn} missing; retrying write without optional column.`);
     }
     saved += batch.length;
   }
@@ -527,7 +527,7 @@ async function updateSnapshots(supabase, beforeRecords = [], afterRecords = []) 
       const missingColumn = missingSchemaColumnName(error);
       if (!missingColumn || !(missingColumn in patch) || strippedColumns.has(missingColumn)) throw error;
       strippedColumns.add(missingColumn);
-      console.warn(`[HWK] Daily enrichment schema compatibility: vessel_snapshots.${missingColumn} missing; retrying update without optional column.`);
+      console.warn(`[Korea Port Intelligence] Daily enrichment schema compatibility: vessel_snapshots.${missingColumn} missing; retrying update without optional column.`);
     }
   }
   return updated;

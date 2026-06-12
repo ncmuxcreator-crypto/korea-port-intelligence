@@ -1,4 +1,4 @@
--- HWK Supabase Performance Advisor Guardrails
+-- Korea Port Intelligence Supabase Performance Advisor Guardrails
 -- Fixes low-risk advisor warnings without changing application behavior.
 --
 -- Covers:

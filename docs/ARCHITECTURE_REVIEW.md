@@ -1,10 +1,10 @@
-# HWK Port Intelligence Platform Architecture Review
+# Korea Port Intelligence Architecture Review
 
 Generated: 2026-06-02
 
 ## 1. Current Architecture
 
-HWK Port Intelligence Platform is a backend-first maritime sales intelligence system. Its core operating question is:
+Korea Port Intelligence is a backend-first maritime sales intelligence system. Its core operating question is:
 
 > Which vessel should we contact next, and why?
 

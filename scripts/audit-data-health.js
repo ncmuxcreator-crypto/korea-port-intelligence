@@ -194,6 +194,6 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error(`[HWK] data health audit failed: ${error?.message || String(error)}`);
+  console.error(`[Korea Port Intelligence] data health audit failed: ${error?.message || String(error)}`);
   process.exit(1);
 });

@@ -58,7 +58,7 @@ if (payload.generated_by === "local" || sourceHealthLocal?.generated_by === "loc
   console.log("WARN: This diagnostic was generated locally and may not reflect GitHub Actions secrets.");
 }
 if (sourceHealthRuntime?.generated_by === "local" || sourceHealthRuntime?.is_github_actions === false) {
-  console.log("WARN: Repo source diagnostics may not reflect GitHub Actions secrets. Check hwk-generated-snapshot artifact.");
+  console.log("WARN: Repo source diagnostics may not reflect GitHub Actions secrets. Check korea-port-intelligence-generated-snapshot artifact.");
 }
 if (isGithubActionsRuntime) {
   const provenanceProblems = [];

@@ -1,6 +1,6 @@
-# HWK DB Retention Profiles
+# Korea Port Intelligence DB Retention Profiles
 
-HWK supports two database retention modes through one environment value:
+Korea Port Intelligence supports two database retention modes through one environment value:
 
 ```env
 DB_RETENTION_PROFILE=free_500mb

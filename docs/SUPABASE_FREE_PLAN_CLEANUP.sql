@@ -1,4 +1,4 @@
--- HWK Supabase Free Plan Cleanup
+-- Korea Port Intelligence Supabase Free Plan Cleanup
 -- Purpose: reduce database size while preserving the active dashboard run and latest successful summary.
 -- Run section 1 first, then section 2 if the database is over the free-plan limit.
 -- Supabase usage numbers can take up to about 1 hour to refresh after cleanup.

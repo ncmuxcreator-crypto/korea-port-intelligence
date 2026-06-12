@@ -707,7 +707,7 @@ function withDedupedUpserts(supabase, audit = {}) {
                   }
                 ];
                 audit.optional_db_write_failures = optionalFailures;
-                console.warn(`[HWK] Optional DB write skipped: ${tableName}.${queryProperty}`, compactDbError(result.error));
+                console.warn(`[Korea Port Intelligence] Optional DB write skipped: ${tableName}.${queryProperty}`, compactDbError(result.error));
                 return { ...result, error: null };
               }
               return result;
@@ -2813,7 +2813,7 @@ async function upsertWithSchemaCompatibility(supabase, table, rows, options = {}
     retryCount += 1;
     compatibility.last_error = compactDbError(error);
     compatibility.status = "optional_columns_stripped";
-    console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
+    console.warn(`[Korea Port Intelligence] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying without optional column.`);
   }
 }
 
@@ -2841,7 +2841,7 @@ async function insertWithSchemaCompatibility(supabase, table, row, compatibility
     retryCount += 1;
     compatibility.last_error = compactDbError(error);
     compatibility.status = "optional_columns_stripped";
-    console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying insert without optional column.`);
+    console.warn(`[Korea Port Intelligence] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying insert without optional column.`);
   }
 }
 
@@ -2869,7 +2869,7 @@ async function updateRunWithSchemaCompatibility(supabase, table, row, runId, com
     retryCount += 1;
     compatibility.last_error = compactDbError(error);
     compatibility.status = "optional_columns_stripped";
-    console.warn(`[HWK] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying update without optional column.`);
+    console.warn(`[Korea Port Intelligence] Supabase schema compatibility: ${table}.${missingColumn} missing; retrying update without optional column.`);
   }
 }
 
@@ -2892,7 +2892,7 @@ async function upsertOptionalDiagnosticsRow(supabase, table, row, options = {}) 
   result.error = compactDbError(error);
   result.missing_table = isMissingSchemaTableError(error);
   result.status = result.missing_table ? "skipped_missing_table" : "failed_nonfatal";
-  console.warn(`[HWK] Optional diagnostics table write skipped: ${table}`, result.error);
+  console.warn(`[Korea Port Intelligence] Optional diagnostics table write skipped: ${table}`, result.error);
   return result;
 }
 
@@ -3317,7 +3317,7 @@ export async function recordRawArchiveIndex({ runId, archive = {}, counts = {}, 
   const row = {
     run_id: runId,
     source_name: "google_drive",
-    source_key: `hwk-port-raw:${runId}`,
+    source_key: `korea-port-intelligence-port-raw:${runId}`,
     collected_at: generatedAt || new Date().toISOString(),
     archive_filename: archive.name || null,
     archive_url: archive.webViewLink || null,
@@ -3625,8 +3625,8 @@ export async function saveToSupabase(records, options = {}) {
     payload: storagePayload(r),
     updated_at: r.updated_at || now,
     collected_at: now,
-    source: r.source || r.source_mode || "korea-port-hull-intelligence",
-    source_name: r.source || r.source_label || r.source_mode || "korea-port-hull-intelligence"
+    source: r.source || r.source_mode || "korea-port-intelligence",
+    source_name: r.source || r.source_label || r.source_mode || "korea-port-intelligence"
   })), row => row.snapshot_uid, "vessel_snapshots", upsertDedupeAudit);
 
   if (!rows.length) {
@@ -4426,7 +4426,7 @@ export async function saveToSupabase(records, options = {}) {
       imoRecoveryResolvedRowsSaved += batch.length;
     }
   } catch (error) {
-    console.warn(`[HWK] IMO recovery queue save skipped: ${error.message}`);
+    console.warn(`[Korea Port Intelligence] IMO recovery queue save skipped: ${error.message}`);
   }
 
   const riskRows = records.filter(r => !leanStorageEnabled() || shouldPersistAnalyticalRow(r)).map(r => ({
@@ -4565,7 +4565,7 @@ export async function saveToSupabase(records, options = {}) {
       if (/timestamp with time zone|timestamptz|pilot_time_at|pilot_time/i.test(message)) {
         pilotInsertDiagnostics.migration_suggestion = "Ensure pilot_schedule_events.pilot_time is text, pilot_time_raw is text, and pilot_time_at is nullable timestamptz. Time-only rows must store pilot_time_at=null.";
       }
-      console.warn(`[HWK] pilot_schedule_events insert skipped for batch ${index / batchSize + 1}: ${message}`);
+      console.warn(`[Korea Port Intelligence] pilot_schedule_events insert skipped for batch ${index / batchSize + 1}: ${message}`);
       continue;
     }
     pilotInsertDiagnostics.inserted += batch.length;
@@ -5064,7 +5064,7 @@ export async function saveToSupabase(records, options = {}) {
   } catch (error) {
     historicalSnapshotResult.historical_snapshot_generation_status = "failed";
     historicalSnapshotResult.historical_snapshot_error_summary = { error: error.message };
-    console.warn(`[HWK] Historical warehouse snapshot skipped: ${error.message}`);
+    console.warn(`[Korea Port Intelligence] Historical warehouse snapshot skipped: ${error.message}`);
   }
   historicalSnapshotResult.daily_snapshot_rows_written =
     historicalSnapshotResult.vessel_snapshot_daily_rows_written +
@@ -5175,7 +5175,7 @@ export async function saveToSupabase(records, options = {}) {
       });
       currentMaterializedResult.candidate_funnel_diagnostics = candidateFunnelDiagnostics;
       if (opportunityRows.length > 0 && currentRows.salesCandidates.length === 0) {
-        console.warn("[HWK] candidate funnel produced zero sales_candidates_current", JSON.stringify(candidateFunnelDiagnostics));
+        console.warn("[Korea Port Intelligence] candidate funnel produced zero sales_candidates_current", JSON.stringify(candidateFunnelDiagnostics));
       }
       await supabase.from("sales_candidates_current").update({ is_current: false }).eq("is_current", true);
       await supabase.from("immediate_targets_current").update({ is_current: false }).eq("is_current", true);

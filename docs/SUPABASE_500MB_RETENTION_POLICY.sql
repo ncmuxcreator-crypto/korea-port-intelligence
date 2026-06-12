@@ -1,4 +1,4 @@
--- HWK Supabase 500MB Retention Policy
+-- Korea Port Intelligence Supabase 500MB Retention Policy
 -- Goal: keep the Free Plan database below 500MB by keeping only the active run
 -- and the latest promoted run for bulky run-scoped tables.
 --

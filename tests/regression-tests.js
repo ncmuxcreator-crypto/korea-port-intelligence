@@ -357,9 +357,9 @@ for (const marker of ["run_id", "generated_at", "data_source_used", "port_call_i
 }
 
 if (failures.length) {
-  console.error("[HWK] regression failures");
+  console.error("[Korea Port Intelligence] regression failures");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log("[HWK] regression tests passed");
+console.log("[Korea Port Intelligence] regression tests passed");

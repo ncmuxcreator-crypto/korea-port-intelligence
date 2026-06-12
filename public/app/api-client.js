@@ -6,7 +6,7 @@ function debugStaticPath(path) {
   return path.replace(/^\/api\//, "./api/debug/").replace(/\?.*$/, "");
 }
 
-const PRODUCTION_API_ORIGIN = "https://hwk-port-intelligence.giwon48.workers.dev";
+const PRODUCTION_API_ORIGIN = "https://korea-port-intelligence.giwon48.workers.dev";
 
 function isLocalPreview() {
   return ["localhost", "127.0.0.1", ""].includes(window.location.hostname) ||

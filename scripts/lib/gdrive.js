@@ -85,7 +85,7 @@ async function getAccessToken(account) {
   return json.access_token;
 }
 
-export async function archiveRawToGDrive(payload, { namePrefix = "hwk-raw" } = {}) {
+export async function archiveRawToGDrive(payload, { namePrefix = "korea-port-intelligence-raw" } = {}) {
   const account = serviceAccountJson();
   const folderId = normalizeFolderId(process.env.GDRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID);
   const archiveEnabled = String(process.env.ARCHIVE_TO_DRIVE || "true").toLowerCase() !== "false";
@@ -101,7 +101,7 @@ export async function archiveRawToGDrive(payload, { namePrefix = "hwk-raw" } = {
     mimeType: "application/json",
     parents: [folderId]
   };
-  const boundary = `hwk_${crypto.randomUUID()}`;
+  const boundary = `korea_port_intelligence_${crypto.randomUUID()}`;
   const body = [
     `--${boundary}`,
     "Content-Type: application/json; charset=UTF-8",

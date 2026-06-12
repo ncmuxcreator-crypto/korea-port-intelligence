@@ -146,7 +146,7 @@ These fields drive:
 - Long-stay candidate detection
 - Schedule confidence
 
-Frontend work should answer: which vessel should HullWiper Korea contact now, and why?
+Frontend work should answer: which vessel should Korea Port Intelligence contact now, and why?
 
 ## Candidate Engine
 

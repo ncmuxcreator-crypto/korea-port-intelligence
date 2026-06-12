@@ -1,4 +1,4 @@
-﻿import fs from "fs";
+import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
 import { createRunId, enrichWithVesselMasterCache, getSupabase, recordRawArchiveIndex, resolveImoMmsiCandidates, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
@@ -2980,7 +2980,7 @@ function stayDaysGroup(hours) {
   return "stay_under_3d";
 }
 
-console.log(`[HWK] v${VERSION} ${BUILD_NAME} pipeline started`);
+console.log(`[Korea Port Intelligence] v${VERSION} ${BUILD_NAME} pipeline started`);
 
 const startedAt = new Date().toISOString();
 const runId = createRunId();
@@ -5312,7 +5312,7 @@ function buildAgentFollowupQueue(records = []) {
         ? "Biofouling compliance and pre-departure cleaning readiness."
         : Number(v.stay_hours || v.anchorage_hours || 0) >= 72
           ? "Long-stay hull performance and fuel-efficiency opportunity."
-          : "Work-window confirmation and HullWiper Korea service fit.",
+          : "Work-window confirmation and Korea Port Intelligence service fit.",
       next_action: v.agent || v.agent_name
         ? "Confirm IMO/operator and cleaning decision path via local agent."
         : "Identify local agent or operator contact before outreach.",
@@ -8954,7 +8954,7 @@ function buildTopCandidatesPayload({ candidateList = [], immediateTargets = [], 
     record_count: decoratedOpportunities.length,
     source_table: "opportunity_master",
     items: decoratedOpportunities,
-    focus_question: "Which vessel should HullWiper Korea contact next and why?",
+    focus_question: "Which vessel should Korea Port Intelligence contact next and why?",
     ranking_model: "sales_priority_v3",
     immediate_targets: decoratedOpportunities.filter(v => v.sales_priority_band === "HOT" || v.is_immediate_candidate || Number(v.commercial_value_score || v.total_sales_priority_score || 0) >= IMMEDIATE_TARGET_THRESHOLD).slice(0, 10),
     opportunities: decoratedOpportunities,
@@ -15135,7 +15135,7 @@ function buildDailySalesReportPayload({ topCandidates = {}, dataContinuity = {},
     generated_at: generatedAt,
     record_count: opportunities.length,
     report_type: "daily_sales_intelligence",
-    title: "HWK Daily Sales Intelligence Report",
+    title: "Korea Port Intelligence Daily Sales Report",
     executive_summary_ko: dataContinuity.status === "fallback_active"
       ? "현재 실행은 운영 데이터로 승격되지 않았습니다. 영업 판단 전 데이터 상태를 먼저 확인하세요."
       : `${hot.length}척 HOT 후보와 ${warm.length}척 WARM 후보가 선별되었습니다.`,
@@ -17015,7 +17015,7 @@ function buildDeploymentReadiness(reportBase, records, apiSources = []) {
 try {
   startupConfigDiagnostics = validateRequiredConfig({ throwOnMissing: false });
   runtimeConfigAudit = buildRuntimeConfigAudit();
-  console.log("[HWK] config diagnostics", JSON.stringify({
+  console.log("[Korea Port Intelligence] config diagnostics", JSON.stringify({
     required_config_ok: startupConfigDiagnostics.required_config_ok,
     missing_required_config: startupConfigDiagnostics.missing_required_config,
     enabled_sources: startupConfigDiagnostics.enabled_sources,
@@ -17025,7 +17025,7 @@ try {
   printRuntimeConfigAudit(runtimeConfigAudit);
   printSourceEnvDiagnostics();
   const apiSources = detectSecrets();
-  console.log(`[HWK] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
+  console.log(`[Korea Port Intelligence] API groups enabled: ${apiSources.filter(s => s.enabled).map(s => s.key).join(", ") || "none"}`);
   const dictionaries = loadReferenceDictionaries();
   collectedRows = await collectKoreaData({ apiSources });
   collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
@@ -17554,7 +17554,7 @@ try {
       collectorDiagnostics: getCollectorDiagnostics(),
       supabaseWrite
     });
-    gdriveArchive = await archiveRawToGDrive(rawArchivePayload, { namePrefix: "hwk-port-raw" });
+    gdriveArchive = await archiveRawToGDrive(rawArchivePayload, { namePrefix: "korea-port-intelligence-port-raw" });
     rawArchiveIndex = await recordRawArchiveIndex({
       runId,
       archive: gdriveArchive,
@@ -18763,35 +18763,35 @@ try {
     console.log(`${key}=${Array.isArray(value) ? value.join(",") : value}`);
   }
   if (VALIDATION_MODE === "production" && runtimeConfigAudit.missing_required_env_names?.length) {
-    console.error(`[HWK] Production config missing required env: ${runtimeConfigAudit.missing_required_env_names.join(",")}`);
+    console.error(`[Korea Port Intelligence] Production config missing required env: ${runtimeConfigAudit.missing_required_env_names.join(",")}`);
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.data_mode === "no_live_data") {
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.status === "failed") {
-    console.error(`[HWK] Production update failed: ${report.supabase_write_failure_type || report.error || "unknown_error"}`);
+    console.error(`[Korea Port Intelligence] Production update failed: ${report.supabase_write_failure_type || report.error || "unknown_error"}`);
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && !isSupabaseWriteFinal(report.supabase_write?.status)) {
-    console.error("[HWK] Supabase write did not finalize.");
+    console.error("[Korea Port Intelligence] Supabase write did not finalize.");
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.supabase_write?.status !== "completed") {
-    console.error(`[HWK] Production Supabase write did not complete: ${report.supabase_write?.status || "unknown"} (${report.supabase_write_failure_type || "db_write_failed"})`);
+    console.error(`[Korea Port Intelligence] Production Supabase write did not complete: ${report.supabase_write?.status || "unknown"} (${report.supabase_write_failure_type || "db_write_failed"})`);
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.supabase_write?.post_write_verification?.status !== "completed") {
-    console.error(`[HWK] Production post-write verification failed: ${(report.supabase_write?.post_write_verification?.errors || []).join(",") || "unknown"}`);
+    console.error(`[Korea Port Intelligence] Production post-write verification failed: ${(report.supabase_write?.post_write_verification?.errors || []).join(",") || "unknown"}`);
     process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && promotionRequiredInProduction() && report.supabase_write?.status === "completed" && report.supabase_write?.promoted !== true) {
-    console.error(`[HWK] Production promotion blocked: ${(report.promotion_blockers || []).join(",") || report.supabase_write_failure_type || "active_dataset_pointer_not_updated"}`);
+    console.error(`[Korea Port Intelligence] Production promotion blocked: ${(report.promotion_blockers || []).join(",") || report.supabase_write_failure_type || "active_dataset_pointer_not_updated"}`);
     process.exitCode = 1;
   }
 }
 
-console.log(`[HWK] v${VERSION} ${BUILD_NAME} dashboard data generated`);
+console.log(`[Korea Port Intelligence] v${VERSION} ${BUILD_NAME} dashboard data generated`);
 
 // Supabase's realtime/websocket transport can keep the Node event loop open in CI
 // even after all synchronous snapshot writes are complete. End the scheduled run
