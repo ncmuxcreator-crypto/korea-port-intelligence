@@ -59,6 +59,7 @@ jobs:
       - name: Run enrichment checks
         if: always()
         run: |
+          npm run audit:reference-enrichment
           npm run audit:source-csv-enrichment
           npm run audit:enrichment-quality
           npm run audit:source-quality
@@ -138,3 +139,7 @@ jobs:
             dashboard/api/cache/source-csv-index.json
             dashboard/api/aux/source-csv-summary.json
             dashboard/api/runtime/update-tiers.json
+
+      - name: Build
+        if: always()
+        run: npm run build

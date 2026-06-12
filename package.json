@@ -116,6 +116,7 @@
     "db:cleanup:apply": "node scripts/with-env.js scripts/apply-db-cleanup-plan.js --apply",
     "audit:source-csv": "node scripts/with-env.js scripts/audit-source-csv.js",
     "audit:source-csv-enrichment": "node scripts/audit-source-csv-enrichment.js",
+    "audit:reference-enrichment": "node scripts/audit-reference-enrichment.js",
     "build:source-csv-reference": "node scripts/build-source-csv-reference.js",
     "audit:vessel-spec": "node scripts/with-env.js scripts/audit-vessel-spec.js",
     "db:migrate": "node scripts/apply-migrations.js",

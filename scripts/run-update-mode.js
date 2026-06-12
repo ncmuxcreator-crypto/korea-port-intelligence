@@ -62,7 +62,7 @@ const presets = {
 };
 
 for (const [key, value] of Object.entries(presets[mode] || presets.core)) {
-  if (!process.env[key]) process.env[key] = value;
+  process.env[key] = value;
 }
 
 process.argv[2] = "scripts/update.js";

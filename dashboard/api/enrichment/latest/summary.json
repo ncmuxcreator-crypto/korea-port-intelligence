@@ -3,197 +3,70 @@
   "generated_by": "local",
   "is_github_actions": false,
   "validation_mode": "local",
-  "serving_mode": "static_json",
+  "serving_mode": "local_diagnostics",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260612141959474_6b6131f6",
-  "active_run_id": "run_20260612141959474_6b6131f6",
-  "latest_successful_run_id": "run_20260612144401961_14719396",
+  "run_id": "run_20260612192410471_36eb9112",
+  "active_run_id": "run_20260612192410471_36eb9112",
+  "latest_successful_run_id": null,
   "latest_successful_summary_run_id": null,
-  "source_run_id": "run_20260612141959474_6b6131f6",
-  "generated_at": "2026-06-12T14:22:44.751Z",
-  "data_mode": "static_snapshot",
-  "record_count": 10817,
+  "source_run_id": "run_20260612192410471_36eb9112",
+  "generated_at": "2026-06-12T19:24:10.597Z",
+  "data_mode": "no_live_data",
+  "record_count": 0,
   "item_count": 0,
-  "total_candidates": 10817,
-  "auto_applied": 4295,
-  "needs_review": 6522,
+  "total_candidates": 0,
+  "auto_applied": 0,
+  "needs_review": 0,
   "rejected": 0,
-  "source_rows_collected": 7892,
-  "source_rows_normalized": 7892,
-  "source_rows_matched_to_vessels": 7892,
-  "enrichment_candidates_created": 10817,
-  "enrichment_patches_applied": 4295,
-  "vessel_display_records_updated": 0,
-  "ui_visible_records": 2205,
+  "source_rows_collected": 0,
+  "source_rows_normalized": 0,
+  "source_rows_matched_to_vessels": 7949,
+  "rows_normalized": 0,
+  "rows_matched_to_vessels": 7949,
+  "enrichment_candidates_created": 0,
+  "enrichment_patches_created": 0,
+  "enrichment_patches_applied": 0,
+  "vessel_display_records_updated": 1036,
+  "ui_visible_records": 1037,
   "pilotage_signal_display_count": 0,
-  "berth_signal_display_count": 0,
-  "data_lineage_display_count": 2205,
-  "fields_enriched": {
-    "current_port": "미확인 항만",
-    "eta": 552,
-    "ata": 1052,
-    "atd": 554,
-    "berth": 1052,
-    "berth_signal": 33,
-    "operator_display": 33,
-    "normalized_port": {
-      "port_code": "UNKNOWN",
-      "port_name": "미확인 항만",
-      "display_name": "미확인 항만",
-      "raw_port": "1019",
-      "raw_aliases": [
-        "1019",
-        "미확인 항만"
-      ]
-    },
-    "port_code": "UNKNOWN",
-    "port_name": "미확인 항만",
-    "port_display_name": "미확인 항만",
-    "display_name": "미확인 항만"
-  },
-  "vessels_enriched": 1019,
-  "by_source": {
-    "port_operation": {
-      "candidates": 10685,
-      "auto_applied": 4163,
-      "needs_review": 6522,
-      "rejected": 0,
-      "fields_enriched": {
-        "current_port": "미확인 항만",
-        "eta": 552,
-        "ata": 1019,
-        "atd": 554,
-        "berth": 1019,
-        "normalized_port": {
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "display_name": "미확인 항만",
-          "raw_port": "1019",
-          "raw_aliases": [
-            "1019",
-            "미확인 항만"
-          ]
-        },
-        "port_code": "UNKNOWN",
-        "port_name": "미확인 항만",
-        "port_display_name": "미확인 항만",
-        "display_name": "미확인 항만"
-      }
-    },
-    "berth_sources": {
-      "candidates": 132,
-      "auto_applied": 132,
-      "needs_review": 0,
-      "rejected": 0,
-      "fields_enriched": {
-        "berth": 33,
-        "ata": 33,
-        "berth_signal": 33,
-        "operator_display": 33
-      }
-    }
-  },
-  "by_field": {
-    "vessel_name": {
-      "candidates": 1019,
-      "auto_applied": 0,
-      "needs_review": 1019,
-      "rejected": 0
-    },
-    "call_sign": {
-      "candidates": 1019,
-      "auto_applied": 0,
-      "needs_review": 1019,
-      "rejected": 0
-    },
-    "normalized_vessel_name": {
-      "candidates": 1052,
-      "auto_applied": 0,
-      "needs_review": 1052,
-      "rejected": 0
-    },
-    "gt": {
-      "candidates": 1019,
-      "auto_applied": 0,
-      "needs_review": 1019,
-      "rejected": 0
-    },
-    "vessel_type": {
-      "candidates": 1019,
-      "auto_applied": 0,
-      "needs_review": 1019,
-      "rejected": 0
-    },
-    "current_port": "미확인 항만",
-    "eta": {
-      "candidates": 552,
-      "auto_applied": 552,
-      "needs_review": 0,
-      "rejected": 0
-    },
-    "ata": {
-      "candidates": 1052,
-      "auto_applied": 1052,
-      "needs_review": 0,
-      "rejected": 0
-    },
-    "atd": {
-      "candidates": 554,
-      "auto_applied": 554,
-      "needs_review": 0,
-      "rejected": 0
-    },
-    "berth": {
-      "candidates": 1052,
-      "auto_applied": 1052,
-      "needs_review": 0,
-      "rejected": 0
-    },
-    "operator_display": {
-      "candidates": 1427,
-      "auto_applied": 33,
-      "needs_review": 1394,
-      "rejected": 0
-    },
-    "berth_signal": {
-      "candidates": 33,
-      "auto_applied": 33,
-      "needs_review": 0,
-      "rejected": 0
-    },
-    "normalized_port": {
-      "port_code": "UNKNOWN",
-      "port_name": "미확인 항만",
-      "display_name": "미확인 항만",
-      "raw_port": "[object Object]",
-      "raw_aliases": [
-        "[object Object]",
-        "미확인 항만"
-      ]
-    },
-    "port_code": "UNKNOWN",
-    "port_name": "미확인 항만",
-    "port_display_name": "미확인 항만",
-    "display_name": "미확인 항만"
-  },
+  "berth_signal_display_count": 1036,
+  "data_lineage_display_count": 1037,
+  "fields_enriched": {},
+  "vessels_enriched": 0,
+  "by_source": {},
+  "by_field": {},
   "conflicts_detected": 0,
   "conflict_examples": [],
-  "status_run_id": "run_20260612141959474_6b6131f6",
-  "stale_diagnostic": true,
-  "stale_reason": "Generated by heavy workflow, not refreshed in core update.",
+  "status_run_id": "run_20260612192410471_36eb9112",
+  "stale_diagnostic": false,
+  "stale_reason": "",
   "placeholder": false,
-  "stale_checked_at": "2026-06-12T15:54:59.421Z",
-  "update_mode": "core",
-  "load_strategy": "diagnostic_only",
-  "startup_safe": false,
+  "enrichment_run_id": "run_20260612192410471_36eb9112",
   "owner_tier": "reference_enrichment",
   "core_may_update": false,
+  "active_core_run_id_used_for_matching": "run_20260612180712000_4efc3b84",
+  "source_run_ids": {
+    "source_csv": "run_20260612192410471_36eb9112",
+    "vessel_spec": "run_20260612192410471_36eb9112",
+    "pilot_sources": "run_20260612192410471_36eb9112",
+    "berth_sources": "run_20260612192410471_36eb9112",
+    "mof_ais_dynamic": "run_20260612192410471_36eb9112",
+    "mof_ais_info": "run_20260612192410471_36eb9112",
+    "mof_ais_stat": "run_20260612192410471_36eb9112",
+    "ulsan_core": "run_20260612192410471_36eb9112",
+    "ulsan_berth_detail": "run_20260612192410471_36eb9112",
+    "ulsan_cargo_plan": "run_20260612192410471_36eb9112",
+    "ulsan_berth_operation": "run_20260612192410471_36eb9112",
+    "ulsan_terminal_process": "run_20260612192410471_36eb9112",
+    "port_operation": "run_20260612192410471_36eb9112"
+  },
+  "patch_count": 0,
+  "review_count": 0,
   "reused_from_cache": true,
-  "cache_reused_at": "2026-06-12T18:39:25.859Z",
+  "cache_reused_at": "2026-06-12T19:41:58.659Z",
   "preservation_reason": "Reference enrichment cache preserved until the reference_enrichment tier refreshes successfully.",
-  "core_run_id": "run_20260612183635978_2c565eee",
-  "core_generated_at": "2026-06-12T18:39:25.859Z",
-  "core_generated_by": "local",
-  "enrichment_run_id": "run_20260612141959474_6b6131f6"
+  "core_run_id": "run_20260612193901222_f20479ed",
+  "core_generated_at": "2026-06-12T19:41:58.659Z",
+  "core_generated_by": "local"
 }

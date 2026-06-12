@@ -77,6 +77,26 @@ const IS_GITHUB_ACTIONS_RUNTIME = process.env.GITHUB_ACTIONS === "true" || Boole
 const GENERATED_BY = IS_GITHUB_ACTIONS_RUNTIME ? "github_actions" : "local";
 const PRESERVE_AUX_DIAGNOSTICS_IN_CORE = IS_CORE_UPDATE && ENRICHMENT_MODE === "lightweight_apply_cache";
 const CORE_SOURCE_KEYS = new Set(["port_operation"]);
+const REFERENCE_ENRICHMENT_PATCH_FIELDS = [
+  "imo",
+  "mmsi",
+  "call_sign",
+  "operator_display",
+  "owner",
+  "manager",
+  "vessel_type",
+  "gt",
+  "dwt",
+  "flag",
+  "loa",
+  "beam"
+];
+const REFERENCE_ENRICHMENT_PATCH_SOURCES = [
+  "manual_reference",
+  "source_csv",
+  "vessel_spec",
+  "mof_ais_info"
+];
 const AUXILIARY_DIAGNOSTIC_SOURCE_KEYS = new Set([
   ...AUXILIARY_CACHE_SOURCE_KEYS,
   "mof_ais_stat",
@@ -3065,6 +3085,9 @@ function shouldWriteDebugApiOutputs(report = {}) {
 
 function routeApiOutputPath(filePath, report = {}) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
+  if (UPDATE_MODE === "reference_enrichment" && /^dashboard\/api\/(?:enrichment\/latest\/|enrichment\/(?:summary|candidates|applied|review-queue|source-csv-dry-run)\.json$|cache\/source-csv-(?:reference|index)\.json$|aux\/source-csv-summary\.json$)/.test(normalized)) {
+    return normalized;
+  }
   if (!shouldWriteDebugApiOutputs(report) || !normalized.startsWith("dashboard/api/")) return normalized;
   return `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
 }
@@ -4119,6 +4142,57 @@ function rowCountFromPayload(payload) {
     return Number(payload.all_vessels_count || payload.all_collected_vessel_count || payload.target_vessels_count || payload.candidate_count || 0);
   }
   return 0;
+}
+
+function itemsFromStaticPayload(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  for (const key of ["items", "data", "vessels", "records", "candidates", "opportunities"]) {
+    if (Array.isArray(payload[key])) return payload[key];
+  }
+  return [];
+}
+
+function readStaticRecordItems(filePath = "") {
+  return itemsFromStaticPayload(readJsonSafe(filePath, null)).filter(item => item && typeof item === "object");
+}
+
+function referenceRecordKey(record = {}) {
+  return String(firstNonEmpty(
+    record.vessel_key,
+    record.vessel_display?.vessel_key,
+    record.imo,
+    record.vessel_display?.imo,
+    record.mmsi,
+    record.vessel_display?.mmsi,
+    record.call_sign,
+    record.vessel_display?.call_sign,
+    record.vessel_name,
+    record.vessel_display?.vessel_name
+  ) || "").trim().toUpperCase();
+}
+
+function loadReferenceMatchingRecords() {
+  if (UPDATE_MODE !== "reference_enrichment") return [];
+  const files = [
+    "dashboard/api/all-collected-vessels.json",
+    "dashboard/api/vessels.json",
+    "dashboard/api/target-vessels.json",
+    "dashboard/api/targets/current.json",
+    "dashboard/api/sales/actions.json",
+    "dashboard/api/watchlist/current.json"
+  ];
+  const out = [];
+  const seen = new Set();
+  for (const file of files) {
+    for (const record of readStaticRecordItems(file)) {
+      const key = referenceRecordKey(record) || `${file}:${out.length}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(record);
+    }
+  }
+  return out;
 }
 
 function auxStatusRank(status = "") {
@@ -18581,7 +18655,7 @@ function buildAuxLatestIndex({ generatedAt, report = {}, availableFiles = [], so
 }
 
 function buildEnrichmentLatestIndex({ generatedAt, summary = {}, patches = {}, reviewQueue = {} } = {}) {
-  const patchCount = Number(patches.record_count || patches.item_count || (Array.isArray(patches.items) ? patches.items.length : 0));
+  const patchCount = Number(patches.patch_count || patches.record_count || patches.item_count || (Array.isArray(patches.patches) ? patches.patches.length : 0) || (Array.isArray(patches.items) ? patches.items.length : 0));
   const reviewCount = Number(reviewQueue.record_count || reviewQueue.item_count || (Array.isArray(reviewQueue.items) ? reviewQueue.items.length : 0));
   return {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
@@ -18594,6 +18668,91 @@ function buildEnrichmentLatestIndex({ generatedAt, summary = {}, patches = {}, r
     review_count: reviewCount,
     cache_age_hours: cacheAgeHoursFrom(summary.generated_at, generatedAt),
     stale_diagnostic: Boolean(summary.stale_diagnostic)
+  };
+}
+
+function sourceRunIdsFromCollection(sourceCollectionStatus = {}) {
+  const runIdValue = sourceCollectionStatus.run_id || sourceCollectionStatus.source_run_id || sourceCollectionStatus.status_run_id || null;
+  const out = {};
+  for (const item of Array.isArray(sourceCollectionStatus.items) ? sourceCollectionStatus.items : []) {
+    const key = item.source_key || item.key || item.source_name;
+    if (!key) continue;
+    out[key] = item.run_id || item.source_run_id || item.status_run_id || runIdValue;
+  }
+  return out;
+}
+
+function referencePatchLineage(item = {}, fieldName = "") {
+  const lineage = item.lineage && typeof item.lineage === "object" ? item.lineage : {};
+  return {
+    source: item.source_key || lineage.source || lineage.raw_source || "reference_enrichment",
+    confidence: Number(item.confidence || item.match_confidence || item.candidate_quality || 0) || null,
+    match_type: item.match_type || lineage.match_type || null,
+    source_row_id: lineage.source_row_id || item.source_row_id || item.candidate_id || null,
+    matched_on: Array.isArray(lineage.matched_on) ? lineage.matched_on : [],
+    candidate_id: item.candidate_id || null,
+    updated_at: item.source_timestamp || null
+  };
+}
+
+function buildReferencePatchContract({ appliedPayload = {}, generatedAt = new Date().toISOString() } = {}) {
+  const items = (Array.isArray(appliedPayload.items) ? appliedPayload.items : [])
+    .filter(item => String(item.action || "").toUpperCase() === "APPLY" && item.target_vessel_key && item.field_name);
+  const byVessel = new Map();
+  for (const item of items) {
+    const vesselKey = String(item.target_vessel_key || "").trim();
+    const fieldName = String(item.field_name || "").trim();
+    const candidateValue = item.candidate_value ?? item.raw_value;
+    if (!vesselKey || !fieldName || candidateValue === undefined || candidateValue === null || String(candidateValue).trim?.() === "") continue;
+    if (!byVessel.has(vesselKey)) {
+      byVessel.set(vesselKey, {
+        vessel_key: vesselKey,
+        fields: {},
+        lineage: {},
+        confidence: 100,
+        source_keys: new Set(),
+        apply_policy: "safe_auto_apply"
+      });
+    }
+    const patch = byVessel.get(vesselKey);
+    patch.fields[fieldName] = candidateValue;
+    patch.lineage[fieldName] = referencePatchLineage(item, fieldName);
+    patch.confidence = Math.min(patch.confidence, Number(item.confidence || item.match_confidence || item.candidate_quality || 0) || 0);
+    patch.source_keys.add(item.source_key || item.lineage?.source || item.lineage?.raw_source || "reference_enrichment");
+  }
+  return [...byVessel.values()].map(patch => ({
+    ...patch,
+    source_keys: [...patch.source_keys],
+    confidence: patch.confidence === 100 ? 0 : patch.confidence,
+    generated_at: generatedAt
+  }));
+}
+
+function withReferenceEnrichmentContract(payload = {}, {
+  generatedAt = new Date().toISOString(),
+  enrichmentRunId = null,
+  sourceCollectionStatus = {},
+  previousStatusSummary = {},
+  patchesPayload = {},
+  reviewQueuePayload = {},
+  patchCount = null,
+  reviewCount = null
+} = {}) {
+  const patchTotal = Number(patchCount ?? patchesPayload.patch_count ?? patchesPayload.record_count ?? patchesPayload.item_count ?? (Array.isArray(patchesPayload.patches) ? patchesPayload.patches.length : 0) ?? (Array.isArray(patchesPayload.items) ? patchesPayload.items.length : 0) ?? 0);
+  const reviewTotal = Number(reviewCount ?? reviewQueuePayload.review_count ?? reviewQueuePayload.record_count ?? reviewQueuePayload.item_count ?? (Array.isArray(reviewQueuePayload.items) ? reviewQueuePayload.items.length : 0) ?? 0);
+  const activeCoreRunId = statusSummaryRunId(previousStatusSummary) || previousStatusSummary.active_run_id || null;
+  return {
+    ...payload,
+    generated_at: payload.generated_at || generatedAt,
+    enrichment_run_id: enrichmentRunId || payload.enrichment_run_id || payload.run_id || runId,
+    owner_tier: "reference_enrichment",
+    core_may_update: false,
+    active_core_run_id_used_for_matching: payload.active_core_run_id_used_for_matching || activeCoreRunId,
+    source_run_ids: payload.source_run_ids || sourceRunIdsFromCollection(sourceCollectionStatus),
+    stale_diagnostic: Boolean(payload.stale_diagnostic),
+    stale_reason: payload.stale_reason || "",
+    patch_count: patchTotal,
+    review_count: reviewTotal
   };
 }
 
@@ -18741,7 +18900,38 @@ function cachedPatchRecordVesselKey(record = {}) {
 }
 
 function cachedPatchTargetVesselKey(item = {}) {
-  return String(firstNonEmpty(item.target_vessel_key, item.target_vessel?.vessel_key) || "").trim().toUpperCase();
+  return String(firstNonEmpty(item.target_vessel_key, item.vessel_key, item.target_vessel?.vessel_key) || "").trim().toUpperCase();
+}
+
+function cachedPatchItemsFromPayload(payload = {}) {
+  if (Array.isArray(payload?.patches) && payload.patches.length) {
+    return payload.patches.flatMap(patch => {
+      const fields = patch.fields && typeof patch.fields === "object" ? patch.fields : {};
+      const lineage = patch.lineage && typeof patch.lineage === "object" ? patch.lineage : {};
+      return Object.entries(fields).map(([fieldName, candidateValue]) => {
+        const fieldLineage = lineage[fieldName] && typeof lineage[fieldName] === "object" ? lineage[fieldName] : {};
+        return {
+          action: "APPLY",
+          target_vessel_key: patch.vessel_key,
+          field_name: fieldName,
+          candidate_value: candidateValue,
+          raw_value: candidateValue,
+          source_key: fieldLineage.source || patch.source_keys?.[0] || "reference_enrichment",
+          match_confidence: Number(fieldLineage.confidence || patch.confidence || 0),
+          confidence: Number(fieldLineage.confidence || patch.confidence || 0),
+          candidate_quality: Number(fieldLineage.confidence || patch.confidence || 0),
+          match_type: fieldLineage.match_type || "cached_reference_patch",
+          source_timestamp: fieldLineage.updated_at || patch.generated_at || payload.generated_at || null,
+          lineage: {
+            ...fieldLineage,
+            source: fieldLineage.source || patch.source_keys?.[0] || "reference_enrichment",
+            raw_source: fieldLineage.source || patch.source_keys?.[0] || "reference_enrichment"
+          }
+        };
+      });
+    });
+  }
+  return Array.isArray(payload?.items) ? payload.items : [];
 }
 
 function cachedPatchHasCandidateValue(value) {
@@ -18840,9 +19030,9 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
   }
   const payload = readJsonSafe("dashboard/api/enrichment/latest/patches.json", null) ||
     readJsonSafe("dashboard/api/enrichment/applied.json", null);
-  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const items = cachedPatchItemsFromPayload(payload);
   if (!items.length) return { applied: 0, available: false, skipped_reason: "no_cached_patches" };
-  const allowedFields = new Set(["pilotage_signal", "berth_signal", "operator_display", "imo", "mmsi", "dwt", "flag", "vessel_type", "data_lineage"]);
+  const allowedFields = new Set(["pilotage_signal", "berth_signal", "operator_display", "imo", "mmsi", "call_sign", "owner", "manager", "gt", "dwt", "flag", "vessel_type", "loa", "beam", "data_lineage"]);
   const recordByKey = new Map();
   for (const record of records) {
     const key = cachedPatchRecordVesselKey(record);
@@ -18888,7 +19078,12 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
       continue;
     }
     const currentValue = record[field] ?? record.vessel_display?.[field];
-    const currentTrusted = record[`${field}_verified`] === true || record.manual === true || record.vessel_display?.data_lineage?.[field]?.verified === true;
+    const currentTrusted = record[`${field}_verified`] === true ||
+      record[`${field}_manual`] === true ||
+      record.manual === true ||
+      record.verified === true ||
+      record.data_lineage?.[field]?.verified === true ||
+      record.vessel_display?.data_lineage?.[field]?.verified === true;
     if (currentTrusted) {
       skip("current_value_verified");
       continue;
@@ -20050,6 +20245,7 @@ try {
   const previousAuxLatestIndex = readJsonSafe("dashboard/api/aux/latest/index.json", null) || {};
   const previousEnrichmentLatestIndex = readJsonSafe("dashboard/api/enrichment/latest/index.json", null) || {};
   const previousEnrichmentUtilization = readJsonSafe("dashboard/api/enrichment-utilization.json", null) || {};
+  const previousSourceCsvSummary = readJsonSafe("dashboard/api/aux/source-csv-summary.json", null) || {};
   const sourceCollectionStatusForAuxDiagnostics = mergeSourceCollectionForCoreDiagnostics({
     current: sourceCollectionStatusPayload,
     previous: previousSourceCollectionStatus,
@@ -20067,7 +20263,12 @@ try {
     source_layer: "auxiliary",
     load_strategy: "lazy",
     startup_safe: false,
-    core_blocking: false
+    core_blocking: false,
+    owner_tier: "reference_enrichment",
+    core_may_update: false,
+    enrichment_run_id: finalRunOrigin.run_id || runId,
+    active_core_run_id_used_for_matching: statusSummaryRunId(previousStatusSummary),
+    source_run_ids: sourceRunIdsFromCollection(sourceCollectionStatusForAuxDiagnostics)
   }, finalRunOrigin);
   const sourceCsvReferencePayload = withRunOrigin({
     ...buildSourceCsvReferencePayload({
@@ -20077,7 +20278,12 @@ try {
     source_layer: "auxiliary",
     load_strategy: "lazy",
     startup_safe: false,
-    core_blocking: false
+    core_blocking: false,
+    owner_tier: "reference_enrichment",
+    core_may_update: false,
+    enrichment_run_id: finalRunOrigin.run_id || runId,
+    active_core_run_id_used_for_matching: statusSummaryRunId(previousStatusSummary),
+    source_run_ids: sourceRunIdsFromCollection(sourceCollectionStatusForAuxDiagnostics)
   }, finalRunOrigin);
   const sourceCsvIndexPayload = withRunOrigin({
     ...buildSourceCsvIndexPayload({
@@ -20087,9 +20293,16 @@ try {
     source_layer: "auxiliary",
     load_strategy: "lazy",
     startup_safe: false,
-    core_blocking: false
+    core_blocking: false,
+    owner_tier: "reference_enrichment",
+    core_may_update: false,
+    enrichment_run_id: finalRunOrigin.run_id || runId,
+    active_core_run_id_used_for_matching: statusSummaryRunId(previousStatusSummary),
+    source_run_ids: sourceRunIdsFromCollection(sourceCollectionStatusForAuxDiagnostics)
   }, finalRunOrigin);
+  const referenceMatchingRecords = loadReferenceMatchingRecords();
   const sourceCsvTargetRecords = [
+    ...referenceMatchingRecords,
     ...allCollectedVessels,
     ...vessels,
     ...targetVessels,
@@ -20120,6 +20333,22 @@ try {
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     generatedAt: completedAt,
     origin: finalRunOrigin
+  });
+  sourceCsvSummaryPayload = withReferenceEnrichmentContract(sourceCsvSummaryPayload, {
+    generatedAt: completedAt,
+    enrichmentRunId: sourceCsvSummaryPayload.enrichment_run_id || finalRunOrigin.run_id || runId,
+    sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    previousStatusSummary
+  });
+  sourceCsvSummaryPayload = protectCachedTierPayloadForCore({
+    payload: sourceCsvSummaryPayload,
+    previous: previousSourceCsvSummary,
+    ownerTier: "reference_enrichment",
+    runIdField: "enrichment_run_id",
+    runIdValue: previousSourceCsvSummary.enrichment_run_id || previousEnrichmentLatestIndex.enrichment_run_id || sourceCsvSummaryPayload.enrichment_run_id,
+    generatedAt: completedAt,
+    origin: finalRunOrigin,
+    preservationReason: "Reference source_csv summary preserved until the reference_enrichment tier refreshes successfully."
   });
   let sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
@@ -20169,6 +20398,7 @@ try {
       : ""
   );
   const sourceDataEnrichmentRecords = skipFullEnrichment ? [] : [
+    ...referenceMatchingRecords,
     ...allCollectedVessels,
     ...vessels,
     ...targetVessels,
@@ -20226,14 +20456,32 @@ try {
       sourceQualityScore: sourceQualityScorePayload,
       generatedAt: completedAt,
       dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
-      report
+      report,
+      allowedFields: UPDATE_MODE === "reference_enrichment" ? REFERENCE_ENRICHMENT_PATCH_FIELDS : null,
+      allowedSources: UPDATE_MODE === "reference_enrichment" ? REFERENCE_ENRICHMENT_PATCH_SOURCES : null
     });
+  const referencePatchContractItems = buildReferencePatchContract({
+    appliedPayload: sourceDataEnrichmentPayloadsRaw.appliedPayload,
+    generatedAt: completedAt
+  });
+  const referencePatchCount = referencePatchContractItems.length;
+  const referenceReviewCount = Number(sourceDataEnrichmentPayloadsRaw.reviewQueuePayload?.record_count || sourceDataEnrichmentPayloadsRaw.reviewQueuePayload?.item_count || sourceDataEnrichmentPayloadsRaw.reviewQueuePayload?.items?.length || 0);
+  const referenceContractOptions = {
+    generatedAt: completedAt,
+    enrichmentRunId: finalRunOrigin.run_id || runId,
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    previousStatusSummary,
+    patchesPayload: { patches: referencePatchContractItems, patch_count: referencePatchCount },
+    reviewQueuePayload: sourceDataEnrichmentPayloadsRaw.reviewQueuePayload,
+    patchCount: referencePatchCount,
+    reviewCount: referenceReviewCount
+  };
   const sourceDataEnrichmentPayloads = {
     ...sourceDataEnrichmentPayloadsRaw,
-    candidatesPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.candidatesPayload, finalRunOrigin),
-    appliedPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.appliedPayload, finalRunOrigin),
-    reviewQueuePayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.reviewQueuePayload, finalRunOrigin),
-    summaryPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.summaryPayload, finalRunOrigin)
+    candidatesPayload: withReferenceEnrichmentContract(withRunOrigin(sourceDataEnrichmentPayloadsRaw.candidatesPayload, finalRunOrigin), referenceContractOptions),
+    appliedPayload: withReferenceEnrichmentContract(withRunOrigin(sourceDataEnrichmentPayloadsRaw.appliedPayload, finalRunOrigin), referenceContractOptions),
+    reviewQueuePayload: withReferenceEnrichmentContract(withRunOrigin(sourceDataEnrichmentPayloadsRaw.reviewQueuePayload, finalRunOrigin), referenceContractOptions),
+    summaryPayload: withReferenceEnrichmentContract(withRunOrigin(sourceDataEnrichmentPayloadsRaw.summaryPayload, finalRunOrigin), referenceContractOptions)
   };
   let enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
     records: allCollectedVessels,
@@ -21057,8 +21305,8 @@ try {
   writeApiJson("dashboard/api/enrichment/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
-  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
-  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
+  if (UPDATE_MODE === "reference_enrichment" || Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
+  if (UPDATE_MODE === "reference_enrichment" || Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
   writeApiJson("dashboard/api/enrichment/source-csv-dry-run.json", sourceCsvDryRunPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
@@ -21126,19 +21374,28 @@ try {
     }), report);
   }
   writeApiJson("dashboard/api/aux/latest/index.json", auxLatestIndexPayload, report);
-  const enrichmentPatchesPayload = withRunOrigin({
-    ...(sourceDataEnrichmentPayloads.appliedPayload || {}),
+  const enrichmentPatchesPayload = withReferenceEnrichmentContract(withRunOrigin({
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: completedAt,
+    data_mode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    record_count: referencePatchCount,
+    item_count: referencePatchCount,
+    items: [],
+    patches: referencePatchContractItems,
+    patch_count: referencePatchCount,
+    field_patch_count: Number(sourceDataEnrichmentPayloads.appliedPayload?.record_count || sourceDataEnrichmentPayloads.appliedPayload?.item_count || sourceDataEnrichmentPayloads.appliedPayload?.items?.length || 0),
+    review_count: referenceReviewCount,
     source_endpoint: "dashboard/api/enrichment/applied.json",
-    patch_policy: "High-confidence enrichment patches only; core update may apply lightweight fields from this cache.",
+    patch_policy: "High-confidence reference enrichment patches only; core update applies this cache by vessel_key and does not recompute matching.",
     load_strategy: "lazy",
     startup_safe: false
-  }, finalRunOrigin);
-  let enrichmentLatestIndexPayload = withRunOrigin(buildEnrichmentLatestIndex({
+  }, finalRunOrigin), referenceContractOptions);
+  let enrichmentLatestIndexPayload = withReferenceEnrichmentContract(withRunOrigin(buildEnrichmentLatestIndex({
     generatedAt: completedAt,
     summary: sourceDataEnrichmentPayloads.summaryPayload,
     patches: enrichmentPatchesPayload,
     reviewQueue: sourceDataEnrichmentPayloads.reviewQueuePayload
-  }), finalRunOrigin);
+  }), finalRunOrigin), referenceContractOptions);
   enrichmentLatestIndexPayload = protectEnrichmentLatestIndexForCore({
     payload: enrichmentLatestIndexPayload,
     previous: previousEnrichmentLatestIndex,
@@ -21358,8 +21615,8 @@ try {
   writeSourceCollectionStatusJson(sourceCollectionStatusForAuxDiagnostics, finalRunOrigin);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
-  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
-  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
+  if (UPDATE_MODE === "reference_enrichment" || Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
+  if (UPDATE_MODE === "reference_enrichment" || Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
   writeApiJson("dashboard/api/enrichment/source-csv-dry-run.json", sourceCsvDryRunPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);

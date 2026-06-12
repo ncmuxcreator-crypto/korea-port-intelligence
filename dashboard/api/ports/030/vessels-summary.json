@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:39:25.859Z",
+  "generated_at": "2026-06-12T19:41:58.659Z",
   "data_mode": "live",
-  "record_count": 96,
+  "record_count": 95,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/030/vessels.json",
-  "total_count": 96,
+  "total_count": 95,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 95,
+    "0_49": 94,
     "50_69": 1,
     "70_84": 0,
     "85_100": 0,
@@ -17,12 +17,12 @@
   },
   "priority_counts": {
     "HOT": 1,
-    "LOW": 95
+    "LOW": 94
   },
   "actionability_counts": {
     "CONTACT_NOW": 1,
     "VERIFY_CONTACT": 10,
-    "MONITOR": 77,
+    "MONITOR": 76,
     "HOLD": 8
   },
   "items": [
@@ -233,7 +233,7 @@
     {
       "severity": "INFO",
       "feature": "영흥 터미널 선박",
-      "message": "상세 96건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 95건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/030/vessels.json lazy load 사용"
     }
   ]

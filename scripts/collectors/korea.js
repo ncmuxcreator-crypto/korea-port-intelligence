@@ -1022,17 +1022,60 @@ async function fetchText(source, extraParams = {}) {
   throw lastError || new Error("request_failed");
 }
 
+async function fetchHeadMetadata(url, source = {}) {
+  if (String(source?.key || "") !== "source_csv") return { checked: false };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Math.min(SOURCE_TIMEOUT_MS, 10000));
+  try {
+    const started = Date.now();
+    const res = await fetch(url, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: { accept: "text/csv, application/json, text/xml, */*" }
+    });
+    return {
+      checked: true,
+      ok: res.ok,
+      http_status: res.status,
+      content_type: res.headers.get("content-type") || "",
+      content_length: Number(res.headers.get("content-length") || 0),
+      file_name_hint: fileNameHintFromResponse(url, res.headers),
+      latency_ms: Date.now() - started
+    };
+  } catch (error) {
+    return {
+      checked: false,
+      error: error?.message || String(error)
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchTextOnce(source, extraParams = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS);
   try {
     const url = buildUrl(source, extraParams);
     const started = Date.now();
-    const res = await fetch(url, { signal: controller.signal, headers: { accept: "application/json, text/csv, text/xml, */*" } });
-    const contentType = res.headers.get("content-type") || "";
-    const contentLength = Number(res.headers.get("content-length") || 0);
-    const fileNameHint = fileNameHintFromResponse(url, res.headers);
     const maxResponseBytes = source?.key === "source_csv" ? MAX_SOURCE_CSV_BYTES : MAX_API_RESPONSE_BYTES;
+    const head = await fetchHeadMetadata(url, source);
+    if (head.checked && maxResponseBytes > 0 && head.content_length > maxResponseBytes) {
+      const error = new Error(`API response too large: ${head.content_length} bytes`);
+      error.failure_reason = "api_response_too_large";
+      error.response_size_bytes = head.content_length;
+      error.max_allowed_bytes = maxResponseBytes;
+      error.response_content_type = head.content_type;
+      error.file_name_hint = head.file_name_hint;
+      error.head_checked = true;
+      error.head_http_status = head.http_status || null;
+      error.head_latency_ms = head.latency_ms || null;
+      throw error;
+    }
+    const res = await fetch(url, { signal: controller.signal, headers: { accept: "application/json, text/csv, text/xml, */*" } });
+    const contentType = res.headers.get("content-type") || head.content_type || "";
+    const contentLength = Number(res.headers.get("content-length") || head.content_length || 0);
+    const fileNameHint = fileNameHintFromResponse(url, res.headers) || head.file_name_hint;
     if (maxResponseBytes > 0 && contentLength > maxResponseBytes) {
       const error = new Error(`API response too large: ${contentLength} bytes`);
       error.failure_reason = "api_response_too_large";
@@ -1060,7 +1103,20 @@ async function fetchTextOnce(source, extraParams = {}) {
       error.response_text = text.slice(0, 500);
       throw error;
     }
-    return { text, url, http_status: res.status, response_content_type: contentType, file_name_hint: fileNameHint, latency_ms: Date.now() - started, result_meta: resultMeta(text) };
+    return {
+      text,
+      url,
+      http_status: res.status,
+      response_content_type: contentType,
+      file_name_hint: fileNameHint,
+      response_size_bytes: contentLength || buffer.byteLength,
+      max_allowed_bytes: maxResponseBytes,
+      head_checked: head.checked,
+      head_http_status: head.http_status || null,
+      head_latency_ms: head.latency_ms || null,
+      latency_ms: Date.now() - started,
+      result_meta: resultMeta(text)
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -2537,7 +2593,7 @@ async function collectRealRows() {
     diagnostics.attempted_count += 1;
     try {
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant, retry_count, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated, response_content_type, file_name_hint } = await fetchPagedRows(source, rowLimit, deadline);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, retry_count, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated, response_content_type, file_name_hint, response_size_bytes, max_allowed_bytes, head_checked, head_http_status, head_latency_ms } = await fetchPagedRows(source, rowLimit, deadline);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
@@ -2551,6 +2607,11 @@ async function collectRealRows() {
       diag.response_content_type = response_content_type || null;
       diag.content_type = response_content_type || null;
       diag.file_name_hint = file_name_hint || null;
+      diag.response_size_bytes = Number(response_size_bytes || 0) || null;
+      diag.max_allowed_bytes = Number(max_allowed_bytes || 0) || null;
+      diag.head_checked = Boolean(head_checked);
+      diag.head_http_status = head_http_status || null;
+      diag.head_latency_ms = head_latency_ms || null;
       diag.header_row_fields = result_meta?.header_fields || [];
       diag.row_count_estimate = result_meta?.row_count_estimate ?? null;
       diag.pages_attempted = pages_attempted;
@@ -2655,6 +2716,9 @@ async function collectRealRows() {
       diag.response_content_type = error?.response_content_type || null;
       diag.content_type = error?.response_content_type || null;
       diag.file_name_hint = error?.file_name_hint || null;
+      diag.head_checked = Boolean(error?.head_checked);
+      diag.head_http_status = error?.head_http_status || null;
+      diag.head_latency_ms = error?.head_latency_ms || null;
       diag.http_status = error?.http_status || null;
       diag.retry_count = error?.retry_count || 0;
       diagnostics.failed_count += 1;

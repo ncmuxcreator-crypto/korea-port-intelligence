@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:40:25.384Z",
+  "generated_at": "2026-06-12T19:42:54.055Z",
   "record_count": 12,
   "item_count": 12,
   "items": [
@@ -142,7 +142,7 @@
       "raw_row_identity": "820|2026|001|3FTV3|I|1|2026-06-17 18:00:00",
       "port_call_identity": "820|2026|001|3FTV3",
       "vessel_identity": "CALL-3FTV3",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -260,7 +260,7 @@
       "cumulative_stay_days": 3.1,
       "berth_hours": 73.5,
       "anchorage_hours": null,
-      "work_window_hours": 110.3,
+      "work_window_hours": 109.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -338,12 +338,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 51,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 178.8,
+      "predicted_arrival_window_hours": 177.8,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 53,
-      "predicted_work_window_hours": 110.3,
+      "predicted_work_window_hours": 109.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
@@ -523,7 +523,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 109시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -531,7 +531,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "세화해운 주식회사 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nTEAL BULKER 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 세화해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nTEAL BULKER 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 109시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 세화해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -546,7 +546,7 @@
         },
         {
           "label": "작업창",
-          "value": "110시간",
+          "value": "109시간",
           "source": "closed"
         }
       ],
@@ -561,8 +561,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-3FTV3-820-820-2026-001-3FTV3",
       "candidate_band": "monitor",
@@ -582,7 +582,31 @@
       "long_stay_reason": "체류 시간이 74시간으로 길게 확인됩니다.",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 80,
-      "vessel_key": "HYBRID-3FTV3-TEALBULKER-32370",
+      "global_rank": 78,
+      "global_percentile": 7.7,
+      "port_rank": 14,
+      "port_percentile": 7.4,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 62,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "TEAL BULKER",
         "imo": "-",
@@ -649,7 +673,7 @@
         "port_stay_hours": 73.5,
         "congestion_score": 16,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -709,7 +733,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -797,83 +821,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 엘에스엠앤엠신항부두에서 체류 3.1일째인 GT 32,370 벌크선으로, 출항 전 약 109시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -881,28 +905,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 44,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -933,33 +957,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 78,
-      "global_percentile": 7.6,
-      "port_rank": 14,
-      "port_percentile": 7.3,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 62,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 44,
       "observation_count": 1,
@@ -979,8 +978,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 44,
         "anchorage_factor": 0,
@@ -1192,7 +1191,7 @@
       "raw_row_identity": "820|2026|006|D5YE8|I|1|2026-06-19 21:00:00",
       "port_call_identity": "820|2026|006|D5YE8",
       "vessel_identity": "CALL-D5YE8",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -1310,7 +1309,7 @@
       "cumulative_stay_days": 0.8,
       "berth_hours": 20,
       "anchorage_hours": null,
-      "work_window_hours": 161.3,
+      "work_window_hours": 160.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -1389,12 +1388,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 41,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 233.3,
+      "predicted_arrival_window_hours": 232.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 161.3,
+      "predicted_work_window_hours": 160.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 100,
@@ -1563,7 +1562,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 161시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 160시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "선박 스케줄 확인",
@@ -1571,7 +1570,7 @@
       "action_priority": "LOW",
       "recommended_contact_path": "고려해운(주) 경유 KMTC 담당팀",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nKMTC SHIMIZU 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 161시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 선박 스케줄 확인\n연락 경로: 고려해운(주) 경유 KMTC 담당팀\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nKMTC SHIMIZU 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 160시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 선박 스케줄 확인\n연락 경로: 고려해운(주) 경유 KMTC 담당팀\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -1586,7 +1585,7 @@
         },
         {
           "label": "작업창",
-          "value": "161시간",
+          "value": "160시간",
           "source": "closed"
         }
       ],
@@ -1601,8 +1600,8 @@
       "operator_display": "KMTC",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-D5YE8-820-820-2026-006-D5YE8",
       "candidate_band": "monitor",
@@ -1620,7 +1619,29 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-D5YE8-KMTCSHIMIZU-27997",
+      "global_rank": 357,
+      "global_percentile": 35.6,
+      "port_rank": 89,
+      "port_percentile": 50.3,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 84,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "KMTC SHIMIZU",
         "imo": "-",
@@ -1687,7 +1708,7 @@
         "port_stay_hours": 20,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1747,7 +1768,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1835,83 +1856,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 161시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 27,997 컨테이너선으로, 출항 전 약 160시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "선박 스케줄 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -1919,28 +1940,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -1972,31 +1993,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 360,
-      "global_percentile": 35.6,
-      "port_rank": 90,
-      "port_percentile": 50.3,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 84,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 32,
       "observation_count": 1,
@@ -2016,8 +2014,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 12,
         "anchorage_factor": 0,
@@ -2229,7 +2227,7 @@
       "raw_row_identity": "820|2026|003|9V5491|I|1|2026-06-21 18:00:00",
       "port_call_identity": "820|2026|003|9V5491",
       "vessel_identity": "CALL-9V5491",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -2326,14 +2324,14 @@
       "size_class": "MEDIUM_COMMERCIAL",
       "meets_commercial_gt_threshold": true,
       "target_vessel": true,
-      "stay_hours": 9.7,
+      "stay_hours": 10.7,
       "planned_stay_hours": null,
-      "current_call_stay_hours": 9.7,
-      "cumulative_stay_hours": 9.7,
+      "current_call_stay_hours": 10.7,
+      "cumulative_stay_hours": 10.7,
       "cumulative_stay_days": 0.4,
       "berth_hours": 216,
       "anchorage_hours": null,
-      "work_window_hours": 206.3,
+      "work_window_hours": 205.3,
       "work_window_status": "open_or_ongoing",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -2380,7 +2378,7 @@
       "estimated_waiting_time": 0,
       "port_congestion_score": 0,
       "anchorage_density_score": 0,
-      "idle_risk_score": 3,
+      "idle_risk_score": 4,
       "high_value_target": false,
       "berth_occupancy_proxy": 0,
       "terminal_activity_active": false,
@@ -2404,7 +2402,7 @@
       "route_pattern_known": false,
       "route_pattern_confidence": 25,
       "avg_transit_hours": 72,
-      "historical_avg_stay_hours": 9.7,
+      "historical_avg_stay_hours": 10.7,
       "historical_avg_waiting_hours": null,
       "predicted_congestion": 10,
       "predicted_cleaning_window": 20,
@@ -2417,11 +2415,11 @@
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 206.3,
+      "predicted_work_window_hours": 205.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
-      "low_speed_exposure": 3,
+      "low_speed_exposure": 4,
       "idle_exposure": 5,
       "anchorage_exposure": 0,
       "biofouling_exposure_score": 16,
@@ -2575,7 +2573,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 206시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+      "why_now": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 205시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -2583,7 +2581,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "동진상운(주) 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n째즈 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 206시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 동진상운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\n째즈 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 205시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 동진상운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -2593,7 +2591,7 @@
         },
         {
           "label": "작업창",
-          "value": "206시간",
+          "value": "205시간",
           "source": "open_or_ongoing"
         }
       ],
@@ -2608,8 +2606,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "port_operation_ulsan_i",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-9V5491-820-820-2026-003-9V5491",
       "candidate_band": "monitor",
@@ -2627,7 +2625,32 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-9V5491-째즈-22988",
+      "global_rank": 359,
+      "global_percentile": 35.8,
+      "port_rank": 90,
+      "port_percentile": 50.9,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "째즈",
         "imo": "-",
@@ -2688,12 +2711,12 @@
         "arrival_window": null,
         "arrival_window_source": "-",
         "stay_days": 0.4,
-        "stay_hours": 9.7,
+        "stay_hours": 10.7,
         "waiting_hours": 0,
-        "port_stay_hours": 9.7,
+        "port_stay_hours": 10.7,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "PORT-MIS VsslEtrynd5 Ulsan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2743,7 +2766,7 @@
         "hullGrowthIndex": 30,
         "cleaningOpportunityScore": 25,
         "anchorageHours": 0,
-        "portStayHours": 9.7,
+        "portStayHours": 10.7,
         "sstCelsius": 23.8,
         "sstAnomalyCelsius": 0.7,
         "salinityPsu": 34,
@@ -2753,7 +2776,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2841,83 +2864,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 206시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 22,988 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 205시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -2925,28 +2948,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -2977,34 +3000,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 363,
-      "global_percentile": 35.9,
-      "port_rank": 91,
-      "port_percentile": 50.8,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 35,
       "observation_count": 1,
@@ -3024,8 +3021,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 6,
         "anchorage_factor": 0,
@@ -3067,7 +3064,7 @@
       "hullGrowthIndex": 30,
       "cleaningOpportunityScore": 25,
       "anchorageHours": 0,
-      "portStayHours": 9.7,
+      "portStayHours": 10.7,
       "salinityPsu": 34,
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
@@ -3075,7 +3072,7 @@
       "confidence": "medium",
       "hull_growth_index": 30,
       "cleaning_opportunity_score": 25,
-      "port_stay_hours": 9.7,
+      "port_stay_hours": 10.7,
       "sst_celsius": 23.8,
       "sst_anomaly_celsius": 0.7,
       "salinity_psu": 34,
@@ -3236,7 +3233,7 @@
       "raw_row_identity": "820|2026|001|H3XM|I|1|2026-06-15 06:00:00",
       "port_call_identity": "820|2026|001|H3XM",
       "vessel_identity": "CALL-H3XM",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -3348,7 +3345,7 @@
       "cumulative_stay_days": 0.5,
       "berth_hours": 12,
       "anchorage_hours": null,
-      "work_window_hours": 50.3,
+      "work_window_hours": 49.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -3426,12 +3423,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 51,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 115.3,
+      "predicted_arrival_window_hours": 114.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 50.3,
+      "predicted_work_window_hours": 49.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
@@ -3591,7 +3588,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 50시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 49시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -3599,7 +3596,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "(주)울산마리타임 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nVARI TRADER 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 50시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)울산마리타임 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nVARI TRADER 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 49시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)울산마리타임 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -3614,7 +3611,7 @@
         },
         {
           "label": "작업창",
-          "value": "50시간",
+          "value": "49시간",
           "source": "closed"
         }
       ],
@@ -3629,8 +3626,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-H3XM-820-820-2026-001-H3XM",
       "candidate_band": "monitor",
@@ -3648,7 +3645,32 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-H3XM-VARITRADER-11773",
+      "global_rank": 361,
+      "global_percentile": 36,
+      "port_rank": 91,
+      "port_percentile": 51.4,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "VARI TRADER",
         "imo": "-",
@@ -3715,7 +3737,7 @@
         "port_stay_hours": 12,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -3775,7 +3797,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -3863,83 +3885,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 50시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정일스톨트헤븐울산신항4부두에서 현재 항만 체류 중인 GT 11,773 탱커으로, 출항 전 약 49시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -3947,28 +3969,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -3999,34 +4021,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 365,
-      "global_percentile": 36.1,
-      "port_rank": 92,
-      "port_percentile": 51.4,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 35,
       "observation_count": 1,
@@ -4046,8 +4042,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 7,
         "anchorage_factor": 0,
@@ -4259,7 +4255,7 @@
       "raw_row_identity": "820|2026|002|V7UF2|I|1|2026-06-22 18:00:00",
       "port_call_identity": "820|2026|002|V7UF2",
       "vessel_identity": "CALL-V7UF2",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -4363,7 +4359,7 @@
       "cumulative_stay_days": 0,
       "berth_hours": 165,
       "anchorage_hours": null,
-      "work_window_hours": 230.3,
+      "work_window_hours": 229.3,
       "work_window_status": "open_or_ongoing",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -4447,7 +4443,7 @@
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 230.3,
+      "predicted_work_window_hours": 229.3,
       "work_window_confidence": 35,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
@@ -4605,7 +4601,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 230시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 229시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -4613,7 +4609,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "동진상운(주) 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nFUJI GALAXY 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 230시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 동진상운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nFUJI GALAXY 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 229시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 동진상운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -4623,7 +4619,7 @@
         },
         {
           "label": "작업창",
-          "value": "230시간",
+          "value": "229시간",
           "source": "open_or_ongoing"
         }
       ],
@@ -4638,8 +4634,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "port_operation_ulsan_i",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-V7UF2-820-820-2026-002-V7UF2",
       "candidate_band": "monitor",
@@ -4657,7 +4653,32 @@
       "long_stay_reason": "",
       "stay_duration_source": "",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-V7UF2-FUJIGALAXY-16448",
+      "global_rank": 370,
+      "global_percentile": 36.9,
+      "port_rank": 93,
+      "port_percentile": 52.6,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "FUJI GALAXY",
         "imo": "-",
@@ -4723,7 +4744,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "PORT-MIS VsslEtrynd5 Ulsan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4783,7 +4804,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -4871,83 +4892,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 230시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 현재 항만 체류 중인 GT 16,448 탱커으로, 출항 전 약 229시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -4955,28 +4976,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -5007,34 +5028,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 374,
-      "global_percentile": 37,
-      "port_rank": 94,
-      "port_percentile": 52.5,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 35,
       "observation_count": 1,
@@ -5054,8 +5049,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 0,
         "anchorage_factor": 0,
@@ -5266,7 +5261,7 @@
       "raw_row_identity": "820|2026|001|A8UZ4|I|1|2026-06-15 17:00:00",
       "port_call_identity": "820|2026|001|A8UZ4",
       "vessel_identity": "CALL-A8UZ4",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -5376,7 +5371,7 @@
       "cumulative_stay_days": 1.3,
       "berth_hours": 30,
       "anchorage_hours": null,
-      "work_window_hours": 61.3,
+      "work_window_hours": 60.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -5453,12 +5448,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 46,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 85.3,
+      "predicted_arrival_window_hours": 84.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 45,
-      "predicted_work_window_hours": 61.3,
+      "predicted_work_window_hours": 60.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
@@ -5617,7 +5612,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 61시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 60시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -5625,7 +5620,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "(주)오션해운 대리점/신고업체",
       "recommended_department": "Operations / Technical",
-      "recommended_email_draft": "안녕하세요.\n\nSETY 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 61시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)오션해운 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nSETY 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 60시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)오션해운 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -5640,7 +5635,7 @@
         },
         {
           "label": "작업창",
-          "value": "61시간",
+          "value": "60시간",
           "source": "closed"
         }
       ],
@@ -5655,8 +5650,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-A8UZ4-820-820-2026-001-A8UZ4",
       "candidate_band": "monitor",
@@ -5674,7 +5669,32 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-A8UZ4-SETY-31532",
+      "global_rank": 385,
+      "global_percentile": 38.4,
+      "port_rank": 94,
+      "port_percentile": 53.1,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "SETY",
         "imo": "-",
@@ -5741,7 +5761,7 @@
         "port_stay_hours": 30,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -5801,7 +5821,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -5889,83 +5909,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 61시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 엘에스엠앤엠신항부두에서 체류 1.3일째인 GT 31,532 general_cargo으로, 출항 전 약 60시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -5973,28 +5993,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -6025,34 +6045,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 389,
-      "global_percentile": 38.5,
-      "port_rank": 95,
-      "port_percentile": 53.1,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 35,
       "observation_count": 1,
@@ -6072,8 +6066,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 18,
         "anchorage_factor": 0,
@@ -6285,7 +6279,7 @@
       "raw_row_identity": "820|2026|003|LAFY8|I|1|2026-06-20 05:00:00",
       "port_call_identity": "820|2026|003|LAFY8",
       "vessel_identity": "CALL-LAFY8",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -6390,7 +6384,7 @@
       "cumulative_stay_days": 3.8,
       "berth_hours": 91,
       "anchorage_hours": null,
-      "work_window_hours": 169.3,
+      "work_window_hours": 168.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -6468,12 +6462,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 36,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 239.3,
+      "predicted_arrival_window_hours": 238.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 45,
-      "predicted_work_window_hours": 169.3,
+      "predicted_work_window_hours": 168.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 10,
@@ -6613,7 +6607,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 58,
+      "operational_risk_score": 57,
       "commercial_signal_flags": [
         "GT_30000_PLUS",
         "STAY_48H_PLUS",
@@ -6641,7 +6635,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 169시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 168시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -6649,7 +6643,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "한국오드펠유한회사 대리점/신고업체",
       "recommended_department": "Operations / Technical",
-      "recommended_email_draft": "안녕하세요.\n\nBOW OLYMPUS 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 169시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 한국오드펠유한회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nBOW OLYMPUS 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 168시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 한국오드펠유한회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -6664,7 +6658,7 @@
         },
         {
           "label": "작업창",
-          "value": "169시간",
+          "value": "168시간",
           "source": "closed"
         }
       ],
@@ -6679,8 +6673,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "port_operation_ulsan_i",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-LAFY8-820-820-2026-003-LAFY8",
       "candidate_band": "monitor",
@@ -6700,7 +6694,31 @@
       "long_stay_reason": "체류 시간이 91시간으로 길게 확인됩니다.",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 80,
-      "vessel_key": "HYBRID-LAFY8-BOWOLYMPUS-34148",
+      "global_rank": 479,
+      "global_percentile": 47.8,
+      "port_rank": 116,
+      "port_percentile": 65.7,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "actionability_score": 61,
+      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "BOW OLYMPUS",
         "imo": "-",
@@ -6767,7 +6785,7 @@
         "port_stay_hours": 91,
         "congestion_score": 9,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 91,
@@ -6827,7 +6845,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -6915,83 +6933,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 169시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항남방파제T/S부두 01에서 체류 3.8일째인 GT 34,148 unknown으로, 출항 전 약 168시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 91,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 91,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -6999,28 +7017,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -7051,33 +7069,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 486,
-      "global_percentile": 48.1,
-      "port_rank": 117,
-      "port_percentile": 65.5,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "actionability_score": 61,
-      "actionability_reason": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 32,
       "observation_count": 1,
@@ -7097,8 +7090,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 54,
         "anchorage_factor": 0,
@@ -7310,7 +7303,7 @@
       "raw_row_identity": "820|2026|030|200035|I|1|2026-06-16 12:00:00",
       "port_call_identity": "820|2026|030|200035",
       "vessel_identity": "CALL-200035",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -7425,7 +7418,7 @@
       "cumulative_stay_days": 2.5,
       "berth_hours": 59,
       "anchorage_hours": null,
-      "work_window_hours": 80.3,
+      "work_window_hours": 79.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -7503,12 +7496,12 @@
       "arrival_prediction_confidence": 52,
       "arrival_opportunity_score": 41,
       "arrival_prediction_source": "schedule_or_pilot",
-      "predicted_arrival_window_hours": 83.3,
+      "predicted_arrival_window_hours": 82.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 44,
-      "predicted_work_window_hours": 80.3,
+      "predicted_work_window_hours": 79.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 100,
       "repeat_operator_score": 10,
@@ -7643,7 +7636,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 39,
+      "operational_risk_score": 38,
       "commercial_signal_flags": [
         "TANKER_TARGET",
         "STAY_48H_PLUS",
@@ -7671,7 +7664,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 80시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 79시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -7679,7 +7672,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "성은해운 주식회사 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n우원호 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 80시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 성은해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\n우원호 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 79시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 성은해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -7694,7 +7687,7 @@
         },
         {
           "label": "작업창",
-          "value": "80시간",
+          "value": "79시간",
           "source": "closed"
         }
       ],
@@ -7709,8 +7702,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-200035-820-820-2026-030-200035",
       "candidate_band": "monitor",
@@ -7728,7 +7721,35 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-200035-우원호-497",
+      "global_rank": 494,
+      "global_percentile": 49.3,
+      "port_rank": 123,
+      "port_percentile": 69.7,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "target_size_exception_codes": [
+        "repeated_korea_caller",
+        "customer_or_quote_history"
+      ],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "우원호",
         "imo": "-",
@@ -7795,7 +7816,7 @@
         "port_stay_hours": 59,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -7855,7 +7876,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -7943,83 +7964,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 80시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항컨테이너부두 04에서 체류 2.5일째인 탱커으로, 출항 전 약 79시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -8027,28 +8048,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -8079,37 +8100,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 503,
-      "global_percentile": 49.8,
-      "port_rank": 125,
-      "port_percentile": 70.1,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "5000GT 미만이나 예외 신호(repeated_korea_caller, customer_or_quote_history)가 있어 후보로 유지합니다.",
-      "target_size_exception_codes": [
-        "repeated_korea_caller",
-        "customer_or_quote_history"
-      ],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 32,
       "observation_count": 1,
@@ -8129,8 +8121,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 35,
         "anchorage_factor": 0,
@@ -8342,7 +8334,7 @@
       "raw_row_identity": "820|2026|031|120021|I|1|2026-06-16 00:00:00",
       "port_call_identity": "820|2026|031|120021",
       "vessel_identity": "CALL-120021",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -8444,7 +8436,7 @@
       "cumulative_stay_days": 0,
       "berth_hours": 25,
       "anchorage_hours": null,
-      "work_window_hours": 68.3,
+      "work_window_hours": 67.3,
       "work_window_status": "open_or_ongoing",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -8528,7 +8520,7 @@
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 44,
-      "predicted_work_window_hours": 68.3,
+      "predicted_work_window_hours": 67.3,
       "work_window_confidence": 35,
       "repeat_caller_score": 69,
       "repeat_operator_score": 10,
@@ -8681,7 +8673,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 68시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 67시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -8689,7 +8681,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "(주)용정마린 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n동방3호 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 68시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)용정마린 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\n동방3호 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 67시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)용정마린 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -8699,7 +8691,7 @@
         },
         {
           "label": "작업창",
-          "value": "68시간",
+          "value": "67시간",
           "source": "open_or_ongoing"
         }
       ],
@@ -8714,8 +8706,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "port_operation_ulsan_i",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-120021-820-820-2026-031-120021",
       "candidate_band": "monitor",
@@ -8733,7 +8725,34 @@
       "long_stay_reason": "",
       "stay_duration_source": "",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-120021-동방3호-299",
+      "global_rank": 604,
+      "global_percentile": 60.2,
+      "port_rank": 129,
+      "port_percentile": 73.1,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "target_size_exception_codes": [
+        "customer_or_quote_history"
+      ],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "동방3호",
         "imo": "-",
@@ -8799,7 +8818,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "PORT-MIS VsslEtrynd5 Ulsan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -8859,7 +8878,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -8947,83 +8966,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 68시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 출항 전 약 67시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -9031,28 +9050,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 31,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -9083,36 +9102,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 609,
-      "global_percentile": 60.3,
-      "port_rank": 131,
-      "port_percentile": 73.4,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
-      "target_size_exception_codes": [
-        "customer_or_quote_history"
-      ],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 31,
       "observation_count": 1,
@@ -9132,8 +9123,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 0,
         "anchorage_factor": 0,
@@ -9344,7 +9335,7 @@
       "raw_row_identity": "820|2026|005|H3OA|I|1|2026-06-14 05:00:00",
       "port_call_identity": "820|2026|005|H3OA",
       "vessel_identity": "CALL-H3OA",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -9462,7 +9453,7 @@
       "cumulative_stay_days": 0.5,
       "berth_hours": 12,
       "anchorage_hours": null,
-      "work_window_hours": 25.3,
+      "work_window_hours": 24.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -9541,12 +9532,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 55,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 99.3,
+      "predicted_arrival_window_hours": 98.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 25.3,
+      "predicted_work_window_hours": 24.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 49,
       "repeat_operator_score": 100,
@@ -9684,7 +9675,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 23,
+      "operational_risk_score": 22,
       "commercial_signal_flags": [
         "BERTH_CLASS_CONTAINER_TERMINAL",
         "AGENT_IDENTIFIED",
@@ -9714,7 +9705,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 25시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 24시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "선박 스케줄 확인",
@@ -9722,7 +9713,7 @@
       "action_priority": "LOW",
       "recommended_contact_path": "그레이트해운(주) 경유 EVERGREEN 담당팀",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nEVER CALM 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 25시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 선박 스케줄 확인\n연락 경로: 그레이트해운(주) 경유 EVERGREEN 담당팀\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nEVER CALM 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 24시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 선박 스케줄 확인\n연락 경로: 그레이트해운(주) 경유 EVERGREEN 담당팀\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -9737,7 +9728,7 @@
         },
         {
           "label": "작업창",
-          "value": "25시간",
+          "value": "24시간",
           "source": "closed"
         }
       ],
@@ -9752,8 +9743,8 @@
       "operator_display": "EVERGREEN",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-H3OA-820-820-2026-005-H3OA",
       "candidate_band": "monitor",
@@ -9771,7 +9762,29 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-H3OA-EVERCALM-18658",
+      "global_rank": 609,
+      "global_percentile": 60.7,
+      "port_rank": 130,
+      "port_percentile": 73.7,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 84,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "EVER CALM",
         "imo": "-",
@@ -9838,7 +9851,7 @@
         "port_stay_hours": 12,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9898,7 +9911,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -9986,83 +9999,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 25시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항컨테이너부두 03에서 현재 항만 체류 중인 GT 18,658 컨테이너선으로, 출항 전 약 24시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "선박 스케줄 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -10070,28 +10083,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 31,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -10123,31 +10136,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 615,
-      "global_percentile": 60.9,
-      "port_rank": 132,
-      "port_percentile": 74,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "MEDIUM_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 84,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 29,
       "observation_count": 1,
@@ -10167,8 +10157,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 7,
         "anchorage_factor": 0,
@@ -10380,7 +10370,7 @@
       "raw_row_identity": "820|2026|005|VRNZ6|I|1|2026-06-17 19:00:00",
       "port_call_identity": "820|2026|005|VRNZ6",
       "vessel_identity": "CALL-VRNZ6",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -10492,7 +10482,7 @@
       "cumulative_stay_days": 0.3,
       "berth_hours": 8,
       "anchorage_hours": null,
-      "work_window_hours": 111.3,
+      "work_window_hours": 110.3,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -10570,12 +10560,12 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 37,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 183.3,
+      "predicted_arrival_window_hours": 182.3,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 49,
-      "predicted_work_window_hours": 111.3,
+      "predicted_work_window_hours": 110.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 69,
       "repeat_operator_score": 10,
@@ -10730,7 +10720,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "Ulsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -10738,7 +10728,7 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "고려해운(주) 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nSUNNY CAMELLIA 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 고려해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\nSUNNY CAMELLIA 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 고려해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -10753,7 +10743,7 @@
         },
         {
           "label": "작업창",
-          "value": "111시간",
+          "value": "110시간",
           "source": "closed"
         }
       ],
@@ -10768,8 +10758,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-VRNZ6-820-820-2026-005-VRNZ6",
       "candidate_band": "monitor",
@@ -10787,7 +10777,32 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-VRNZ6-SUNNYCAMELLIA-9563",
+      "global_rank": 700,
+      "global_percentile": 69.8,
+      "port_rank": 141,
+      "port_percentile": 80,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
+      "target_size_exception_codes": [],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "SUNNY CAMELLIA",
         "imo": "-",
@@ -10854,7 +10869,7 @@
         "port_stay_hours": 8,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -10914,7 +10929,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11002,83 +11017,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 신항컨테이너부두 01에서 현재 항만 체류 중인 GT 9,563 컨테이너선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -11086,28 +11101,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 28,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -11138,34 +11153,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 706,
-      "global_percentile": 69.9,
-      "port_rank": 143,
-      "port_percentile": 80.2,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "SMALL_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "target_size_exception_codes": [],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 28,
       "observation_count": 1,
@@ -11185,8 +11174,8 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
         "stay_days_factor": 5,
         "anchorage_factor": 0,
@@ -11398,7 +11387,7 @@
       "raw_row_identity": "820|2026|005|180010|I|1|2026-06-13 10:00:00",
       "port_call_identity": "820|2026|005|180010",
       "vessel_identity": "CALL-180010",
-      "updated_at": "2026-06-12T18:36:35.996Z",
+      "updated_at": "2026-06-12T19:39:01.237Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -11491,14 +11480,14 @@
       "size_class": "BELOW_COMMERCIAL_MIN",
       "meets_commercial_gt_threshold": false,
       "target_vessel": false,
-      "stay_hours": 6.7,
+      "stay_hours": 7.7,
       "planned_stay_hours": null,
-      "current_call_stay_hours": 6.7,
-      "cumulative_stay_hours": 6.7,
+      "current_call_stay_hours": 7.7,
+      "cumulative_stay_hours": 7.7,
       "cumulative_stay_days": 0.3,
       "berth_hours": 13,
       "anchorage_hours": null,
-      "work_window_hours": 6.3,
+      "work_window_hours": 5.3,
       "work_window_status": "open_or_ongoing",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -11522,7 +11511,7 @@
       "is_operating_candidate": false,
       "is_operating_immediate_candidate": false,
       "operating_candidate_score": 12,
-      "biofouling_score": 35,
+      "biofouling_score": 36,
       "cii_pressure_score": 27,
       "vessel_value_score": 8,
       "biofouling_risk_score": 20,
@@ -11544,7 +11533,7 @@
       "estimated_waiting_time": 0,
       "port_congestion_score": 0,
       "anchorage_density_score": 0,
-      "idle_risk_score": 2,
+      "idle_risk_score": 3,
       "high_value_target": false,
       "berth_occupancy_proxy": 0,
       "terminal_activity_active": false,
@@ -11568,7 +11557,7 @@
       "route_pattern_known": false,
       "route_pattern_confidence": 25,
       "avg_transit_hours": 72,
-      "historical_avg_stay_hours": 6.7,
+      "historical_avg_stay_hours": 7.7,
       "historical_avg_waiting_hours": null,
       "predicted_congestion": 10,
       "predicted_cleaning_window": 10,
@@ -11581,12 +11570,12 @@
       "predicted_congestion_score": 49,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 44,
-      "predicted_work_window_hours": 6.3,
+      "predicted_work_window_hours": 5.3,
       "work_window_confidence": 50,
       "repeat_caller_score": 69,
       "repeat_operator_score": 10,
-      "low_speed_exposure": 2,
-      "idle_exposure": 3,
+      "low_speed_exposure": 3,
+      "idle_exposure": 4,
       "anchorage_exposure": 0,
       "biofouling_exposure_score": 11,
       "biofouling_exposure_band": "LOW",
@@ -11705,7 +11694,7 @@
       "exclusion_reason": "excluded_under_5000gt",
       "operational_risk_flags": [],
       "work_feasibility": "monitor_window",
-      "operational_risk_score": 17,
+      "operational_risk_score": 18,
       "commercial_signal_flags": [
         "TANKER_TARGET",
         "AGENT_IDENTIFIED",
@@ -11727,7 +11716,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 6시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+      "why_now": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 5시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
       "candidate_summary_ko": "연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "도선/출항 전 재확인",
@@ -11735,7 +11724,7 @@
       "action_priority": "HIGH",
       "recommended_contact_path": "두라해운(주) 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n두라스카이 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 6시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.\n\n권장 다음 단계: 도선/출항 전 재확인\n연락 경로: 두라해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_email_draft": "안녕하세요.\n\n두라스카이 관련하여 Ulsan 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nUlsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 5시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.\n\n권장 다음 단계: 도선/출항 전 재확인\n연락 경로: 두라해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
       "recommended_followup_date": "2026-06-13",
       "lead_timeline": [
         {
@@ -11745,7 +11734,7 @@
         },
         {
           "label": "작업창",
-          "value": "6시간",
+          "value": "5시간",
           "source": "open_or_ongoing"
         }
       ],
@@ -11760,8 +11749,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612183635978_2c565eee",
-      "generated_at": "2026-06-12T18:39:24.231Z",
+      "run_id": "run_20260612193901222_f20479ed",
+      "generated_at": "2026-06-12T19:41:57.119Z",
       "data_source_used": "port_operation_ulsan_i",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-180010-820-820-2026-005-180010",
       "candidate_band": "monitor",
@@ -11779,7 +11768,34 @@
       "long_stay_reason": "",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 0,
-      "vessel_key": "HYBRID-180010-두라스카이-1999",
+      "global_rank": 882,
+      "global_percentile": 88,
+      "port_rank": 168,
+      "port_percentile": 95.4,
+      "priority_label": "LOW",
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "target_size_exception_codes": [
+        "customer_or_quote_history"
+      ],
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "actionability_score": 61,
+      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "missing_action_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "actionability_blockers": [
+        "strong_signal_missing",
+        "contact_path_missing",
+        "missing_operator_display",
+        "missing_contact_person",
+        "missing_imo",
+        "missing_mmsi"
+      ],
       "vessel_display": {
         "vessel_name": "두라스카이",
         "imo": "-",
@@ -11840,12 +11856,12 @@
         "arrival_window": null,
         "arrival_window_source": "-",
         "stay_days": 0.3,
-        "stay_hours": 6.7,
+        "stay_hours": 7.7,
         "waiting_hours": 0,
-        "port_stay_hours": 6.7,
+        "port_stay_hours": 7.7,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T18:36:35.996Z",
+        "last_seen_at": "2026-06-12T19:39:01.237Z",
         "data_source": "PORT-MIS VsslEtrynd5 Ulsan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -11893,9 +11909,9 @@
         },
         "biofoulingRiskScore": 20,
         "hullGrowthIndex": 30,
-        "cleaningOpportunityScore": 24,
+        "cleaningOpportunityScore": 25,
         "anchorageHours": 0,
-        "portStayHours": 6.7,
+        "portStayHours": 7.7,
         "sstCelsius": 23.8,
         "sstAnomalyCelsius": 0.7,
         "salinityPsu": 34,
@@ -11905,7 +11921,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 37,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11993,83 +12009,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 6시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
+        "reason_summary": "Ulsan 현대오일터미널신항2부두에서 현재 항만 체류 중인 탱커으로, 아직 출항 완료가 확인되지 않았습니다 · 출항 전 약 5시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다.",
         "recommended_action": "도선/출항 전 재확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -12077,28 +12093,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 22,
-            "updated_at": "2026-06-12T18:36:35.996Z",
+            "updated_at": "2026-06-12T19:39:01.237Z",
             "match_type": null,
             "verified": false
           },
@@ -12129,36 +12145,8 @@
         "port_name": "울산",
         "display_name": "울산"
       },
-      "global_rank": 888,
-      "global_percentile": 88,
-      "port_rank": 170,
-      "port_percentile": 95.5,
-      "priority_label": "LOW",
-      "target_size_qualified": true,
-      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
-      "target_size_exception_codes": [
-        "customer_or_quote_history"
-      ],
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "actionability_score": 61,
-      "actionability_reason": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "missing_action_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "actionability_blockers": [
-        "strong_signal_missing",
-        "contact_path_missing",
-        "missing_operator_display",
-        "missing_contact_person",
-        "missing_imo",
-        "missing_mmsi"
-      ],
-      "first_seen_at": "2026-06-12T18:36:35.996Z",
-      "last_seen_at": "2026-06-12T18:36:35.996Z",
+      "first_seen_at": "2026-06-12T19:39:01.237Z",
+      "last_seen_at": "2026-06-12T19:39:01.237Z",
       "previous_candidate_score": 0,
       "candidate_score_delta": 22,
       "observation_count": 1,
@@ -12178,10 +12166,10 @@
       "ocean_risk_label_ko": "낮음",
       "regulatory_multiplier": 1,
       "ocean_source": "FALLBACK",
-      "ocean_observed_at": "2026-06-12T18:39:25.859Z",
-      "ocean_updated_at": "2026-06-12T18:39:25.859Z",
+      "ocean_observed_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
       "ocean_score_components": {
-        "stay_days_factor": 4,
+        "stay_days_factor": 5,
         "anchorage_factor": 0,
         "sensitive_route_factor": 0,
         "sst_factor": 20,
@@ -12219,17 +12207,17 @@
       "detail_inclusion_exception_codes": [],
       "biofoulingRiskScore": 20,
       "hullGrowthIndex": 30,
-      "cleaningOpportunityScore": 24,
+      "cleaningOpportunityScore": 25,
       "anchorageHours": 0,
-      "portStayHours": 6.7,
+      "portStayHours": 7.7,
       "salinityPsu": 34,
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "recommendedAction": "낮은 우선순위",
       "confidence": "medium",
       "hull_growth_index": 30,
-      "cleaning_opportunity_score": 24,
-      "port_stay_hours": 6.7,
+      "cleaning_opportunity_score": 25,
+      "port_stay_hours": 7.7,
       "sst_celsius": 23.8,
       "sst_anomaly_celsius": 0.7,
       "salinity_psu": 34,

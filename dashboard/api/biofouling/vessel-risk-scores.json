@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:39:25.859Z",
+  "generated_at": "2026-06-12T19:41:58.659Z",
   "data_mode": "live",
   "record_count": 100,
   "source_table": "NOAA_SST,AIS_dwell_time,salinity_proxy,risk_history,opportunity_master",
@@ -20030,7 +20030,7 @@
       "destination": "HOUSTON",
       "destination_port": "울산",
       "exposure_tags": [],
-      "opportunity_score": 38,
+      "opportunity_score": 37,
       "risk_score": 50,
       "top_factors": [
         "SST 0.7",
@@ -20147,7 +20147,7 @@
           "복수 데이터 출처"
         ],
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
-        "opportunity_score": 38,
+        "opportunity_score": 37,
         "risk_score": 50,
         "biofouling_score": 50,
         "compliance_score": 0,
@@ -20370,7 +20370,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 38,
+            "confidence": 37,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -23038,441 +23038,6 @@
     },
     {
       "rank": 54,
-      "vessel_name": "해창썬",
-      "tonnage_summary": {
-        "gt": 1154,
-        "dwt": null,
-        "size_class": "BELOW_COMMERCIAL_MIN",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "target_size_qualified": true,
-      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
-      "port": "평택·당진",
-      "port_code": "031",
-      "current_port": "평택·당진",
-      "risk_level": "MEDIUM",
-      "biofouling_risk_score": 49,
-      "hull_cleaning_candidate_score": 45,
-      "sst_anomaly": 0.6,
-      "ais_dwell_hours": 289.5,
-      "salinity_proxy": 0.81,
-      "norm_sst_anomaly": 0.15,
-      "norm_dwell_time": 1,
-      "norm_salinity": 0.81,
-      "model_version": "biofouling_sst_dwell_salinity_v1",
-      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
-      "compliance_score": 0,
-      "commercial_size_qualified": false,
-      "biofouling_compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure": {
-        "exposed": false,
-        "jurisdiction": "",
-        "basis": "",
-        "threshold_type": "",
-        "confidence": 0,
-        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-      },
-      "compliance_exposure_confidence": 0,
-      "destination": "군산",
-      "destination_port": "평택·당진",
-      "exposure_tags": [],
-      "opportunity_score": 41,
-      "risk_score": 49,
-      "top_factors": [
-        "SST 0.6",
-        "Dwell 290h",
-        "Salinity 0.81",
-        "LONG_PORT_STAY",
-        "REPEATED_INACTIVITY",
-        "VESSEL_TYPE_EXPOSURE",
-        "EXTENDED_IDLE_PERIOD"
-      ],
-      "reason_summary": "SST anomaly 0.6, AIS dwell 290h, salinity proxy 0.81 기반 상대 biofouling 리스크",
-      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-      "data_sources": [
-        "NOAA SST",
-        "AIS dwell time",
-        "salinity proxy",
-        "opportunity_master"
-      ],
-      "normalized_port": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "raw_port": "평택·당진",
-        "raw_aliases": [
-          "평택·당진",
-          "군산"
-        ]
-      },
-      "port_name": "평택·당진",
-      "port_display_name": "평택·당진",
-      "vessel_display": {
-        "vessel_name": "해창썬",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 1154,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 1154,
-          "dwt": null,
-          "size_class": "BELOW_COMMERCIAL_MIN",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": true,
-        "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "평택·당진",
-        "raw_current_port": "평택·당진",
-        "current_port_korean": "평택·당진",
-        "normalized_port": {
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "display_name": "평택·당진",
-          "raw_port": "평택·당진",
-          "raw_aliases": [
-            "평택·당진",
-            "군산"
-          ]
-        },
-        "port_display_name": "평택·당진",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": 12.1,
-        "stay_hours": 290,
-        "waiting_hours": null,
-        "port_stay_hours": 290,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "commercial_data_confidence": 40,
-        "confidence_label": "LOW",
-        "missing_critical_fields": [
-          "콜사인",
-          "IMO/MMSI",
-          "운영사/회사"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "GT",
-          "현재 항만",
-          "선석 신호",
-          "복수 데이터 출처"
-        ],
-        "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
-        "opportunity_score": 41,
-        "risk_score": 49,
-        "biofouling_score": 49,
-        "compliance_score": 0,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": 49,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 45,
-        "anchorageHours": null,
-        "portStayHours": 290,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": 0.6,
-        "salinityPsu": 0.8,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "보통",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "SST 0.6",
-          "Dwell 290h",
-          "Salinity 0.81",
-          "LONG_PORT_STAY",
-          "REPEATED_INACTIVITY",
-          "VESSEL_TYPE_EXPOSURE",
-          "EXTENDED_IDLE_PERIOD"
-        ],
-        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "confidence": "LOW",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "평택·당진",
-          "pilotage_port": "평택·당진",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
-            "raw_aliases": [
-              "평택·당진"
-            ]
-          },
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "평택·당진",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
-            "raw_aliases": [
-              "평택·당진"
-            ]
-          },
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "SST anomaly 0.6, AIS dwell 290h, salinity proxy 0.81 기반 상대 biofouling 리스크",
-        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "port_operation",
-            "confidence": 90,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 90,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "unknown",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 41,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "NOAA SST",
-          "AIS dwell time",
-          "salinity proxy",
-          "opportunity_master"
-        ],
-        "enrichment_sources": [],
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진"
-      },
-      "commercial_data_confidence": 32,
-      "confidence_label": "LOW",
-      "missing_critical_fields": [
-        "콜사인",
-        "IMO/MMSI",
-        "운영사/회사"
-      ],
-      "available_strong_fields": [
-        "선명",
-        "GT",
-        "현재 항만",
-        "복수 데이터 출처"
-      ],
-      "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
-      "display_name": "평택·당진"
-    },
-    {
-      "rank": 55,
       "vessel_name": "케이티에스 화이트",
       "tonnage_summary": {
         "gt": 2101,
@@ -23907,7 +23472,7 @@
       "display_name": "대산"
     },
     {
-      "rank": 56,
+      "rank": 55,
       "vessel_name": "ORION TRADER",
       "tonnage_summary": {
         "gt": 35908,
@@ -24340,6 +23905,441 @@
       ],
       "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
       "display_name": "인천"
+    },
+    {
+      "rank": 56,
+      "vessel_name": "해창썬",
+      "tonnage_summary": {
+        "gt": 1154,
+        "dwt": null,
+        "size_class": "BELOW_COMMERCIAL_MIN",
+        "gt_source": "gt",
+        "dwt_source": "missing",
+        "tonnage_confidence": 90
+      },
+      "target_size_qualified": true,
+      "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+      "port": "평택·당진",
+      "port_code": "031",
+      "current_port": "평택·당진",
+      "risk_level": "MEDIUM",
+      "biofouling_risk_score": 49,
+      "hull_cleaning_candidate_score": 44,
+      "sst_anomaly": 0.6,
+      "ais_dwell_hours": 289.5,
+      "salinity_proxy": 0.81,
+      "norm_sst_anomaly": 0.15,
+      "norm_dwell_time": 1,
+      "norm_salinity": 0.81,
+      "model_version": "biofouling_sst_dwell_salinity_v1",
+      "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
+      "compliance_score": 0,
+      "commercial_size_qualified": false,
+      "biofouling_compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure": {
+        "exposed": false,
+        "jurisdiction": "",
+        "basis": "",
+        "threshold_type": "",
+        "confidence": 0,
+        "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+      },
+      "compliance_exposure_confidence": 0,
+      "destination": "군산",
+      "destination_port": "평택·당진",
+      "exposure_tags": [],
+      "opportunity_score": 40,
+      "risk_score": 49,
+      "top_factors": [
+        "SST 0.6",
+        "Dwell 290h",
+        "Salinity 0.81",
+        "LONG_PORT_STAY",
+        "REPEATED_INACTIVITY",
+        "VESSEL_TYPE_EXPOSURE",
+        "EXTENDED_IDLE_PERIOD"
+      ],
+      "reason_summary": "SST anomaly 0.6, AIS dwell 290h, salinity proxy 0.81 기반 상대 biofouling 리스크",
+      "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+      "data_sources": [
+        "NOAA SST",
+        "AIS dwell time",
+        "salinity proxy",
+        "opportunity_master"
+      ],
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "평택·당진",
+        "raw_aliases": [
+          "평택·당진",
+          "군산"
+        ]
+      },
+      "port_name": "평택·당진",
+      "port_display_name": "평택·당진",
+      "vessel_display": {
+        "vessel_name": "해창썬",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": 1154,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": 1154,
+          "dwt": null,
+          "size_class": "BELOW_COMMERCIAL_MIN",
+          "gt_source": "gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 90
+        },
+        "target_size_qualified": true,
+        "target_size_reason": "5000GT 미만이나 예외 신호(customer_or_quote_history)가 있어 후보로 유지합니다.",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "평택·당진",
+        "raw_current_port": "평택·당진",
+        "current_port_korean": "평택·당진",
+        "normalized_port": {
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "display_name": "평택·당진",
+          "raw_port": "평택·당진",
+          "raw_aliases": [
+            "평택·당진",
+            "군산"
+          ]
+        },
+        "port_display_name": "평택·당진",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": 12.1,
+        "stay_hours": 290,
+        "waiting_hours": null,
+        "port_stay_hours": 290,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "commercial_data_confidence": 40,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "콜사인",
+          "IMO/MMSI",
+          "운영사/회사"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "GT",
+          "현재 항만",
+          "선석 신호",
+          "복수 데이터 출처"
+        ],
+        "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
+        "opportunity_score": 40,
+        "risk_score": 49,
+        "biofouling_score": 49,
+        "compliance_score": 0,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 49,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": 44,
+        "anchorageHours": null,
+        "portStayHours": 290,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": 0.6,
+        "salinityPsu": 0.8,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "보통",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "SST 0.6",
+          "Dwell 290h",
+          "Salinity 0.81",
+          "LONG_PORT_STAY",
+          "REPEATED_INACTIVITY",
+          "VESSEL_TYPE_EXPOSURE",
+          "EXTENDED_IDLE_PERIOD"
+        ],
+        "recommendedAction": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "confidence": "LOW",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "평택·당진",
+          "pilotage_port": "평택·당진",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "source": null,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "평택·당진",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "SST anomaly 0.6, AIS dwell 290h, salinity proxy 0.81 기반 상대 biofouling 리스크",
+        "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "port_operation",
+            "confidence": 90,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 90,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 40,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "NOAA SST",
+          "AIS dwell time",
+          "salinity proxy",
+          "opportunity_master"
+        ],
+        "enrichment_sources": [],
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진"
+      },
+      "commercial_data_confidence": 32,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "선명",
+        "GT",
+        "현재 항만",
+        "복수 데이터 출처"
+      ],
+      "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 4개",
+      "display_name": "평택·당진"
     },
     {
       "rank": 57,
@@ -38242,10 +38242,10 @@
       "biofouling_risk_score": 35,
       "hull_cleaning_candidate_score": 30,
       "sst_anomaly": 0.8,
-      "ais_dwell_hours": 99.7,
+      "ais_dwell_hours": 100.7,
       "salinity_proxy": 0.9,
       "norm_sst_anomaly": 0.2,
-      "norm_dwell_time": 0.593,
+      "norm_dwell_time": 0.599,
       "norm_salinity": 0.9,
       "model_version": "biofouling_sst_dwell_salinity_v1",
       "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
@@ -38273,12 +38273,12 @@
       "risk_score": 35,
       "top_factors": [
         "SST 0.8",
-        "Dwell 100h",
+        "Dwell 101h",
         "Salinity 0.9",
         "PORT_DWELL_TIME",
         "VESSEL_TYPE_EXPOSURE"
       ],
-      "reason_summary": "SST anomaly 0.8, AIS dwell 100h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 101h, salinity proxy 0.9 기반 상대 biofouling 리스크",
       "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
       "data_sources": [
         "NOAA SST",
@@ -38355,9 +38355,9 @@
         "arrival_window": null,
         "arrival_window_source": "-",
         "stay_days": 4.2,
-        "stay_hours": 100,
+        "stay_hours": 101,
         "waiting_hours": null,
-        "port_stay_hours": 100,
+        "port_stay_hours": 101,
         "congestion_score": null,
         "waiting_score": null,
         "last_seen_at": "-",
@@ -38407,7 +38407,7 @@
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": 30,
         "anchorageHours": null,
-        "portStayHours": 100,
+        "portStayHours": 101,
         "sstCelsius": null,
         "sstAnomalyCelsius": 0.8,
         "salinityPsu": 0.9,
@@ -38422,7 +38422,7 @@
         "slowSteamingHours": null,
         "riskReasons": [
           "SST 0.8",
-          "Dwell 100h",
+          "Dwell 101h",
           "Salinity 0.9",
           "PORT_DWELL_TIME",
           "VESSEL_TYPE_EXPOSURE"
@@ -38499,7 +38499,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "SST anomaly 0.8, AIS dwell 100h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+        "reason_summary": "SST anomaly 0.8, AIS dwell 101h, salinity proxy 0.9 기반 상대 biofouling 리스크",
         "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
         "data_lineage": {
           "vessel_name": {
@@ -40399,10 +40399,10 @@
       "biofouling_risk_score": 34,
       "hull_cleaning_candidate_score": 31,
       "sst_anomaly": 0.8,
-      "ais_dwell_hours": 95.7,
+      "ais_dwell_hours": 96.7,
       "salinity_proxy": 0.86,
       "norm_sst_anomaly": 0.2,
-      "norm_dwell_time": 0.57,
+      "norm_dwell_time": 0.576,
       "norm_salinity": 0.86,
       "model_version": "biofouling_sst_dwell_salinity_v1",
       "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
@@ -40430,14 +40430,14 @@
       "risk_score": 34,
       "top_factors": [
         "SST 0.8",
-        "Dwell 96h",
+        "Dwell 97h",
         "Salinity 0.86",
         "PORT_DWELL_TIME",
         "LONG_ANCHORAGE",
         "REPEATED_INACTIVITY",
         "PREVIOUS_VISIT_PATTERN"
       ],
-      "reason_summary": "SST anomaly 0.8, AIS dwell 96h, salinity proxy 0.86 기반 상대 biofouling 리스크",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 97h, salinity proxy 0.86 기반 상대 biofouling 리스크",
       "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
       "data_sources": [
         "NOAA SST",
@@ -40514,9 +40514,9 @@
         "arrival_window": null,
         "arrival_window_source": "-",
         "stay_days": 4,
-        "stay_hours": 96,
+        "stay_hours": 97,
         "waiting_hours": null,
-        "port_stay_hours": 96,
+        "port_stay_hours": 97,
         "congestion_score": null,
         "waiting_score": null,
         "last_seen_at": "-",
@@ -40566,7 +40566,7 @@
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": 31,
         "anchorageHours": null,
-        "portStayHours": 96,
+        "portStayHours": 97,
         "sstCelsius": null,
         "sstAnomalyCelsius": 0.8,
         "salinityPsu": 0.9,
@@ -40581,7 +40581,7 @@
         "slowSteamingHours": null,
         "riskReasons": [
           "SST 0.8",
-          "Dwell 96h",
+          "Dwell 97h",
           "Salinity 0.86",
           "PORT_DWELL_TIME",
           "LONG_ANCHORAGE",
@@ -40660,7 +40660,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "SST anomaly 0.8, AIS dwell 96h, salinity proxy 0.86 기반 상대 biofouling 리스크",
+        "reason_summary": "SST anomaly 0.8, AIS dwell 97h, salinity proxy 0.86 기반 상대 biofouling 리스크",
         "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
         "data_lineage": {
           "vessel_name": {
@@ -42999,10 +42999,10 @@
       "biofouling_risk_score": 33,
       "hull_cleaning_candidate_score": 32,
       "sst_anomaly": 0.8,
-      "ais_dwell_hours": 92.7,
+      "ais_dwell_hours": 93.7,
       "salinity_proxy": 0.9,
       "norm_sst_anomaly": 0.2,
-      "norm_dwell_time": 0.552,
+      "norm_dwell_time": 0.558,
       "norm_salinity": 0.9,
       "model_version": "biofouling_sst_dwell_salinity_v1",
       "formula": "0.5 * norm_sst_anomaly + 0.4 * norm_dwell_time + 0.1 * (1 - norm_salinity)",
@@ -43030,11 +43030,11 @@
       "risk_score": 33,
       "top_factors": [
         "SST 0.8",
-        "Dwell 93h",
+        "Dwell 94h",
         "Salinity 0.9",
         "PORT_DWELL_TIME"
       ],
-      "reason_summary": "SST anomaly 0.8, AIS dwell 93h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+      "reason_summary": "SST anomaly 0.8, AIS dwell 94h, salinity proxy 0.9 기반 상대 biofouling 리스크",
       "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
       "data_sources": [
         "NOAA SST",
@@ -43111,9 +43111,9 @@
         "arrival_window": null,
         "arrival_window_source": "-",
         "stay_days": 3.9,
-        "stay_hours": 93,
+        "stay_hours": 94,
         "waiting_hours": null,
-        "port_stay_hours": 93,
+        "port_stay_hours": 94,
         "congestion_score": null,
         "waiting_score": null,
         "last_seen_at": "-",
@@ -43163,7 +43163,7 @@
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": 32,
         "anchorageHours": null,
-        "portStayHours": 93,
+        "portStayHours": 94,
         "sstCelsius": null,
         "sstAnomalyCelsius": 0.8,
         "salinityPsu": 0.9,
@@ -43178,7 +43178,7 @@
         "slowSteamingHours": null,
         "riskReasons": [
           "SST 0.8",
-          "Dwell 93h",
+          "Dwell 94h",
           "Salinity 0.9",
           "PORT_DWELL_TIME"
         ],
@@ -43254,7 +43254,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "SST anomaly 0.8, AIS dwell 93h, salinity proxy 0.9 기반 상대 biofouling 리스크",
+        "reason_summary": "SST anomaly 0.8, AIS dwell 94h, salinity proxy 0.9 기반 상대 biofouling 리스크",
         "recommended_action": "체류 시간이 늘어나면 선저 상태 확인 메시지를 준비",
         "data_lineage": {
           "vessel_name": {

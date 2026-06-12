@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:40:23.748Z",
+  "generated_at": "2026-06-12T19:42:51.507Z",
   "record_count": 27,
   "item_count": 27,
   "items": [
@@ -69,9 +69,9 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "D-1정박지",
-      "anchorage_hours": 52.7,
+      "anchorage_hours": 53.7,
       "anchorage_days": 2.2,
-      "anchorage_density_score": 46,
+      "anchorage_density_score": 47,
       "idle_risk_score": 40,
       "total_sales_priority_score": 50,
       "reason_codes": [
@@ -139,6 +139,8 @@
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
+        "PREDICTED_ARRIVAL_OPPORTUNITY",
+        "ETA_24_72H_WINDOW",
         "PREDICTED_CONGESTION_RISK",
         "ANCHORAGE_PROBABILITY_HIGH",
         "BIOFOULING_EXPOSURE_HIGH",
@@ -158,8 +160,7 @@
         "STAY_48H_PLUS",
         "ANCHORAGE_24H_PLUS",
         "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT",
-        "PREDICTED_ARRIVAL_OPPORTUNITY"
+        "KNOWN_COMMERCIAL_SEGMENT"
       ],
       "normalized_port": {
         "port_code": "622",
@@ -231,10 +232,10 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "K-13 정박지",
-      "anchorage_hours": 11.7,
+      "anchorage_hours": 12.7,
       "anchorage_days": 0.5,
       "anchorage_density_score": 26,
-      "idle_risk_score": 9,
+      "idle_risk_score": 10,
       "total_sales_priority_score": 35,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -271,10 +272,10 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "K-13 정박지",
-      "anchorage_hours": 2.7,
-      "anchorage_days": 0.1,
-      "anchorage_density_score": 21,
-      "idle_risk_score": 2,
+      "anchorage_hours": 3.7,
+      "anchorage_days": 0.2,
+      "anchorage_density_score": 22,
+      "idle_risk_score": 3,
       "total_sales_priority_score": 34,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -471,6 +472,46 @@
       "display_name": "마산/창원"
     },
     {
+      "vessel_id": "CALL-231023",
+      "vessel_name": "제니스 그레이스",
+      "port_code": "622",
+      "port_name": "마산/창원",
+      "anchorage_name": "K-13 정박지",
+      "anchorage_hours": 16.7,
+      "anchorage_days": 0.7,
+      "anchorage_density_score": 28,
+      "idle_risk_score": 13,
+      "total_sales_priority_score": 29,
+      "reason_codes": [
+        "MASTER_DB_MATCH_FOUND",
+        "LOW_SPEED_CONGESTION_PATTERN",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "ANCHORAGE_CLASSIFIED",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "REPEAT_CALLER_SIGNAL",
+        "REPEAT_CALLER",
+        "BERTH_WINDOW_AVAILABLE",
+        "Low-speed or waiting condition",
+        "Workable UWC window available",
+        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
+        "ANCHORAGE_WAITING_CLASSIFIED",
+        "BERTH_CLASS_ANCHORAGE",
+        "KNOWN_COMMERCIAL_SEGMENT"
+      ],
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "마산/창원",
+        "raw_aliases": [
+          "마산/창원"
+        ]
+      },
+      "port_display_name": "마산/창원",
+      "display_name": "마산/창원"
+    },
+    {
       "vessel_id": "CALL-161047",
       "vessel_name": "포세이돈",
       "port_code": "622",
@@ -590,10 +631,10 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "K-13 정박지",
-      "anchorage_hours": 13.7,
+      "anchorage_hours": 14.7,
       "anchorage_days": 0.6,
       "anchorage_density_score": 27,
-      "idle_risk_score": 10,
+      "idle_risk_score": 11,
       "total_sales_priority_score": 29,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -623,16 +664,16 @@
       "display_name": "마산/창원"
     },
     {
-      "vessel_id": "CALL-231023",
-      "vessel_name": "제니스 그레이스",
+      "vessel_id": "CALL-D7EB",
+      "vessel_name": "WOOYANG GLORY",
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "K-13 정박지",
-      "anchorage_hours": 15.7,
-      "anchorage_days": 0.7,
-      "anchorage_density_score": 28,
-      "idle_risk_score": 12,
-      "total_sales_priority_score": 29,
+      "anchorage_hours": 3.7,
+      "anchorage_days": 0.2,
+      "anchorage_density_score": 22,
+      "idle_risk_score": 3,
+      "total_sales_priority_score": 28,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -640,8 +681,6 @@
         "ANCHORAGE_CLASSIFIED",
         "AGENT_IDENTIFIED",
         "CONTACT_PATH_AVAILABLE",
-        "REPEAT_CALLER_SIGNAL",
-        "REPEAT_CALLER",
         "BERTH_WINDOW_AVAILABLE",
         "Low-speed or waiting condition",
         "Workable UWC window available",
@@ -701,8 +740,8 @@
       "display_name": "마산/창원"
     },
     {
-      "vessel_id": "CALL-D7EB",
-      "vessel_name": "WOOYANG GLORY",
+      "vessel_id": "CALL-3FNI2",
+      "vessel_name": "WOOYANG LEADER",
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "K-13 정박지",
@@ -710,44 +749,6 @@
       "anchorage_days": 0.1,
       "anchorage_density_score": 21,
       "idle_risk_score": 2,
-      "total_sales_priority_score": 28,
-      "reason_codes": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "ANCHORAGE_CLASSIFIED",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition",
-        "Workable UWC window available",
-        "GT_BELOW_5000_NOT_COMMERCIAL_TARGET",
-        "ANCHORAGE_WAITING_CLASSIFIED",
-        "BERTH_CLASS_ANCHORAGE",
-        "KNOWN_COMMERCIAL_SEGMENT"
-      ],
-      "normalized_port": {
-        "port_code": "622",
-        "port_name": "마산/창원",
-        "display_name": "마산/창원",
-        "raw_port": "마산/창원",
-        "raw_aliases": [
-          "마산/창원"
-        ]
-      },
-      "port_display_name": "마산/창원",
-      "display_name": "마산/창원"
-    },
-    {
-      "vessel_id": "CALL-3FNI2",
-      "vessel_name": "WOOYANG LEADER",
-      "port_code": "622",
-      "port_name": "마산/창원",
-      "anchorage_name": "K-13 정박지",
-      "anchorage_hours": 1.7,
-      "anchorage_days": 0.1,
-      "anchorage_density_score": 21,
-      "idle_risk_score": 1,
       "total_sales_priority_score": 28,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",
@@ -1054,10 +1055,10 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "anchorage_name": "6정박지",
-      "anchorage_hours": 95.7,
+      "anchorage_hours": 96.7,
       "anchorage_days": 4,
       "anchorage_density_score": 68,
-      "idle_risk_score": 72,
+      "idle_risk_score": 73,
       "total_sales_priority_score": 20,
       "reason_codes": [
         "MASTER_DB_MATCH_FOUND",

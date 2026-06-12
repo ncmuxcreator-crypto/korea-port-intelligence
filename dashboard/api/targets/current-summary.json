@@ -1,16 +1,16 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:39:25.859Z",
+  "generated_at": "2026-06-12T19:41:58.659Z",
   "data_mode": "live",
-  "record_count": 32,
+  "record_count": 33,
   "item_count": 5,
   "source_table": "sales_candidates_current",
   "detail_endpoint": "dashboard/api/targets/current.json",
-  "total_count": 32,
+  "total_count": 33,
   "returned_count": 5,
   "score_distribution": {
     "0_49": 4,
-    "50_69": 26,
+    "50_69": 27,
     "70_84": 2,
     "85_100": 0,
     "unknown": 0
@@ -18,10 +18,10 @@
   "priority_counts": {
     "HOT": 3,
     "WARM": 9,
-    "LOW": 20
+    "LOW": 21
   },
   "actionability_counts": {
-    "CONTACT_NOW": 32
+    "CONTACT_NOW": 33
   },
   "items": [
     {
@@ -229,7 +229,7 @@
     {
       "severity": "INFO",
       "feature": "영업대상 선박",
-      "message": "상세 32건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 33건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/targets/current.json lazy load 사용"
     }
   ]

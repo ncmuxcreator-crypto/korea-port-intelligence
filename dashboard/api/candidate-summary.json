@@ -1,8 +1,8 @@
 {
-  "candidate_count": 32,
+  "candidate_count": 33,
   "immediate_count": 10,
   "strong_count": 16,
-  "watch_count": 13,
+  "watch_count": 14,
   "top_candidates": [
     {
       "vessel_name": "MINERAL HOPE",
@@ -407,6 +407,30 @@
       "port_display_name": "인천"
     },
     {
+      "port": "마산/창원",
+      "port_name": "마산/창원",
+      "display_name": "마산/창원",
+      "normalized_port": {
+        "port_code": "622",
+        "port_name": "마산/창원",
+        "display_name": "마산/창원",
+        "raw_port": "South Gyeongsang",
+        "raw_aliases": [
+          "South Gyeongsang",
+          "OCEAN DISTRICT",
+          "하동항",
+          "마산/창원"
+        ]
+      },
+      "total": 3,
+      "immediate": 0,
+      "strong": 2,
+      "watch": 1,
+      "top_score": 65,
+      "port_code": "622",
+      "port_display_name": "마산/창원"
+    },
+    {
       "port": "대산",
       "port_name": "대산",
       "display_name": "대산",
@@ -429,30 +453,6 @@
       "top_score": 65,
       "port_code": "621",
       "port_display_name": "대산"
-    },
-    {
-      "port": "마산/창원",
-      "port_name": "마산/창원",
-      "display_name": "마산/창원",
-      "normalized_port": {
-        "port_code": "622",
-        "port_name": "마산/창원",
-        "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
-        "raw_aliases": [
-          "South Gyeongsang",
-          "OCEAN DISTRICT",
-          "하동항",
-          "마산/창원"
-        ]
-      },
-      "total": 2,
-      "immediate": 0,
-      "strong": 2,
-      "watch": 0,
-      "top_score": 65,
-      "port_code": "622",
-      "port_display_name": "마산/창원"
     }
   ],
   "operating_rule": "Candidate score prioritizes immediate sales action: waiting/anchorage + long idle + high-value vessel + regulated destination + known operator.",

@@ -1,27 +1,27 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:39:25.859Z",
+  "generated_at": "2026-06-12T19:41:58.659Z",
   "data_mode": "live",
-  "record_count": 62,
+  "record_count": 63,
   "item_count": 5,
   "source_table": "sales/actions",
   "detail_endpoint": "dashboard/api/sales/actions.json",
-  "total_count": 62,
+  "total_count": 63,
   "returned_count": 5,
   "score_distribution": {
     "0_49": 0,
     "50_69": 6,
-    "70_84": 26,
+    "70_84": 27,
     "85_100": 30,
     "unknown": 0
   },
   "priority_counts": {
     "HOT": 6,
     "WARM": 21,
-    "LOW": 35
+    "LOW": 36
   },
   "actionability_counts": {
-    "CONTACT_NOW": 35,
+    "CONTACT_NOW": 36,
     "VERIFY_CONTACT": 25,
     "MONITOR": 2
   },
@@ -231,7 +231,7 @@
     {
       "severity": "INFO",
       "feature": "오늘의 영업 액션",
-      "message": "상세 62건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 63건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/sales/actions.json lazy load 사용"
     }
   ]

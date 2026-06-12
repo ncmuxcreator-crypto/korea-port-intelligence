@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
 
 const SOURCE_PRIORITIES = {
-  identity: ["source_csv", "vessel_spec", "mof_ais_info", "port_operation", "fuzzy_inference"],
-  specification: ["source_csv", "vessel_spec", "mof_ais_info", "port_operation"],
-  operator: ["source_csv", "berth_sources", "vessel_spec", "inferred_operator"],
+  identity: ["manual_reference", "source_csv", "vessel_spec", "mof_ais_info", "port_operation", "fuzzy_inference"],
+  specification: ["manual_reference", "source_csv", "vessel_spec", "mof_ais_info", "port_operation"],
+  operator: ["manual_reference", "source_csv", "berth_sources", "vessel_spec", "inferred_operator"],
   operational_timing: ["pilot_sources", "berth_sources", "port_operation", "mof_ais_dynamic"],
   berth_terminal: ["berth_sources", "port_operation"],
   risk_compliance: ["port_operation", "mof_ais_dynamic", "opportunity_engine"]
@@ -41,8 +41,9 @@ const FIELD_RULES = {
 };
 
 const SOURCE_FIELD_ALLOWLIST = {
+  manual_reference: ["imo", "mmsi", "call_sign", "normalized_vessel_name", "operator_display", "owner", "manager", "fleet_group", "vessel_type", "gt", "dwt", "flag", "loa", "beam"],
   port_operation: ["vessel_name", "call_sign", "normalized_vessel_name", "gt", "vessel_type", "current_port", "eta", "etb", "ata", "atd", "berth", "operator_display"],
-  source_csv: ["imo", "mmsi", "call_sign", "normalized_vessel_name", "operator_display", "owner", "manager", "fleet_group", "vessel_type", "gt", "dwt", "flag"],
+  source_csv: ["imo", "mmsi", "call_sign", "normalized_vessel_name", "operator_display", "owner", "manager", "fleet_group", "vessel_type", "gt", "dwt", "flag", "loa", "beam"],
   pilot_sources: ["pilotage_signal", "eta", "etb", "ata"],
   berth_sources: ["berth", "terminal", "etb", "ata", "berth_signal", "operator_display"],
   mof_ais_info: ["imo", "mmsi", "call_sign", "normalized_vessel_name", "vessel_type", "gt", "dwt", "flag"],
@@ -137,6 +138,7 @@ function recordSources(row = {}) {
 
   const detected = new Set();
   if (sources.some(source => /source_csv|verified_csv|csv/.test(source))) detected.add("source_csv");
+  if (sources.some(source => /manual_reference|verified_reference|reference_row|manual.*reference/.test(source))) detected.add("manual_reference");
   if (sources.some(source => /vessel_spec|specification/.test(source))) detected.add("vessel_spec");
   if (sources.some(source => /mof_ais_info|ais_info/.test(source))) detected.add("mof_ais_info");
   if (sources.some(source => /mof_ais_dynamic|ais_dynamic/.test(source))) detected.add("mof_ais_dynamic");
@@ -160,11 +162,13 @@ function inferMatchType(row = {}, sourceKey = "") {
   const data = merged(row);
   if (hasValue(data.imo)) return "IMO";
   if (hasValue(data.mmsi)) return "MMSI";
+  if (hasValue(data.call_sign) && hasValue(data.vessel_name)) return "CALL_SIGN_NAME";
   if (hasValue(data.call_sign)) return "CALL_SIGN";
-  if (hasValue(data.vessel_name) && (hasValue(data.current_port) || hasValue(data.port_name)) && (hasValue(data.eta) || hasValue(data.ata) || hasValue(data.etb))) return "VESSEL_NAME_PORT_TIME";
-  if (hasValue(data.vessel_name) && sourceKey === "port_operation") return "VESSEL_NAME_PORT_TIME";
-  if (hasValue(data.vessel_name)) return "VESSEL_NAME_ONLY";
-  return "WEAK";
+  if (hasValue(data.vessel_name) && hasValue(data.gt) && hasValue(data.vessel_type)) return "NAME_GT_TYPE";
+  if (hasValue(data.vessel_name) && (hasValue(data.current_port) || hasValue(data.port_name)) && (hasValue(data.eta) || hasValue(data.ata) || hasValue(data.etb))) return "NAME_PORT_TIME";
+  if (hasValue(data.vessel_name) && sourceKey === "port_operation") return "NAME_PORT_TIME";
+  if (hasValue(data.vessel_name)) return "FUZZY";
+  return "FUZZY";
 }
 
 function matchConfidence(row = {}, sourceKey = "", fieldName = "") {
@@ -173,10 +177,11 @@ function matchConfidence(row = {}, sourceKey = "", fieldName = "") {
   const bonus = {
     IMO: 6,
     MMSI: 5,
+    CALL_SIGN_NAME: 5,
     CALL_SIGN: 4,
-    VESSEL_NAME_PORT_TIME: 0,
-    VESSEL_NAME_ONLY: -12,
-    WEAK: -25
+    NAME_GT_TYPE: 2,
+    NAME_PORT_TIME: 0,
+    FUZZY: -18
   }[type] || 0;
   return Math.max(0, Math.min(100, Math.round(base + bonus)));
 }
@@ -265,10 +270,10 @@ function inferConflictType({ fieldName = "", matchType = "", currentValue = null
   if (fieldName === "imo" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "DIFFERENT_IMO";
   if (fieldName === "mmsi" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "DIFFERENT_MMSI";
   if (["operator_display", "owner", "manager", "fleet_group"].includes(fieldName) && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "OPERATOR_CONFLICT";
-  if (matchType === "VESSEL_NAME_ONLY") return "MULTIPLE_VESSEL_NAME_MATCHES";
-  if (matchType === "VESSEL_NAME_PORT_TIME" && confidence < 70) return "TIME_WINDOW_MISMATCH";
+  if (matchType === "FUZZY") return "MULTIPLE_VESSEL_NAME_MATCHES";
+  if (matchType === "NAME_PORT_TIME" && confidence < 70) return "TIME_WINDOW_MISMATCH";
   if (fieldName === "current_port" && hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "PORT_MISMATCH";
-  if (["WEAK", "VESSEL_NAME_ONLY"].includes(matchType) || confidence < 70) return "LOW_CONFIDENCE_FUZZY_MATCH";
+  if (matchType === "FUZZY" || confidence < 70) return "LOW_CONFIDENCE_FUZZY_MATCH";
   if (hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue)) return "OPERATOR_CONFLICT";
   return "LOW_CONFIDENCE_FUZZY_MATCH";
 }
@@ -289,6 +294,18 @@ function recommendedReviewAction(candidate = {}) {
   return "Review source evidence before applying.";
 }
 
+function matchedOnForMatchType(matchType = "") {
+  const type = String(matchType || "").toUpperCase();
+  if (type === "IMO") return ["imo"];
+  if (type === "MMSI") return ["mmsi"];
+  if (type === "CALL_SIGN") return ["call_sign"];
+  if (type === "CALL_SIGN_NAME") return ["call_sign", "vessel_name"];
+  if (type === "NAME_PORT_TIME") return ["vessel_name", "port", "time"];
+  if (type === "NAME_GT_TYPE") return ["vessel_name", "gt", "vessel_type"];
+  if (type === "FUZZY") return ["vessel_name"];
+  return [];
+}
+
 function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, generatedAt = new Date().toISOString()) {
   const data = merged(row);
   const rule = FIELD_RULES[fieldName];
@@ -299,9 +316,13 @@ function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, g
   const confidence = matchConfidence(row, sourceKey, fieldName);
   const quality = candidateQuality(row, sourceKey, fieldName, status);
   const trusted = isTrustedCurrent(row, fieldName);
+  const currentConfidence = currentQuality(row, fieldName);
+  const conflict = hasValue(currentValue) && hasValue(candidateValue) && !valuesEqual(currentValue, candidateValue);
+  const identityConflict = ["imo", "mmsi"].includes(fieldName) && conflict;
+  const operatorConflict = ["operator_display", "owner", "manager", "fleet_group"].includes(fieldName) && conflict;
   let action = "REJECT";
-  if (confidence >= 85 && (isEmpty(currentValue) || valuesEqual(currentValue, candidateValue) || quality >= currentQuality(row, fieldName) + 20)) {
-    action = trusted && !valuesEqual(currentValue, candidateValue) ? "REVIEW" : "APPLY";
+  if (confidence >= 85 && !trusted && !identityConflict && !operatorConflict && (isEmpty(currentValue) || valuesEqual(currentValue, candidateValue))) {
+    action = "APPLY";
   } else if (confidence >= 60 && hasValue(candidateValue)) {
     action = "REVIEW";
   }
@@ -314,26 +335,32 @@ function buildCandidate(row = {}, sourceKey = "", fieldName = "", status = {}, g
     candidate_value: compactValue(candidateValue)
   };
   const reason = candidateReason({ sourceKey, fieldName, matchType, action, currentValue, candidateValue });
+  const targetVessel = targetVesselSummary(row);
   return {
     candidate_id: `ec_${candidateHash(payload)}`,
     source_key: sourceKey,
     source_name: status.label || status.source_name || sourceKey,
     target_vessel_key: vesselKey(row),
+    target_vessel_name: targetVessel.vessel_name || null,
     match_type: matchType,
     match_confidence: confidence,
+    confidence,
     field_name: fieldName,
     current_value: compactValue(currentValue),
     candidate_value: compactValue(candidateValue),
     raw_value: compactValue(candidateValue),
-    target_vessel: targetVesselSummary(row),
+    target_vessel: targetVessel,
     candidate_quality: quality,
     action,
     reason,
+    current_confidence: currentConfidence,
     source_timestamp: sourceTimestamp(row) || generatedAt,
     lineage: {
+      source: sourceKey,
       raw_source: sourceKey,
       normalized_field: fieldName,
-      source_row_id: sourceRowId(row, sourceKey)
+      source_row_id: sourceRowId(row, sourceKey),
+      matched_on: matchedOnForMatchType(matchType)
     }
   };
 }
@@ -373,6 +400,19 @@ function toReviewQueueItem(candidate = {}) {
 
 function candidateFieldsForSource(sourceKey = "") {
   return SOURCE_FIELD_ALLOWLIST[sourceKey] || [];
+}
+
+function normalizedFilterSet(values = null) {
+  if (!values) return null;
+  if (values instanceof Set) return new Set([...values].map(value => String(value || "").trim()).filter(Boolean));
+  if (Array.isArray(values)) return new Set(values.map(value => String(value || "").trim()).filter(Boolean));
+  return null;
+}
+
+function candidateAllowedByFilters(candidate = {}, { allowedFields = null, allowedSources = null } = {}) {
+  if (allowedFields && !allowedFields.has(candidate.field_name)) return false;
+  if (allowedSources && !allowedSources.has(candidate.source_key)) return false;
+  return true;
 }
 
 function setField(row = {}, fieldName = "", value) {
@@ -497,10 +537,18 @@ export function buildSourceDataEnrichmentPayloads({
   sourceQualityScore = {},
   generatedAt = new Date().toISOString(),
   dataMode = "static_snapshot",
-  report = {}
+  report = {},
+  allowedFields = null,
+  allowedSources = null
 } = {}) {
   const sourceStatus = sourceStatusMap(sourceCollectionStatus, sourceQualityScore);
-  const candidates = generateCandidates(records, sourceStatus, generatedAt);
+  const allowedFieldSet = normalizedFilterSet(allowedFields);
+  const allowedSourceSet = normalizedFilterSet(allowedSources);
+  const candidates = generateCandidates(records, sourceStatus, generatedAt)
+    .filter(candidate => candidateAllowedByFilters(candidate, {
+      allowedFields: allowedFieldSet,
+      allowedSources: allowedSourceSet
+    }));
   const byId = new Map();
   for (const row of records) {
     const key = vesselKey(row);
