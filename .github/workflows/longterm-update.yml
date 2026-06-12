@@ -309,16 +309,21 @@ jobs:
           }
           NODE
 
-      - name: Commit source diagnostics snapshot
+      - name: Commit generated dashboard snapshots
         if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dashboard/api/source-health-runtime.json dashboard/api/source-collection-status.json
+          git add \
+            dashboard/api/source-health-runtime.json \
+            dashboard/api/source-collection-status.json \
+            dashboard/api/status-summary.json \
+            dashboard/api/endpoint-manifest.json \
+            dashboard/api/bootstrap.json
           if git diff --cached --quiet; then
-            echo "No source diagnostics changes to commit"
+            echo "No generated dashboard snapshot changes to commit"
           else
-            git commit -m "chore: refresh source diagnostics [skip ci]"
+            git commit -m "chore: update generated dashboard snapshots [skip ci]"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
