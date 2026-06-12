@@ -6,12 +6,15 @@ const ROOT = process.cwd();
 const FILES = {
   statusSummary: "dashboard/api/status-summary.json",
   updateTiers: "dashboard/api/runtime/update-tiers.json",
+  runtimeBudget: "dashboard/api/runtime-budget-report.json",
   sourceCollection: "dashboard/api/source-collection-status.json",
   sourceQuality: "dashboard/api/source-quality-score.json",
   enrichmentUtilization: "dashboard/api/enrichment-utilization.json",
+  storageEfficiency: "dashboard/api/storage-efficiency-report.json",
   auxLatest: "dashboard/api/aux/latest/index.json",
   enrichmentLatest: "dashboard/api/enrichment/latest/index.json",
   enrichmentPatches: "dashboard/api/enrichment/latest/patches.json",
+  discoveryIndex: "dashboard/api/discovery/index.json",
   endpointManifest: "dashboard/api/endpoint-manifest.json",
   workflow: ".github/workflows/longterm-update.yml"
 };
@@ -117,7 +120,16 @@ function activeAuxSources(payload = {}) {
 }
 
 function sourceQualityOwnerIssues(payload = {}) {
-  return sourceItems(payload)
+  const issues = [];
+  if (payload.owner_tier !== "mixed") {
+    issues.push(`top-level owner_tier=${payload.owner_tier || "missing"} expected=mixed`);
+  }
+  if (payload.core_may_update !== "core_sources_only") {
+    issues.push(`top-level core_may_update=${payload.core_may_update} expected=core_sources_only`);
+  }
+  return [
+    ...issues,
+    ...sourceItems(payload)
     .map(item => {
       const expected = sourceOwner(item.source_key);
       const actual = item.owner_tier || payload.owner_tier_by_source?.[item.source_key] || "";
@@ -125,7 +137,38 @@ function sourceQualityOwnerIssues(payload = {}) {
       if (expected !== "core" && item.core_may_update !== false) return `${item.source_key}: core_may_update=${item.core_may_update} expected=false`;
       return null;
     })
-    .filter(Boolean);
+    .filter(Boolean)
+  ];
+}
+
+function coreMayUpdateMatches(actual, expected) {
+  if (expected === "any") return actual !== undefined && actual !== null;
+  if (expected === true) return actual === true;
+  if (expected === false) return actual === false;
+  return actual === expected;
+}
+
+function fileOwnershipIssues(entries = []) {
+  return entries.flatMap(({ label, payload, ownerTier, coreMayUpdate, allowCoreUpdatePolicy = false }) => {
+    const issues = [];
+    if (!payload || typeof payload !== "object" || Object.keys(payload).length === 0) {
+      issues.push(`${label}: missing or unreadable`);
+      return issues;
+    }
+    if (payload.owner_tier !== ownerTier) {
+      issues.push(`${label}: owner_tier=${payload.owner_tier || "missing"} expected=${ownerTier}`);
+    }
+    if (!coreMayUpdateMatches(payload.core_may_update, coreMayUpdate)) {
+      const policy = payload.core_update_policy || "";
+      if (!(allowCoreUpdatePolicy && payload.core_may_update === true && policy)) {
+        issues.push(`${label}: core_may_update=${payload.core_may_update} expected=${coreMayUpdate}`);
+      }
+    }
+    if (payload.stale_diagnostic === true && !payload.stale_reason) {
+      issues.push(`${label}: stale_diagnostic=true but stale_reason is missing`);
+    }
+    return issues;
+  });
 }
 
 function manifestCoverage(manifest = {}) {
@@ -206,12 +249,15 @@ function countVisiblePatchApplications() {
 
 const statusSummary = readJson(FILES.statusSummary);
 const updateTiers = readJson(FILES.updateTiers);
+const runtimeBudget = readJson(FILES.runtimeBudget);
 const sourceCollection = readJson(FILES.sourceCollection);
 const sourceQuality = readJson(FILES.sourceQuality);
 const enrichmentUtilization = readJson(FILES.enrichmentUtilization);
+const storageEfficiency = readJson(FILES.storageEfficiency);
 const auxLatest = readJson(FILES.auxLatest);
 const enrichmentLatest = readJson(FILES.enrichmentLatest);
 const enrichmentPatches = readJson(FILES.enrichmentPatches, { items: [] });
+const discoveryIndex = readJson(FILES.discoveryIndex);
 const endpointManifest = readJson(FILES.endpointManifest, { endpoints: [] });
 const workflowText = readText(FILES.workflow);
 
@@ -228,6 +274,18 @@ const localOverwroteProductionAux = sourceQuality.generated_by === "local" &&
   activeAux.length > 0 &&
   sourceQuality.reused_from_cache !== true;
 const ownerIssues = sourceQualityOwnerIssues(sourceQuality);
+const fileOwnerIssues = fileOwnershipIssues([
+  { label: "status-summary", payload: statusSummary, ownerTier: "core", coreMayUpdate: true },
+  { label: "runtime/update-tiers", payload: updateTiers, ownerTier: "core", coreMayUpdate: true },
+  { label: "runtime-budget-report", payload: runtimeBudget, ownerTier: "core", coreMayUpdate: true },
+  { label: "source-collection-status", payload: sourceCollection, ownerTier: "mixed", coreMayUpdate: "core_sources_only" },
+  { label: "source-quality-score", payload: sourceQuality, ownerTier: "mixed", coreMayUpdate: "core_sources_only" },
+  { label: "enrichment-utilization", payload: enrichmentUtilization, ownerTier: "reference_enrichment", coreMayUpdate: true, allowCoreUpdatePolicy: true },
+  { label: "aux/latest/index", payload: auxLatest, ownerTier: "fast_aux", coreMayUpdate: false },
+  { label: "enrichment/latest/index", payload: enrichmentLatest, ownerTier: "reference_enrichment", coreMayUpdate: false },
+  { label: "storage-efficiency-report", payload: storageEfficiency, ownerTier: "discovery_audit", coreMayUpdate: false },
+  { label: "discovery/index", payload: discoveryIndex, ownerTier: "discovery_audit", coreMayUpdate: false }
+]);
 const missingManifest = manifestCoverage(endpointManifest);
 const missingDeploy = deployCoverage(workflowText);
 const visiblePatchApplications = countVisiblePatchApplications();
@@ -243,6 +301,7 @@ const problems = [];
 if (stale.status_update_core_mismatch) problems.push("status-summary active_run_id does not match update-tiers core_run_id");
 if (localOverwroteProductionAux) problems.push(`local source-quality overwrote active aux state: ${localMissingAux.map(item => item.source_key).join(", ")}`);
 if (ownerIssues.length) problems.push(`source-quality owner issues: ${ownerIssues.join("; ")}`);
+if (fileOwnerIssues.length) problems.push(`file ownership issues: ${fileOwnerIssues.join("; ")}`);
 if (missingManifest.length) problems.push(`endpoint-manifest missing lightweight outputs: ${missingManifest.join(", ")}`);
 if (missingDeploy.length) problems.push(`deploy whitelist missing lightweight outputs: ${missingDeploy.join(", ")}`);
 if (signalPatchCount > 0 && visiblePatchApplications.visible_signal_records === 0) {
@@ -259,10 +318,13 @@ console.log(`status_summary_run_id=${statusRunId || "-"}`);
 console.log(`update_tiers_core_run_id=${updateCoreRunId || "-"}`);
 console.log(`source_collection_run_id=${runId(sourceCollection, ["run_id"]) || "-"}`);
 console.log(`source_quality_run_id=${runId(sourceQuality, ["run_id", "core_run_id"]) || "-"}`);
+console.log(`runtime_budget_run_id=${runId(runtimeBudget, ["run_id"]) || "-"} generated_by=${runtimeBudget.generated_by || "-"}`);
 console.log(`aux_latest_run_id=${auxRunId || "-"} generated_at=${auxLatest.generated_at || "-"} generated_by=${auxLatest.generated_by || "-"} age_hours=${ageHours(auxLatest.generated_at) ?? "-"}`);
 console.log(`enrichment_latest_run_id=${enrichmentRunId || "-"} generated_at=${enrichmentLatest.generated_at || "-"} generated_by=${enrichmentLatest.generated_by || "-"} age_hours=${ageHours(enrichmentLatest.generated_at) ?? "-"}`);
+console.log(`discovery_run_id=${runId(discoveryIndex, ["run_id"]) || "-"} generated_at=${discoveryIndex.generated_at || "-"} generated_by=${discoveryIndex.generated_by || "-"}`);
 console.log(`mixed_tier_status=${Boolean(updateTiers.mixed_tier_status)} note=${updateTiers.mixed_tier_note || "-"}`);
 console.log(`source_quality_owner_status=${ownerIssues.length ? ownerIssues.join("; ") : "ok"}`);
+console.log(`file_owner_status=${fileOwnerIssues.length ? fileOwnerIssues.join("; ") : "ok"}`);
 console.log(`local_run_overwrote_production_aux_state=${localOverwroteProductionAux}`);
 console.log(`patch_availability=count:${patches.length} signal_patches:${signalPatchCount}`);
 console.log(`vessel_display_patch_application_count=cached_markers:${visiblePatchApplications.cached_markers} visible_signals:${visiblePatchApplications.visible_signal_records} files_checked:${visiblePatchApplications.files_checked}`);

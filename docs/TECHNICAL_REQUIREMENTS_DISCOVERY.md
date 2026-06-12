@@ -1,6 +1,6 @@
 # Technical Requirements Discovery
 
-Generated at: 2026-06-12T12:02:47.754Z
+Generated at: 2026-06-12T17:45:09.197Z
 
 ## Requirements
 
@@ -65,9 +65,11 @@ Generated at: 2026-06-12T12:02:47.754Z
 - audit:endpoints
 - audit:enrichment
 - audit:enrichment-engine
+- audit:enrichment-quality
 - audit:enrichment-review
 - audit:enrichment-utilization
 - audit:executive
+- audit:feature-revival
 - audit:features
 - audit:fleet-clusters
 - audit:fleet-dna
@@ -77,10 +79,12 @@ Generated at: 2026-06-12T12:02:47.754Z
 - audit:fleet-intelligence
 - audit:fleet-memory
 - audit:fleet-penetration
+- audit:hidden-features
 - audit:identity-sources
 - audit:integration
 - audit:json-writes
 - audit:korea-presence
+- audit:lightweight
 - audit:load-strategy
 - audit:lost-reasons
 - audit:match-review
@@ -107,6 +111,7 @@ Generated at: 2026-06-12T12:02:47.754Z
 - audit:snapshot-consistency
 - audit:source-cache
 - audit:source-csv
+- audit:source-csv-enrichment
 - audit:source-enrichment-matrix
 - audit:source-quality
 - audit:source-schedule
@@ -114,6 +119,8 @@ Generated at: 2026-06-12T12:02:47.754Z
 - audit:superintendents
 - audit:target-categories
 - audit:targets
+- audit:tiered-consistency
+- audit:tiered-update
 - audit:tonnage-threshold
 - audit:truth
 - audit:ui
@@ -157,9 +164,11 @@ Generated at: 2026-06-12T12:02:47.754Z
 | audit:endpoints |
 | audit:enrichment |
 | audit:enrichment-engine |
+| audit:enrichment-quality |
 | audit:enrichment-review |
 | audit:enrichment-utilization |
 | audit:executive |
+| audit:feature-revival |
 | audit:features |
 | audit:fleet-clusters |
 | audit:fleet-dna |
@@ -169,10 +178,12 @@ Generated at: 2026-06-12T12:02:47.754Z
 | audit:fleet-intelligence |
 | audit:fleet-memory |
 | audit:fleet-penetration |
+| audit:hidden-features |
 | audit:identity-sources |
 | audit:integration |
 | audit:json-writes |
 | audit:korea-presence |
+| audit:lightweight |
 | audit:load-strategy |
 | audit:lost-reasons |
 | audit:match-review |
@@ -199,6 +210,7 @@ Generated at: 2026-06-12T12:02:47.754Z
 | audit:snapshot-consistency |
 | audit:source-cache |
 | audit:source-csv |
+| audit:source-csv-enrichment |
 | audit:source-enrichment-matrix |
 | audit:source-quality |
 | audit:source-schedule |
@@ -206,6 +218,8 @@ Generated at: 2026-06-12T12:02:47.754Z
 | audit:superintendents |
 | audit:target-categories |
 | audit:targets |
+| audit:tiered-consistency |
+| audit:tiered-update |
 | audit:tonnage-threshold |
 | audit:truth |
 | audit:ui |
@@ -224,5 +238,4 @@ Generated at: 2026-06-12T12:02:47.754Z
 
 ## Referenced But Missing Commands
 
-- audit:hidden-features
-- audit:feature-revival
+- none

@@ -1,18 +1,18 @@
 # Source Enrichment Capability Matrix
 
-Generated at: 2026-06-12T12:02:47.754Z
+Generated at: 2026-06-12T17:45:09.197Z
 
 ## Source Status
 
 | Source | Configured/Attempted | Rows | Normalized | Matched | Normalization | Matching | Blocker | Next Action |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| port_operation | env-ref / attempted | 7343 | 7343 | 7343 | WORKING | MATCHED | Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint. | Continue targeted enrichment; avoid loading this source on Overview. |
+| port_operation | env-ref / attempted | 7925 | 7925 | 7925 | WORKING | MATCHED | Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint. | Continue targeted enrichment; avoid loading this source on Overview. |
 | source_csv | env-ref / attempted | 0 | 0 | 0 | NO_ROWS_OR_NOT_ATTEMPTED | NOT_MATCHED | API response too large: 72478261 bytes | Create a smaller verified vessel reference CSV and preserve previous cache. |
-| pilot_sources | env-ref / attempted | 385 | 72 | 8 | WORKING | MATCHED | Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | env-ref / attempted | 30 | 30 | 19 | WORKING | MATCHED | Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds. | Continue targeted enrichment; avoid loading this source on Overview. |
+| pilot_sources | env-ref / attempted | 403 | 72 | 0 | WORKING | NORMALIZED_NOT_MATCHED | no_vessel_match_or_signal | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | env-ref / attempted | 30 | 30 | 0 | WORKING | NORMALIZED_NOT_MATCHED | no_vessel_match_or_signal | Improve exact call sign/name + port/time matching and review queue routing. |
 | PNC_SOURCE_URLS | env-ref / not attempted | 0 | 0 | 0 | NO_ROWS_OR_NOT_ATTEMPTED | NOT_MATCHED | - | Continue targeted enrichment; avoid loading this source on Overview. |
-| mof_ais_info | env-ref / attempted | 10 | 10 | 10 | WORKING | MATCHED | Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY. | Continue targeted enrichment; avoid loading this source on Overview. |
-| mof_ais_dynamic | env-ref / attempted | 10 | 10 | 10 | WORKING | MATCHED | Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY. | Continue targeted enrichment; avoid loading this source on Overview. |
+| mof_ais_info | env-ref / attempted | 10 | 10 | 10 | WORKING | MATCHED | waiting_until_next_window:2026-06-12T21:07:34.749Z | Continue targeted enrichment; avoid loading this source on Overview. |
+| mof_ais_dynamic | env-ref / attempted | 10 | 10 | 10 | WORKING | MATCHED | waiting_until_next_window:2026-06-13T08:35:08.970Z | Continue targeted enrichment; avoid loading this source on Overview. |
 | mof_ais_stat | env-ref / attempted | 10 | 0 | 0 | PARTIAL_OR_BLOCKED | NOT_MATCHED | Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY. | Continue targeted enrichment; avoid loading this source on Overview. |
 | vessel_spec | env-ref / attempted | 1 | 0 | 0 | PARTIAL_OR_BLOCKED | NOT_MATCHED | HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run. | Add parser aliases based on sanitized raw sample keys. |
 | VTS | env-ref / not attempted | 0 | 0 | 0 | NO_ROWS_OR_NOT_ATTEMPTED | NOT_MATCHED | - | Continue targeted enrichment; avoid loading this source on Overview. |
@@ -47,16 +47,16 @@ Generated at: 2026-06-12T12:02:47.754Z
 | source_csv | operator | yes | PARTIAL | IMO, MMSI, call_sign, vessel_name | HIGH if verified=true | Use as fallback when empty; review operator conflicts. | Create a smaller verified vessel reference CSV and preserve previous cache. |
 | source_csv | owner | yes | PARTIAL | IMO, MMSI, call_sign, vessel_name | HIGH if verified=true | Use as fallback when empty; review operator conflicts. | Create a smaller verified vessel reference CSV and preserve previous cache. |
 | source_csv | manager | yes | PARTIAL | IMO, MMSI, call_sign, vessel_name | HIGH if verified=true | Use as fallback when empty; review operator conflicts. | Create a smaller verified vessel reference CSV and preserve previous cache. |
-| pilot_sources | vessel_name | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| pilot_sources | call_sign | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| pilot_sources | pilotage_signal | yes | WORKING | call_sign, vessel_name, port, time_window | HIGH for timing | Prefer freshest high-confidence timing source; review time/port mismatch. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | vessel_name | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | call_sign | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | etb | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | berth | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Prefer freshest high-confidence timing source; review time/port mismatch. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | terminal | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | berth_signal | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Prefer freshest high-confidence timing source; review time/port mismatch. | Continue targeted enrichment; avoid loading this source on Overview. |
-| berth_sources | operator | yes | WORKING | call_sign, vessel_name, port, time_window | MEDIUM | Use as fallback when empty; review operator conflicts. | Continue targeted enrichment; avoid loading this source on Overview. |
+| pilot_sources | vessel_name | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| pilot_sources | call_sign | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| pilot_sources | pilotage_signal | yes | PARTIAL | call_sign, vessel_name, port, time_window | HIGH for timing | Prefer freshest high-confidence timing source; review time/port mismatch. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | vessel_name | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | call_sign | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | etb | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | berth | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Prefer freshest high-confidence timing source; review time/port mismatch. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | terminal | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Apply only if target field is empty or candidate quality is materially higher. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | berth_signal | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Prefer freshest high-confidence timing source; review time/port mismatch. | Improve exact call sign/name + port/time matching and review queue routing. |
+| berth_sources | operator | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Use as fallback when empty; review operator conflicts. | Improve exact call sign/name + port/time matching and review queue routing. |
 | PNC_SOURCE_URLS | vessel_name | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
 | PNC_SOURCE_URLS | call_sign | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM | Apply only if target field is empty or candidate quality is materially higher. | Continue targeted enrichment; avoid loading this source on Overview. |
 | PNC_SOURCE_URLS | berth | yes | PARTIAL | call_sign, vessel_name, port, time_window | MEDIUM_HIGH | Prefer freshest high-confidence timing source; review time/port mismatch. | Continue targeted enrichment; avoid loading this source on Overview. |

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T12:02:47.754Z",
-  "run_id": "run_20260612065952169_5b648f9d",
+  "generated_at": "2026-06-12T17:45:09.197Z",
+  "run_id": "run_20260612173949259_4818cb4a",
   "source_count": 16,
   "field_mapping_count": 544,
   "sources": [
@@ -50,9 +50,9 @@
       "collector_attempted": true,
       "fetch_status": "ACTIVE",
       "http_status": 200,
-      "rows_collected": 7343,
-      "rows_normalized": 7343,
-      "rows_matched_to_vessels": 7343,
+      "rows_collected": 7925,
+      "rows_normalized": 7925,
+      "rows_matched_to_vessels": 7925,
       "current_utilization": 100,
       "known_blocker": "Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint.",
       "normalization_status": "WORKING",
@@ -104,12 +104,12 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "SOURCE_TOO_LARGE",
+      "fetch_status": "SKIPPED",
       "http_status": null,
       "rows_collected": 0,
       "rows_normalized": 0,
       "rows_matched_to_vessels": 0,
-      "current_utilization": 30,
+      "current_utilization": 28,
       "known_blocker": "API response too large: 72478261 bytes",
       "normalization_status": "NO_ROWS_OR_NOT_ATTEMPTED",
       "matching_status": "NOT_MATCHED",
@@ -146,17 +146,17 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "ACTIVE",
-      "http_status": 200,
-      "rows_collected": 385,
+      "fetch_status": "SKIPPED",
+      "http_status": null,
+      "rows_collected": 403,
       "rows_normalized": 72,
-      "rows_matched_to_vessels": 8,
-      "current_utilization": 92,
-      "known_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
+      "rows_matched_to_vessels": 0,
+      "current_utilization": 83,
+      "known_blocker": "no_vessel_match_or_signal",
       "normalization_status": "WORKING",
-      "matching_status": "MATCHED",
-      "implementation_gap": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "recommended_next_action": "Continue targeted enrichment; avoid loading this source on Overview."
+      "matching_status": "NORMALIZED_NOT_MATCHED",
+      "implementation_gap": "no_vessel_match_or_signal",
+      "recommended_next_action": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "berth_sources",
@@ -193,17 +193,17 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "ACTIVE",
-      "http_status": 200,
+      "fetch_status": "SKIPPED",
+      "http_status": null,
       "rows_collected": 30,
       "rows_normalized": 30,
-      "rows_matched_to_vessels": 19,
-      "current_utilization": 84,
-      "known_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
+      "rows_matched_to_vessels": 0,
+      "current_utilization": 73,
+      "known_blocker": "no_vessel_match_or_signal",
       "normalization_status": "WORKING",
-      "matching_status": "MATCHED",
-      "implementation_gap": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "recommended_next_action": "Continue targeted enrichment; avoid loading this source on Overview."
+      "matching_status": "NORMALIZED_NOT_MATCHED",
+      "implementation_gap": "no_vessel_match_or_signal",
+      "recommended_next_action": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "PNC_SOURCE_URLS",
@@ -289,16 +289,16 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "ACTIVE",
-      "http_status": 200,
+      "fetch_status": "SKIPPED",
+      "http_status": null,
       "rows_collected": 10,
       "rows_normalized": 10,
       "rows_matched_to_vessels": 10,
-      "current_utilization": 84,
-      "known_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_utilization": 82,
+      "known_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "normalization_status": "WORKING",
       "matching_status": "MATCHED",
-      "implementation_gap": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "implementation_gap": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "recommended_next_action": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -336,16 +336,16 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "ACTIVE",
-      "http_status": 200,
+      "fetch_status": "SKIPPED",
+      "http_status": null,
       "rows_collected": 10,
       "rows_normalized": 10,
       "rows_matched_to_vessels": 10,
-      "current_utilization": 84,
-      "known_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_utilization": 82,
+      "known_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "normalization_status": "WORKING",
       "matching_status": "MATCHED",
-      "implementation_gap": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "implementation_gap": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "recommended_next_action": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -430,12 +430,12 @@
       },
       "collector_exists": true,
       "collector_attempted": true,
-      "fetch_status": "ACTIVE",
-      "http_status": 200,
+      "fetch_status": "SKIPPED",
+      "http_status": null,
       "rows_collected": 1,
       "rows_normalized": 0,
       "rows_matched_to_vessels": 0,
-      "current_utilization": 45,
+      "current_utilization": 43,
       "known_blocker": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
       "normalization_status": "PARTIAL_OR_BLOCKED",
       "matching_status": "NOT_MATCHED",
@@ -1902,7 +1902,7 @@
       "field_group": "identity",
       "field_name": "vessel_name",
       "can_enrich": true,
-      "current_status": "WORKING",
+      "current_status": "PARTIAL",
       "match_keys": [
         "call_sign",
         "vessel_name",
@@ -1911,8 +1911,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -1928,8 +1928,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -1945,8 +1945,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -1962,15 +1962,15 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
       "field_group": "identity",
       "field_name": "call_sign",
       "can_enrich": true,
-      "current_status": "WORKING",
+      "current_status": "PARTIAL",
       "match_keys": [
         "call_sign",
         "vessel_name",
@@ -1979,8 +1979,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -1996,8 +1996,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2013,8 +2013,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2030,8 +2030,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2047,8 +2047,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2064,8 +2064,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2081,8 +2081,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2098,8 +2098,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2115,8 +2115,8 @@
       ],
       "trust_level": "HIGH for timing",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2132,8 +2132,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2149,8 +2149,8 @@
       ],
       "trust_level": "HIGH for timing",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2166,8 +2166,8 @@
       ],
       "trust_level": "HIGH for timing",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2183,8 +2183,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2200,8 +2200,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2217,8 +2217,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2234,15 +2234,15 @@
       ],
       "trust_level": "HIGH for timing",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
       "field_group": "operational",
       "field_name": "pilotage_signal",
       "can_enrich": true,
-      "current_status": "WORKING",
+      "current_status": "PARTIAL",
       "match_keys": [
         "call_sign",
         "vessel_name",
@@ -2251,8 +2251,8 @@
       ],
       "trust_level": "HIGH for timing",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2268,8 +2268,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2285,8 +2285,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2302,8 +2302,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2319,8 +2319,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2336,8 +2336,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2353,8 +2353,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2370,8 +2370,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2387,8 +2387,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2404,8 +2404,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2421,8 +2421,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2438,8 +2438,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2455,8 +2455,8 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "pilot_sources",
@@ -2472,589 +2472,11 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
     },
     {
       "source_key": "berth_sources",
-      "field_group": "identity",
-      "field_name": "vessel_name",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "identity",
-      "field_name": "normalized_vessel_name",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "identity",
-      "field_name": "imo",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "identity",
-      "field_name": "mmsi",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "identity",
-      "field_name": "call_sign",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "gt",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "dwt",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "vessel_type",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "flag",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "loa",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "specification",
-      "field_name": "beam",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "current_port",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "eta",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "etb",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "ata",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "atd",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "berth",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM_HIGH",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "terminal",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM_HIGH",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "anchorage",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "movement_status",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "pilotage_signal",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "operational",
-      "field_name": "berth_signal",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM_HIGH",
-      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "operator",
-      "can_enrich": true,
-      "current_status": "WORKING",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "owner",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "manager",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "fleet_group",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "contact_status",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "quote_readiness",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "commercial",
-      "field_name": "sales_priority",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "risk_compliance",
-      "field_name": "biofouling_risk",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "risk_compliance",
-      "field_name": "cleaning_window",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "risk_compliance",
-      "field_name": "compliance_exposure",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "risk_compliance",
-      "field_name": "sensitive_route",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "berth_sources",
-      "field_group": "risk_compliance",
-      "field_name": "CII_fuel_impact",
-      "can_enrich": false,
-      "current_status": "UNKNOWN",
-      "match_keys": [
-        "call_sign",
-        "vessel_name",
-        "port",
-        "time_window"
-      ],
-      "trust_level": "MEDIUM",
-      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds.",
-      "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
-    },
-    {
-      "source_key": "PNC_SOURCE_URLS",
       "field_group": "identity",
       "field_name": "vessel_name",
       "can_enrich": true,
@@ -3067,6 +2489,584 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "identity",
+      "field_name": "normalized_vessel_name",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "identity",
+      "field_name": "imo",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "identity",
+      "field_name": "mmsi",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "identity",
+      "field_name": "call_sign",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "gt",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "dwt",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "vessel_type",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "flag",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "loa",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "specification",
+      "field_name": "beam",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "current_port",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "eta",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "etb",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "ata",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "atd",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "berth",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM_HIGH",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "terminal",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM_HIGH",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "anchorage",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "movement_status",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "pilotage_signal",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "operational",
+      "field_name": "berth_signal",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM_HIGH",
+      "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "operator",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "owner",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "manager",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Use as fallback when empty; review operator conflicts.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "fleet_group",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "contact_status",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "quote_readiness",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "commercial",
+      "field_name": "sales_priority",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "risk_compliance",
+      "field_name": "biofouling_risk",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "risk_compliance",
+      "field_name": "cleaning_window",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "risk_compliance",
+      "field_name": "compliance_exposure",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "risk_compliance",
+      "field_name": "sensitive_route",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "berth_sources",
+      "field_group": "risk_compliance",
+      "field_name": "CII_fuel_impact",
+      "can_enrich": false,
+      "current_status": "UNKNOWN",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
+      "current_blocker": "no_vessel_match_or_signal",
+      "next_required_task": "Improve exact call sign/name + port/time matching and review queue routing."
+    },
+    {
+      "source_key": "PNC_SOURCE_URLS",
+      "field_group": "identity",
+      "field_name": "vessel_name",
+      "can_enrich": true,
+      "current_status": "PARTIAL",
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "port",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM",
+      "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
       "current_blocker": "Collector exists or env is present but collection was not attempted.",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
@@ -3645,7 +3645,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3662,7 +3662,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3679,7 +3679,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3696,7 +3696,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3713,7 +3713,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3730,7 +3730,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3747,7 +3747,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3764,7 +3764,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3781,7 +3781,7 @@
       ],
       "trust_level": "HIGH",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3798,7 +3798,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3815,7 +3815,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3832,7 +3832,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3849,7 +3849,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3866,7 +3866,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3883,7 +3883,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3900,7 +3900,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3917,7 +3917,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3934,7 +3934,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3951,7 +3951,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3968,7 +3968,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -3985,7 +3985,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4002,7 +4002,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4019,7 +4019,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4036,7 +4036,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4053,7 +4053,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4070,7 +4070,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4087,7 +4087,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4104,7 +4104,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4121,7 +4121,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4138,7 +4138,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4155,7 +4155,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4172,7 +4172,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4189,7 +4189,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4206,7 +4206,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_INFO_API_URL and MOF_AIS_INFO_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-12T21:07:34.749Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4223,7 +4223,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4240,7 +4240,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4257,7 +4257,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4274,7 +4274,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Never auto-overwrite non-empty verified/manual identity; review conflicts.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4291,7 +4291,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4308,7 +4308,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4325,7 +4325,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4342,7 +4342,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4359,7 +4359,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4376,7 +4376,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4393,7 +4393,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4410,7 +4410,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4427,7 +4427,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4444,7 +4444,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4461,7 +4461,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4478,7 +4478,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4495,7 +4495,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4512,7 +4512,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4529,7 +4529,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4546,7 +4546,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4563,7 +4563,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4580,7 +4580,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Prefer freshest high-confidence timing source; review time/port mismatch.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4597,7 +4597,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4614,7 +4614,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4631,7 +4631,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Use as fallback when empty; review operator conflicts.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4648,7 +4648,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4665,7 +4665,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4682,7 +4682,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4699,7 +4699,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4716,7 +4716,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4733,7 +4733,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4750,7 +4750,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4767,7 +4767,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -4784,7 +4784,7 @@
       ],
       "trust_level": "MEDIUM",
       "conflict_policy": "Apply only if target field is empty or candidate quality is materially higher.",
-      "current_blocker": "Set MOF_AIS_DYNAMIC_API_URL and MOF_AIS_DYNAMIC_SERVICE_KEY.",
+      "current_blocker": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
       "next_required_task": "Continue targeted enrichment; avoid loading this source on Overview."
     },
     {
@@ -9683,5 +9683,15 @@
       "current_blocker": "HTTP 404",
       "next_required_task": "Keep deferred as auxiliary; fix exact Ulsan endpoint paths later."
     }
-  ]
+  ],
+  "generated_by": "local",
+  "is_github_actions": false,
+  "status_run_id": "run_20260612173949259_4818cb4a",
+  "active_run_id": "run_20260612173949259_4818cb4a",
+  "latest_successful_run_id": null,
+  "source_run_id": "run_20260612173949259_4818cb4a",
+  "owner_tier": "discovery_audit",
+  "core_may_update": false,
+  "stale_diagnostic": false,
+  "stale_reason": ""
 }

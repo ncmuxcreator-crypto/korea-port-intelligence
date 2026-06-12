@@ -5,6 +5,10 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const GENERATED_AT = new Date().toISOString();
+const GENERATED_BY = process.env.GITHUB_ACTIONS === "true" || process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW
+  ? "github_actions"
+  : "local";
+const IS_GITHUB_ACTIONS = GENERATED_BY === "github_actions";
 
 const OUT_DIR = path.join(ROOT, "dashboard", "api", "discovery");
 const DOC_DIR = path.join(ROOT, "docs");
@@ -264,6 +268,26 @@ function writeJson(relativePath, payload) {
   const filePath = path.join(ROOT, relativePath);
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, JSON.stringify(payload, null, 2) + "\n", "utf8");
+}
+
+function withDiscoveryTierMetadata(payload = {}, runId = null) {
+  const sourceRunId = payload.source_run_id || payload.run_id || runId || null;
+  return {
+    ...payload,
+    schema_version: payload.schema_version || "1.0",
+    generated_at: payload.generated_at || GENERATED_AT,
+    generated_by: payload.generated_by || GENERATED_BY,
+    is_github_actions: payload.is_github_actions ?? IS_GITHUB_ACTIONS,
+    run_id: payload.run_id || runId || null,
+    status_run_id: payload.status_run_id || sourceRunId,
+    active_run_id: payload.active_run_id || sourceRunId,
+    latest_successful_run_id: payload.latest_successful_run_id || null,
+    source_run_id: sourceRunId,
+    owner_tier: "discovery_audit",
+    core_may_update: false,
+    stale_diagnostic: payload.stale_diagnostic ?? false,
+    stale_reason: payload.stale_reason || ""
+  };
 }
 
 function writeMarkdown(relativePath, content) {
@@ -625,6 +649,7 @@ function main() {
   const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", { items: [] });
   const sourceQualityScore = readJson("dashboard/api/source-quality-score.json", { items: [] });
   const packageJson = readJson("package.json", { scripts: {} });
+  const discoveryRunId = endpointManifest.run_id || bootstrap.run_id || null;
   const dashboardHtml = readText("dashboard/index.html");
   const scriptFiles = listFiles("scripts", file => file.endsWith(".js"));
   const docFiles = listFiles("docs", file => /\.(md|txt)$/i.test(file)).slice(0, 250);
@@ -680,7 +705,7 @@ function main() {
 
   const capabilityItems = capabilityMatrix(sources);
   const technical = technicalRequirements(packageJson, scriptFiles);
-  const roadmapPayload = roadmap(featureItems, sources, endpoints);
+  const roadmapPayload = withDiscoveryTierMetadata(roadmap(featureItems, sources, endpoints), discoveryRunId);
   const discussed = featureItems
     .filter(feature => ["DISCUSSED_NOT_IMPLEMENTED", "PARTIAL_IMPLEMENTATION", "UI_PLACEHOLDER_ONLY"].includes(feature.implementation_status))
     .map(feature => ({
@@ -693,10 +718,10 @@ function main() {
       recommended_phase: feature.existing_endpoint_paths.length ? "Priority 1" : "Priority 3/4"
     }));
 
-  const hiddenPayload = {
+  const hiddenPayload = withDiscoveryTierMetadata({
     schema_version: "1.0",
     generated_at: GENERATED_AT,
-    run_id: endpointManifest.run_id || bootstrap.run_id || null,
+    run_id: discoveryRunId,
     feature_count: featureItems.length,
     endpoint_count: endpoints.length,
     hidden_feature_count: featureItems.filter(feature => ["DEVELOPED_HIDDEN", "ENDPOINT_EXISTS_UI_MISSING"].includes(feature.implementation_status)).length,
@@ -707,30 +732,30 @@ function main() {
     ui_placeholders: ui.placeholders,
     source_apis: sources,
     discussed_not_implemented: discussed
-  };
+  }, discoveryRunId);
 
-  const capabilityPayload = {
+  const capabilityPayload = withDiscoveryTierMetadata({
     schema_version: "1.0",
     generated_at: GENERATED_AT,
-    run_id: endpointManifest.run_id || bootstrap.run_id || null,
+    run_id: discoveryRunId,
     source_count: sources.length,
     field_mapping_count: capabilityItems.length,
     sources,
     items: capabilityItems
-  };
+  }, discoveryRunId);
 
-  const technicalPayload = {
+  const technicalPayload = withDiscoveryTierMetadata({
     ...technical,
-    run_id: endpointManifest.run_id || bootstrap.run_id || null,
+    run_id: discoveryRunId,
     source_api_count: sources.length,
     endpoint_count: endpoints.length,
     npm_commands: Object.keys(packageJson.scripts || {}).sort()
-  };
+  }, discoveryRunId);
 
-  const indexPayload = {
+  const indexPayload = withDiscoveryTierMetadata({
     schema_version: "1.0",
     generated_at: GENERATED_AT,
-    run_id: endpointManifest.run_id || bootstrap.run_id || null,
+    run_id: discoveryRunId,
     files_generated: [
       "docs/HIDDEN_FEATURE_AND_API_DISCOVERY.md",
       "docs/SOURCE_ENRICHMENT_CAPABILITY_MATRIX.md",
@@ -749,7 +774,7 @@ function main() {
     priority_0_count: roadmapPayload.priorities.find(item => item.priority === 0)?.items.length || 0,
     priority_1_count: roadmapPayload.priorities.find(item => item.priority === 1)?.items.length || 0,
     priority_2_count: roadmapPayload.priorities.find(item => item.priority === 2)?.items.length || 0
-  };
+  }, discoveryRunId);
 
   writeJson("dashboard/api/discovery/hidden-feature-and-api-discovery.json", hiddenPayload);
   writeJson("dashboard/api/discovery/source-enrichment-capability-matrix.json", capabilityPayload);

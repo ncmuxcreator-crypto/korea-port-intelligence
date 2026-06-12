@@ -1,52 +1,47 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T12:02:47.754Z",
+  "generated_at": "2026-06-12T17:45:09.197Z",
   "priorities": [
     {
       "priority": 0,
       "title": "Safety / consistency",
       "items": [
-        "Refresh stale endpoint dashboard/api/candidate-changes.json",
-        "Refresh stale endpoint dashboard/api/coverage-audit.json",
-        "Refresh stale endpoint dashboard/api/daily-enrichment-runtime.json",
-        "Refresh stale endpoint dashboard/api/ports/620-YEOSU/anchorage.json",
-        "Refresh stale endpoint dashboard/api/ports/620-YEOSU/berths.json",
-        "Refresh stale endpoint dashboard/api/ports/620-YEOSU/candidates.json",
-        "Refresh stale endpoint dashboard/api/ports/620-YEOSU/hull-cleaning.json",
-        "Refresh stale endpoint dashboard/api/ports/620-YEOSU/vessels-summary.json",
-        "Refresh stale endpoint dashboard/api/source-health.json"
+        "Fix broken endpoint dashboard/api/cache/source-csv-reference.json",
+        "Fix broken endpoint dashboard/api/cache/source-csv-index.json"
       ]
     },
     {
       "priority": 1,
       "title": "Revive existing value",
       "items": [
-        "Reconnect 입항 예정 (dashboard/api/arrival-pipeline-summary.json)",
-        "Reconnect 묘박/대기 (dashboard/api/anchorage-waiting-summary.json)",
-        "Reconnect 클리닝 적기 (dashboard/api/debug/intelligence/cleaning-window.json)",
-        "Reconnect 반복 영업 기회 (dashboard/api/debug/intelligence/opportunity-memory.json)",
-        "Reconnect 에이전트 인텔리전스 (dashboard/api/debug/intelligence/agent-intelligence.json)",
-        "Reconnect Source Data Enrichment (dashboard/api/debug/enrichment/applied.json)",
-        "Reconnect Source Quality Score (dashboard/api/debug/source-quality-score.json)",
-        "Reconnect Source Capability Matrix (dashboard/api/debug/enrichment/source-capability-matrix.json)",
+        "Reconnect 클리닝 적기 (dashboard/api/intelligence/cleaning-window.json)",
+        "Reconnect 반복 영업 기회 (dashboard/api/intelligence/opportunity-memory.json)",
+        "Reconnect Source Quality Score (dashboard/api/source-quality-score.json)",
         "Reconnect Auxiliary Source Cache (dashboard/api/aux/cache-status.json)",
         "Reconnect Auxiliary Source Schedule (dashboard/api/aux/source-schedule.json)",
-        "Reconnect DB Cleanup Plan (dashboard/api/db-cleanup-plan.json)",
-        "Reconnect alerts.latest (dashboard/api/alerts/latest.json)",
-        "Reconnect alerts.sales-alerts (dashboard/api/alerts/sales-alerts.json)",
-        "Reconnect all-collected-vessels-summary (dashboard/api/all-collected-vessels-summary.json)",
+        "Reconnect DB Cleanup Plan (dashboard/api/storage-efficiency-report.json)",
+        "Reconnect bootstrap (dashboard/api/bootstrap.json)",
+        "Reconnect vessel.countReconciliation (dashboard/api/vessel-count-reconciliation.json)",
+        "Reconnect ports (dashboard/api/ports.json)",
+        "Reconnect candidates.topSummary (dashboard/api/candidates/top-summary.json)",
+        "Reconnect dashboard-summary (dashboard/api/dashboard-summary.json)",
+        "Reconnect enrichment.sourceCsvDryRun (dashboard/api/enrichment/source-csv-dry-run.json)",
         "Reconnect aux.aisDynamicSummary (dashboard/api/aux/ais-dynamic-summary.json)",
-        "Reconnect aux.aisInfoSummary (dashboard/api/aux/ais-info-summary.json)",
-        "Reconnect aux.berthSummary (dashboard/api/aux/berth-summary.json)",
-        "Reconnect aux.pilotageSummary (dashboard/api/aux/pilotage-summary.json)",
-        "Reconnect aux.vesselSpecSummary (dashboard/api/aux/vessel-spec-summary.json)",
-        "Reconnect backend-ops (dashboard/api/backend-ops.json)"
+        "Reconnect aux.latestIndex (dashboard/api/aux/latest/index.json)",
+        "Reconnect aux.latestPilotage (dashboard/api/aux/latest/pilotage-summary.json)",
+        "Reconnect aux.latestBerth (dashboard/api/aux/latest/berth-summary.json)",
+        "Reconnect aux.latestAisInfo (dashboard/api/aux/latest/ais-info-summary.json)",
+        "Reconnect aux.latestAisDynamic (dashboard/api/aux/latest/ais-dynamic-summary.json)",
+        "Reconnect enrichment.latestSummary (dashboard/api/enrichment/latest/summary.json)",
+        "Reconnect intelligence.contactCoverageSummary (dashboard/api/intelligence/contact-coverage-summary.json)"
       ]
     },
     {
       "priority": 2,
       "title": "Enrichment utilization",
       "items": [
+        "Improve pilot_sources: no_vessel_match_or_signal",
+        "Improve berth_sources: no_vessel_match_or_signal",
         "Improve mof_ais_stat: Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY.",
         "Improve vessel_spec: HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
       ]
@@ -65,16 +60,7 @@
         "Surface/validate commercial intelligence: 선대 침투율",
         "Surface/validate commercial intelligence: 선대 기회 갭",
         "Surface/validate commercial intelligence: 선대 DNA",
-        "Surface/validate commercial intelligence: 예상 매출 기회",
-        "Surface/validate commercial intelligence: congestion-watchlist",
-        "Surface/validate commercial intelligence: fleet-opportunities",
-        "Surface/validate commercial intelligence: intelligence.customer-memory",
-        "Surface/validate commercial intelligence: intelligence.fleet-clusters",
-        "Surface/validate commercial intelligence: intelligence.fleet-expansion",
-        "Surface/validate commercial intelligence: intelligence.fleet-heatmap",
-        "Surface/validate commercial intelligence: intelligence.fleet-memory",
-        "Surface/validate commercial intelligence: intelligence.fleet-summary",
-        "Surface/validate commercial intelligence: intelligence.hull-cleaning-engine"
+        "Surface/validate commercial intelligence: 예상 매출 기회"
       ]
     },
     {
@@ -86,5 +72,16 @@
         "Navigation cleanup after hidden feature decisions"
       ]
     }
-  ]
+  ],
+  "generated_by": "local",
+  "is_github_actions": false,
+  "run_id": "run_20260612173949259_4818cb4a",
+  "status_run_id": "run_20260612173949259_4818cb4a",
+  "active_run_id": "run_20260612173949259_4818cb4a",
+  "latest_successful_run_id": null,
+  "source_run_id": "run_20260612173949259_4818cb4a",
+  "owner_tier": "discovery_audit",
+  "core_may_update": false,
+  "stale_diagnostic": false,
+  "stale_reason": ""
 }
