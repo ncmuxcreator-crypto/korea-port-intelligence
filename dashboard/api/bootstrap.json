@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T17:29:12.770Z",
+  "generated_at": "2026-06-12T17:38:10.503Z",
   "data_mode": "live",
   "fallback_used": false,
   "record_count": 32,
   "kpis": {
-    "total_vessels": 1015,
-    "total_detected_vessels": 1015,
+    "total_vessels": 1014,
+    "total_detected_vessels": 1014,
     "detail_eligible_vessel_count": 669,
     "gt_5000_plus_count": 607,
-    "gt_below_5000_count": 408,
+    "gt_below_5000_count": 407,
     "gt_unknown_count": 0,
     "sales_target_count": 32,
     "immediate_target_count": 10,
@@ -34,7 +34,7 @@
     "monitor_count": 2,
     "hold_count": 0,
     "pilotage_detected_count": 0,
-    "berth_info_detected_count": 1015,
+    "berth_info_detected_count": 1014,
     "biofouling_high_risk_count": 8,
     "cleaning_immediate_candidate_count": 7,
     "average_hull_growth_index": 35,
@@ -57,18 +57,18 @@
   },
   "kpi_trends": {
     "total_vessels": {
-      "current_value": 1015,
+      "current_value": 1014,
       "previous_value": 1015,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -1,
+      "delta_percent": -0.1,
+      "direction": "down"
     },
     "total_detected_vessels": {
-      "current_value": 1015,
+      "current_value": 1014,
       "previous_value": 1015,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -1,
+      "delta_percent": -0.1,
+      "direction": "down"
     },
     "detail_eligible_vessel_count": {
       "current_value": 669,
@@ -85,11 +85,11 @@
       "direction": "flat"
     },
     "gt_below_5000_count": {
-      "current_value": 408,
+      "current_value": 407,
       "previous_value": 408,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -1,
+      "delta_percent": -0.2,
+      "direction": "down"
     },
     "gt_unknown_count": {
       "current_value": 0,
@@ -260,11 +260,11 @@
       "direction": "flat"
     },
     "berth_info_detected_count": {
-      "current_value": 1015,
+      "current_value": 1014,
       "previous_value": 1015,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -1,
+      "delta_percent": -0.1,
+      "direction": "down"
     },
     "biofouling_high_risk_count": {
       "current_value": 8,
@@ -291,11 +291,11 @@
   "trend_metrics": {
     "vessel_growth": {
       "metric_key": "total_vessels",
-      "current_value": 1015,
+      "current_value": 1014,
       "previous_value": 1015,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": -1,
+      "delta_percent": -0.1,
+      "direction": "down"
     },
     "target_growth": {
       "metric_key": "sales_target_count",
@@ -335,7 +335,7 @@
       "port_code": "020",
       "port_name": "부산",
       "display_name": "부산",
-      "vessel_count": 379,
+      "vessel_count": 378,
       "target_count": 39,
       "sales_target_count": 39,
       "hot_count": 0,
@@ -413,7 +413,7 @@
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 35
+      "avg_opportunity_score": 34.9
     },
     {
       "port_code": "031",
@@ -567,14 +567,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "HOT",
         "priority_label_ko": "우선 연락",
-        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -667,7 +667,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "medium",
       "priority_label": "HOT",
-      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -675,7 +675,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 2,
@@ -734,14 +734,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "HOT",
         "priority_label_ko": "우선 연락",
-        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -834,7 +834,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "medium",
       "priority_label": "HOT",
-      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -842,7 +842,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 3,
@@ -908,7 +908,7 @@
           "port_operation_incheon_o",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "FIONAN",
       "imo": "-",
@@ -1009,7 +1009,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 4,
@@ -1075,7 +1075,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -1176,7 +1176,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 5,
@@ -1242,7 +1242,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -1343,7 +1343,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 6,
@@ -1402,14 +1402,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "BERGE DOI INTHANON",
       "imo": "-",
@@ -1502,7 +1502,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "high",
       "priority_label": "WARM",
-      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -1510,7 +1510,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 7,
@@ -1569,14 +1569,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 31,530 탱커으로, 출항 전 약 58시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 31,530 탱커으로, 출항 전 약 57시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "CHANG HANG HU PO",
       "imo": "-",
@@ -1669,7 +1669,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "high",
       "priority_label": "WARM",
-      "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 31,530 탱커으로, 출항 전 약 58시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 31,530 탱커으로, 출항 전 약 57시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -1677,7 +1677,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 8,
@@ -1736,14 +1736,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 62,318 원유운반선으로, 출항 전 약 61시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 62,318 원유운반선으로, 출항 전 약 60시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_daesan_o",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "WASHINGTON",
       "imo": "-",
@@ -1836,7 +1836,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "high",
       "priority_label": "WARM",
-      "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 62,318 원유운반선으로, 출항 전 약 61시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Daesan D-1정박지에서 묘박/대기 5.9일째인 GT 62,318 원유운반선으로, 출항 전 약 60시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -1844,7 +1844,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 9,
@@ -1903,14 +1903,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "LOW",
         "priority_label_ko": "모니터링",
-        "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 334시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 333시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_busan_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "한유울산",
       "imo": "-",
@@ -2003,7 +2003,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "high",
       "priority_label": "LOW",
-      "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 334시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Busan O박지 O2 묘지에서 묘박/대기 18일째인 탱커으로, 출항 전 약 333시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -2011,7 +2011,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 10,
@@ -2070,14 +2070,14 @@
         "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "HOT",
         "priority_label_ko": "우선 연락",
-        "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 429시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 428시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "Merged Port Operation port call",
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "ERSOZ WEST",
       "imo": "-",
@@ -2170,7 +2170,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "medium",
       "priority_label": "HOT",
-      "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 429시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Pyeongtaek-Dangjin 고대부두 5번선석에서 체류 12.7일째인 GT 36,332 벌크선으로, 출항 전 약 428시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "Merged Port Operation port call",
@@ -2178,7 +2178,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     }
   ],
   "sales_priority": [
@@ -2234,14 +2234,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "HOT",
         "priority_label_ko": "우선 연락",
-        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+        "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -2328,7 +2328,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "LOW",
       "priority_label": "HOT",
-      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 111시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
+      "reason_summary": "Pyeongtaek-Dangjin 송악부두 5번선석에서 체류 10.2일째인 GT 91,971 벌크선으로, 출항 전 약 110시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 체선/대기 신호가 누적되고 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -2336,7 +2336,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 2,
@@ -2397,7 +2397,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "FIONAN",
       "imo": "-",
@@ -2492,7 +2492,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 3,
@@ -2547,14 +2547,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 7개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 22점, 평균 체선노출 4점입니다. Incheon 내항 4부두 42선석에서 체류 5.4일째인 GT 43,958 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 22점, 평균 체선노출 4점입니다. Incheon 내항 4부두 42선석에서 체류 5.4일째인 GT 43,958 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "대리점 확인 후 견적 제안",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "PAN PEGASUS",
       "imo": "-",
@@ -2642,7 +2642,7 @@
       "recommendedAction": "대리점 확인 후 견적 제안",
       "confidence": "LOW",
       "priority_label": "WARM",
-      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 22점, 평균 체선노출 4점입니다. Incheon 내항 4부두 42선석에서 체류 5.4일째인 GT 43,958 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "PAN OCEAN 선사는 현재 한국 항만에 6척이 확인되며, 영업대상 1척·즉시후보 0척이 포함됩니다. 30일 세척 수요 가능성은 41점이며 평균 바이오파울링 노출 22점, 평균 체선노출 4점입니다. Incheon 내항 4부두 42선석에서 체류 5.4일째인 GT 43,958 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "대리점 확인 후 견적 제안",
       "data_sources": [
         "opportunity_master",
@@ -2650,7 +2650,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 4,
@@ -2711,7 +2711,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -2806,7 +2806,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 5,
@@ -2860,14 +2860,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "BERGE DOI INTHANON",
       "imo": "-",
@@ -2954,7 +2954,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "LOW",
       "priority_label": "WARM",
-      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 64시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 6.4일째인 GT 36,177 벌크선으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -2962,7 +2962,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 6,
@@ -3017,14 +3017,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Busan M박지 M9 묘지에서 묘박/대기 3.4일째인 GT 44,102 벌크선으로, 출항 전 약 424시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Busan M박지 M9 묘지에서 묘박/대기 3.4일째인 GT 44,102 벌크선으로, 출항 전 약 423시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "MARCEL",
       "imo": "-",
@@ -3112,7 +3112,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "LOW",
       "priority_label": "WARM",
-      "reason_summary": "Busan M박지 M9 묘지에서 묘박/대기 3.4일째인 GT 44,102 벌크선으로, 출항 전 약 424시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Busan M박지 M9 묘지에서 묘박/대기 3.4일째인 GT 44,102 벌크선으로, 출항 전 약 423시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -3120,7 +3120,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 7,
@@ -3175,14 +3175,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 4.2일째인 GT 43,551 원유운반선으로, 출항 전 약 34시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 4.2일째인 GT 43,551 원유운반선으로, 출항 전 약 33시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "BEI HAI FENG HUANG",
       "imo": "-",
@@ -3270,7 +3270,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "LOW",
       "priority_label": "WARM",
-      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 4.2일째인 GT 43,551 원유운반선으로, 출항 전 약 34시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "Ulsan 정박지-E3에서 묘박/대기 4.2일째인 GT 43,551 원유운반선으로, 출항 전 약 33시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -3278,7 +3278,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 8,
@@ -3333,14 +3333,14 @@
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 6개",
         "priority_label": "WARM",
         "priority_label_ko": "검토",
-        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 127시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 126시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_sources": [
           "opportunity_master",
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "스키야토스",
       "imo": "-",
@@ -3428,7 +3428,7 @@
       "recommendedAction": "운영선사 확인",
       "confidence": "LOW",
       "priority_label": "WARM",
-      "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 127시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 126시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "recommended_action": "운영선사 확인",
       "data_sources": [
         "opportunity_master",
@@ -3436,7 +3436,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 9,
@@ -3498,7 +3498,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "에이치엘 오셔닉",
       "imo": "-",
@@ -3594,7 +3594,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     },
     {
       "rank": 10,
@@ -3656,7 +3656,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T17:25:30.073Z"
+        "last_seen_at": "2026-06-12T17:32:14.172Z"
       },
       "vessel_name": "CF DIAMOND",
       "imo": "-",
@@ -3752,17 +3752,17 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T17:25:30.073Z"
+      "last_seen_at": "2026-06-12T17:32:14.172Z"
     }
   ],
   "alerts": [],
   "data_health": {
     "status": "healthy",
-    "latest_successful_run_id": null,
-    "last_success_at": "2026-06-12T17:29:12.770Z",
+    "latest_successful_run_id": "run_20260612173214161_14ba8756",
+    "last_success_at": "2026-06-12T17:38:10.503Z",
     "source_status": {
       "source_rows_collected": 2642,
-      "normalized_rows": 1015,
+      "normalized_rows": 1014,
       "ports_attempted_count": 0,
       "environmental_source_status": {
         "status": "proxy",
@@ -3771,27 +3771,27 @@
       }
     },
     "db_status": {
-      "supabase_write_status": "skipped_local",
-      "promotion_status": "not_promoted",
+      "supabase_write_status": "completed",
+      "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 0,
-        "opportunity_master": 0,
-        "dashboard_summary_snapshots": 0
+        "vessel_snapshots": 1014,
+        "opportunity_master": 1014,
+        "dashboard_summary_snapshots": 1
       }
     },
     "json_status": {
       "output_mode": "static_json"
     },
     "technical_diagnostics": {
-      "total_rows": 1537,
+      "total_rows": 1536,
       "fallback_rows": 0,
-      "mock_rows": 1537,
+      "mock_rows": 1536,
       "scoring_errors": 0,
       "data_health_validation": {
         "status": "ok",
-        "total_rows": 1015,
-        "issue_count": 1015,
-        "missing_imo_mmsi_count": 1015,
+        "total_rows": 1014,
+        "issue_count": 1014,
+        "missing_imo_mmsi_count": 1014,
         "missing_port_code_count": 0,
         "date_parse_failed_count": 0,
         "lat_lon_range_error_count": 0,
@@ -4415,8 +4415,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "GWANGYANG",
@@ -4428,8 +4428,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "YEOSU",
@@ -4441,8 +4441,8 @@
       "marine_heatwave_level": "EXTREME",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "ULSAN",
@@ -4454,8 +4454,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "POHANG",
@@ -4467,8 +4467,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "SAMCHEONPO",
@@ -4480,8 +4480,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "HADONG",
@@ -4493,8 +4493,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "INCHEON",
@@ -4506,8 +4506,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "PYEONGTAEK",
@@ -4519,8 +4519,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "GUNSAN",
@@ -4532,8 +4532,8 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "DONGHAE",
@@ -4545,8 +4545,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     },
     {
       "port_code": "SAMCHEOK",
@@ -4558,26 +4558,26 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T17:29:12.770Z",
-      "updated_at": "2026-06-12T17:29:12.770Z"
+      "observed_at": "2026-06-12T17:38:10.503Z",
+      "updated_at": "2026-06-12T17:38:10.503Z"
     }
   ],
   "ocean_data_health": {
     "source": "FALLBACK",
-    "last_updated": "2026-06-12T17:29:12.770Z",
+    "last_updated": "2026-06-12T17:38:10.503Z",
     "live_or_fallback": "fallback",
     "ports_covered": 12,
     "stale_warning": false,
     "stale_records_count": 0
   },
   "ocean_risk_geojson_path": "/api/ocean-risk.geojson",
-  "run_id": "run_20260612172530060_4f249554",
-  "source_run_id": "run_20260612172530060_4f249554",
+  "run_id": "run_20260612173214161_14ba8756",
+  "source_run_id": "run_20260612173214161_14ba8756",
   "snapshot_context": {
-    "run_id": "run_20260612172530060_4f249554",
-    "generated_at": "2026-06-12T17:29:12.770Z",
+    "run_id": "run_20260612173214161_14ba8756",
+    "generated_at": "2026-06-12T17:38:10.503Z",
     "data_mode": "live",
-    "source_run_id": "run_20260612172530060_4f249554"
+    "source_run_id": "run_20260612173214161_14ba8756"
   },
   "item_count": 8
 }
