@@ -7,6 +7,7 @@ const ROOT = process.cwd();
 const API_ROOT = path.join(ROOT, "dashboard", "api");
 const DASHBOARD_HTML = path.join(ROOT, "dashboard", "index.html");
 const MANIFEST_PATH = path.join(API_ROOT, "endpoint-manifest.json");
+const WORKFLOW_PATH = path.join(ROOT, ".github", "workflows", "longterm-update.yml");
 const TOO_LARGE_BYTES = 500 * 1024;
 const STARTUP_SAFE_BYTES = 100 * 1024;
 const STARTUP_SAFE_BOOTSTRAP_BYTES = 150 * 1024;
@@ -36,6 +37,19 @@ const CORE_INITIAL_ENDPOINTS = new Set([
   "dashboard/api/targets/categories-summary.json",
   "dashboard/api/sales/verification-queue-summary.json"
 ]);
+
+const WORKFLOW_TEXT = fs.existsSync(WORKFLOW_PATH) ? fs.readFileSync(WORKFLOW_PATH, "utf8") : "";
+
+function parseDeployWhitelist(workflowText = "") {
+  const deployBlock = workflowText.match(/for file in \\\s*([\s\S]*?)\s*; do/)?.[1] || "";
+  const entries = new Set();
+  for (const match of deployBlock.matchAll(/([A-Za-z0-9_./-]+\.(?:json|geojson))/g)) {
+    entries.add(`dashboard/api/${match[1]}`);
+  }
+  return entries;
+}
+
+const DEPLOY_WHITELIST = parseDeployWhitelist(WORKFLOW_TEXT);
 
 const ENDPOINT_SUMMARY_DETAIL_PAIRS = new Map([
   ["dashboard/api/all-collected-vessels.json", "dashboard/api/all-collected-vessels-summary.json"],
@@ -251,9 +265,71 @@ function isCritical(relativePath) {
   return CRITICAL_ENDPOINTS.has(relativePath);
 }
 
+function ownerTier(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/(?:debug|quality|review)\//i.test(normalized)) return "diagnostic";
+  if (/^dashboard\/api\/discovery\//i.test(normalized) || /dashboard\/api\/storage-efficiency-report\.json$/i.test(normalized)) return "discovery_audit";
+  if (/dashboard\/api\/(?:bootstrap|dashboard-summary|status|status-summary|ports|vessel-count-reconciliation|endpoint-manifest|runtime\/update-tiers|runtime-budget-report)\.json$/i.test(normalized)) return "core";
+  if (/dashboard\/api\/source-(?:collection-status|quality-score)\.json$/i.test(normalized)) return "mixed";
+  if (/dashboard\/api\/enrichment-utilization\.json$/i.test(normalized)) return "reference_enrichment";
+  if (/dashboard\/api\/(?:enrichment\/(?:summary|review-queue|source-csv-dry-run)|cache\/source-csv-(?:reference|index)|aux\/source-csv-summary)\.json$/i.test(normalized)) return "reference_enrichment";
+  if (/dashboard\/api\/enrichment\/latest\//i.test(normalized)) return "reference_enrichment";
+  if (/dashboard\/api\/aux\/(?:pilotage-summary|berth-summary|ais-info-summary|ais-dynamic-summary|ais-stat-summary|vessel-spec-summary|cache-status|source-schedule)\.json$/i.test(normalized)) return "fast_aux";
+  if (/dashboard\/api\/aux\/latest\//i.test(normalized)) return "fast_aux";
+  return "core";
+}
+
+function deployIncluded(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/(?:debug|discovery)\//i.test(normalized)) return false;
+  if (DEPLOY_WHITELIST.has(normalized)) return true;
+  if (/^dashboard\/api\/vessels\/page-\d+\.json$/i.test(normalized)) {
+    return /cp \.\/api\.cloudflare-upload-full\/vessels\/page-\*\.json dashboard\/api\/vessels\//.test(WORKFLOW_TEXT);
+  }
+  if (/^dashboard\/api\/ports\/[^/]+\/hull-cleaning\.json$/i.test(normalized)) {
+    return /find \.\/api\.cloudflare-upload-full\/ports -path '\*\/hull-cleaning\.json'/.test(WORKFLOW_TEXT);
+  }
+  return false;
+}
+
+function deployTarget(relativePath = "", bytes = 0) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/(?:debug|discovery)\//i.test(normalized)) return "excluded_heavy";
+  if (deployIncluded(normalized)) return "worker_public";
+  if (sourceLayer(normalized) === "diagnostic") return "diagnostic_only";
+  return "repo_only";
+}
+
+function payloadValue(payload = {}, fields = []) {
+  for (const field of fields) {
+    if (!field.includes(".")) {
+      if (payload?.[field] !== undefined && payload?.[field] !== null && payload?.[field] !== "") return payload[field];
+      continue;
+    }
+    const parts = field.split(".");
+    let current = payload;
+    for (const part of parts) current = current?.[part];
+    if (current !== undefined && current !== null && current !== "") return current;
+  }
+  return null;
+}
+
+function payloadGeneratedAt(payload = {}) {
+  return payloadValue(payload, ["generated_at", "snapshot_context.generated_at", "run_origin.generated_at", "metadata.generated_at"]);
+}
+
+function payloadRunId(payload = {}) {
+  return payloadValue(payload, ["active_run_id", "run_id", "status_run_id", "snapshot_context.run_id", "run_origin.run_id", "metadata.run_id"]);
+}
+
+function payloadSourceRunId(payload = {}) {
+  return payloadValue(payload, ["source_run_id", "snapshot_context.source_run_id", "run_origin.source_run_id", "source_collection_run_id", "aux_run_id", "reference_enrichment_run_id"]);
+}
+
 function sourceLayer(relativePath = "") {
   const normalized = String(relativePath || "").replace(/\\/g, "/");
   if (DIAGNOSTIC_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "diagnostic";
+  if (["fast_aux", "reference_enrichment"].includes(ownerTier(normalized))) return "auxiliary";
   if (AUXILIARY_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "auxiliary";
   return "core";
 }
@@ -386,9 +462,51 @@ function writeJsonAtomically(filePath, payload) {
   }
 }
 
+function manifestSelfEntry(entry = {}, manifest = {}, context = {}) {
+  const relativePath = "dashboard/api/endpoint-manifest.json";
+  const text = `${JSON.stringify(manifest, null, 2)}\n`;
+  const bytes = Buffer.byteLength(text);
+  const target = deployTarget(relativePath, bytes);
+  return {
+    ...entry,
+    key: entry.key || "endpoint.manifest",
+    path: relativePath,
+    exists: true,
+    first_char: "{",
+    root_type: "object",
+    parsed_from_disk: true,
+    parse_checked_at: context.generated_at,
+    valid_json: true,
+    schema_valid: true,
+    record_count: Array.isArray(manifest.endpoints) ? manifest.endpoints.length : 0,
+    item_count: Array.isArray(manifest.endpoints) ? manifest.endpoints.length : 0,
+    size_kb: Math.round((bytes / 1024) * 10) / 10,
+    bytes,
+    owner_tier: "core",
+    source_layer: "core",
+    startup_safe: false,
+    load_strategy: "lazy",
+    deploy_target: target,
+    included_in_deploy: target === "worker_public",
+    duplicated_payload_risk: duplicatedPayloadRisk(relativePath, text, { bytes, itemCount: Array.isArray(manifest.endpoints) ? manifest.endpoints.length : 0 }),
+    summary_available: false,
+    detail_available: false,
+    stale_diagnostic: false,
+    generated_at: manifest.generated_at || context.generated_at,
+    run_id: manifest.run_id || context.run_id || null,
+    source_run_id: manifest.source_run_id || context.source_run_id || null,
+    recommended_load: "lazy",
+    max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: false }),
+    status: bytes > TOO_LARGE_BYTES ? "TOO_LARGE" : "OK",
+    problem: bytes > TOO_LARGE_BYTES ? `${Math.round(bytes / 1024)}KB` : ""
+  };
+}
+
 function auditFile(relativePath) {
   const filePath = path.join(ROOT, ...relativePath.split("/"));
+  const endpointOwnerTier = ownerTier(relativePath);
   if (!fs.existsSync(filePath)) {
+    const target = deployTarget(relativePath, 0);
     return {
       endpoint: relativePath,
       path: relativePath,
@@ -402,12 +520,19 @@ function auditFile(relativePath) {
       item_count: 0,
       size_kb: 0,
       bytes: 0,
+      owner_tier: endpointOwnerTier,
       source_layer: sourceLayer(relativePath),
       startup_safe: false,
       load_strategy: loadStrategy(relativePath, { startupSafe: false }),
+      deploy_target: target,
+      included_in_deploy: target === "worker_public",
       duplicated_payload_risk: "LOW",
       summary_available: false,
       detail_available: false,
+      stale_diagnostic: false,
+      generated_at: null,
+      run_id: null,
+      source_run_id: null,
       recommended_load: recommendedLoad(relativePath, { startupSafe: false, summaryAvailable: false }),
       max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: false }),
       status: "MISSING",
@@ -455,6 +580,7 @@ function auditFile(relativePath) {
     const detailPath = detailPathFor(relativePath);
     const summaryAvailable = summaryPath ? fs.existsSync(path.join(ROOT, ...summaryPath.split("/"))) : Boolean(detailPath);
     const detailAvailable = detailPath ? fs.existsSync(path.join(ROOT, ...detailPath.split("/"))) : Boolean(summaryPath);
+    const target = deployTarget(relativePath, bytes);
     return {
       endpoint: relativePath,
       path: relativePath,
@@ -468,18 +594,26 @@ function auditFile(relativePath) {
       item_count: actualItemCount,
       size_kb: Math.round((bytes / 1024) * 10) / 10,
       bytes,
+      owner_tier: endpointOwnerTier,
       source_layer: sourceLayer(relativePath),
       startup_safe: safeForStartup,
       load_strategy: loadStrategy(relativePath, { startupSafe: safeForStartup }),
+      deploy_target: target,
+      included_in_deploy: target === "worker_public",
       duplicated_payload_risk: duplicatedPayloadRisk(relativePath, text, { bytes, itemCount: actualItemCount }),
       summary_available: summaryAvailable,
       detail_available: detailAvailable,
+      stale_diagnostic: Boolean(payload?.stale_diagnostic || payload?.stale || payload?.is_stale),
+      generated_at: payloadGeneratedAt(payload),
+      run_id: payloadRunId(payload),
+      source_run_id: payloadSourceRunId(payload),
       recommended_load: recommendedLoad(relativePath, { startupSafe: safeForStartup, summaryAvailable }),
       max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: safeForStartup }),
       status,
       problem
     };
   } catch (error) {
+    const target = deployTarget(relativePath, bytes);
     return {
       endpoint: relativePath,
       path: relativePath,
@@ -493,12 +627,19 @@ function auditFile(relativePath) {
       item_count: 0,
       size_kb: Math.round((bytes / 1024) * 10) / 10,
       bytes,
+      owner_tier: endpointOwnerTier,
       source_layer: sourceLayer(relativePath),
       startup_safe: false,
       load_strategy: loadStrategy(relativePath, { startupSafe: false }),
+      deploy_target: target,
+      included_in_deploy: target === "worker_public",
       duplicated_payload_risk: "UNKNOWN",
       summary_available: Boolean(summaryPathFor(relativePath)),
       detail_available: Boolean(detailPathFor(relativePath)),
+      stale_diagnostic: false,
+      generated_at: null,
+      run_id: null,
+      source_run_id: null,
       recommended_load: recommendedLoad(relativePath, { startupSafe: false, summaryAvailable: Boolean(summaryPathFor(relativePath)) }),
       max_recommended_size_kb: maxRecommendedSizeKb(relativePath, { startupSafe: false }),
       status: "INVALID_JSON",
@@ -532,6 +673,7 @@ function writeManifest(entries) {
     const key = importantKeyByPath.get(relativePath)
       || relativePath.replace(/^dashboard\/api\//, "").replace(/\.json$/, "").replace(/[\\/]+/g, ".");
     const isManifestEntry = relativePath === "dashboard/api/endpoint-manifest.json";
+    const target = entry.deploy_target || deployTarget(relativePath, entry.bytes || 0);
     return {
       key,
       path: relativePath,
@@ -546,12 +688,19 @@ function writeManifest(entries) {
       item_count: isManifestEntry ? totalEndpointCount : entry.item_count,
       size_kb: entry.size_kb ?? Math.round(((entry.bytes || 0) / 1024) * 10) / 10,
       bytes: entry.bytes || 0,
+      owner_tier: entry.owner_tier || ownerTier(relativePath),
       source_layer: entry.source_layer || sourceLayer(relativePath),
       startup_safe: entry.startup_safe === true,
       load_strategy: entry.load_strategy || loadStrategy(relativePath, { startupSafe: entry.startup_safe === true }),
+      deploy_target: target,
+      included_in_deploy: entry.included_in_deploy === true || target === "worker_public",
       duplicated_payload_risk: entry.duplicated_payload_risk || "LOW",
       summary_available: entry.summary_available === true,
       detail_available: entry.detail_available === true,
+      stale_diagnostic: entry.stale_diagnostic === true,
+      generated_at: entry.generated_at ?? null,
+      run_id: entry.run_id ?? null,
+      source_run_id: entry.source_run_id ?? null,
       recommended_load: entry.recommended_load || recommendedLoad(relativePath, { startupSafe: entry.startup_safe === true, summaryAvailable: entry.summary_available === true }),
       max_recommended_size_kb: entry.max_recommended_size_kb || maxRecommendedSizeKb(relativePath, { startupSafe: entry.startup_safe === true }),
       status: entry.status,
@@ -569,6 +718,17 @@ function writeManifest(entries) {
     item_count: endpoints.length,
     endpoints
   };
+  const selfIndex = manifest.endpoints.findIndex(entry => entry.path === "dashboard/api/endpoint-manifest.json");
+  if (selfIndex >= 0) {
+    let previousSelf = "";
+    for (let index = 0; index < 5; index += 1) {
+      const nextSelf = manifestSelfEntry(manifest.endpoints[selfIndex], manifest, context);
+      const serialized = JSON.stringify(nextSelf);
+      manifest.endpoints[selfIndex] = nextSelf;
+      if (serialized === previousSelf) break;
+      previousSelf = serialized;
+    }
+  }
   writeJsonAtomically(MANIFEST_PATH, manifest);
   return manifest;
 }

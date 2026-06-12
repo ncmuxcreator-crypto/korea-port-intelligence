@@ -1,437 +1,14 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T19:41:58.659Z",
+  "generated_at": "2026-06-12T20:30:45.359Z",
   "data_mode": "live",
   "page": 15,
   "page_size": 30,
-  "record_count": 664,
+  "record_count": 660,
   "item_count": 30,
-  "total_count": 664,
-  "total_pages": 23,
+  "total_count": 660,
+  "total_pages": 22,
   "items": [
-    {
-      "vessel_id": "CALL-D7FU",
-      "master_vessel_id": "MASTER-CALLSIGN-D7FU",
-      "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-D7FU-020-020-2026-024-D7FU",
-      "vessel_name": "스타보이저",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "D7FU",
-      "identity_source": "",
-      "identity_confidence": 94,
-      "identity_match_type": "call_sign_exact",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "부산항",
-          "부산"
-        ]
-      },
-      "operator_display": "",
-      "operator_source": "",
-      "operator_confidence": 0,
-      "detail_eligible": true,
-      "detail_inclusion_exception": false,
-      "detail_inclusion_reason": "GT 5,000 이상으로 상세 상업 분석 대상입니다.",
-      "detail_exclusion_reason": "",
-      "detail_inclusion_exception_codes": [],
-      "tonnage_summary": {
-        "gt": 9955,
-        "dwt": null,
-        "size_class": "SMALL_COMMERCIAL",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "biofoulingRiskScore": 35,
-      "hullGrowthIndex": 38,
-      "cleaningOpportunityScore": 32,
-      "anchorageHours": 0,
-      "portStayHours": 0,
-      "sstCelsius": 24.6,
-      "sstAnomalyCelsius": 0.8,
-      "salinityPsu": 33.8,
-      "ocean_risk_score": 14,
-      "ocean_risk_label_ko": "낮음",
-      "marine_heatwave_level": "HIGH",
-      "marine_heatwave_label_ko": "높음",
-      "fouling_accelerator_pct": 38,
-      "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
-      "tropicalExposureDays": 0,
-      "slowSteamingHours": 0,
-      "riskReasons": [
-        "SST 24.6도",
-        "평년 대비 +2.1도",
-        "해양열파 높음",
-        "MASTER_DB_MATCH_FOUND",
-        "HIGH_GT_VESSEL",
-        "VESSEL_TYPE_COMMERCIAL_TARGET",
-        "AGENT_IDENTIFIED",
-        "CONTACT_PATH_AVAILABLE",
-        "BERTH_WINDOW_AVAILABLE",
-        "Low-speed or waiting condition"
-      ],
-      "recommendedAction": "낮은 우선순위",
-      "confidence": "medium",
-      "vessel_display": {
-        "vessel_name": "스타보이저",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "D7FU",
-        "flag": "-",
-        "vessel_type": "Container Ship",
-        "gt": 9955,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 9955,
-          "dwt": null,
-          "size_class": "SMALL_COMMERCIAL",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": true,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "GT 5,000 이상으로 상세 상업 분석 대상입니다.",
-        "detail_exclusion_reason": "",
-        "operator": "남성해운(주)",
-        "operator_display": "남성해운(주)",
-        "operator_source": "vessel_display",
-        "operator_confidence": 0,
-        "company": "남성해운(주)",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "남성해운(주)",
-        "current_port": "부산",
-        "raw_current_port": "부산",
-        "current_port_korean": "부산",
-        "normalized_port": {
-          "port_code": "020",
-          "port_name": "부산",
-          "display_name": "부산",
-          "raw_port": "Busan",
-          "raw_aliases": [
-            "Busan",
-            "부산항",
-            "부산"
-          ]
-        },
-        "port_display_name": "부산",
-        "terminal": "-",
-        "berth": "신선대부두 4선석",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "2026-06-17 13:00:00+09:00",
-        "atb": "-",
-        "etd": "2026-06-18 23:00:00",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": 0,
-        "waiting_hours": 0,
-        "port_stay_hours": 0,
-        "congestion_score": 0,
-        "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
-        "data_source": "PORT-MIS VsslEtrynd5 Busan I",
-        "identity_source": "-",
-        "identity_confidence": 94,
-        "identity_match_type": "call_sign_exact",
-        "identity_conflict": null,
-        "confidence_score": 66,
-        "commercial_data_confidence": 82,
-        "confidence_label": "HIGH",
-        "missing_critical_fields": [
-          "IMO/MMSI"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "콜사인",
-          "GT",
-          "선종",
-          "운영사/회사",
-          "현재 항만",
-          "ETA/ATA",
-          "선석 신호",
-          "복수 데이터 출처",
-          "데이터 최신성"
-        ],
-        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 6개",
-        "opportunity_score": 32,
-        "risk_score": 45,
-        "biofouling_score": 35,
-        "compliance_score": null,
-        "commercial_size_qualified": true,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": 35,
-        "hullGrowthIndex": 38,
-        "cleaningOpportunityScore": 32,
-        "anchorageHours": 0,
-        "portStayHours": 0,
-        "sstCelsius": 24.6,
-        "sstAnomalyCelsius": 0.8,
-        "salinityPsu": 33.8,
-        "ocean_risk_score": 14,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "HIGH",
-        "marine_heatwave_label_ko": "높음",
-        "fouling_accelerator_pct": 38,
-        "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
-        "tropicalExposureDays": 0,
-        "slowSteamingHours": 0,
-        "riskReasons": [
-          "SST 24.6도",
-          "평년 대비 +2.1도",
-          "해양열파 높음",
-          "MASTER_DB_MATCH_FOUND",
-          "HIGH_GT_VESSEL",
-          "VESSEL_TYPE_COMMERCIAL_TARGET",
-          "AGENT_IDENTIFIED",
-          "CONTACT_PATH_AVAILABLE",
-          "BERTH_WINDOW_AVAILABLE",
-          "Low-speed or waiting condition"
-        ],
-        "recommendedAction": "낮은 우선순위",
-        "confidence": "medium",
-        "contact_readiness_score": 35,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "부산",
-          "pilotage_port": "부산",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "berth_signal": {
-          "has_berth_info": true,
-          "source": "berth_sources",
-          "terminal": null,
-          "berth": "신선대부두 4선석",
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": "2026-06-17 13:00:00+09:00",
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "부산",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다.",
-          "has_berth": true,
-          "normalized_port": {
-            "port_code": "020",
-            "port_name": "부산",
-            "display_name": "부산",
-            "raw_port": "부산",
-            "raw_aliases": [
-              "부산"
-            ]
-          },
-          "port_code": "020",
-          "port_name": "부산",
-          "port_display_name": "부산",
-          "display_name": "부산"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "Busan 신선대부두 4선석에서 현재 항만 체류 중인 GT 9,955 컨테이너선으로, 출항 전 약 138시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
-        "recommended_action": "낮은 우선순위",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "port_operation",
-            "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "unknown",
-            "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "berth_sources",
-          "PORT-MIS VsslEtrynd5 Busan I",
-          "port_operation_busan_i",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산"
-      },
-      "display_name": "부산"
-    },
     {
       "vessel_id": "CALL-D8RV",
       "master_vessel_id": "MASTER-CALLSIGN-D8RV",
@@ -487,7 +64,7 @@
       "marine_heatwave_label_ko": "주의",
       "fouling_accelerator_pct": 36,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -569,7 +146,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Pohang I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -629,7 +206,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 36,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -723,77 +300,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -801,28 +378,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -911,7 +488,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -994,7 +571,7 @@
         "port_stay_hours": 16,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1054,7 +631,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1148,77 +725,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -1226,28 +803,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -1335,7 +912,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -1417,7 +994,7 @@
         "port_stay_hours": 24,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1477,7 +1054,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1571,77 +1148,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -1649,28 +1226,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -1759,7 +1336,7 @@
       "marine_heatwave_label_ko": "주의",
       "fouling_accelerator_pct": 34,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -1842,7 +1419,7 @@
         "port_stay_hours": 14,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1902,7 +1479,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 34,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -1996,77 +1573,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -2074,28 +1651,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -2185,7 +1762,7 @@
       "marine_heatwave_label_ko": "주의",
       "fouling_accelerator_pct": 34,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -2268,7 +1845,7 @@
         "port_stay_hours": 15,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2328,7 +1905,7 @@
         "marine_heatwave_label_ko": "주의",
         "fouling_accelerator_pct": 34,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2422,77 +1999,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -2500,28 +2077,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 34,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -2611,7 +2188,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -2694,7 +2271,7 @@
         "port_stay_hours": 13,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2754,7 +2331,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -2848,77 +2425,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -2926,28 +2503,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -3036,7 +2613,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -3119,7 +2696,7 @@
         "port_stay_hours": 13,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -3179,7 +2756,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -3273,77 +2850,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -3351,28 +2928,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -3461,7 +3038,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -3544,7 +3121,7 @@
         "port_stay_hours": 16,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -3604,7 +3181,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -3698,77 +3275,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -3776,28 +3353,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -3885,7 +3462,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -3967,7 +3544,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4027,7 +3604,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -4121,77 +3698,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -4199,28 +3776,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -4308,7 +3885,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -4390,7 +3967,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4450,7 +4027,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -4544,77 +4121,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -4622,28 +4199,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -4732,7 +4309,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -4815,7 +4392,7 @@
         "port_stay_hours": 21,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -4875,7 +4452,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -4969,77 +4546,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -5047,28 +4624,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -5157,7 +4734,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -5240,7 +4817,7 @@
         "port_stay_hours": 17,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -5300,7 +4877,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -5394,77 +4971,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -5472,28 +5049,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -5583,7 +5160,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -5666,7 +5243,7 @@
         "port_stay_hours": 18,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -5726,7 +5303,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -5820,77 +5397,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -5898,28 +5475,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -6008,7 +5585,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -6091,7 +5668,7 @@
         "port_stay_hours": 15,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -6151,7 +5728,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -6245,77 +5822,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -6323,28 +5900,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -6432,7 +6009,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -6514,7 +6091,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -6574,7 +6151,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -6668,77 +6245,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -6746,28 +6323,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -6855,7 +6432,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -6937,7 +6514,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -6997,7 +6574,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -7091,77 +6668,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -7169,28 +6746,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -7278,7 +6855,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -7360,7 +6937,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -7420,7 +6997,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -7514,77 +7091,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -7592,28 +7169,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -7702,7 +7279,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -7785,7 +7362,7 @@
         "port_stay_hours": 20,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -7845,7 +7422,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -7939,77 +7516,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8017,28 +7594,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8126,7 +7703,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -8208,7 +7785,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -8268,7 +7845,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -8362,77 +7939,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8440,28 +8017,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8550,7 +8127,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -8633,7 +8210,7 @@
         "port_stay_hours": 17,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -8693,7 +8270,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -8787,77 +8364,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8865,28 +8442,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -8974,7 +8551,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -9056,7 +8633,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9116,7 +8693,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -9210,77 +8787,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -9288,28 +8865,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -9397,7 +8974,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -9479,7 +9056,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9539,7 +9116,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -9633,77 +9210,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -9711,28 +9288,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -9820,7 +9397,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -9902,7 +9479,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -9962,7 +9539,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -10056,77 +9633,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -10134,28 +9711,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -10243,7 +9820,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -10325,7 +9902,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -10385,7 +9962,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -10479,77 +10056,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -10557,28 +10134,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -10666,7 +10243,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -10748,7 +10325,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -10808,7 +10385,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -10902,77 +10479,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -10980,28 +10557,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -11089,7 +10666,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -11171,7 +10748,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -11231,7 +10808,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11325,77 +10902,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -11403,28 +10980,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -11512,7 +11089,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -11594,7 +11171,7 @@
         "port_stay_hours": 0,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "PORT-MIS VsslEtrynd5 Busan I",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -11654,7 +11231,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -11748,77 +11325,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "vessel_master",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 95,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -11826,28 +11403,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 35,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -11937,7 +11514,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -12020,7 +11597,7 @@
         "port_stay_hours": 13,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -12080,7 +11657,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -12174,77 +11751,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -12252,28 +11829,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -12362,7 +11939,7 @@
       "marine_heatwave_label_ko": "높음",
       "fouling_accelerator_pct": 38,
       "ocean_source": "FALLBACK",
-      "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
       "tropicalExposureDays": 0,
       "slowSteamingHours": 0,
       "riskReasons": [
@@ -12445,7 +12022,7 @@
         "port_stay_hours": 14,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T19:39:01.237Z",
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -12505,7 +12082,7 @@
         "marine_heatwave_label_ko": "높음",
         "fouling_accelerator_pct": 38,
         "ocean_source": "FALLBACK",
-        "ocean_updated_at": "2026-06-12T19:41:58.659Z",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
         "tropicalExposureDays": 0,
         "slowSteamingHours": 0,
         "riskReasons": [
@@ -12599,77 +12176,77 @@
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
@@ -12677,28 +12254,453 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 32,
-            "updated_at": "2026-06-12T19:39:01.237Z",
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [
+          "berth_sources",
+          "Merged Port Operation port call",
+          "merged_port_operation",
+          "real_public_api_snapshot",
+          "port_operation",
+          "gt"
+        ],
+        "enrichment_sources": [],
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산"
+      },
+      "display_name": "부산"
+    },
+    {
+      "vessel_id": "CALL-V7A6129",
+      "master_vessel_id": "MASTER-CALLSIGN-V7A6129",
+      "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-V7A6129-020-020-2026-005-V7A6129",
+      "vessel_name": "사왓디 리겔",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "V7A6129",
+      "identity_source": "",
+      "identity_confidence": 94,
+      "identity_match_type": "call_sign_exact",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "HO CHI MINH CITY",
+          "부산항",
+          "부산"
+        ]
+      },
+      "operator_display": "",
+      "operator_source": "",
+      "operator_confidence": 0,
+      "detail_eligible": true,
+      "detail_inclusion_exception": false,
+      "detail_inclusion_reason": "GT 5,000 이상으로 상세 상업 분석 대상입니다.",
+      "detail_exclusion_reason": "",
+      "detail_inclusion_exception_codes": [],
+      "tonnage_summary": {
+        "gt": 18072,
+        "dwt": null,
+        "size_class": "MEDIUM_COMMERCIAL",
+        "gt_source": "gt",
+        "dwt_source": "missing",
+        "tonnage_confidence": 90
+      },
+      "biofoulingRiskScore": 35,
+      "hullGrowthIndex": 38,
+      "cleaningOpportunityScore": 34,
+      "anchorageHours": 0,
+      "portStayHours": 15,
+      "sstCelsius": 24.6,
+      "sstAnomalyCelsius": 0.8,
+      "salinityPsu": 33.8,
+      "ocean_risk_score": 17,
+      "ocean_risk_label_ko": "낮음",
+      "marine_heatwave_level": "HIGH",
+      "marine_heatwave_label_ko": "높음",
+      "fouling_accelerator_pct": 38,
+      "ocean_source": "FALLBACK",
+      "ocean_updated_at": "2026-06-12T20:30:45.359Z",
+      "tropicalExposureDays": 0,
+      "slowSteamingHours": 0,
+      "riskReasons": [
+        "SST 24.6도",
+        "평년 대비 +2.1도",
+        "해양열파 높음",
+        "MASTER_DB_MATCH_FOUND",
+        "HIGH_GT_VESSEL",
+        "VESSEL_TYPE_COMMERCIAL_TARGET",
+        "AGENT_IDENTIFIED",
+        "CONTACT_PATH_AVAILABLE",
+        "REPEAT_CALLER_SIGNAL",
+        "REPEAT_CALLER"
+      ],
+      "recommendedAction": "낮은 우선순위",
+      "confidence": "medium",
+      "vessel_display": {
+        "vessel_name": "사왓디 리겔",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7A6129",
+        "flag": "-",
+        "vessel_type": "Container Ship",
+        "gt": 18072,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": 18072,
+          "dwt": null,
+          "size_class": "MEDIUM_COMMERCIAL",
+          "gt_source": "gt",
+          "dwt_source": "missing",
+          "tonnage_confidence": 90
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": true,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "GT 5,000 이상으로 상세 상업 분석 대상입니다.",
+        "detail_exclusion_reason": "",
+        "operator": "장금상선(주)",
+        "operator_display": "장금상선(주)",
+        "operator_source": "vessel_display",
+        "operator_confidence": 0,
+        "company": "장금상선(주)",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "장금상선(주)",
+        "current_port": "부산",
+        "raw_current_port": "부산",
+        "current_port_korean": "부산",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "Busan",
+          "raw_aliases": [
+            "Busan",
+            "HO CHI MINH CITY",
+            "부산항",
+            "부산"
+          ]
+        },
+        "port_display_name": "부산",
+        "terminal": "-",
+        "berth": "신선대부두 2선석",
+        "anchorage": "-",
+        "eta": "2026-06-19T06:00:00.000Z",
+        "etb": "-",
+        "ata": "2026-06-16 00:00:00+09:00",
+        "atb": "-",
+        "etd": "2026-06-16 15:00:00",
+        "atd": "2026-06-16 15:00:00+09:00",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": 0.6,
+        "stay_hours": 15,
+        "waiting_hours": 0,
+        "port_stay_hours": 15,
+        "congestion_score": 0,
+        "waiting_score": null,
+        "last_seen_at": "2026-06-12T20:27:29.240Z",
+        "data_source": "Merged Port Operation port call",
+        "identity_source": "-",
+        "identity_confidence": 94,
+        "identity_match_type": "call_sign_exact",
+        "identity_conflict": null,
+        "confidence_score": 66,
+        "commercial_data_confidence": 82,
+        "confidence_label": "HIGH",
+        "missing_critical_fields": [
+          "IMO/MMSI"
+        ],
+        "available_strong_fields": [
+          "선명",
+          "콜사인",
+          "GT",
+          "선종",
+          "운영사/회사",
+          "현재 항만",
+          "ETA/ATA",
+          "선석 신호",
+          "복수 데이터 출처",
+          "데이터 최신성"
+        ],
+        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 6개",
+        "opportunity_score": 32,
+        "risk_score": 45,
+        "biofouling_score": 35,
+        "compliance_score": null,
+        "commercial_size_qualified": true,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": 35,
+        "hullGrowthIndex": 38,
+        "cleaningOpportunityScore": 34,
+        "anchorageHours": 0,
+        "portStayHours": 15,
+        "sstCelsius": 24.6,
+        "sstAnomalyCelsius": 0.8,
+        "salinityPsu": 33.8,
+        "ocean_risk_score": 17,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "HIGH",
+        "marine_heatwave_label_ko": "높음",
+        "fouling_accelerator_pct": 38,
+        "ocean_source": "FALLBACK",
+        "ocean_updated_at": "2026-06-12T20:30:45.359Z",
+        "tropicalExposureDays": 0,
+        "slowSteamingHours": 0,
+        "riskReasons": [
+          "SST 24.6도",
+          "평년 대비 +2.1도",
+          "해양열파 높음",
+          "MASTER_DB_MATCH_FOUND",
+          "HIGH_GT_VESSEL",
+          "VESSEL_TYPE_COMMERCIAL_TARGET",
+          "AGENT_IDENTIFIED",
+          "CONTACT_PATH_AVAILABLE",
+          "REPEAT_CALLER_SIGNAL",
+          "REPEAT_CALLER"
+        ],
+        "recommendedAction": "낮은 우선순위",
+        "confidence": "medium",
+        "contact_readiness_score": 35,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "부산",
+          "pilotage_port": "부산",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "",
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "berth_signal": {
+          "has_berth_info": true,
+          "source": "berth_sources",
+          "terminal": null,
+          "berth": "신선대부두 2선석",
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": "2026-06-16 00:00:00+09:00",
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "부산",
+          "match_type": "none",
+          "confidence": null,
+          "reason": "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다.",
+          "has_berth": true,
+          "normalized_port": {
+            "port_code": "020",
+            "port_name": "부산",
+            "display_name": "부산",
+            "raw_port": "부산",
+            "raw_aliases": [
+              "부산"
+            ]
+          },
+          "port_code": "020",
+          "port_name": "부산",
+          "port_display_name": "부산",
+          "display_name": "부산"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "Busan 신선대부두 2선석에서 현재 항만 체류 중인 GT 18,072 컨테이너선으로, 출항 전 약 82시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "recommended_action": "낮은 우선순위",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": 94,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": 94,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "port_operation",
+            "confidence": 90,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 90,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "port_operation",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 0,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": 0,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": 0,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": "2026-06-12T20:27:29.240Z",
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 32,
+            "updated_at": "2026-06-12T20:27:29.240Z",
             "match_type": null,
             "verified": false
           },

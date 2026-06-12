@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T19:41:58.659Z",
+  "generated_at": "2026-06-12T20:30:45.359Z",
   "data_mode": "live",
   "source_table": "vessel_snapshots",
-  "record_count": 1002,
+  "record_count": 996,
   "item_count": 0,
   "counts": {
     "raw_rows_collected": 2643,
-    "total_detected_vessels": 1002,
-    "unique_vessel_count": 1002,
-    "gt_known_count": 1002,
-    "gt_5000_plus_count": 601,
-    "gt_below_5000_count": 401,
+    "total_detected_vessels": 996,
+    "unique_vessel_count": 996,
+    "gt_known_count": 996,
+    "gt_5000_plus_count": 598,
+    "gt_below_5000_count": 398,
     "gt_unknown_count": 0,
-    "detail_eligible_vessel_count": 664,
+    "detail_eligible_vessel_count": 660,
     "sales_target_count": 33,
     "immediate_targets_current_count": 0,
     "contact_now_count": 33,
@@ -29,16 +29,16 @@
   },
   "raw_rows": 2643,
   "raw_rows_collected": 2643,
-  "normalized_rows": 1002,
-  "total_detected_vessels": 1002,
-  "unique_vessel_count": 1002,
-  "total_vessels": 1002,
-  "display_vessel_count": 664,
-  "gt_known_count": 1002,
-  "gt_5000_plus_count": 601,
-  "gt_below_5000_count": 401,
+  "normalized_rows": 996,
+  "total_detected_vessels": 996,
+  "unique_vessel_count": 996,
+  "total_vessels": 996,
+  "display_vessel_count": 660,
+  "gt_known_count": 996,
+  "gt_5000_plus_count": 598,
+  "gt_below_5000_count": 398,
   "gt_unknown_count": 0,
-  "detail_eligible_vessel_count": 664,
+  "detail_eligible_vessel_count": 660,
   "sales_target_count": 33,
   "immediate_targets_current_count": 0,
   "sales_actions_count": 63,
@@ -46,14 +46,14 @@
   "contact_now_vessel_count": 33,
   "contact_now_action_count": 36,
   "monitor_count": 2,
-  "monitor_candidate_count": 866,
+  "monitor_candidate_count": 860,
   "excluded_count": 71,
   "duplicate_removed_count": 0,
   "count_deltas": {
-    "raw_to_normalized_delta": 1641,
+    "raw_to_normalized_delta": 1647,
     "normalized_to_display_delta": 0,
-    "detected_to_detail_eligible_delta": 338,
-    "detail_eligible_to_sales_target_delta": 631,
+    "detected_to_detail_eligible_delta": 336,
+    "detail_eligible_to_sales_target_delta": 627,
     "sales_actions_to_sales_target_delta": 30,
     "contact_now_actions_to_vessels_delta": 3
   },
@@ -69,17 +69,17 @@
     },
     {
       "field": "normalized_rows",
-      "value": 1002,
+      "value": 996,
       "explanation": "원시 행을 선박/항만 기준으로 정규화한 뒤의 행 수입니다. 아직 동일 선박 중복 관측이 남아 있을 수 있습니다."
     },
     {
       "field": "total_detected_vessels",
-      "value": 1002,
+      "value": 996,
       "explanation": "5천GT 미만과 GT 미확인 선박까지 포함한 전체 감지 선박 수입니다."
     },
     {
       "field": "detail_eligible_vessel_count",
-      "value": 664,
+      "value": 660,
       "explanation": "상세 영업 분석 대상으로 기본 표시되는 5천GT 이상 선박 수입니다. 명시적 예외 신호가 있는 선박도 포함될 수 있습니다."
     },
     {
@@ -89,12 +89,12 @@
     },
     {
       "field": "gt_5000_plus_count",
-      "value": 601,
+      "value": 598,
       "explanation": "GT 5,000 이상으로 확인된 상업적 규모 후보 수입니다. GT가 없는 선박은 이 값에 포함하지 않습니다."
     },
     {
       "field": "gt_below_5000_count",
-      "value": 401,
+      "value": 398,
       "explanation": "전체 항만 활동에는 포함하지만 상세 영업 분석에서는 기본 제외하는 5천GT 미만 선박 수입니다."
     },
     {
@@ -144,12 +144,12 @@
     }
   ],
   "items": [],
-  "run_id": "run_20260612193901222_f20479ed",
-  "source_run_id": "run_20260612193901222_f20479ed",
+  "run_id": "run_20260612202729227_62b5c664",
+  "source_run_id": "run_20260612202729227_62b5c664",
   "snapshot_context": {
-    "run_id": "run_20260612193901222_f20479ed",
-    "generated_at": "2026-06-12T19:41:58.659Z",
+    "run_id": "run_20260612202729227_62b5c664",
+    "generated_at": "2026-06-12T20:30:45.359Z",
     "data_mode": "live",
-    "source_run_id": "run_20260612193901222_f20479ed"
+    "source_run_id": "run_20260612202729227_62b5c664"
   }
 }

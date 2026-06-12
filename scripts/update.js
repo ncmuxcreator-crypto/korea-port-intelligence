@@ -3599,7 +3599,10 @@ function shouldPreserveAuxDiagnosticsForCore() {
 
 function tierOwnershipForPath(filePath = "") {
   const normalized = String(filePath || "").replace(/\\/g, "/");
-  if (/dashboard\/api\/(?:status-summary|runtime\/update-tiers|runtime-budget-report)\.json$/i.test(normalized)) {
+  if (/dashboard\/api\/(?:bootstrap|status-summary|vessel-count-reconciliation|endpoint-manifest|runtime\/update-tiers|runtime-budget-report)\.json$/i.test(normalized)) {
+    return { owner_tier: "core", core_may_update: true };
+  }
+  if (/dashboard\/api\/(?:dashboard-summary|status|ports)\.json$/i.test(normalized)) {
     return { owner_tier: "core", core_may_update: true };
   }
   if (/dashboard\/api\/source-collection-status\.json$/i.test(normalized)) {
@@ -3611,8 +3614,14 @@ function tierOwnershipForPath(filePath = "") {
   if (/dashboard\/api\/enrichment-utilization\.json$/i.test(normalized)) {
     return { owner_tier: "reference_enrichment", core_may_update: true };
   }
+  if (/dashboard\/api\/(?:enrichment\/(?:summary|review-queue|source-csv-dry-run)|cache\/source-csv-(?:reference|index)|aux\/source-csv-summary)\.json$/i.test(normalized)) {
+    return { owner_tier: "reference_enrichment", core_may_update: false };
+  }
   if (/dashboard\/api\/enrichment\/latest\//i.test(normalized)) {
     return { owner_tier: "reference_enrichment", core_may_update: false };
+  }
+  if (/dashboard\/api\/aux\/(?:pilotage-summary|berth-summary|ais-info-summary|ais-dynamic-summary|ais-stat-summary|vessel-spec-summary|cache-status|source-schedule)\.json$/i.test(normalized)) {
+    return { owner_tier: "fast_aux", core_may_update: false };
   }
   if (/dashboard\/api\/aux\/latest\//i.test(normalized)) {
     return { owner_tier: "fast_aux", core_may_update: false };
@@ -4703,6 +4712,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["bootstrap", "dashboard/api/bootstrap.json"],
   ["status.summary", "dashboard/api/status-summary.json"],
   ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
+  ["endpoint.manifest", "dashboard/api/endpoint-manifest.json"],
   ["vessels.index", "dashboard/api/vessels/index.json"],
   ["ports", "dashboard/api/ports.json"],
   ["candidates.topSummary", "dashboard/api/candidates/top-summary.json"],
@@ -4751,6 +4761,8 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["enrichment.latestApplied", "dashboard/api/enrichment/latest/applied.json"],
   ["enrichment.latestReviewQueue", "dashboard/api/enrichment/latest/review-queue.json"],
   ["enrichment.latestPatches", "dashboard/api/enrichment/latest/patches.json"],
+  ["enrichment.summary", "dashboard/api/enrichment/summary.json"],
+  ["enrichment.reviewQueue", "dashboard/api/enrichment/review-queue.json"],
   ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
   ["runtime.budget", "dashboard/api/runtime-budget-report.json"],
   ["runtime.updateTiers", "dashboard/api/runtime/update-tiers.json"],
@@ -4795,6 +4807,104 @@ const CORE_INITIAL_ENDPOINTS = new Set([
   "dashboard/api/sales/verification-queue-summary.json"
 ]);
 
+const WORKER_PUBLIC_ENDPOINTS = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/dashboard-summary.json",
+  "dashboard/api/status.json",
+  "dashboard/api/status-summary.json",
+  "dashboard/api/vessel-count-reconciliation.json",
+  "dashboard/api/endpoint-manifest.json",
+  "dashboard/api/ports.json",
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/source-health-runtime.json",
+  "dashboard/api/source-collection-status.json",
+  "dashboard/api/source-quality-score.json",
+  "dashboard/api/enrichment-utilization.json",
+  "dashboard/api/runtime-budget-report.json",
+  "dashboard/api/runtime/update-tiers.json",
+  "dashboard/api/aux/latest/index.json",
+  "dashboard/api/aux/latest/pilotage-summary.json",
+  "dashboard/api/aux/latest/berth-summary.json",
+  "dashboard/api/aux/latest/ais-info-summary.json",
+  "dashboard/api/aux/latest/ais-dynamic-summary.json",
+  "dashboard/api/aux/latest/ais-stat-summary.json",
+  "dashboard/api/aux/latest/vessel-spec-summary.json",
+  "dashboard/api/aux/latest/cache-status.json",
+  "dashboard/api/aux/latest/patch-hints.json",
+  "dashboard/api/aux/source-csv-summary.json",
+  "dashboard/api/aux/pilotage-summary.json",
+  "dashboard/api/aux/berth-summary.json",
+  "dashboard/api/aux/ais-info-summary.json",
+  "dashboard/api/aux/ais-dynamic-summary.json",
+  "dashboard/api/aux/vessel-spec-summary.json",
+  "dashboard/api/enrichment/latest/index.json",
+  "dashboard/api/enrichment/latest/summary.json",
+  "dashboard/api/enrichment/latest/patches.json",
+  "dashboard/api/enrichment/latest/review-queue.json",
+  "dashboard/api/enrichment/summary.json",
+  "dashboard/api/enrichment/review-queue.json",
+  "dashboard/api/data-continuity.json",
+  "dashboard/api/health/pipeline.json",
+  "dashboard/api/candidates/top-summary.json",
+  "dashboard/api/candidates/top.json",
+  "dashboard/api/targets/current-summary.json",
+  "dashboard/api/targets/current.json",
+  "dashboard/api/targets/categories-summary.json",
+  "dashboard/api/targets/categories.json",
+  "dashboard/api/arrival-pipeline.json",
+  "dashboard/api/anchorage-waiting.json",
+  "dashboard/api/staying-vessels.json",
+  "dashboard/api/agent-followup-queue.json",
+  "dashboard/api/sales/verification-queue-summary.json",
+  "dashboard/api/sales/verification-queue.json",
+  "dashboard/api/sales/actions-summary.json",
+  "dashboard/api/sales/actions.json",
+  "dashboard/api/sales/conversion-pipeline.json",
+  "dashboard/api/watchlist/current.json",
+  "dashboard/api/alerts/sales-alerts.json",
+  "dashboard/api/intelligence/sales-priority.json",
+  "dashboard/api/intelligence/risk-summary.json",
+  "dashboard/api/intelligence/biofouling-risk.json",
+  "dashboard/api/intelligence/hull-cleaning-engine.json",
+  "dashboard/api/intelligence/cleaning-window.json",
+  "dashboard/api/intelligence/explainability.json",
+  "dashboard/api/intelligence/commercial-summary.json",
+  "dashboard/api/intelligence/route-summary.json",
+  "dashboard/api/intelligence/operator-summary.json",
+  "dashboard/api/intelligence/operator-opportunities.json",
+  "dashboard/api/intelligence/agent-summary.json",
+  "dashboard/api/intelligence/agent-relationship.json",
+  "dashboard/api/intelligence/repeat-callers.json",
+  "dashboard/api/intelligence/fleet-summary.json",
+  "dashboard/api/intelligence/fleet-memory.json",
+  "dashboard/api/intelligence/customer-memory.json",
+  "dashboard/api/intelligence/fleet-penetration.json",
+  "dashboard/api/intelligence/fleet-expansion.json",
+  "dashboard/api/intelligence/fleet-clusters.json",
+  "dashboard/api/intelligence/port-opportunities.json",
+  "dashboard/api/intelligence/vessel-timeline.json",
+  "dashboard/api/intelligence/korea-presence.json",
+  "dashboard/api/intelligence/superintendent-targets.json",
+  "dashboard/api/intelligence/compliance-opportunities.json",
+  "dashboard/api/intelligence/drydock-prediction.json",
+  "dashboard/api/intelligence/revenue-forecast.json",
+  "dashboard/api/intelligence/prediction-summary.json",
+  "dashboard/api/biofouling/port-risk-map.json",
+  "dashboard/api/biofouling/vessel-risk-scores.json",
+  "dashboard/api/biofouling/hotspots.json",
+  "dashboard/api/biofouling/top-hull-cleaning-candidates.json",
+  "dashboard/api/biofouling/brazil-compliance-risk.json",
+  "dashboard/api/biofouling/port-risk-map.geojson",
+  "dashboard/api/biofouling/hotspots.geojson",
+  "dashboard/api/reports/morning-brief.json",
+  "dashboard/api/reports/executive-weekly.json"
+]);
+
+const WORKER_PUBLIC_ENDPOINT_PATTERNS = [
+  /^dashboard\/api\/vessels\/page-\d+\.json$/i,
+  /^dashboard\/api\/ports\/[^/]+\/hull-cleaning\.json$/i
+];
+
 const ENDPOINT_SUMMARY_DETAIL_PAIRS = new Map([
   ["dashboard/api/all-collected-vessels.json", "dashboard/api/all-collected-vessels-summary.json"],
   ["dashboard/api/target-vessels.json", "dashboard/api/target-vessels-summary.json"],
@@ -4817,9 +4927,96 @@ const ENDPOINT_SUMMARY_DETAIL_PAIRS = new Map([
 ]);
 const ENDPOINT_DETAIL_BY_SUMMARY = new Map([...ENDPOINT_SUMMARY_DETAIL_PAIRS.entries()].map(([detail, summary]) => [summary, detail]));
 
+function endpointOwnerTier(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const ownership = tierOwnershipForPath(normalized);
+  if (ownership.owner_tier) return ownership.owner_tier;
+  if (/dashboard\/api\/(?:discovery|debug)\//i.test(normalized)) return "diagnostic";
+  if (/dashboard\/api\/review\//i.test(normalized)) return "diagnostic";
+  return "core";
+}
+
+function endpointIncludedInDeploy(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/(?:discovery|debug)\//i.test(normalized)) return false;
+  if (WORKER_PUBLIC_ENDPOINTS.has(normalized)) return true;
+  return WORKER_PUBLIC_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized));
+}
+
+function endpointDeployTarget(relativePath = "", bytes = 0) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (/^dashboard\/api\/(?:discovery|debug)\//i.test(normalized)) return "excluded_heavy";
+  if (endpointIncludedInDeploy(normalized)) return "worker_public";
+  if (endpointSourceLayer(normalized) === "diagnostic") return "diagnostic_only";
+  if (bytes > ENDPOINT_TOO_LARGE_BYTES) return "repo_only";
+  return "repo_only";
+}
+
+function endpointPayloadValue(payload = {}, fields = []) {
+  for (const field of fields) {
+    if (!field.includes(".")) {
+      if (payload?.[field] !== undefined && payload?.[field] !== null && payload?.[field] !== "") return payload[field];
+      continue;
+    }
+    const parts = field.split(".");
+    let current = payload;
+    for (const part of parts) {
+      current = current?.[part];
+    }
+    if (current !== undefined && current !== null && current !== "") return current;
+  }
+  return null;
+}
+
+function endpointGeneratedAt(payload = {}) {
+  return endpointPayloadValue(payload, [
+    "generated_at",
+    "snapshot_context.generated_at",
+    "run_origin.generated_at",
+    "metadata.generated_at"
+  ]);
+}
+
+function endpointRunId(payload = {}) {
+  return endpointPayloadValue(payload, [
+    "active_run_id",
+    "run_id",
+    "status_run_id",
+    "snapshot_context.run_id",
+    "run_origin.run_id",
+    "metadata.run_id"
+  ]);
+}
+
+function endpointSourceRunId(payload = {}) {
+  return endpointPayloadValue(payload, [
+    "source_run_id",
+    "snapshot_context.source_run_id",
+    "run_origin.source_run_id",
+    "source_collection_run_id",
+    "aux_run_id",
+    "reference_enrichment_run_id"
+  ]);
+}
+
+function endpointStaleDiagnostic(payload = {}) {
+  return Boolean(payload?.stale_diagnostic || payload?.stale || payload?.is_stale);
+}
+
+function endpointManifestRecordCount(payload = {}) {
+  if (Array.isArray(payload)) return payload.length;
+  if (payload && typeof payload === "object") {
+    const direct = Number(payload.record_count ?? payload.total_count ?? payload.total_vessels);
+    if (Number.isFinite(direct)) return direct;
+    return endpointItemCount(payload) ?? 0;
+  }
+  return 0;
+}
+
 function endpointSourceLayer(relativePath = "") {
   const normalized = String(relativePath || "").replace(/\\/g, "/");
   if (DIAGNOSTIC_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "diagnostic";
+  if (["fast_aux", "reference_enrichment"].includes(endpointOwnerTier(normalized))) return "auxiliary";
   if (AUXILIARY_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "auxiliary";
   return "core";
 }
@@ -4908,7 +5105,9 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
   const normalized = String(relativePath || "").replace(/\\/g, "/");
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
+  const ownerTier = endpointOwnerTier(normalized);
   if (!exists) {
+    const deployTarget = endpointDeployTarget(normalized, 0);
     return {
       key,
       path: normalized,
@@ -4923,12 +5122,19 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       item_count: 0,
       size_kb: 0,
       bytes: 0,
+      owner_tier: ownerTier,
       source_layer: endpointSourceLayer(normalized),
       startup_safe: false,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
+      deploy_target: deployTarget,
+      included_in_deploy: deployTarget === "worker_public",
       duplicated_payload_risk: "LOW",
       summary_available: false,
       detail_available: false,
+      stale_diagnostic: false,
+      generated_at: null,
+      run_id: null,
+      source_run_id: null,
       recommended_load: endpointRecommendedLoad(normalized, { startupSafe: false, summaryAvailable: false }),
       max_recommended_size_kb: endpointMaxRecommendedSizeKb(normalized, { startupSafe: false }),
       status: "MISSING",
@@ -4941,7 +5147,7 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
     const payload = parseDashboardJsonDocument(normalized, text);
     const rootType = dashboardJsonRootType(payload);
     const schemaProblem = schemaProblemForEndpoint(normalized, payload);
-    const count = rowCountFromPayload(payload);
+    const count = endpointManifestRecordCount(payload);
     const itemCount = endpointItemCount(payload) ?? 0;
     const bytes = Buffer.byteLength(text);
     const status = schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK";
@@ -4954,6 +5160,7 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
     const duplicatedPayloadRisk = endpointDuplicatedPayloadRisk(normalized, text, { bytes, itemCount });
     const maxRecommendedSizeKb = endpointMaxRecommendedSizeKb(normalized, { startupSafe });
     const recommendedLoad = endpointRecommendedLoad(normalized, { startupSafe, summaryAvailable });
+    const deployTarget = endpointDeployTarget(normalized, bytes);
     return {
       key,
       path: normalized,
@@ -4968,18 +5175,27 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       item_count: itemCount,
       size_kb: Math.round((bytes / 1024) * 10) / 10,
       bytes,
+      owner_tier: ownerTier,
       source_layer: endpointSourceLayer(normalized),
       startup_safe: startupSafe,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe }),
+      deploy_target: deployTarget,
+      included_in_deploy: deployTarget === "worker_public",
       duplicated_payload_risk: duplicatedPayloadRisk,
       summary_available: summaryAvailable,
       detail_available: detailAvailable,
+      stale_diagnostic: endpointStaleDiagnostic(payload),
+      generated_at: endpointGeneratedAt(payload),
+      run_id: endpointRunId(payload),
+      source_run_id: endpointSourceRunId(payload),
       recommended_load: recommendedLoad,
       max_recommended_size_kb: maxRecommendedSizeKb,
       status,
       problem: schemaProblem || (status === "TOO_LARGE" ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
     };
   } catch (error) {
+    const bytes = fs.statSync(fullPath).size;
+    const deployTarget = endpointDeployTarget(normalized, bytes);
     return {
       key,
       path: normalized,
@@ -4992,14 +5208,21 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       schema_valid: false,
       record_count: 0,
       item_count: 0,
-      size_kb: Math.round((fs.statSync(fullPath).size / 1024) * 10) / 10,
-      bytes: fs.statSync(fullPath).size,
+      size_kb: Math.round((bytes / 1024) * 10) / 10,
+      bytes,
+      owner_tier: ownerTier,
       source_layer: endpointSourceLayer(normalized),
       startup_safe: false,
       load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
+      deploy_target: deployTarget,
+      included_in_deploy: deployTarget === "worker_public",
       duplicated_payload_risk: "UNKNOWN",
       summary_available: Boolean(endpointSummaryPath(normalized)),
       detail_available: Boolean(endpointDetailPath(normalized)),
+      stale_diagnostic: false,
+      generated_at: null,
+      run_id: null,
+      source_run_id: null,
       recommended_load: endpointRecommendedLoad(normalized, { startupSafe: false, summaryAvailable: Boolean(endpointSummaryPath(normalized)) }),
       max_recommended_size_kb: endpointMaxRecommendedSizeKb(normalized, { startupSafe: false }),
       status: "INVALID_JSON",
@@ -5008,9 +5231,76 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
   }
 }
 
+function endpointManifestSelfEntry(key, relativePath, payload = {}, parseCheckedAt = new Date().toISOString()) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const ownerTier = endpointOwnerTier(normalized);
+  const preparedPayload = sanitizeDashboardJsonValue(withEndpointItemCount(payload));
+  const text = `${JSON.stringify(preparedPayload, null, 2)}\n`;
+  const bytes = Buffer.byteLength(text);
+  const firstChar = firstJsonCharacter(text);
+  const rootType = dashboardJsonRootType(preparedPayload);
+  const schemaProblem = schemaProblemForEndpoint(normalized, preparedPayload);
+  const schemaValid = !schemaProblem;
+  const count = endpointManifestRecordCount(preparedPayload);
+  const itemCount = endpointItemCount(preparedPayload) ?? 0;
+  const startupSafe = endpointStartupSafe(normalized, bytes, { validJson: true, schemaValid });
+  const summaryPath = endpointSummaryPath(normalized);
+  const detailPath = endpointDetailPath(normalized);
+  const summaryAvailable = summaryPath ? fs.existsSync(summaryPath) : Boolean(detailPath);
+  const detailAvailable = detailPath ? fs.existsSync(detailPath) : Boolean(summaryPath);
+  const deployTarget = endpointDeployTarget(normalized, bytes);
+  return {
+    key,
+    path: normalized,
+    exists: true,
+    first_char: firstChar,
+    root_type: rootType,
+    parsed_from_disk: true,
+    parse_checked_at: parseCheckedAt,
+    valid_json: true,
+    schema_valid: schemaValid,
+    record_count: count,
+    item_count: itemCount,
+    size_kb: Math.round((bytes / 1024) * 10) / 10,
+    bytes,
+    owner_tier: ownerTier,
+    source_layer: endpointSourceLayer(normalized),
+    startup_safe: startupSafe,
+    load_strategy: endpointLoadStrategy(normalized, { startupSafe }),
+    deploy_target: deployTarget,
+    included_in_deploy: deployTarget === "worker_public",
+    duplicated_payload_risk: endpointDuplicatedPayloadRisk(normalized, text, { bytes, itemCount }),
+    summary_available: summaryAvailable,
+    detail_available: detailAvailable,
+    stale_diagnostic: endpointStaleDiagnostic(preparedPayload),
+    generated_at: endpointGeneratedAt(preparedPayload),
+    run_id: endpointRunId(preparedPayload),
+    source_run_id: endpointSourceRunId(preparedPayload),
+    recommended_load: endpointRecommendedLoad(normalized, { startupSafe, summaryAvailable }),
+    max_recommended_size_kb: endpointMaxRecommendedSizeKb(normalized, { startupSafe }),
+    status: schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK",
+    problem: schemaProblem || (bytes > ENDPOINT_TOO_LARGE_BYTES ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
+  };
+}
+
+function endpointManifestKeyForPath(relativePath = "", fixedKeys = new Map()) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  return fixedKeys.get(normalized) || normalized.replace(/^dashboard\/api\//, "").replace(/\.json$/i, "").replace(/[\\/]+/g, ".");
+}
+
+function endpointManifestSpecs() {
+  const fixedKeys = new Map(ENDPOINT_MANIFEST_ENDPOINTS.map(([key, relativePath]) => [relativePath, key]));
+  const paths = new Set(ENDPOINT_MANIFEST_ENDPOINTS.map(([, relativePath]) => relativePath));
+  for (const relativePath of listDashboardApiJsonFiles("dashboard/api")) paths.add(relativePath);
+  return [...paths]
+    .sort()
+    .map(relativePath => [endpointManifestKeyForPath(relativePath, fixedKeys), relativePath]);
+}
+
 function writeEndpointManifest(generatedAt = new Date().toISOString(), report = {}) {
   const context = snapshotContextFromPayload({}, report, generatedAt);
-  const endpoints = ENDPOINT_MANIFEST_ENDPOINTS.map(([key, relativePath]) => endpointManifestEntry(key, relativePath, context.generated_at));
+  const specs = endpointManifestSpecs();
+  const endpoints = specs.map(([key, relativePath]) => endpointManifestEntry(key, relativePath, context.generated_at));
   const payload = {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: context.generated_at,
@@ -5022,6 +5312,18 @@ function writeEndpointManifest(generatedAt = new Date().toISOString(), report = 
     item_count: endpoints.length,
     endpoints
   };
+  const selfIndex = payload.endpoints.findIndex(entry => entry.path === "dashboard/api/endpoint-manifest.json");
+  if (selfIndex >= 0) {
+    const selfSpec = specs.find(([, relativePath]) => relativePath === "dashboard/api/endpoint-manifest.json") || ["endpoint.manifest", "dashboard/api/endpoint-manifest.json"];
+    let previousSelf = "";
+    for (let index = 0; index < 5; index += 1) {
+      const nextSelf = endpointManifestSelfEntry(selfSpec[0], selfSpec[1], payload, context.generated_at);
+      const serialized = JSON.stringify(nextSelf);
+      payload.endpoints[selfIndex] = nextSelf;
+      if (serialized === previousSelf) break;
+      previousSelf = serialized;
+    }
+  }
   writeDashboardJson("dashboard/api/endpoint-manifest.json", payload);
   return payload;
 }

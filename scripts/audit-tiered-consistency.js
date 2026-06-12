@@ -22,6 +22,10 @@ const FILES = {
 const REQUIRED_LIGHTWEIGHT_OUTPUTS = [
   "dashboard/api/runtime/update-tiers.json",
   "dashboard/api/runtime-budget-report.json",
+  "dashboard/api/status-summary.json",
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/vessel-count-reconciliation.json",
+  "dashboard/api/endpoint-manifest.json",
   "dashboard/api/source-quality-score.json",
   "dashboard/api/enrichment-utilization.json",
   "dashboard/api/aux/latest/index.json",
@@ -34,12 +38,17 @@ const REQUIRED_LIGHTWEIGHT_OUTPUTS = [
   "dashboard/api/aux/latest/cache-status.json",
   "dashboard/api/aux/latest/patch-hints.json",
   "dashboard/api/aux/source-csv-summary.json",
+  "dashboard/api/aux/pilotage-summary.json",
+  "dashboard/api/aux/berth-summary.json",
+  "dashboard/api/aux/ais-info-summary.json",
+  "dashboard/api/aux/ais-dynamic-summary.json",
+  "dashboard/api/aux/vessel-spec-summary.json",
   "dashboard/api/enrichment/latest/index.json",
   "dashboard/api/enrichment/latest/summary.json",
-  "dashboard/api/enrichment/latest/candidates.json",
-  "dashboard/api/enrichment/latest/applied.json",
   "dashboard/api/enrichment/latest/patches.json",
-  "dashboard/api/enrichment/latest/review-queue.json"
+  "dashboard/api/enrichment/latest/review-queue.json",
+  "dashboard/api/enrichment/summary.json",
+  "dashboard/api/enrichment/review-queue.json"
 ];
 
 const AUX_SOURCE_KEYS = new Set([

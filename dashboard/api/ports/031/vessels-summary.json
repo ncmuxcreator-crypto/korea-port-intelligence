@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T19:41:58.659Z",
+  "generated_at": "2026-06-12T20:30:45.359Z",
   "data_mode": "live",
-  "record_count": 71,
+  "record_count": 70,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/031/vessels.json",
-  "total_count": 71,
+  "total_count": 70,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 69,
+    "0_49": 68,
     "50_69": 2,
     "70_84": 0,
     "85_100": 0,
@@ -18,12 +18,12 @@
   "priority_counts": {
     "HOT": 2,
     "WARM": 1,
-    "LOW": 68
+    "LOW": 67
   },
   "actionability_counts": {
     "VERIFY_CONTACT": 10,
     "CONTACT_NOW": 1,
-    "MONITOR": 58,
+    "MONITOR": 57,
     "HOLD": 2
   },
   "items": [
@@ -236,7 +236,7 @@
     {
       "severity": "INFO",
       "feature": "보령항 선박",
-      "message": "상세 71건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 70건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/031/vessels.json lazy load 사용"
     }
   ]
