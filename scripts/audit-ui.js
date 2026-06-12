@@ -226,6 +226,7 @@ const businessSections = [
   "fleetOperatorBlock",
   "riskComplianceBlock",
   "revenueOpportunityBlock",
+  "dataSourceEnrichmentBlock",
   "fullVesselListBlock",
   "technicalDiagnostics"
 ];
@@ -246,7 +247,7 @@ const secondaryAutoLoad = /setTimeout\(\(\)=>loadSecondarySnapshotData|setTimeou
 const fullVesselStartup = /loadRows\(\)|loadAllVesselRows\(|ensureVesselIndex\(/.test(effectiveLoadSummary);
 const diagnosticsRunner = html.includes("runDiagnostics") && html.includes("상세 기술 진단 실행");
 const topTechnicalCards = /<aside class="grid sticky"(?![^>]*hidden)/.test(html);
-const structuredPages = ["overview", "sales", "vessels", "ports-fleets", "diagnostics"];
+const structuredPages = ["overview", "sales", "vessels", "ports-fleets", "sources", "diagnostics"];
 const structuredPageChecks = structuredPages.map(page => ({
   page,
   present: html.includes(`key:"${page}"`) || html.includes(`key: "${page}"`) || html.includes(`data-page="${page}"`)

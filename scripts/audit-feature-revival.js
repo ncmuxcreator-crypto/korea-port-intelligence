@@ -153,7 +153,7 @@ const FEATURE_DEFINITIONS = [
     priority: 4,
     feature_name: "Pilotage Summary",
     endpoint_path: "dashboard/api/aux/pilotage-summary.json",
-    existing_ui_section: "데이터 품질·시스템 진단",
+    existing_ui_section: "데이터 소스·Enrichment",
     existing_component: "INTELLIGENCE_ENDPOINTS.pilotageSummary",
     ui_needles: ["pilotageSummary", "/api/aux/pilotage-summary.json"],
     expected_payload: "small auxiliary summary"
@@ -162,7 +162,7 @@ const FEATURE_DEFINITIONS = [
     priority: 4,
     feature_name: "Berth / PNC Summary",
     endpoint_path: "dashboard/api/aux/berth-summary.json",
-    existing_ui_section: "데이터 품질·시스템 진단",
+    existing_ui_section: "데이터 소스·Enrichment",
     existing_component: "INTELLIGENCE_ENDPOINTS.berthSummary",
     ui_needles: ["berthSummary", "/api/aux/berth-summary.json"],
     expected_payload: "small auxiliary summary"
@@ -171,7 +171,7 @@ const FEATURE_DEFINITIONS = [
     priority: 4,
     feature_name: "AIS Info Summary",
     endpoint_path: "dashboard/api/aux/ais-info-summary.json",
-    existing_ui_section: "데이터 품질·시스템 진단",
+    existing_ui_section: "데이터 소스·Enrichment",
     existing_component: "INTELLIGENCE_ENDPOINTS.aisInfoSummary",
     ui_needles: ["aisInfoSummary", "/api/aux/ais-info-summary.json"],
     expected_payload: "small auxiliary summary"
@@ -180,7 +180,7 @@ const FEATURE_DEFINITIONS = [
     priority: 4,
     feature_name: "Vessel Spec Summary",
     endpoint_path: "dashboard/api/aux/vessel-spec-summary.json",
-    existing_ui_section: "데이터 품질·시스템 진단",
+    existing_ui_section: "데이터 소스·Enrichment",
     existing_component: "INTELLIGENCE_ENDPOINTS.vesselSpecSummary",
     ui_needles: ["vesselSpecSummary", "/api/aux/vessel-spec-summary.json"],
     expected_payload: "small auxiliary summary"
@@ -189,7 +189,7 @@ const FEATURE_DEFINITIONS = [
     priority: 4,
     feature_name: "Source CSV Summary",
     endpoint_path: "dashboard/api/aux/source-csv-summary.json",
-    existing_ui_section: "데이터 품질·시스템 진단",
+    existing_ui_section: "데이터 소스·Enrichment",
     existing_component: "INTELLIGENCE_ENDPOINTS.sourceCsvSummary",
     ui_needles: ["sourceCsvSummary", "/api/aux/source-csv-summary.json"],
     expected_payload: "small auxiliary summary"
