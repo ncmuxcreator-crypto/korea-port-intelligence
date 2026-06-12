@@ -6257,6 +6257,8 @@ function pilotageSourceNames(record = {}) {
     record.source_name,
     record.source_origin,
     record.source_profile,
+    record.pilotage_enrichment_source,
+    record.pilot_source_origin,
     record.eta_source,
     record.etb_source,
     record.enrichment_source,
@@ -6293,7 +6295,7 @@ function buildPilotageSignal(record = {}) {
   const berthName = firstNonEmpty(record.berth_name, record.berth, record.berth_no, record.berth_code, record.terminal_name, record.laidupFcltyNm);
   const sourceNames = pilotageSourceNames(record);
   const sourceIndicatesPilotage = pilotageSourceIndicatesSchedule(record);
-  const matched = Boolean(record.pilot_schedule_matched || record.pilot_only_arrival_review || record.outbound_pilot_scheduled || record.source_origin === "pilot_schedule");
+  const matched = Boolean(record.pilot_schedule_matched || record.pilot_only_arrival_review || record.outbound_pilot_scheduled || record.source_origin === "pilot_schedule" || record.pilotage_enriched);
   const explicitPilotTime = pilotageHasText(pilotTime);
   const explicitPilotTimeText = pilotageHasText(pilotTimeText);
   const movementTimeWithPilotContext = pilotageHasText(movementTime) && (matched || sourceIndicatesPilotage || Boolean(direction));
@@ -6318,12 +6320,13 @@ function buildPilotageSignal(record = {}) {
         : pilotageTime ? "SCHEDULED"
           : "DETECTED"
     : "UNKNOWN";
+  const displayDirection = direction && direction !== "PILOTAGE" ? direction : "UNKNOWN";
   return {
     has_pilotage: Boolean(hasPilotage),
     pilotage_status: pilotageStatus,
     pilotage_time: pilotageTime || null,
     pilotage_time_text: pilotageHasText(pilotTimeText) ? pilotTimeText : pilotageTime || null,
-    pilotage_direction: direction || null,
+    pilotage_direction: displayDirection,
     pilot_station: pilotageHasText(station) ? station : null,
     berth_name: pilotageHasText(berthName) ? berthName : null,
     pilotage_port: normalizedPort.display_name || null,
@@ -6333,12 +6336,12 @@ function buildPilotageSignal(record = {}) {
     arrival_window: hasPilotage && pilotageTime ? {
       basis: "pilotage_time",
       time: pilotageTime,
-      direction: direction || null,
+      direction: displayDirection,
       source: source || "pilotage_signal",
       confidence
     } : null,
     reason: hasPilotage
-      ? "도선 정보가 확인되어 입항/접안 타이밍 확인이 필요합니다."
+      ? "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다."
       : ""
   };
 }
@@ -6643,14 +6646,32 @@ function pilotageMatchRecordToEvent(record = {}, event = {}) {
     score += 8;
     reasons.push("time_only_exact_call_sign_port");
   }
+  if (callSignMatch && samePort && !portConflict) {
+    score += 8;
+    reasons.push("exact_call_sign_port");
+  }
+  if (nameMatch && samePort && !portConflict) {
+    score += 18;
+    reasons.push("exact_vessel_name_port");
+  }
   const strongIdentity = vesselIdMatch || callSignMatch;
-  const safeNameMatch = nameMatch && samePort && (time.matched || berthMatch);
+  const eventHasFullTime = Boolean(parseScheduleTime(pilotageEventTime(event)));
+  const safeNameMatch = nameMatch && samePort && !portConflict && (time.matched || time.timeOnly || !eventHasFullTime || berthMatch);
   const timeOnlyCallSignPort = Boolean(time.timeOnly && callSignMatch && samePort && !portConflict);
-  const apply = (score >= 70 && (strongIdentity || safeNameMatch)) || (timeOnlyCallSignPort && score >= 65);
+  const exactCallSignPort = Boolean(callSignMatch && samePort && !portConflict);
+  const exactNamePort = Boolean(nameMatch && samePort && !portConflict);
+  const apply = (score >= 70 && (strongIdentity || safeNameMatch)) ||
+    (timeOnlyCallSignPort && score >= 65) ||
+    (exactCallSignPort && score >= 65) ||
+    (exactNamePort && score >= 58);
   return {
     score: Math.max(0, Math.min(100, Math.round(score))),
     apply,
-    match_type: timeOnlyCallSignPort ? "call_sign_port_time_only" : strongIdentity ? (vesselIdMatch ? "vessel_id" : "call_sign_port") : safeNameMatch ? "vessel_name_port_time" : "weak",
+    match_type: timeOnlyCallSignPort ? "call_sign_port_time_only"
+      : vesselIdMatch ? "vessel_id"
+        : exactCallSignPort ? "call_sign_port"
+          : safeNameMatch ? (time.matched ? "vessel_name_port_time" : "vessel_name_port")
+            : "weak",
     reasons
   };
 }
@@ -6744,12 +6765,36 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
   let weakMatches = 0;
   const bySource = new Map();
   const needsReview = [];
+  const matchedEventKeys = new Set();
+  const eventKey = event => [
+    event.source,
+    event.vessel_id,
+    event.call_sign,
+    event.normalized_vessel_name || event.vessel_name,
+    event.port_code || event.port_name,
+    event.pilot_timestamp || event.pilot_time || event.pilot_time_text || event.raw_pilot_time,
+    event.pilot_station
+  ].map(value => String(value || "").trim().toUpperCase()).join("|");
   for (const record of records) {
     const best = events
+      .filter(event => !matchedEventKeys.has(eventKey(event)))
       .map(event => ({ event, match: pilotageMatchRecordToEvent(record, event) }))
       .sort((a, b) => b.match.score - a.match.score)[0];
     if (!best || !best.match.apply) {
-      if (best?.match?.score >= 45) needsReview.push({ vessel_name: record.vessel_name, port: record.port_name || record.port, score: best.match.score, match_type: best.match.match_type });
+      if (best?.match?.score >= 45) {
+        needsReview.push({
+          vessel_name: record.vessel_name,
+          port: record.port_name || record.port,
+          score: best.match.score,
+          match_type: best.match.match_type,
+          reasons: best.match.reasons || [],
+          blocker: best.match.reasons?.includes("port_conflict")
+            ? "port_conflict"
+            : best.match.reasons?.includes("same_vessel_name") && !best.match.reasons?.includes("same_port")
+              ? "name_match_without_port"
+              : "below_apply_threshold"
+        });
+      }
       continue;
     }
     const before = {
@@ -6760,6 +6805,7 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
       etb: record.etb_candidate || record.etb
     };
     applyPilotageEventToRecord(record, best.event, best.match);
+    matchedEventKeys.add(eventKey(best.event));
     applied += 1;
     if (/call_sign/.test(best.match.match_type || "")) matchedByCallSign += 1;
     else if (/vessel_name/.test(best.match.match_type || "")) matchedByName += 1;
@@ -6785,12 +6831,13 @@ async function enrichRecordsWithPilotageEvents(records = [], { referenceRows = [
     matched_by_name: matchedByName,
     matched_by_port_only: matchedByPortOnly,
     weak_matches: weakMatches,
-    unmatched_pilot_rows: Math.max(0, events.length - applied),
+    unmatched_pilot_rows: Math.max(0, events.length - matchedEventKeys.size),
     identity_applied_count: identityApplied,
     berth_applied_count: berthApplied,
     arrival_timing_applied_count: arrivalApplied,
     needs_review_count: needsReview.length,
     sample_needs_review: needsReview.slice(0, 10),
+    match_blockers: needsReview.slice(0, 20),
     applied_by_source: Object.fromEntries([...bySource.entries()].sort((a, b) => b[1] - a[1]))
   };
 }

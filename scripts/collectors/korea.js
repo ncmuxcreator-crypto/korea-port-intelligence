@@ -1457,6 +1457,14 @@ function pilotMatchScore(ledger = {}, pilot = {}) {
     score += 12;
     methods.push("pilot_call_sign_priority");
   }
+  if (shared.matched_fields?.call_sign && shared.matched_fields?.port) {
+    score += 8;
+    methods.push("pilot_call_sign_port_priority");
+  }
+  if (shared.matched_fields?.vessel_name && shared.matched_fields?.port) {
+    score += 18;
+    methods.push("pilot_vessel_name_port_priority");
+  }
   const timeScore = pilotTimeWindowScore(ledger, pilot);
   if (timeScore >= 18) methods.push("time_window_24h");
   else if (timeScore > 0) methods.push("time_window_48h");
@@ -1562,6 +1570,20 @@ function buildPilotDiagnostics(pilotRows = [], matchedPilotKeys = new Set(), pil
   const withValue = key => pilotRows.filter(row => String(row[key] || "").trim()).length;
   const timeOnlyRows = pilotRows.filter(row => row.pilot_time_parse_status === "time_only_missing_date").length;
   const invalidTimeRows = pilotRows.filter(row => row.pilot_time_parse_status === "invalid_date_time").length;
+  const unmatchedSamples = pilotRows
+    .filter(row => !matchedPilotKeys.has(row.raw_row_identity || `${row.source}|${row.vessel_name}|${row.pilot_time}`))
+    .slice(0, 20)
+    .map(row => ({
+      vessel_name: row.vessel_name || "",
+      call_sign: row.call_sign || "",
+      port: row.port || row.port_name || "",
+      pilot_time_text: row.pilot_time_text || row.raw_pilot_time || "",
+      reason: !row.call_sign && !row.vessel_name
+        ? "missing_vessel_identity"
+        : !row.port && !row.port_code
+          ? "missing_port"
+          : "below_match_threshold"
+    }));
   return {
     pilot_sources_attempted: sources.size,
     pilot_sources_success: sources.size,
@@ -1578,6 +1600,8 @@ function buildPilotDiagnostics(pilotRows = [], matchedPilotKeys = new Set(), pil
     invalid_time_rows: invalidTimeRows,
     time_only_rows_discarded: 0,
     pilot_rows_matched_to_port_operation: matchedCount,
+    unmatched_pilot_rows: Math.max(0, pilotRows.length - matchedCount),
+    match_blockers: unmatchedSamples,
     pilot_only_rows: pilotOnlyRows.length,
     pilot_match_rate: pilotRows.length ? Math.round((matchedCount / pilotRows.length) * 100) : 0,
     eta_filled_from_pilot_count: pilotRows.filter(row => pilotDirection(row.pilot_direction) === "inbound").length,
@@ -2399,6 +2423,17 @@ async function collectRealRows() {
       diag.rows_normalized = sourceRecords.length;
       if (isPncSourceConfig(source)) {
         Object.assign(diag, pncAliasDiagnostics(rows, sourceRecords));
+      }
+      if (String(source.key || "").startsWith("pilot_source_")) {
+        diag.pilot_rows_with_vessel_name = sourceRecords.filter(record => String(record.vessel_name || "").trim()).length;
+        diag.pilot_rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;
+        diag.pilot_rows_with_port = sourceRecords.filter(record => String(record.port || record.port_name || "").trim()).length;
+        diag.pilot_rows_with_pilot_date = sourceRecords.filter(record => String(record.pilot_date || "").trim()).length;
+        diag.pilot_rows_with_pilot_time = sourceRecords.filter(record => String(record.pilot_time || record.pilot_time_text || "").trim()).length;
+        diag.pilot_rows_with_pilot_station = sourceRecords.filter(record => String(record.pilot_station || "").trim()).length;
+        diag.pilot_rows_with_pilot_direction = sourceRecords.filter(record => String(record.pilot_direction || record.movement_type || "").trim()).length;
+        diag.time_only_rows = sourceRecords.filter(record => record.pilot_time_parse_status === "time_only_missing_date").length;
+        diag.invalid_time_rows = sourceRecords.filter(record => record.pilot_time_parse_status === "invalid_date_time").length;
       }
       diag.actionable_count = sourceRecords.filter(record => record.actionable_source_row).length;
       diag.rows_matched = diag.actionable_count;

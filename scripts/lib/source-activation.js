@@ -395,7 +395,16 @@ function statusForSpec({ spec, env, sources }) {
       sanitized_raw_samples: Array.isArray(source.sanitized_raw_samples) ? source.sanitized_raw_samples : undefined,
       expected_field_aliases_matched: source.expected_field_aliases_matched || undefined,
       missing_required_fields: source.missing_required_fields || undefined,
-      parser_blockers: Array.isArray(source.parser_blockers) ? source.parser_blockers : undefined
+      parser_blockers: Array.isArray(source.parser_blockers) ? source.parser_blockers : undefined,
+      pilot_rows_with_vessel_name: Number(source.pilot_rows_with_vessel_name || 0) || undefined,
+      pilot_rows_with_call_sign: Number(source.pilot_rows_with_call_sign || 0) || undefined,
+      pilot_rows_with_port: Number(source.pilot_rows_with_port || 0) || undefined,
+      pilot_rows_with_pilot_date: Number(source.pilot_rows_with_pilot_date || 0) || undefined,
+      pilot_rows_with_pilot_time: Number(source.pilot_rows_with_pilot_time || 0) || undefined,
+      pilot_rows_with_pilot_station: Number(source.pilot_rows_with_pilot_station || 0) || undefined,
+      pilot_rows_with_pilot_direction: Number(source.pilot_rows_with_pilot_direction || 0) || undefined,
+      time_only_rows: Number(source.time_only_rows || 0) || undefined,
+      invalid_time_rows: Number(source.invalid_time_rows || 0) || undefined
     })),
     business_impact: spec.businessImpact
   });
