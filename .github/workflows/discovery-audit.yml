@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
+    permissions:
+      contents: write
+
     env:
       CI: true
       VALIDATION_MODE: production
@@ -51,11 +54,36 @@ jobs:
           npm run audit:data-utilization
           npm run audit:hidden-features
 
-      - name: Validate and build
+      - name: Stamp discovery tier reference
+        run: npm run stamp:discovery-audit
+
+      - name: Validate discovery outputs
         if: always()
         run: |
           npm run validate
-          npm run build
+          npm run audit:tiered-update
+
+      - name: Commit discovery audit reports
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          add_if_exists() {
+            if [ -e "$1" ]; then
+              git add "$1"
+            fi
+          }
+          add_if_exists docs/
+          add_if_exists dashboard/api/discovery/
+          add_if_exists dashboard/api/storage-efficiency-report.json
+          add_if_exists dashboard/api/db-cleanup-plan.json
+          add_if_exists dashboard/api/runtime/update-tiers.json
+          if git diff --cached --quiet; then
+            echo "No discovery audit changes to commit"
+          else
+            git commit -m "chore: update discovery audit reports [skip ci]"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
 
       - name: Upload discovery artifact
         if: always()

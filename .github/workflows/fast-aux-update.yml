@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    permissions:
+      contents: write
+
     env:
       CI: true
       VALIDATION_MODE: production
@@ -61,6 +64,57 @@ jobs:
       - name: Validate
         if: always()
         run: npm run validate
+
+      - name: Guard fast auxiliary refresh
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+          const status = JSON.parse(fs.readFileSync("dashboard/api/source-collection-status.json", "utf8"));
+          const owned = new Set(["pilot_sources", "berth_sources", "mof_ais_info", "mof_ais_dynamic", "mof_ais_stat", "ulsan_core", "ulsan_berth_detail", "ulsan_cargo_plan", "ulsan_berth_operation", "ulsan_terminal_process"]);
+          const refreshed = (status.items || []).filter(item =>
+            owned.has(item.source_key) &&
+            ["ACTIVE", "PARTIAL"].includes(String(item.status || "").toUpperCase()) &&
+            item.preserved_after_unsuccessful_attempt !== true
+          );
+          console.log(`fast_aux refreshed_source_count=${refreshed.length}`);
+          if (!refreshed.length) {
+            throw new Error("fast_aux produced no refreshed auxiliary source diagnostics; keeping previous committed aux cache.");
+          }
+          NODE
+
+      - name: Audit tier consistency
+        run: npm run audit:tiered-update
+
+      - name: Commit fast auxiliary diagnostics
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          add_if_exists() {
+            if [ -e "$1" ]; then
+              git add "$1"
+            fi
+          }
+          add_if_exists dashboard/api/source-health-runtime.json
+          add_if_exists dashboard/api/source-collection-status.json
+          add_if_exists dashboard/api/source-quality-score.json
+          add_if_exists dashboard/api/enrichment-utilization.json
+          add_if_exists dashboard/api/aux/latest/
+          add_if_exists dashboard/api/aux/pilotage-summary.json
+          add_if_exists dashboard/api/aux/berth-summary.json
+          add_if_exists dashboard/api/aux/ais-info-summary.json
+          add_if_exists dashboard/api/aux/ais-dynamic-summary.json
+          add_if_exists dashboard/api/aux/vessel-spec-summary.json
+          add_if_exists dashboard/api/aux/cache-status.json
+          add_if_exists dashboard/api/aux/source-schedule.json
+          add_if_exists dashboard/api/runtime/update-tiers.json
+          add_if_exists data/cache/auxiliary-source-cache-status.json
+          if git diff --cached --quiet; then
+            echo "No fast auxiliary diagnostics changes to commit"
+          else
+            git commit -m "chore: update fast auxiliary diagnostics [skip ci]"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
 
       - name: Upload auxiliary cache artifact
         if: always()

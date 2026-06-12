@@ -120,6 +120,8 @@ const auxLatest = readJson(FILES.auxLatest);
 const enrichmentLatest = readJson(FILES.enrichmentLatest);
 
 const coreRunId = updateTiers.core_run_id || updateTiers.run_id || runtimeBudget.run_id || statusSummary.run_id || null;
+const activeUpdateMode = String(updateTiers.update_mode || runtimeBudget.update_mode || statusSummary.update_mode || "").toLowerCase();
+const activeRunIsCore = ["core", "core_update"].includes(activeUpdateMode);
 const rows = [
   ["core", coreRunId, updateTiers.core_generated_at || updateTiers.generated_at, updateTiers.core_generated_by || updateTiers.generated_by],
   ["status-summary", fileRunId(statusSummary, ["run_id"]), statusSummary.generated_at, statusSummary.generated_by],
@@ -169,7 +171,7 @@ if (exists(FILES.sourceCollection)) {
   }
 }
 
-const statusSummaryFresh = !stale.status_summary;
+const statusSummaryFresh = activeRunIsCore ? !stale.status_summary : true;
 const localCoreLooksPromoted = statusSummary.generated_by === "local" &&
   String(statusSummary.update_mode || updateTiers.update_mode || "").toLowerCase() === "core" &&
   (statusSummary.data_mode !== "local_static" ||
@@ -177,7 +179,7 @@ const localCoreLooksPromoted = statusSummary.generated_by === "local" &&
     statusSummary.dataset_promotion_status !== "not_promoted");
 
 const problems = [];
-if (!statusSummaryFresh) problems.push("status-summary run_id does not match current core run_id");
+if (activeRunIsCore && !statusSummaryFresh) problems.push("status-summary run_id does not match current core run_id");
 if (sourceQualityOverwrite) problems.push(`local source-quality overwrite detected for: ${missingAuxQuality.map(item => item.source_key).join(", ")}`);
 if (auxIndexOverwrite) problems.push(`local aux/latest overwrite detected for: ${missingAuxIndex.join(", ")}`);
 if (utilizationOverwrite) problems.push(`local enrichment-utilization overwrite detected for: ${missingUtilization.map(item => item.source_key).join(", ")}`);
@@ -192,6 +194,7 @@ const recommendedFix = problems.length
 
 console.log("Tiered update audit");
 console.log("===================");
+console.log(`active_update_mode=${activeUpdateMode || "-"}`);
 for (const [label, id, generatedAt, generatedBy] of rows) {
   console.log(`${label}: run_id=${id || "-"} generated_at=${generatedAt || "-"} generated_by=${generatedBy || "-"} age_hours=${ageHours(generatedAt) ?? "-"}`);
 }

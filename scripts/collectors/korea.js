@@ -59,6 +59,37 @@ let diagnostics = {
 };
 let portsRegistryCache = null;
 let sourceScheduleCache = undefined;
+const COLLECTOR_UPDATE_MODE = String(process.env.UPDATE_MODE || "").toLowerCase();
+const CORE_COLLECTOR_MODES = new Set(["core", "core_update"]);
+const FAST_AUX_COLLECTOR_MODES = new Set(["fast_aux"]);
+const REFERENCE_ENRICHMENT_COLLECTOR_MODES = new Set(["reference_enrichment"]);
+
+function collectorSourceTier(source = {}) {
+  const key = String(source.key || source.source_name || "");
+  if (key.startsWith("port_operation_") || key === "port_operation") return "core";
+  if (key === "source_csv" || key === "vessel_spec") return "reference_enrichment";
+  if (
+    key.startsWith("pilot_source_") ||
+    key.startsWith("pnc_source_") ||
+    key.startsWith("mof_ais_") ||
+    key.startsWith("ulsan_")
+  ) return "fast_aux";
+  return "fast_aux";
+}
+
+function collectorSourceAllowedForMode(source = {}) {
+  if (!COLLECTOR_UPDATE_MODE || COLLECTOR_UPDATE_MODE === "scheduled") return true;
+  const tier = collectorSourceTier(source);
+  if (CORE_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)) return tier === "core";
+  if (FAST_AUX_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)) return tier === "fast_aux";
+  if (REFERENCE_ENRICHMENT_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)) return tier === "reference_enrichment";
+  if (COLLECTOR_UPDATE_MODE === "discovery_audit") return false;
+  return true;
+}
+
+function collectorModeRequiresPortOperation() {
+  return CORE_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE) || !COLLECTOR_UPDATE_MODE || COLLECTOR_UPDATE_MODE === "scheduled";
+}
 
 function loadSourceSchedule() {
   if (sourceScheduleCache !== undefined) return sourceScheduleCache;
@@ -2302,7 +2333,8 @@ async function collectRealRows() {
     port_operation_rows_by_port: {},
     port_operation_skip_reason_breakdown: preflight.ok ? {} : { [preflight.preflight_failure_reason]: diagnostics.skipped_count || preflight.planned_port_operation_sources.length || 1 }
   };
-  if (!preflight.ok) {
+  const requiresPortOperation = collectorModeRequiresPortOperation();
+  if (!preflight.ok && requiresPortOperation) {
     diagnostics.fallback_used = true;
     diagnostics.skipped_count = preflight.enabled_ports_passed_to_collector_count * Math.max(1, preflight.deGb_values.length);
     diagnostics.sources = preflight.planned_port_operation_sources.map(source => ({
@@ -2324,18 +2356,47 @@ async function collectRealRows() {
     const error = new Error(`Collector preflight failed: ${preflight.preflight_failure_reason}`);
     error.preflight = preflight;
     throw error;
+  } else if (!requiresPortOperation) {
+    diagnostics.preflight_status = "skipped_for_tier";
+    diagnostics.preflight_failure_reason = null;
+    diagnostics.skip_reason = null;
+    diagnostics.port_operation_collection_plan = {
+      ...diagnostics.port_operation_collection_plan,
+      tier_skip: true,
+      tier_skip_reason: `${COLLECTOR_UPDATE_MODE || "scheduled"} does not own port_operation collection`
+    };
+    diagnostics.coverage = {
+      ...(diagnostics.coverage || {}),
+      tier_skip: true,
+      tier_skip_reason: `${COLLECTOR_UPDATE_MODE || "scheduled"} does not own port_operation collection`,
+      port_operation_skip_reason_breakdown: {}
+    };
   }
   if (env("COLLECTOR_DEBUG_ONLY") || debugVerboseEnabled()) {
     console.log("[Korea Port Intelligence] collector env presence", JSON.stringify(runtimeEnvDiagnostics()));
   }
 
   const debugOnly = env("COLLECTOR_DEBUG_ONLY");
-  const configuredSources = allSourceConfigs();
-  const smokeTest = await runPortOperationSmokeTest(configuredSources);
+  const configuredSources = allSourceConfigs().filter(collectorSourceAllowedForMode);
+  diagnostics.collector_tier_filter = {
+    update_mode: COLLECTOR_UPDATE_MODE || "scheduled",
+    allowed_source_count: configuredSources.length,
+    allowed_source_tiers: [...new Set(configuredSources.map(collectorSourceTier))]
+  };
+  const needsPortOperationSmokeTest = configuredSources.some(source => collectorSourceTier(source) === "core");
+  const smokeTest = needsPortOperationSmokeTest
+    ? await runPortOperationSmokeTest(configuredSources)
+    : {
+      smoke_test_status: "skipped_for_tier",
+      smoke_test_failure_reason: null,
+      started_at: now,
+      finished_at: now,
+      duration_ms: 0
+    };
   diagnostics.port_operation_smoke_test = smokeTest;
   diagnostics.smoke_test_status = smokeTest.smoke_test_status;
   diagnostics.smoke_test_failure_reason = smokeTest.smoke_test_failure_reason || null;
-  if (smokeTest.smoke_test_status !== "passed") {
+  if (needsPortOperationSmokeTest && smokeTest.smoke_test_status !== "passed") {
     diagnostics.fallback_used = true;
     diagnostics.skip_reason = "unknown_error";
     diagnostics.attempted_count = 1;
@@ -2658,7 +2719,7 @@ async function collectRealRows() {
 export async function collectKoreaData({ apiSources = [] } = {}) {
   const realRows = await collectRealRows();
   diagnostics.fallback_used = realRows.length === 0;
-  if (process.env.CI && diagnostics.attempted_count === 0) {
+  if (process.env.CI && collectorModeRequiresPortOperation() && diagnostics.attempted_count === 0) {
     throw new Error(`No collectors attempted. Runtime env presence: ${JSON.stringify(runtimeEnvDiagnostics())}`);
   }
   if (process.env.CI && process.env.COLLECTOR_DEBUG_ONLY && realRows.length === 0) {

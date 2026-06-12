@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
+    permissions:
+      contents: write
+
     env:
       CI: true
       VALIDATION_MODE: production
@@ -63,6 +66,61 @@ jobs:
       - name: Validate
         if: always()
         run: npm run validate
+
+      - name: Guard reference enrichment refresh
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+          const status = JSON.parse(fs.readFileSync("dashboard/api/source-collection-status.json", "utf8"));
+          const enrichment = JSON.parse(fs.readFileSync("dashboard/api/enrichment/latest/index.json", "utf8"));
+          const owned = new Set(["source_csv", "vessel_spec"]);
+          const refreshedSources = (status.items || []).filter(item =>
+            owned.has(item.source_key) &&
+            ["ACTIVE", "PARTIAL"].includes(String(item.status || "").toUpperCase()) &&
+            item.preserved_after_unsuccessful_attempt !== true
+          );
+          const patchCount = Number(enrichment.patch_count || enrichment.applied_count || 0);
+          console.log(`reference_enrichment refreshed_source_count=${refreshedSources.length} patch_count=${patchCount}`);
+          if (!refreshedSources.length && patchCount <= 0) {
+            throw new Error("reference_enrichment produced no refreshed reference diagnostics or patches; keeping previous committed enrichment cache.");
+          }
+          NODE
+
+      - name: Audit tier consistency
+        run: npm run audit:tiered-update
+
+      - name: Commit reference enrichment diagnostics
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          add_if_exists() {
+            if [ -e "$1" ]; then
+              git add "$1"
+            fi
+          }
+          add_if_exists dashboard/api/source-collection-status.json
+          add_if_exists dashboard/api/source-quality-score.json
+          add_if_exists dashboard/api/enrichment-utilization.json
+          add_if_exists dashboard/api/enrichment/latest/
+          add_if_exists dashboard/api/enrichment/summary.json
+          add_if_exists dashboard/api/enrichment/candidates.json
+          add_if_exists dashboard/api/enrichment/applied.json
+          add_if_exists dashboard/api/enrichment/review-queue.json
+          add_if_exists dashboard/api/enrichment/source-capability-matrix.json
+          add_if_exists dashboard/api/enrichment/source-csv-dry-run.json
+          add_if_exists dashboard/api/cache/source-csv-reference.json
+          add_if_exists dashboard/api/cache/source-csv-index.json
+          add_if_exists dashboard/api/aux/source-csv-summary.json
+          add_if_exists dashboard/api/aux/vessel-spec-summary.json
+          add_if_exists dashboard/api/runtime/update-tiers.json
+          add_if_exists data/cache/source-csv-reference-cache.json
+          if git diff --cached --quiet; then
+            echo "No reference enrichment diagnostics changes to commit"
+          else
+            git commit -m "chore: update reference enrichment diagnostics [skip ci]"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
 
       - name: Upload reference enrichment artifact
         if: always()

@@ -3569,18 +3569,32 @@ function readJsonSafe(filePath, fallback = null) {
 }
 
 function shouldPreserveAuxDiagnosticsForCore() {
-  return PRESERVE_AUX_DIAGNOSTICS_IN_CORE && GENERATED_BY === "local";
+  return PRESERVE_AUX_DIAGNOSTICS_IN_CORE;
 }
 
 function sourceOwnerTier(sourceKey = "") {
   const key = String(sourceKey || "");
   if (CORE_SOURCE_KEYS.has(key)) return "core";
-  if (key === "source_csv") return "reference_enrichment";
+  if (key === "source_csv" || key === "vessel_spec") return "reference_enrichment";
   return "fast_aux";
 }
 
 function sourceMayUpdateInCore(sourceKey = "") {
   return CORE_SOURCE_KEYS.has(String(sourceKey || ""));
+}
+
+function currentTierMayUpdateSource(sourceKey = "") {
+  const ownerTier = sourceOwnerTier(sourceKey);
+  if (IS_CORE_UPDATE) return ownerTier === "core";
+  if (UPDATE_MODE === "fast_aux") return ownerTier === "fast_aux";
+  if (UPDATE_MODE === "reference_enrichment") return ownerTier === "reference_enrichment";
+  return true;
+}
+
+function sourceCollectionItemLooksSuccessfulRefresh(item = {}) {
+  const status = String(item.status || "").toUpperCase();
+  const rows = Number(item.rows_collected || 0) + Number(item.rows_normalized || 0) + Number(item.rows_matched || 0);
+  return status === "ACTIVE" || rows > 0;
 }
 
 function mapItemsBySourceKey(items = []) {
@@ -3615,6 +3629,15 @@ function sourceQualityItemLooksLocalMissing(item = {}) {
     /missing_env|missing_api|not_configured|set /.test(blocker);
 }
 
+function sourceQualityItemLooksUnsuccessfulRefresh(item = {}) {
+  if (!item || typeof item !== "object") return false;
+  const label = String(item.quality_label || "").toUpperCase();
+  const blocker = String(item.blocker_reason || item.recommended_fix || "").toLowerCase();
+  const rows = Number(item.rows_collected || 0) + Number(item.rows_normalized || 0) + Number(item.rows_matched_to_vessels || 0);
+  return rows <= 0 && ["FAILED", "UNKNOWN"].includes(label) &&
+    /missing_env|missing_api|not_configured|not_attempted|no_rows|fetch|parse|timeout|set /.test(blocker);
+}
+
 function annotateSourceCollectionOwnership(payload = {}, { reusedFromCache = false, generatedAt = null, coreRunId = null } = {}) {
   const items = (Array.isArray(payload.items) ? payload.items : []).map(item => {
     const ownerTier = sourceOwnerTier(item.source_key);
@@ -3640,7 +3663,7 @@ function annotateSourceCollectionOwnership(payload = {}, { reusedFromCache = fal
 }
 
 function mergeSourceCollectionForCoreDiagnostics({ current = {}, previous = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
-  const shouldPreserve = shouldPreserveAuxDiagnosticsForCore();
+  const shouldPreserve = ["core", "core_update", "fast_aux", "reference_enrichment"].includes(UPDATE_MODE);
   const previousItems = Array.isArray(previous?.items) ? previous.items : [];
   if (!shouldPreserve || !previousItems.length) {
     return annotateSourceCollectionOwnership(current || {}, {
@@ -3658,25 +3681,51 @@ function mergeSourceCollectionForCoreDiagnostics({ current = {}, previous = {}, 
   const items = keys.map(sourceKey => {
     const currentItem = currentByKey.get(sourceKey);
     const previousItem = previousByKey.get(sourceKey);
-    if (CORE_SOURCE_KEYS.has(sourceKey) && currentItem) return currentItem;
+    if (currentTierMayUpdateSource(sourceKey) && currentItem) {
+      if (sourceCollectionItemLooksSuccessfulRefresh(currentItem) || !previousItem) return currentItem;
+      return {
+        ...previousItem,
+        preserved_after_unsuccessful_attempt: true,
+        attempted_run_id: origin.run_id || current?.run_id || runId,
+        attempted_at: generatedAt,
+        attempted_status: currentItem.status || null,
+        preservation_reason: "Previous successful tier diagnostics preserved until this source refreshes successfully."
+      };
+    }
     return previousItem || currentItem;
   }).filter(Boolean);
+  const owningTierRunId = origin.run_id || current?.run_id || runId;
+  const currentTierRunField = UPDATE_MODE === "fast_aux"
+    ? { fast_aux_run_id: owningTierRunId, fast_aux_generated_at: generatedAt, fast_aux_generated_by: GENERATED_BY }
+    : UPDATE_MODE === "reference_enrichment"
+      ? { reference_enrichment_run_id: owningTierRunId, reference_enrichment_generated_at: generatedAt, reference_enrichment_generated_by: GENERATED_BY }
+      : { core_run_id: owningTierRunId, core_generated_at: generatedAt, core_generated_by: GENERATED_BY };
   return annotateSourceCollectionOwnership({
     ...(previous || {}),
     schema_version: current?.schema_version || previous?.schema_version || PUBLIC_API_SCHEMA_VERSION,
-    generated_at: previous?.generated_at || current?.generated_at || generatedAt,
-    run_id: previous?.run_id || previous?.status_run_id || current?.run_id || null,
-    status_run_id: previous?.status_run_id || previous?.run_id || current?.status_run_id || null,
-    source_run_id: previous?.source_run_id || previous?.run_id || current?.source_run_id || null,
-    generated_by: previous?.generated_by || "github_actions",
-    is_github_actions: previous?.is_github_actions ?? true,
+    generated_at: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.generated_at || current?.generated_at || generatedAt
+      : generatedAt,
+    run_id: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.run_id || previous?.status_run_id || current?.run_id || null
+      : owningTierRunId,
+    status_run_id: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.status_run_id || previous?.run_id || current?.status_run_id || null
+      : owningTierRunId,
+    source_run_id: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.source_run_id || previous?.run_id || current?.source_run_id || null
+      : owningTierRunId,
+    generated_by: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.generated_by || "github_actions"
+      : GENERATED_BY,
+    is_github_actions: UPDATE_MODE === "core" || UPDATE_MODE === "core_update"
+      ? previous?.is_github_actions ?? true
+      : IS_GITHUB_ACTIONS_RUNTIME,
     reused_from_cache: true,
     cache_reused_at: generatedAt,
-    core_run_id: origin.run_id || current?.run_id || runId,
-    core_generated_at: generatedAt,
-    core_generated_by: GENERATED_BY,
+    ...currentTierRunField,
     mixed_tier_status: true,
-    mixed_tier_note: "Core diagnostics used the current core source state and preserved the last canonical auxiliary source-collection state.",
+    mixed_tier_note: "Tier diagnostics merged the current owning tier refresh with preserved outputs from other tiers.",
     items,
     record_count: items.length,
     item_count: items.length
@@ -3689,10 +3738,11 @@ function mergeSourceCollectionForCoreDiagnostics({ current = {}, previous = {}, 
 
 function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxIndex = {}, enrichmentIndex = {}, sourceCollectionStatus = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
   const items = Array.isArray(payload.items) ? payload.items : [];
-  if (!shouldPreserveAuxDiagnosticsForCore()) {
+  const shouldTierMerge = ["core", "core_update", "fast_aux", "reference_enrichment"].includes(UPDATE_MODE);
+  if (!shouldTierMerge) {
     return {
       ...payload,
-      owner_tier: "fast_aux",
+      owner_tier: UPDATE_MODE === "reference_enrichment" ? "reference_enrichment" : "fast_aux",
       core_may_update: false,
       owner_tier_by_source: Object.fromEntries(items.map(item => [item.source_key, sourceOwnerTier(item.source_key)])),
       items: items.map(item => ({
@@ -3705,12 +3755,30 @@ function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxInde
   const previousByKey = mapItemsBySourceKey(previous?.items || []);
   const mergedItems = items.map(item => {
     const sourceKey = String(item.source_key || "");
-    if (CORE_SOURCE_KEYS.has(sourceKey)) {
+    if (currentTierMayUpdateSource(sourceKey)) {
+      const previousItem = previousByKey.get(sourceKey);
+      const currentLooksUnsuccessful = sourceQualityItemLooksLocalMissing(item) || sourceQualityItemLooksUnsuccessfulRefresh(item);
+      if (previousItem && currentLooksUnsuccessful && !sourceQualityItemLooksLocalMissing(previousItem)) {
+        return {
+          ...previousItem,
+          source_key: sourceKey,
+          owner_tier: sourceOwnerTier(sourceKey),
+          core_may_update: sourceMayUpdateInCore(sourceKey),
+          reused_from_cache: true,
+          cache_reused_at: generatedAt,
+          attempted_run_id: origin.run_id || payload.run_id || runId,
+          attempted_at: generatedAt,
+          attempted_quality_label: item.quality_label || null,
+          preservation_reason: "Previous successful source quality preserved until this tier refreshes successfully."
+        };
+      }
       return {
         ...item,
-        owner_tier: "core",
-        core_may_update: true,
-        core_run_id: origin.run_id || payload.run_id || runId
+        owner_tier: sourceOwnerTier(sourceKey),
+        core_may_update: sourceMayUpdateInCore(sourceKey),
+        ...(IS_CORE_UPDATE ? { core_run_id: origin.run_id || payload.run_id || runId } : {}),
+        ...(UPDATE_MODE === "fast_aux" ? { fast_aux_run_id: origin.run_id || payload.run_id || runId } : {}),
+        ...(UPDATE_MODE === "reference_enrichment" ? { reference_enrichment_run_id: origin.run_id || payload.run_id || runId } : {})
       };
     }
     const previousItem = previousByKey.get(sourceKey);
@@ -3730,20 +3798,25 @@ function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxInde
       preservation_reason: AUXILIARY_QUALITY_PRESERVATION_NOTE
     };
   });
+  const topOwnerTier = UPDATE_MODE === "reference_enrichment"
+    ? "reference_enrichment"
+    : UPDATE_MODE === "fast_aux"
+      ? "fast_aux"
+      : "fast_aux";
   return {
     ...payload,
-    owner_tier: "fast_aux",
-    core_may_update: true,
-    core_update_policy: "lightweight_merge_core_sources_only",
+    owner_tier: topOwnerTier,
+    core_may_update: IS_CORE_UPDATE,
+    core_update_policy: IS_CORE_UPDATE ? "lightweight_merge_core_sources_only" : undefined,
     reused_from_cache: true,
     cache_reused_at: generatedAt,
-    core_run_id: origin.run_id || payload.run_id || runId,
-    core_generated_at: generatedAt,
-    core_generated_by: GENERATED_BY,
+    core_run_id: IS_CORE_UPDATE ? origin.run_id || payload.run_id || runId : previous.core_run_id || null,
+    core_generated_at: IS_CORE_UPDATE ? generatedAt : previous.core_generated_at || null,
+    core_generated_by: IS_CORE_UPDATE ? GENERATED_BY : previous.core_generated_by || null,
     aux_run_id: sourceCollectionStatus.run_id || auxIndex.aux_run_id || previous.aux_run_id || null,
     enrichment_run_id: enrichmentIndex.enrichment_run_id || previous.enrichment_run_id || null,
-    fast_aux_run_id: sourceCollectionStatus.run_id || auxIndex.aux_run_id || null,
-    reference_enrichment_run_id: enrichmentIndex.enrichment_run_id || null,
+    fast_aux_run_id: UPDATE_MODE === "fast_aux" ? origin.run_id || payload.run_id || runId : sourceCollectionStatus.fast_aux_run_id || auxIndex.aux_run_id || previous.fast_aux_run_id || null,
+    reference_enrichment_run_id: UPDATE_MODE === "reference_enrichment" ? origin.run_id || payload.run_id || runId : enrichmentIndex.enrichment_run_id || previous.reference_enrichment_run_id || null,
     preservation_note: AUXILIARY_QUALITY_PRESERVATION_NOTE,
     notes: [...new Set([...(Array.isArray(payload.notes) ? payload.notes : []), AUXILIARY_QUALITY_PRESERVATION_NOTE])],
     record_count: mergedItems.length,
@@ -18066,26 +18139,33 @@ function buildEnrichmentLatestIndex({ generatedAt, summary = {}, patches = {}, r
 
 function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enrichmentIndex = {} } = {}) {
   const previous = readJsonSafe("dashboard/api/runtime/update-tiers.json", {}) || {};
+  const previousStatusSummary = readJsonSafe("dashboard/api/status-summary.json", {}) || {};
+  const currentRunId = report.run_id || runId;
+  const currentGeneratedBy = GENERATED_BY;
+  const coreIsCurrent = IS_CORE_UPDATE || UPDATE_MODE === "scheduled";
+  const fastAuxIsCurrent = UPDATE_MODE === "fast_aux";
+  const referenceEnrichmentIsCurrent = UPDATE_MODE === "reference_enrichment";
+  const discoveryAuditIsCurrent = UPDATE_MODE === "discovery_audit";
   const tiers = {
     core: {
-      run_id: report.run_id || runId,
-      generated_at: generatedAt,
-      generated_by: GENERATED_BY
+      run_id: coreIsCurrent ? currentRunId : previous.core_run_id || previous.core?.run_id || previousStatusSummary.run_id || null,
+      generated_at: coreIsCurrent ? generatedAt : previous.core_generated_at || previous.core?.generated_at || previousStatusSummary.generated_at || null,
+      generated_by: coreIsCurrent ? currentGeneratedBy : previous.core_generated_by || previous.core?.generated_by || previousStatusSummary.generated_by || null
     },
     fast_aux: {
-      run_id: UPDATE_MODE === "fast_aux" ? (report.run_id || runId) : auxIndex.aux_run_id || previous.fast_aux_run_id || previous.fast_aux?.run_id || null,
-      generated_at: UPDATE_MODE === "fast_aux" ? generatedAt : auxIndex.generated_at || previous.fast_aux_generated_at || previous.fast_aux?.generated_at || null,
-      generated_by: UPDATE_MODE === "fast_aux" ? GENERATED_BY : auxIndex.generated_by || previous.fast_aux_generated_by || previous.fast_aux?.generated_by || null
+      run_id: fastAuxIsCurrent ? currentRunId : auxIndex.aux_run_id || previous.fast_aux_run_id || previous.fast_aux?.run_id || null,
+      generated_at: fastAuxIsCurrent ? generatedAt : auxIndex.generated_at || previous.fast_aux_generated_at || previous.fast_aux?.generated_at || null,
+      generated_by: fastAuxIsCurrent ? currentGeneratedBy : auxIndex.generated_by || previous.fast_aux_generated_by || previous.fast_aux?.generated_by || null
     },
     reference_enrichment: {
-      run_id: UPDATE_MODE === "reference_enrichment" ? (report.run_id || runId) : enrichmentIndex.enrichment_run_id || previous.reference_enrichment_run_id || previous.reference_enrichment?.run_id || null,
-      generated_at: UPDATE_MODE === "reference_enrichment" ? generatedAt : enrichmentIndex.generated_at || previous.reference_enrichment_generated_at || previous.reference_enrichment?.generated_at || null,
-      generated_by: UPDATE_MODE === "reference_enrichment" ? GENERATED_BY : enrichmentIndex.generated_by || previous.reference_enrichment_generated_by || previous.reference_enrichment?.generated_by || null
+      run_id: referenceEnrichmentIsCurrent ? currentRunId : enrichmentIndex.enrichment_run_id || previous.reference_enrichment_run_id || previous.reference_enrichment?.run_id || null,
+      generated_at: referenceEnrichmentIsCurrent ? generatedAt : enrichmentIndex.generated_at || previous.reference_enrichment_generated_at || previous.reference_enrichment?.generated_at || null,
+      generated_by: referenceEnrichmentIsCurrent ? currentGeneratedBy : enrichmentIndex.generated_by || previous.reference_enrichment_generated_by || previous.reference_enrichment?.generated_by || null
     },
     discovery_audit: {
-      run_id: UPDATE_MODE === "discovery_audit" ? (report.run_id || runId) : previous.discovery_audit_run_id || previous.discovery_audit?.run_id || null,
-      generated_at: UPDATE_MODE === "discovery_audit" ? generatedAt : previous.discovery_audit_generated_at || previous.discovery_audit?.generated_at || null,
-      generated_by: UPDATE_MODE === "discovery_audit" ? GENERATED_BY : previous.discovery_audit_generated_by || previous.discovery_audit?.generated_by || null
+      run_id: discoveryAuditIsCurrent ? currentRunId : previous.discovery_audit_run_id || previous.discovery_audit?.run_id || null,
+      generated_at: discoveryAuditIsCurrent ? generatedAt : previous.discovery_audit_generated_at || previous.discovery_audit?.generated_at || null,
+      generated_by: discoveryAuditIsCurrent ? currentGeneratedBy : previous.discovery_audit_generated_by || previous.discovery_audit?.generated_by || null
     }
   };
   const staleWarnings = [];
@@ -20138,7 +20218,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
-  writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeSourceCollectionStatusJson(sourceCollectionStatusForAuxDiagnostics, finalRunOrigin);
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
   writeApiJson("dashboard/api/enrichment/source-capability-matrix.json", sourceEnrichmentMatrixPayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
@@ -20393,7 +20473,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
-  writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeSourceCollectionStatusJson(sourceCollectionStatusForAuxDiagnostics, finalRunOrigin);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);

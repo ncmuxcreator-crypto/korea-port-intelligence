@@ -9,6 +9,7 @@
     "update:reference-enrichment": "node scripts/run-update-mode.js reference_enrichment",
     "update:enrichment": "node scripts/run-update-mode.js reference_enrichment",
     "update:discovery-audit": "node scripts/run-update-mode.js discovery_audit",
+    "stamp:discovery-audit": "node scripts/stamp-tier-run.js discovery_audit",
     "reprocess": "node scripts/reprocess.js",
     "daily:enrich": "node scripts/daily-enrichment.js",
     "build:port-geojson": "node scripts/build-port-geojson-snapshot.js",
