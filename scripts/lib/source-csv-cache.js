@@ -221,6 +221,7 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     || diagnostic.failure_reason === "api_response_too_large"
     || Boolean(item.source_too_large)
     || isSourceTooLargeSignal(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
+  const previousCacheAvailable = currentCache.status === "available" && summary.usable_reference_rows > 0;
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -231,6 +232,8 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     collector_enabled: Boolean(item.collector_enabled),
     collector_attempted: Boolean(item.collector_attempted),
     source_too_large: sourceTooLarge,
+    previous_cache_available: previousCacheAvailable,
+    using_previous_cache: sourceTooLarge && previousCacheAvailable,
     response_size_bytes: responseSizeBytes,
     rows_collected: Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0),
     usable_reference_rows: summary.usable_reference_rows,

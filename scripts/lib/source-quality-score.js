@@ -176,6 +176,8 @@ function scoreSource({ item, sourceKey, sourceCollectionStatus, matchingDiagnost
   const rowsNormalized = number(item.rows_normalized);
   const rowsMatched = sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics, bootstrapKpis, report });
   const fieldsContributed = fieldsFromDiagnostics(sourceKey, item.diagnostics || [], rowsNormalized);
+  const totalVessels = number(bootstrapKpis.total_vessels || bootstrapKpis.detail_eligible_vessel_count || report.total_vessels || report.record_count);
+  const smokeLevel = ["mof_ais_info", "mof_ais_dynamic"].includes(sourceKey) && rowsCollected <= 10 && totalVessels > 100;
   const minutes = freshnessMinutes(sourceCollectionStatus.generated_at || item.generated_at, referenceTime || sourceCollectionStatus.generated_at);
   const envScore = configured(item) ? 15 : 0;
   const attemptScore = item.collector_attempted ? 10 : 0;
@@ -187,6 +189,7 @@ function scoreSource({ item, sourceKey, sourceCollectionStatus, matchingDiagnost
   const freshScore = freshnessScore(minutes);
   const utilizationScore = Math.round(clamp(envScore + attemptScore + fetchScore + parseScore + normalizedScore + matchedScore + fieldsScore + freshScore));
   const blocker = blockerReason({ item, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes });
+  const quality = qualityLabel(utilizationScore, item);
   return {
     source_key: sourceKey,
     configured: configured(item),
@@ -197,9 +200,15 @@ function scoreSource({ item, sourceKey, sourceCollectionStatus, matchingDiagnost
     fields_contributed: fieldsContributed,
     freshness_minutes: minutes,
     utilization_score: utilizationScore,
-    quality_label: qualityLabel(utilizationScore, item),
+    quality_label: quality,
+    coverage_label: smokeLevel ? "SMOKE_LEVEL" : quality,
+    coverage_note: smokeLevel
+      ? "Fetch and parse work, but current coverage is smoke-level compared with the vessel universe."
+      : "",
     blocker_reason: blocker,
-    recommended_fix: recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched }),
+    recommended_fix: smokeLevel
+      ? "Expand enrichment gradually: sales targets first, then contact_now vessels, then detail eligible top 100."
+      : recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched }),
     score_breakdown: {
       env_present: envScore,
       fetch_attempted: attemptScore,

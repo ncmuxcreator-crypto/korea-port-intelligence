@@ -457,6 +457,19 @@ function summarizeByField(items = []) {
   return summary;
 }
 
+function countDisplaySignals(records = []) {
+  let pilotage = 0;
+  let berth = 0;
+  let lineage = 0;
+  for (const row of records || []) {
+    const d = merged(row);
+    if (d?.pilotage_signal?.has_pilotage === true) pilotage += 1;
+    if (d?.berth_signal?.has_berth_info === true || d?.berth_signal?.has_berth === true) berth += 1;
+    if (d?.data_lineage && typeof d.data_lineage === "object") lineage += 1;
+  }
+  return { pilotage, berth, lineage };
+}
+
 function conflictCandidates(items = []) {
   return items.filter(item =>
     item.action === "REVIEW" &&
@@ -508,6 +521,10 @@ export function buildSourceDataEnrichmentPayloads({
     vesselsEnriched.add(candidate.target_vessel_key);
   }
   const conflicts = conflictCandidates(candidates);
+  const displaySignals = countDisplaySignals(records);
+  const sourceRowsCollected = (sourceCollectionStatus.items || []).reduce((sum, item) => sum + Number(item.rows_collected || 0), 0);
+  const sourceRowsNormalized = (sourceCollectionStatus.items || []).reduce((sum, item) => sum + Number(item.rows_normalized || 0), 0);
+  const sourceRowsMatched = (sourceQualityScore.items || []).reduce((sum, item) => sum + Number(item.rows_matched_to_vessels || 0), 0);
   const summary = {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -518,6 +535,16 @@ export function buildSourceDataEnrichmentPayloads({
     auto_applied: applied.length,
     needs_review: review.length,
     rejected: rejected.length,
+    source_rows_collected: sourceRowsCollected,
+    source_rows_normalized: sourceRowsNormalized,
+    source_rows_matched_to_vessels: sourceRowsMatched,
+    enrichment_candidates_created: candidates.length,
+    enrichment_patches_applied: applied.length,
+    vessel_display_records_updated: displaySignals.pilotage + displaySignals.berth,
+    ui_visible_records: records.length,
+    pilotage_signal_display_count: displaySignals.pilotage,
+    berth_signal_display_count: displaySignals.berth,
+    data_lineage_display_count: displaySignals.lineage,
     fields_enriched: fieldsEnriched,
     vessels_enriched: vesselsEnriched.size,
     by_source: summarize(candidates),

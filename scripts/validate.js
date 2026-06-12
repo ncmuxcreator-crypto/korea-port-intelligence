@@ -777,19 +777,24 @@ const allowedSkipReasons = new Set([
   "missing_service_key",
   "missing_api_url",
   "collector_disabled",
+  "not_configured",
   "no_enabled_ports",
   "local_no_secret_mode",
   "validation_mode_blocks_collection",
   "unknown_error"
 ]);
+function isAllowedCollectorSkipReason(value = "") {
+  if (allowedSkipReasons.has(value)) return true;
+  return /^waiting_until_next_window:/i.test(String(value || ""));
+}
 if (Number(status.collector_diagnostics.attempted_count || 0) === 0 && !status.collector_diagnostics.skip_reason && !status.collector_diagnostics.preflight_failure_reason) {
   throw new Error("Collector diagnostics must not have attempted_count=0 without skip_reason");
 }
-if (status.collector_diagnostics.skip_reason && !allowedSkipReasons.has(status.collector_diagnostics.skip_reason)) {
+if (status.collector_diagnostics.skip_reason && !isAllowedCollectorSkipReason(status.collector_diagnostics.skip_reason)) {
   throw new Error(`Collector skip_reason is not standardized: ${status.collector_diagnostics.skip_reason}`);
 }
 for (const source of status.collector_diagnostics.sources || []) {
-  if (source.skipped && (!source.skip_reason || !allowedSkipReasons.has(source.skip_reason))) {
+  if (source.skipped && (!source.skip_reason || !isAllowedCollectorSkipReason(source.skip_reason))) {
     throw new Error(`Skipped collector missing standardized skip_reason: ${source.key || source.source_name || source.label || "unknown"}`);
   }
 }

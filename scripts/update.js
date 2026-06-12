@@ -4294,16 +4294,24 @@ function withRunOrigin(payload = {}, origin = {}) {
   const runId = payload.run_id || origin.run_id || null;
   const statusRunId = payload.status_run_id || origin.status_run_id || payload.active_run_id || origin.active_run_id || runId;
   const activeRunId = payload.active_run_id || origin.active_run_id || statusRunId;
+  const latestSuccessfulRunId = payload.latest_successful_run_id || origin.latest_successful_run_id || origin.latest_successful_summary_run_id || null;
+  const sourceRunId = payload.source_run_id || origin.source_run_id || latestSuccessfulRunId || activeRunId || runId || null;
   const staleDiagnostic = Boolean(statusRunId && runId && String(statusRunId) !== String(runId));
+  const staleReason = payload.stale_reason || (staleDiagnostic
+    ? `payload_run_id=${runId || "unknown"} differs from status_run_id=${statusRunId || "unknown"}`
+    : "");
   return {
     schema_version: payload.schema_version || origin.schema_version || PUBLIC_API_SCHEMA_VERSION,
     ...origin,
     ...payload,
     run_id: runId,
     generated_at: payload.generated_at || origin.generated_at || new Date().toISOString(),
+    source_run_id: sourceRunId,
     status_run_id: statusRunId || null,
     active_run_id: activeRunId || null,
+    latest_successful_run_id: latestSuccessfulRunId,
     stale_diagnostic: payload.stale_diagnostic ?? staleDiagnostic,
+    stale_reason: payload.stale_reason ?? staleReason,
     placeholder: payload.placeholder === true,
     validation_mode: payload.validation_mode || origin.validation_mode,
     serving_mode: payload.serving_mode || origin.serving_mode,
@@ -6704,6 +6712,31 @@ function inferOperatorDisplayLineage(record = {}) {
   return "unknown";
 }
 
+function lineageEntry(existingValue, fallbackSource = "unknown", {
+  confidence = null,
+  updatedAt = null,
+  matchType = null,
+  verified = false
+} = {}) {
+  if (existingValue && typeof existingValue === "object" && !Array.isArray(existingValue)) {
+    return {
+      source: normalizeLineageSource(existingValue.source || fallbackSource),
+      confidence: nullableDisplayNumber(existingValue.confidence, confidence),
+      updated_at: firstDisplayText(existingValue.updated_at, updatedAt) || null,
+      match_type: firstDisplayText(existingValue.match_type, matchType) || null,
+      verified: existingValue.verified === true || verified === true
+    };
+  }
+  const source = normalizeLineageSource(firstDisplayText(existingValue, fallbackSource));
+  return {
+    source,
+    confidence: nullableDisplayNumber(confidence),
+    updated_at: updatedAt || null,
+    match_type: matchType || null,
+    verified: verified === true
+  };
+}
+
 function buildVesselDataLineage(record = {}, context = {}) {
   const displayLineage = record.vessel_display?.data_lineage && typeof record.vessel_display.data_lineage === "object"
     ? record.vessel_display.data_lineage
@@ -6719,16 +6752,30 @@ function buildVesselDataLineage(record = {}, context = {}) {
   const berthSignal = context.berthSignal || buildBerthSignal(record);
   const tonnageSummary = context.tonnageSummary || record.tonnage_summary || record.vessel_display?.tonnage_summary || {};
   const opportunityScore = context.opportunityScore ?? nullableDisplayNumber(record.opportunity_score, record.sales_priority_score, record.commercial_value_score, record.vessel_display?.opportunity_score);
+  const updatedAt = firstDisplayText(record.updated_at, record.collected_at, record.last_seen_at, record.generated_at) || null;
   return {
-    vessel_name: existing.vessel_name || (vesselDisplayHasText(record.vessel_name || record.name || record.ship_name || record.vessel_display?.vessel_name) ? portOperationSource : "unknown"),
-    call_sign: existing.call_sign || (vesselDisplayHasText(record.call_sign || record.callsign || record.clsgn || record.vessel_display?.call_sign) ? portOperationSource : "unknown"),
-    gt: existing.gt || inferTonnageLineage(record, "gt", tonnageSummary),
-    dwt: existing.dwt || inferTonnageLineage(record, "dwt", tonnageSummary),
-    operator_display: existing.operator_display || inferOperatorDisplayLineage(record),
-    current_port: existing.current_port || (vesselDisplayHasText(context.currentPort || record.current_port || record.port_name || record.port || record.vessel_display?.current_port) ? portOperationSource : "unknown"),
-    berth: existing.berth || (berthSignal?.source ? normalizeLineageSource(berthSignal.source) : vesselDisplayHasText(record.berth || record.berth_name || record.vessel_display?.berth) ? portOperationSource : "unknown"),
-    pilotage_signal: existing.pilotage_signal || (pilotageSignal?.has_pilotage ? "pilot_sources" : "unknown"),
-    opportunity_score: existing.opportunity_score || (opportunityScore !== null ? "opportunity_engine" : "unknown")
+    vessel_name: lineageEntry(existing.vessel_name, vesselDisplayHasText(record.vessel_name || record.name || record.ship_name || record.vessel_display?.vessel_name) ? portOperationSource : "unknown", { updatedAt }),
+    call_sign: lineageEntry(existing.call_sign, vesselDisplayHasText(record.call_sign || record.callsign || record.clsgn || record.vessel_display?.call_sign) ? portOperationSource : "unknown", { updatedAt }),
+    gt: lineageEntry(existing.gt, inferTonnageLineage(record, "gt", tonnageSummary), { confidence: tonnageSummary.tonnage_confidence ?? null, updatedAt }),
+    dwt: lineageEntry(existing.dwt, inferTonnageLineage(record, "dwt", tonnageSummary), { confidence: tonnageSummary.tonnage_confidence ?? null, updatedAt }),
+    operator_display: lineageEntry(existing.operator_display, inferOperatorDisplayLineage(record), { confidence: nullableDisplayNumber(record.operator_confidence, 70), updatedAt }),
+    current_port: lineageEntry(existing.current_port, vesselDisplayHasText(context.currentPort || record.current_port || record.port_name || record.port || record.vessel_display?.current_port) ? portOperationSource : "unknown", { updatedAt }),
+    berth: lineageEntry(existing.berth, berthSignal?.source ? normalizeLineageSource(berthSignal.source) : vesselDisplayHasText(record.berth || record.berth_name || record.vessel_display?.berth) ? portOperationSource : "unknown", {
+      confidence: berthSignal?.confidence ?? null,
+      updatedAt,
+      matchType: berthSignal?.match_type || null
+    }),
+    berth_signal: lineageEntry(existing.berth_signal, berthSignal?.has_berth_info ? (berthSignal.source || "berth_sources") : "unknown", {
+      confidence: berthSignal?.confidence ?? null,
+      updatedAt,
+      matchType: berthSignal?.match_type || null
+    }),
+    pilotage_signal: lineageEntry(existing.pilotage_signal, pilotageSignal?.has_pilotage ? (pilotageSignal.source || pilotageSignal.pilotage_source || "pilot_sources") : "unknown", {
+      confidence: pilotageSignal?.confidence ?? pilotageSignal?.pilotage_confidence ?? null,
+      updatedAt,
+      matchType: pilotageSignal?.match_type || null
+    }),
+    opportunity_score: lineageEntry(existing.opportunity_score, opportunityScore !== null ? "opportunity_engine" : "unknown", { confidence: opportunityScore, updatedAt })
   };
 }
 
@@ -6871,7 +6918,24 @@ function buildPilotageSignal(record = {}) {
   const existing = record.vessel_display?.pilotage_signal && typeof record.vessel_display.pilotage_signal === "object"
     ? record.vessel_display.pilotage_signal
     : {};
-  if (existing.has_pilotage === true) return existing;
+  if (existing.has_pilotage === true) {
+    const status = existing.status || existing.pilotage_status || "DETECTED";
+    const direction = existing.direction || existing.pilotage_direction || "UNKNOWN";
+    const source = existing.source || existing.pilotage_source || "pilot_sources";
+    return {
+      ...existing,
+      status,
+      pilotage_status: existing.pilotage_status || status,
+      port: existing.port || existing.pilotage_port || null,
+      direction,
+      pilotage_direction: existing.pilotage_direction || direction,
+      source,
+      pilotage_source: existing.pilotage_source || source,
+      confidence: nullableDisplayNumber(existing.confidence, existing.pilotage_confidence),
+      pilotage_confidence: nullableDisplayNumber(existing.pilotage_confidence, existing.confidence),
+      reason: existing.reason || "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다."
+    };
+  }
   const pilotTime = firstNonEmpty(
     record.pilot_timestamp,
     record.pilot_time,
@@ -6918,25 +6982,33 @@ function buildPilotageSignal(record = {}) {
           : "DETECTED"
     : "UNKNOWN";
   const displayDirection = direction && direction !== "PILOTAGE" ? direction : "UNKNOWN";
+  const sourceValue = source || (hasPilotage ? "pilot_sources" : null);
+  const portValue = normalizedPort.display_name || null;
   return {
     has_pilotage: Boolean(hasPilotage),
+    status: pilotageStatus,
     pilotage_status: pilotageStatus,
     pilotage_time: pilotageTime || null,
     pilotage_time_text: pilotageHasText(pilotTimeText) ? pilotTimeText : pilotageTime || null,
+    direction: displayDirection,
     pilotage_direction: displayDirection,
     pilot_station: pilotageHasText(station) ? station : null,
     berth_name: pilotageHasText(berthName) ? berthName : null,
-    pilotage_port: normalizedPort.display_name || null,
-    pilotage_source: source,
+    port: portValue,
+    pilotage_port: portValue,
+    source: sourceValue,
+    pilotage_source: sourceValue,
+    confidence,
     pilotage_confidence: confidence,
     match_type: record.pilotage_match_type || record.pilot_match_method || (timeOnly ? "time_only" : matched ? "pilot_schedule" : ""),
     arrival_window: hasPilotage && pilotageTime ? {
       basis: "pilotage_time",
       time: pilotageTime,
       direction: displayDirection,
-      source: source || "pilotage_signal",
+      source: sourceValue || "pilotage_signal",
       confidence
     } : null,
+    reason_ko: hasPilotage ? "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다." : "",
     reason: hasPilotage
       ? "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다."
       : ""
@@ -6955,7 +7027,14 @@ function buildBerthSignal(record = {}) {
   const existing = record.vessel_display?.berth_signal && typeof record.vessel_display.berth_signal === "object"
     ? record.vessel_display.berth_signal
     : {};
-  if (existing.has_berth_info === true) return existing;
+  if (existing.has_berth_info === true) {
+    return {
+      ...existing,
+      berth_direction: existing.berth_direction || existing.direction || null,
+      confidence: nullableDisplayNumber(existing.confidence, existing.berth_match_confidence),
+      reason: existing.reason || "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다."
+    };
+  }
   const sourceNames = [
     ...displaySources(record),
     record.source_origin,
@@ -6975,6 +7054,7 @@ function buildBerthSignal(record = {}) {
   const atb = firstNonEmpty(record.atb, record.vessel_display?.atb);
   const operationStart = firstNonEmpty(record.operation_start, record.work_start, record.cargo_start);
   const operationEnd = firstNonEmpty(record.operation_end, record.work_end, record.cargo_end);
+  const berthDirection = pilotageKnownDirection(firstNonEmpty(record.berth_direction, record.movement_type, record.direction));
   const hasBerthInfo = Boolean((explicitMatched || berthSource) && (terminal || berth || eta || etb || ata || atb || operationStart || operationEnd));
   const confidenceValue = Number(record.berth_match_confidence || record.berth_signal?.confidence || record.enrichment_confidence || 0);
   const confidence = Number.isFinite(confidenceValue) && confidenceValue > 0
@@ -6986,6 +7066,7 @@ function buildBerthSignal(record = {}) {
     source: hasBerthInfo ? (pncSource ? "PNC" : sourceNames.find(value => /berth|terminal|pnc/i.test(value)) || "berth_sources") : null,
     terminal: pilotageHasText(terminal) ? terminal : null,
     berth: pilotageHasText(berth) ? berth : null,
+    berth_direction: berthDirection && berthDirection !== "PILOTAGE" ? berthDirection : null,
     eta: pilotageHasText(eta) ? eta : null,
     etb: pilotageHasText(etb) ? etb : null,
     ata: pilotageHasText(ata) ? ata : null,
@@ -6994,7 +7075,8 @@ function buildBerthSignal(record = {}) {
     operation_end: pilotageHasText(operationEnd) ? operationEnd : null,
     port: normalizedPort.display_name || null,
     match_type: record.berth_match_method || record.berth_signal?.match_type || (pncSource ? "pnc_berth_match" : hasBerthInfo ? "berth_enrichment" : "none"),
-    confidence
+    confidence,
+    reason: hasBerthInfo ? "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다." : ""
   };
 }
 
@@ -18346,6 +18428,10 @@ try {
     validationMode: VALIDATION_MODE,
     servingMode: normalizeServingMode(report.output_mode || (lastSuccessfulDatasetLocked ? "local_diagnostics" : "static_json"))
   });
+  finalRunOrigin.active_run_id = report.active_run_id || runId || null;
+  finalRunOrigin.latest_successful_run_id = report.latest_successful_run_id || report.latest_successful_summary_run_id || null;
+  finalRunOrigin.latest_successful_summary_run_id = report.latest_successful_summary_run_id || report.latest_successful_run_id || null;
+  finalRunOrigin.source_run_id = finalRunOrigin.latest_successful_run_id || finalRunOrigin.active_run_id || runId || null;
   Object.assign(report, withRunOrigin(report, finalRunOrigin));
   Object.assign(dashboardSummary, withRunOrigin(dashboardSummary, finalRunOrigin));
   const currentReadinessGateReport = withRunOrigin(readinessGateReport, finalRunOrigin);
@@ -18418,7 +18504,7 @@ try {
     ...anchorageWaiting,
     ...stayingVessels
   ].filter(record => record && typeof record === "object");
-  const sourceDataEnrichmentPayloads = buildSourceDataEnrichmentPayloads({
+  const sourceDataEnrichmentPayloadsRaw = buildSourceDataEnrichmentPayloads({
     records: sourceDataEnrichmentRecords,
     sourceCollectionStatus: sourceCollectionStatusPayload,
     sourceQualityScore: sourceQualityScorePayload,
@@ -18426,6 +18512,13 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     report
   });
+  const sourceDataEnrichmentPayloads = {
+    ...sourceDataEnrichmentPayloadsRaw,
+    candidatesPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.candidatesPayload, finalRunOrigin),
+    appliedPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.appliedPayload, finalRunOrigin),
+    reviewQueuePayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.reviewQueuePayload, finalRunOrigin),
+    summaryPayload: withRunOrigin(sourceDataEnrichmentPayloadsRaw.summaryPayload, finalRunOrigin)
+  };
   const enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
     records: allCollectedVessels,
     sourceQualityScore: sourceQualityScorePayload,

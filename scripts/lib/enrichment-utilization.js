@@ -195,6 +195,10 @@ function sourceMatchedCount({ sourceKey, quality = {}, bootstrapKpis = {}, recor
   return number(quality.rows_matched_to_vessels);
 }
 
+function sumQuality(sourceQualityScore = {}, key = "") {
+  return (sourceQualityScore.items || []).reduce((sum, item) => sum + number(item?.[key]), 0);
+}
+
 export function buildEnrichmentUtilizationPayload({
   records = [],
   sourceQualityScore = {},
@@ -254,6 +258,34 @@ export function buildEnrichmentUtilizationPayload({
 
   const pilotageDisplayCount = countPilotageSignals(dedupedRecords);
   const berthDisplayCount = countBerthSignals(dedupedRecords);
+  const pilotageMatchedCount = Math.max(pilotageDisplayCount, number(bootstrapKpis.pilotage_detected_count));
+  const berthMatchedCount = Math.max(berthDisplayCount, number(bootstrapKpis.berth_info_detected_count));
+  const countReconciliation = {
+    source_rows_collected: sumQuality(sourceQualityScore, "rows_collected"),
+    source_rows_normalized: sumQuality(sourceQualityScore, "rows_normalized"),
+    source_rows_matched_to_vessels: sumQuality(sourceQualityScore, "rows_matched_to_vessels"),
+    enrichment_candidates_created: number(report.enrichment_candidates_created || report.source_data_enrichment?.total_candidates),
+    enrichment_patches_applied: number(report.enrichment_patches_applied || report.source_data_enrichment?.auto_applied),
+    vessel_display_records_updated: pilotageDisplayCount + berthDisplayCount,
+    ui_visible_records: dedupedRecords.length
+  };
+  const displayGapExplanations = [];
+  if (pilotageMatchedCount > 0 && pilotageDisplayCount === 0) {
+    displayGapExplanations.push({
+      signal: "pilotage_signal",
+      matched_count: pilotageMatchedCount,
+      display_count: pilotageDisplayCount,
+      reason: "pilotage rows were matched at source level, but no current vessel_display record carried has_pilotage=true after mapping"
+    });
+  }
+  if (berthMatchedCount > 0 && berthDisplayCount === 0) {
+    displayGapExplanations.push({
+      signal: "berth_signal",
+      matched_count: berthMatchedCount,
+      display_count: berthDisplayCount,
+      reason: "berth rows were matched at source level, but no current vessel_display record carried has_berth_info=true after mapping"
+    });
+  }
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -263,10 +295,12 @@ export function buildEnrichmentUtilizationPayload({
     display_vessel_count: dedupedRecords.length,
     vessels_enriched_by_source: vesselsEnrichedBySource,
     fields_recovered_by_source: fieldsRecoveredBySource,
-    pilotage_signal_count: Math.max(pilotageDisplayCount, number(bootstrapKpis.pilotage_detected_count)),
+    count_reconciliation: countReconciliation,
+    pilotage_signal_count: pilotageMatchedCount,
     pilotage_signal_display_count: pilotageDisplayCount,
-    berth_signal_count: Math.max(berthDisplayCount, number(bootstrapKpis.berth_info_detected_count)),
+    berth_signal_count: berthMatchedCount,
     berth_signal_display_count: berthDisplayCount,
+    display_gap_explanations: displayGapExplanations,
     operator_recovered_count: displayCounts.operator_display,
     imo_recovered_count: displayCounts.imo,
     mmsi_recovered_count: displayCounts.mmsi,
