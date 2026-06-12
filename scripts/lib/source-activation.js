@@ -218,12 +218,25 @@ function isHttp404Failure(item = {}) {
   return /\b404\b|http 404|status 404/.test(text);
 }
 
+function utilizationNoteForSource(sourceKey = "", rowsCollected = 0, rowsNormalized = 0) {
+  if (rowsCollected > 0 && rowsNormalized === 0) {
+    if (sourceKey === "vessel_spec") {
+      return "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers.";
+    }
+    return "Rows were fetched but not converted into normalized enrichment records.";
+  }
+  if (rowsNormalized > 0) return "Rows were normalized and can contribute to enrichment.";
+  return "";
+}
+
 export function applySourcePriority(item = {}) {
   const sourceKey = String(item.source_key || item.key || item.source_name || "");
   const isUlsanAuxiliary = ULSAN_AUXILIARY_SOURCE_KEYS.has(sourceKey);
   const isSourceCsv = sourceKey === "source_csv";
   const isAuxiliary = AUXILIARY_SOURCE_KEYS.has(sourceKey);
   const sourceCsvTooLarge = isSourceCsvTooLarge(item);
+  const rowsCollected = Number(item.rows_collected || 0);
+  const rowsNormalized = Number(item.rows_normalized || 0);
   const status = sourceCsvTooLarge ? "SOURCE_TOO_LARGE" : item.status;
   const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(status || ""));
   const deferred = isUlsanAuxiliary && isFailed && isHttp404Failure(item);
@@ -239,6 +252,8 @@ export function applySourcePriority(item = {}) {
     core_blocking: coreBlocking,
     severity,
     business_impact: isUlsanAuxiliary ? ULSAN_AUXILIARY_BUSINESS_IMPACT : isSourceCsv ? "Verified source CSV enrichment cache may not refresh; existing cache is used if available." : item.business_impact,
+    utilization_note: item.utilization_note || utilizationNoteForSource(sourceKey, rowsCollected, rowsNormalized),
+    utilization_status: item.utilization_status || (rowsCollected > 0 && rowsNormalized === 0 ? "FETCHED_NOT_NORMALIZED" : rowsNormalized > 0 ? "NORMALIZED" : "NO_ROWS"),
     fix_status: deferred ? "deferred" : (item.fix_status || (status === "ACTIVE" ? "active" : "needs_action")),
     source_too_large: sourceCsvTooLarge || Boolean(item.source_too_large),
     ...(sourceCsvTooLarge ? {

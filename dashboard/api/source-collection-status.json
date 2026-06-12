@@ -168,7 +168,9 @@
       "business_impact": "Vessel particulars such as IMO, MMSI, GT, DWT, flag, and vessel type may remain incomplete.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "FETCHED_NOT_NORMALIZED",
+      "utilization_note": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
     },
     {
       "source_key": "pilot_sources",
@@ -420,7 +422,9 @@
       "business_impact": "Pilotage timing and berth-arrival confirmation signals are unavailable.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "NORMALIZED",
+      "utilization_note": "Rows were normalized and can contribute to enrichment."
     },
     {
       "source_key": "berth_sources",
@@ -655,7 +659,9 @@
       "business_impact": "Berth assignment and terminal schedule enrichment may be unavailable.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "NORMALIZED",
+      "utilization_note": "Rows were normalized and can contribute to enrichment."
     },
     {
       "source_key": "mof_ais_dynamic",
@@ -734,7 +740,9 @@
       "business_impact": "Live AIS position, speed, slow-steaming, and dwell-time signals remain weak.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "NORMALIZED",
+      "utilization_note": "Rows were normalized and can contribute to enrichment."
     },
     {
       "source_key": "mof_ais_info",
@@ -813,7 +821,9 @@
       "business_impact": "AIS vessel identity and static particulars may not enrich vessel_display.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "NORMALIZED",
+      "utilization_note": "Rows were normalized and can contribute to enrichment."
     },
     {
       "source_key": "mof_ais_stat",
@@ -892,7 +902,9 @@
       "business_impact": "AIS trend, traffic statistics, and seasonality signals remain unavailable.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "FETCHED_NOT_NORMALIZED",
+      "utilization_note": "Rows were fetched but not converted into normalized enrichment records."
     },
     {
       "source_key": "ulsan_core",
@@ -2280,7 +2292,9 @@
       "business_impact": "Arrival/departure and port-call baseline data may not collect.",
       "severity": "INFO",
       "fix_status": "active",
-      "source_too_large": false
+      "source_too_large": false,
+      "utilization_status": "NORMALIZED",
+      "utilization_note": "Rows were normalized and can contribute to enrichment."
     }
   ],
   "item_count": 13,

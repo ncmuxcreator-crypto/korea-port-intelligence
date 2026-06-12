@@ -573,6 +573,44 @@ function pncAliasDiagnostics(rawRows = [], normalizedRows = []) {
   };
 }
 
+function vesselSpecAliasDiagnostics(rawRows = [], normalizedRows = []) {
+  const aliasGroups = {
+    vessel_name: FIELD_ALIASES.vessel_name,
+    imo: FIELD_ALIASES.imo,
+    mmsi: FIELD_ALIASES.mmsi,
+    call_sign: FIELD_ALIASES.call_sign,
+    vessel_type: FIELD_ALIASES.vessel_type,
+    gt: FIELD_ALIASES.gt,
+    dwt: FIELD_ALIASES.dwt,
+    flag: FIELD_ALIASES.flag
+  };
+  const aliasMatched = Object.fromEntries(Object.entries(aliasGroups).map(([field, aliases]) => [
+    field,
+    rawRows.some(row => Boolean(firstValue(row, aliases)))
+  ]));
+  const blockers = [];
+  if (!aliasMatched.vessel_name && !aliasMatched.imo && !aliasMatched.mmsi && !aliasMatched.call_sign) {
+    blockers.push("missing_identity_alias");
+  }
+  if (!aliasMatched.imo && !aliasMatched.mmsi && !aliasMatched.call_sign) {
+    blockers.push("missing_identifier_alias");
+  }
+  if (!aliasMatched.gt && !aliasMatched.dwt && !aliasMatched.vessel_type && !aliasMatched.flag) {
+    blockers.push("missing_specification_alias");
+  }
+  if (!rawRows.length) blockers.push("empty_response_rows");
+  return {
+    raw_sample_keys: [...new Set(rawRows.slice(0, 5).flatMap(row => Object.keys(row || {})))].slice(0, 80),
+    sanitized_raw_samples: rawRows.slice(0, 5).map(sanitizeSourceSample),
+    expected_field_aliases_matched: aliasMatched,
+    missing_required_fields: {
+      identity: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_name", "imo", "mmsi", "call_sign"].includes(field) && !matched).map(([field]) => field),
+      specification: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_type", "gt", "dwt", "flag"].includes(field) && !matched).map(([field]) => field)
+    },
+    parser_blockers: normalizedRows.length ? [] : blockers
+  };
+}
+
 function normalizeDate(value) {
   if (!value) return "";
   const text = String(value).trim();
@@ -2438,6 +2476,7 @@ async function collectRealRows() {
         diag.invalid_time_rows = sourceRecords.filter(record => record.pilot_time_parse_status === "invalid_date_time").length;
       }
       if (source.key === "vessel_spec") {
+        Object.assign(diag, vesselSpecAliasDiagnostics(rows, sourceRecords));
         diag.rows_with_imo = sourceRecords.filter(record => String(record.imo || "").trim()).length;
         diag.rows_with_mmsi = sourceRecords.filter(record => String(record.mmsi || "").trim()).length;
         diag.rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;

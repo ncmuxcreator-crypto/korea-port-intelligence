@@ -1,23 +1,35 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T00:45:11.678Z",
-  "data_mode": "static_snapshot",
   "generated_by": "github_actions",
   "is_github_actions": true,
-  "GITHUB_RUN_ID": "27386713210",
+  "validation_mode": "production",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": "27400108666",
   "GITHUB_WORKFLOW": "Longterm Update",
-  "run_id": "run_20260612003828650_0b99d4a3",
+  "run_id": "run_20260612065952169_5b648f9d",
+  "status_run_id": "run_20260612065952169_5b648f9d",
+  "active_run_id": "run_20260612065952169_5b648f9d",
+  "stale_diagnostic": false,
+  "generated_at": "2026-06-12T07:06:16.970Z",
+  "data_mode": "static_snapshot",
+  "source_run_id": "run_20260612065952169_5b648f9d",
+  "snapshot_context": {
+    "run_id": "run_20260612065952169_5b648f9d",
+    "generated_at": "2026-06-12T07:06:16.970Z",
+    "data_mode": "static_snapshot",
+    "source_run_id": "run_20260612065952169_5b648f9d"
+  },
   "source_key": "vessel_spec",
-  "title": "선박 제원 보강 요약",
-  "status": "NOT_ATTEMPTED",
+  "title": "Vessel specification summary",
+  "status": "ACTIVE",
   "source_layer": "auxiliary",
   "load_strategy": "lazy",
   "startup_safe": false,
   "core_blocking": false,
   "configured": true,
   "collector_enabled": true,
-  "collector_attempted": false,
-  "rows_collected": 0,
+  "collector_attempted": true,
+  "rows_collected": 1,
   "rows_normalized": 0,
   "rows_with_imo": 0,
   "rows_with_mmsi": 0,
@@ -27,27 +39,55 @@
   "rows_with_vessel_type": 0,
   "source_count": 1,
   "missing_env": [],
-  "skip_reasons": [
-    "not_registered_collector"
-  ],
-  "business_impact": "IMO, MMSI, GT, DWT, 선종, 국적 보강 가능성이 제한됩니다.",
-  "fix_hint": "Collector is registered in the latest code. Rerun Longterm Update with VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL to attempt vessel_spec collection.",
+  "skip_reasons": [],
+  "business_impact": "Vessel particulars such as IMO, MMSI, GT, DWT, flag, and vessel type may remain incomplete.",
+  "fix_hint": "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL.",
   "diagnostic_summary": {
-    "source_count": 0,
-    "status_counts": {},
-    "http_status_counts": {},
-    "rows_collected": 0,
+    "source_count": 1,
+    "status_counts": {
+      "success": 1
+    },
+    "http_status_counts": {
+      "200": 1
+    },
+    "rows_collected": 1,
     "rows_normalized": 0,
+    "rows_with_vessel_name": 0,
+    "rows_with_call_sign": 0,
+    "rows_with_port": 0,
+    "rows_with_pilot_time": 0,
+    "rows_with_pilot_station": 0,
     "rows_with_imo": 0,
     "rows_with_mmsi": 0,
     "rows_with_gt": 0,
     "rows_with_dwt": 0,
     "rows_with_flag": 0,
     "rows_with_vessel_type": 0,
-    "sample_sources": []
+    "time_only_rows": 0,
+    "invalid_time_rows": 0,
+    "sample_sources": [
+      {
+        "key": "vessel_spec",
+        "status": "success",
+        "http_status": 200,
+        "rows_collected": 1,
+        "rows_normalized": 0,
+        "skip_reason": null
+      }
+    ]
   },
+  "raw_sample_keys": [],
+  "sanitized_raw_samples": [],
+  "parser_blockers": [
+    "http_200_but_no_parser_samples",
+    "metadata_only_empty_item_or_wrong_schema"
+  ],
+  "utilization_note": "HTTP 200 returned rows, but no rows matched vessel specification aliases yet.",
   "detail_endpoint": "dashboard/api/source-collection-status.json",
-  "record_count": 0,
+  "recommendation": "Detailed source diagnostics are available in source-collection-status and should be loaded only on demand.",
+  "record_count": 1,
   "item_count": 0,
-  "recommendation": "선박 제원 소스는 보조 보강 계층으로 유지하고, 첫 화면 로딩은 차단하지 않습니다."
+  "http_status": 200,
+  "utilization_status": "FETCHED_NOT_NORMALIZED",
+  "parser_blocker_classification": "metadata_only_empty_item_or_wrong_schema"
 }

@@ -3605,6 +3605,145 @@ function summarizeAuxDiagnostics(diagnostics = []) {
   };
 }
 
+function collectAuxSampleKeys(diagnostics = []) {
+  return [...new Set((Array.isArray(diagnostics) ? diagnostics : [])
+    .flatMap(item => Array.isArray(item.raw_sample_keys) ? item.raw_sample_keys : []))]
+    .slice(0, 60);
+}
+
+function collectAuxSampleRows(diagnostics = []) {
+  return (Array.isArray(diagnostics) ? diagnostics : [])
+    .flatMap(item => Array.isArray(item.sanitized_raw_samples) ? item.sanitized_raw_samples : [])
+    .slice(0, 3);
+}
+
+function collectAuxParserBlockers(diagnostics = []) {
+  return [...new Set((Array.isArray(diagnostics) ? diagnostics : [])
+    .flatMap(item => Array.isArray(item.parser_blockers) ? item.parser_blockers : [])
+    .filter(Boolean))]
+    .slice(0, 20);
+}
+
+function inferAuxParserBlockers({ rowsCollected = 0, rowsNormalized = 0, diagnostics = [], summaryKey = "" } = {}) {
+  const explicit = collectAuxParserBlockers(diagnostics);
+  if (explicit.length) return explicit;
+  if (rowsCollected > 0 && rowsNormalized === 0) {
+    const hasSamples = collectAuxSampleKeys(diagnostics).length > 0 || collectAuxSampleRows(diagnostics).length > 0;
+    if (summaryKey === "vessel_spec") {
+      return hasSamples
+        ? ["parser_alias_missing_or_wrong_schema"]
+        : ["http_200_but_no_parser_samples", "metadata_only_empty_item_or_wrong_schema"];
+    }
+    return ["rows_collected_but_not_normalized"];
+  }
+  return [];
+}
+
+function buildAuxSummaryEnhancements({
+  summaryKey = "",
+  rowsCollected = 0,
+  rowsNormalized = 0,
+  diagnostics = [],
+  report = {},
+  matchingDiagnostics = {},
+  bootstrapKpis = {}
+} = {}) {
+  const rawSampleKeys = collectAuxSampleKeys(diagnostics);
+  const sanitizedRawSamples = collectAuxSampleRows(diagnostics);
+  const parserBlockers = inferAuxParserBlockers({ rowsCollected, rowsNormalized, diagnostics, summaryKey });
+  const base = {
+    raw_sample_keys: rawSampleKeys,
+    sanitized_raw_samples: sanitizedRawSamples,
+    parser_blockers: parserBlockers,
+    utilization_note: rowsCollected > 0 && rowsNormalized === 0
+      ? "Rows were fetched but not converted into usable normalized records."
+      : rowsNormalized > 0
+        ? "Rows were normalized and available for enrichment matching."
+        : ""
+  };
+
+  if (summaryKey === "pilotage") {
+    const pilotage = report.pilotage_enrichment || {};
+    const matchedVessels = Number(pilotage.matched_vessels || pilotage.applied_to_records || 0);
+    const signalCount = Number(bootstrapKpis.pilotage_detected_count || report.pilotage_detected_count || 0);
+    return {
+      ...base,
+      raw_pilot_rows: rowsCollected,
+      normalized_pilot_rows: rowsNormalized,
+      matched_vessels: matchedVessels,
+      pilotage_signal_count: signalCount,
+      matched_by_call_sign: Number(pilotage.matched_by_call_sign || 0),
+      matched_by_vessel_name: Number(pilotage.matched_by_name || 0),
+      matched_by_port_only: Number(pilotage.matched_by_port_only || 0),
+      weak_matches: Number(pilotage.weak_matches || 0),
+      unmatched_pilot_rows: Number(pilotage.unmatched_pilot_rows ?? Math.max(0, rowsNormalized - matchedVessels)),
+      match_blockers: [
+        ...parserBlockers,
+        ...(matchedVessels === 0 && rowsNormalized > 0 ? ["no_high_confidence_vessel_match"] : []),
+        ...(signalCount !== matchedVessels ? [`bootstrap_pilotage_detected_count=${signalCount}, event_matched_vessels=${matchedVessels}`] : [])
+      ],
+      count_reconciliation: {
+        bootstrap_pilotage_detected_count: signalCount,
+        pilotage_event_matched_vessels: matchedVessels,
+        explanation: signalCount === matchedVessels
+          ? "Bootstrap KPI and pilotage event matching agree."
+          : "Bootstrap KPI counts vessel_display pilotage signals; event matching counts high-confidence pilot_schedule_events matches."
+      }
+    };
+  }
+
+  if (summaryKey === "berth") {
+    const matchedVessels = Number(matchingDiagnostics.pnc_rows_matched || matchingDiagnostics.berth_rows_matched || 0);
+    const signalCount = Number(bootstrapKpis.berth_info_detected_count || report.berth_info_detected_count || matchedVessels || 0);
+    const sampleRows = collectAuxSampleRows(diagnostics);
+    return {
+      ...base,
+      raw_rows: rowsCollected,
+      normalized_rows: rowsNormalized,
+      matched_vessels: matchedVessels,
+      berth_signal_count: signalCount,
+      rows_with_terminal: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /terminal|터미널/i.test(key))).length,
+      rows_with_berth: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /berth|선석|부두/i.test(key))).length,
+      matched_by_call_sign: Number(matchingDiagnostics.pnc_matched_by_call_sign || matchingDiagnostics.berth_matched_by_call_sign || 0),
+      matched_by_vessel_name: Number(matchingDiagnostics.pnc_matched_by_name || matchingDiagnostics.berth_matched_by_name || 0),
+      unmatched_rows: Math.max(0, rowsNormalized - matchedVessels),
+      match_blockers: [
+        ...parserBlockers,
+        ...(rowsNormalized > 0 && matchedVessels === 0 ? ["normalized_berth_rows_not_matched_to_current_vessels"] : [])
+      ]
+    };
+  }
+
+  if (summaryKey === "vessel_spec") {
+    const httpStatus = (Array.isArray(diagnostics) ? diagnostics : []).find(item => item.http_status)?.http_status || null;
+    return {
+      ...base,
+      http_status: httpStatus,
+      utilization_status: rowsCollected > 0 && rowsNormalized === 0 ? "FETCHED_NOT_NORMALIZED" : rowsNormalized > 0 ? "NORMALIZED" : "NO_ROWS",
+      parser_blocker_classification: rowsCollected > 0 && rowsNormalized === 0
+        ? (rawSampleKeys.length ? "parser_alias_missing_or_wrong_schema" : "metadata_only_empty_item_or_wrong_schema")
+        : "",
+      utilization_note: rowsCollected > 0 && rowsNormalized === 0
+        ? "HTTP 200 returned rows, but no rows matched vessel specification aliases yet."
+        : base.utilization_note
+    };
+  }
+
+  if (["ais_info", "ais_dynamic"].includes(summaryKey)) {
+    const smokeLevel = rowsCollected > 0 && rowsCollected <= 10;
+    return {
+      ...base,
+      smoke_level: smokeLevel,
+      utilization_status: smokeLevel ? "SMOKE_LEVEL" : rowsNormalized > 0 ? "ACTIVE" : "LOW_UTILIZATION",
+      recommended_next_step: smokeLevel
+        ? "Enrich sales targets first, then detail eligible top 100; do not enrich all detected vessels in one run."
+        : "Continue using this source as auxiliary enrichment."
+    };
+  }
+
+  return base;
+}
+
 function buildAuxSourceSummaryPayload({
   sourceCollectionStatus = {},
   sourceKeys = [],
@@ -3612,7 +3751,9 @@ function buildAuxSourceSummaryPayload({
   dataMode = "live",
   report = {},
   title = "",
-  summaryKey = ""
+  summaryKey = "",
+  matchingDiagnostics = {},
+  bootstrapKpis = {}
 } = {}) {
   const allItems = Array.isArray(sourceCollectionStatus.items) ? sourceCollectionStatus.items : [];
   const keySet = new Set(sourceKeys);
@@ -3627,6 +3768,15 @@ function buildAuxSourceSummaryPayload({
   const attempted = items.some(item => item.collector_attempted === true || Number(item.rows_collected || 0) > 0);
   const configured = items.some(item => item.configured !== false && item.status !== "NOT_CONFIGURED") || rowsCollected > 0;
   const diag = summarizeAuxDiagnostics(diagnostics);
+  const enhancements = buildAuxSummaryEnhancements({
+    summaryKey,
+    rowsCollected,
+    rowsNormalized,
+    diagnostics,
+    report,
+    matchingDiagnostics,
+    bootstrapKpis
+  });
   return withRunOrigin({
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
@@ -3655,8 +3805,9 @@ function buildAuxSourceSummaryPayload({
     business_impact: items.find(item => item.business_impact)?.business_impact || "",
     fix_hint: items.find(item => item.fix_hint || item.exact_fix_instruction)?.fix_hint || items.find(item => item.exact_fix_instruction)?.exact_fix_instruction || "",
     diagnostic_summary: diag,
+    ...enhancements,
     detail_endpoint: "dashboard/api/source-collection-status.json",
-    recommendation: "상세 소스 진단은 데이터 품질·시스템 진단에서 필요할 때만 확인합니다.",
+    recommendation: "Detailed source diagnostics are available in source-collection-status and should be loaded only on demand.",
     record_count: rowsCollected,
     item_count: 0
   }, buildRunOrigin({
@@ -8188,8 +8339,10 @@ function collectTableRowCounts(report = {}) {
     .sort((a, b) => b.row_count - a.row_count || a.table_name.localeCompare(b.table_name));
 }
 
-function buildStorageEfficiencyReport({ report = {}, generatedAt = new Date().toISOString(), dataMode = "live" } = {}) {
+function buildStorageEfficiencyReport({ report = {}, generatedAt = new Date().toISOString(), dataMode = "live", referenceGeneratedAt = generatedAt, referenceRunId = null } = {}) {
   const rowCounts = collectTableRowCounts(report);
+  const freshnessMatches = !referenceGeneratedAt || String(referenceGeneratedAt) === String(generatedAt);
+  const runMatches = !referenceRunId || !report.run_id || String(referenceRunId) === String(report.run_id);
   const policy = [
     { table_group: "latest_successful_run", recommendation: "항상 보존", reason: "운영 화면의 마지막 정상 스냅샷 보호" },
     { table_group: "active_dataset_pointer", recommendation: "항상 보존", reason: "현재 라이브 데이터셋 포인터" },
@@ -8207,6 +8360,11 @@ function buildStorageEfficiencyReport({ report = {}, generatedAt = new Date().to
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
     data_mode: contractDataMode(dataMode, report),
+    run_id: report.run_id || null,
+    reference_generated_at: referenceGeneratedAt || null,
+    reference_run_id: referenceRunId || null,
+    freshness_status: freshnessMatches && runMatches ? "current" : "stale",
+    stale_warning: freshnessMatches && runMatches ? null : "storage-efficiency-report generated_at/run_id differs from the current lightweight dashboard snapshot.",
     record_count: rowCounts.length,
     item_count: rowCounts.length,
     source_table: "supabase_table_counts,status",
@@ -17861,7 +18019,13 @@ try {
     sourceCollectionStatus: sourceCollectionStatusPayload,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "live",
-    report
+    report,
+    matchingDiagnostics,
+    bootstrapKpis: {
+      ...(dashboardSummary.kpis || {}),
+      pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
+    }
   };
   const auxSourceSummaryPayloads = {
     "dashboard/api/aux/pilotage-summary.json": buildAuxSourceSummaryPayload({
@@ -18209,7 +18373,9 @@ try {
   const storageEfficiencyReportPayload = buildStorageEfficiencyReport({
     report,
     generatedAt: completedAt,
-    dataMode: report.data_mode
+    dataMode: report.data_mode,
+    referenceGeneratedAt: completedAt,
+    referenceRunId: report.run_id || runId
   });
   const allCollectedVesselsSummaryPayload = buildListSummaryPayload({
     items: allCollectedVessels,

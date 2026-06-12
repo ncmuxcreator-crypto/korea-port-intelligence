@@ -1,14 +1,26 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T00:45:11.678Z",
-  "data_mode": "static_snapshot",
   "generated_by": "github_actions",
   "is_github_actions": true,
-  "GITHUB_RUN_ID": "27386713210",
+  "validation_mode": "production",
+  "serving_mode": "static_json",
+  "GITHUB_RUN_ID": "27400108666",
   "GITHUB_WORKFLOW": "Longterm Update",
-  "run_id": "run_20260612003828650_0b99d4a3",
+  "run_id": "run_20260612065952169_5b648f9d",
+  "status_run_id": "run_20260612065952169_5b648f9d",
+  "active_run_id": "run_20260612065952169_5b648f9d",
+  "stale_diagnostic": false,
+  "generated_at": "2026-06-12T07:06:16.970Z",
+  "data_mode": "static_snapshot",
+  "source_run_id": "run_20260612065952169_5b648f9d",
+  "snapshot_context": {
+    "run_id": "run_20260612065952169_5b648f9d",
+    "generated_at": "2026-06-12T07:06:16.970Z",
+    "data_mode": "static_snapshot",
+    "source_run_id": "run_20260612065952169_5b648f9d"
+  },
   "source_key": "source_csv",
-  "title": "Source CSV 요약",
+  "title": "Source CSV summary",
   "status": "SOURCE_TOO_LARGE",
   "source_layer": "auxiliary",
   "load_strategy": "lazy",
@@ -51,8 +63,7 @@
     "by_normalized_vessel_name_call_sign": 0,
     "by_normalized_vessel_name_gt_vessel_type": 0
   },
-  "detail_endpoint": "dashboard/api/source-collection-status.json",
+  "recommendation": "Create a smaller verified vessel reference CSV for enrichment.",
   "record_count": 0,
-  "item_count": 0,
-  "recommendation": "Create a smaller verified vessel reference CSV for enrichment."
+  "item_count": 0
 }
