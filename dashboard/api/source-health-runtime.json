@@ -4,22 +4,22 @@
   "is_github_actions": true,
   "validation_mode": "production",
   "serving_mode": "static_json",
-  "GITHUB_RUN_ID": "27386152307",
+  "GITHUB_RUN_ID": "27386713210",
   "GITHUB_WORKFLOW": "Longterm Update",
-  "run_id": "run_20260612002328542_08f0451a",
+  "run_id": "run_20260612003828650_0b99d4a3",
   "version": "17.7.0",
-  "status_run_id": "run_20260612002328542_08f0451a",
-  "generated_at": "2026-06-12T00:30:53.471Z",
+  "status_run_id": "run_20260612003828650_0b99d4a3",
+  "generated_at": "2026-06-12T00:45:11.678Z",
   "base_dataset_empty": false,
   "derived_from_empty_dataset": false,
-  "source_vessel_dataset_count": 907,
+  "source_vessel_dataset_count": 917,
   "base_dataset_empty_reasons": [],
   "ok": true,
   "update_mode": "scheduled",
   "process_env_CI": "true",
   "is_local_build": false,
   "collection_mode": "collection_result",
-  "status_generated_at": "2026-06-12T00:30:53.471Z",
+  "status_generated_at": "2026-06-12T00:45:11.678Z",
   "stale_source_health": false,
   "secrets_present": {
     "PORT_OPERATION_SERVICE_KEY": true,
@@ -28,7 +28,7 @@
     "SUPABASE_SERVICE_ROLE_KEY": true
   },
   "runtime_config_audit": {
-    "generated_at": "2026-06-12T00:23:28.546Z",
+    "generated_at": "2026-06-12T00:38:28.655Z",
     "expected_env_names": [
       "PORT_OPERATION_SERVICE_KEY",
       "PORT_OPERATION_API_URL",
@@ -80,7 +80,7 @@
       "UPDATE_MODE": "scheduled",
       "CI": "true",
       "GITHUB_ACTIONS": "true",
-      "GITHUB_RUN_ID": "27386152307",
+      "GITHUB_RUN_ID": "27386713210",
       "GITHUB_WORKFLOW": "Longterm Update"
     },
     "is_github_actions": true,
@@ -689,11 +689,11 @@
     "is_github_actions": true,
     "validation_mode": "production",
     "serving_mode": "static_json",
-    "GITHUB_RUN_ID": "27386152307",
+    "GITHUB_RUN_ID": "27386713210",
     "GITHUB_WORKFLOW": "Longterm Update",
-    "run_id": "run_20260612002328542_08f0451a",
-    "generated_at": "2026-06-12T00:30:53.471Z",
-    "status_run_id": "run_20260612002328542_08f0451a",
+    "run_id": "run_20260612003828650_0b99d4a3",
+    "generated_at": "2026-06-12T00:45:11.678Z",
+    "status_run_id": "run_20260612003828650_0b99d4a3",
     "data_mode": "static_snapshot",
     "record_count": 13,
     "item_count": 13,
@@ -725,7 +725,7 @@
     "rows_collected_by_source": {
       "source_csv": 0,
       "vessel_spec": 0,
-      "pilot_sources": 322,
+      "pilot_sources": 325,
       "berth_sources": 33,
       "mof_ais_dynamic": 10,
       "mof_ais_info": 10,
@@ -735,7 +735,7 @@
       "ulsan_cargo_plan": 0,
       "ulsan_berth_operation": 0,
       "ulsan_terminal_process": 0,
-      "port_operation": 6044
+      "port_operation": 6116
     },
     "items": [
       {
@@ -849,8 +849,8 @@
         "skip_reason": null,
         "exact_fix_instruction": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
         "fix_hint": "Set PILOT_SOURCE_URLS to one or more allowed pilot schedule URLs.",
-        "rows_collected": 322,
-        "rows_normalized": 50,
+        "rows_collected": 325,
+        "rows_normalized": 52,
         "diagnostics_count": 6,
         "diagnostics": [
           {
@@ -883,7 +883,7 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 185,
+            "rows_collected": 186,
             "rows_normalized": 0,
             "skip_reason": null,
             "error_message": null,
@@ -919,8 +919,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 55,
-            "rows_normalized": 50,
+            "rows_collected": 57,
+            "rows_normalized": 52,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1495,8 +1495,8 @@
         "skip_reason": null,
         "exact_fix_instruction": "Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint.",
         "fix_hint": "Set PORT_OPERATION_SERVICE_KEY or an accepted fallback key. PORT_OPERATION_API_URL can use the default endpoint.",
-        "rows_collected": 6044,
-        "rows_normalized": 6044,
+        "rows_collected": 6116,
+        "rows_normalized": 6116,
         "diagnostics_count": 24,
         "diagnostics": [
           {
@@ -1505,8 +1505,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 1020,
-            "rows_normalized": 1020,
+            "rows_collected": 1034,
+            "rows_normalized": 1034,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1517,8 +1517,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 1152,
-            "rows_normalized": 1152,
+            "rows_collected": 1168,
+            "rows_normalized": 1168,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1529,8 +1529,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 449,
-            "rows_normalized": 449,
+            "rows_collected": 459,
+            "rows_normalized": 459,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1541,8 +1541,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 470,
-            "rows_normalized": 470,
+            "rows_collected": 480,
+            "rows_normalized": 480,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1601,8 +1601,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 298,
-            "rows_normalized": 298,
+            "rows_collected": 299,
+            "rows_normalized": 299,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1613,8 +1613,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 350,
-            "rows_normalized": 350,
+            "rows_collected": 352,
+            "rows_normalized": 352,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1625,8 +1625,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 121,
-            "rows_normalized": 121,
+            "rows_collected": 123,
+            "rows_normalized": 123,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1637,8 +1637,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 128,
-            "rows_normalized": 128,
+            "rows_collected": 130,
+            "rows_normalized": 130,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1649,8 +1649,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 311,
-            "rows_normalized": 311,
+            "rows_collected": 314,
+            "rows_normalized": 314,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1661,8 +1661,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 322,
-            "rows_normalized": 322,
+            "rows_collected": 326,
+            "rows_normalized": 326,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1673,8 +1673,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 220,
-            "rows_normalized": 220,
+            "rows_collected": 224,
+            "rows_normalized": 224,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1685,8 +1685,8 @@
             "attempted": true,
             "skipped": false,
             "success": true,
-            "rows_collected": 254,
-            "rows_normalized": 254,
+            "rows_collected": 258,
+            "rows_normalized": 258,
             "skip_reason": null,
             "error_message": null,
             "http_status": 200
@@ -1791,11 +1791,11 @@
         "business_impact": "Arrival/departure and port-call baseline data may not collect."
       }
     ],
-    "active_run_id": "run_20260612002328542_08f0451a",
+    "active_run_id": "run_20260612003828650_0b99d4a3",
     "stale_diagnostic": false,
     "placeholder": false
   },
-  "active_run_id": "run_20260612002328542_08f0451a",
+  "active_run_id": "run_20260612003828650_0b99d4a3",
   "stale_diagnostic": false,
   "placeholder": false,
   "item_count": 0
