@@ -6590,6 +6590,113 @@ function vesselDisplayOperatorSource(record = {}) {
   return "";
 }
 
+function lineageText(value) {
+  return vesselDisplayHasText(value) ? String(value).normalize("NFKC").trim() : "";
+}
+
+function lineageSourceBlob(record = {}) {
+  return [
+    ...displaySources(record),
+    ...(Array.isArray(record.source_names) ? record.source_names : []),
+    ...(Array.isArray(record.data_sources) ? record.data_sources : []),
+    ...(Array.isArray(record.enrichment_sources) ? record.enrichment_sources : []),
+    record.source_label,
+    record.data_source_used,
+    record.source,
+    record.source_name,
+    record.source_origin,
+    record.source_profile,
+    record.source_mode,
+    record.identity_source,
+    record.operator_source,
+    record.enrichment_source,
+    record.enrichment_source_type,
+    record.berth_source,
+    record.berth_data_source,
+    record.pilotage_enrichment_source,
+    record.pilot_source_origin,
+    record.vessel_display?.data_source,
+    record.vessel_display?.identity_source,
+    record.vessel_display?.operator_source,
+    record.vessel_display?.berth_source,
+    ...(Array.isArray(record.vessel_display?.data_sources) ? record.vessel_display.data_sources : []),
+    ...(Array.isArray(record.vessel_display?.enrichment_sources) ? record.vessel_display.enrichment_sources : [])
+  ].map(lineageText).filter(Boolean).join(" ").toLowerCase();
+}
+
+function normalizeLineageSource(value = "") {
+  const text = String(value || "").trim();
+  const lower = text.toLowerCase();
+  if (!text) return "unknown";
+  if (/pnc|pnit|pusan new port|busan new port/.test(lower)) return "PNC";
+  if (/pilot/.test(lower) || /도선/.test(text)) return "pilot_sources";
+  if (/vessel[_ -]?spec|specification/.test(lower)) return "vessel_spec";
+  if (/source[_ -]?csv|csv/.test(lower)) return "source_csv";
+  if (/mof[_ -]?ais[_ -]?info|ais_info/.test(lower)) return "mof_ais_info";
+  if (/mof[_ -]?ais[_ -]?dynamic|ais_dynamic/.test(lower)) return "mof_ais_dynamic";
+  if (/vessel[_ -]?master|master_db/.test(lower)) return "vessel_master";
+  if (/berth|terminal|pnc_berth/.test(lower)) return "berth_sources";
+  if (/port[_ -]?operation|port call|port_operation|merged port operation/.test(lower)) return "port_operation";
+  if (/opportunity/.test(lower)) return "opportunity_engine";
+  return text;
+}
+
+function inferTonnageLineage(record = {}, field = "gt", tonnageSummary = {}) {
+  const source = lineageText(
+    field === "dwt"
+      ? firstDisplayText(record.dwt_source, tonnageSummary.dwt_source, record.vessel_display?.tonnage_summary?.dwt_source)
+      : firstDisplayText(record.gt_source, tonnageSummary.gt_source, record.vessel_display?.tonnage_summary?.gt_source)
+  );
+  if (!source || source === "missing") return "unknown";
+  if (source === field || source === "reason_summary") return source === "reason_summary" ? "reason_summary" : "port_operation";
+  return normalizeLineageSource(source);
+}
+
+function inferOperatorDisplayLineage(record = {}) {
+  const rawSource = firstDisplayText(record.operator_source, record.vessel_display?.operator_source);
+  if (/shipping_company|company|owner_operator|technical_manager|manager|owner/i.test(rawSource)) return "company_fallback";
+  const source = normalizeLineageSource(rawSource);
+  if (source !== "unknown" && source !== "operator" && source !== "vessel_display") return source;
+  if (vesselDisplayHasText(record.operator)) return source === "vessel_display" ? "operator" : source;
+  if (
+    vesselDisplayHasText(record.shipping_company) ||
+    vesselDisplayHasText(record.company) ||
+    vesselDisplayHasText(record.company_name) ||
+    vesselDisplayHasText(record.owner_operator) ||
+    vesselDisplayHasText(record.technical_manager) ||
+    vesselDisplayHasText(record.manager) ||
+    vesselDisplayHasText(record.owner) ||
+    vesselDisplayHasText(record.vessel_display?.company) ||
+    vesselDisplayHasText(record.vessel_display?.manager) ||
+    vesselDisplayHasText(record.vessel_display?.owner)
+  ) return "company_fallback";
+  return "unknown";
+}
+
+function buildVesselDataLineage(record = {}, context = {}) {
+  const existing = record.vessel_display?.data_lineage && typeof record.vessel_display.data_lineage === "object"
+    ? record.vessel_display.data_lineage
+    : {};
+  const sourceBlob = lineageSourceBlob(record);
+  const hasPortOperation = /port[_ -]?operation|merged port operation|port call|port_operation/.test(sourceBlob);
+  const portOperationSource = hasPortOperation ? "port_operation" : normalizeLineageSource(firstDisplayText(record.data_source_used, record.source, record.vessel_display?.data_source));
+  const pilotageSignal = context.pilotageSignal || buildPilotageSignal(record);
+  const berthSignal = context.berthSignal || buildBerthSignal(record);
+  const tonnageSummary = context.tonnageSummary || record.tonnage_summary || record.vessel_display?.tonnage_summary || {};
+  const opportunityScore = context.opportunityScore ?? nullableDisplayNumber(record.opportunity_score, record.sales_priority_score, record.commercial_value_score, record.vessel_display?.opportunity_score);
+  return {
+    vessel_name: existing.vessel_name || (vesselDisplayHasText(record.vessel_name || record.name || record.ship_name || record.vessel_display?.vessel_name) ? portOperationSource : "unknown"),
+    call_sign: existing.call_sign || (vesselDisplayHasText(record.call_sign || record.callsign || record.clsgn || record.vessel_display?.call_sign) ? portOperationSource : "unknown"),
+    gt: existing.gt || inferTonnageLineage(record, "gt", tonnageSummary),
+    dwt: existing.dwt || inferTonnageLineage(record, "dwt", tonnageSummary),
+    operator_display: existing.operator_display || inferOperatorDisplayLineage(record),
+    current_port: existing.current_port || (vesselDisplayHasText(context.currentPort || record.current_port || record.port_name || record.port || record.vessel_display?.current_port) ? portOperationSource : "unknown"),
+    berth: existing.berth || (berthSignal?.source ? normalizeLineageSource(berthSignal.source) : vesselDisplayHasText(record.berth || record.berth_name || record.vessel_display?.berth) ? portOperationSource : "unknown"),
+    pilotage_signal: existing.pilotage_signal || (pilotageSignal?.has_pilotage ? "pilot_sources" : "unknown"),
+    opportunity_score: existing.opportunity_score || (opportunityScore !== null ? "opportunity_engine" : "unknown")
+  };
+}
+
 function vesselDisplayReasonSummary(record = {}) {
   return firstDisplayText(
     record.reason_summary,
@@ -7522,6 +7629,13 @@ function buildVesselDisplay(record = {}) {
     korean_label: businessLabelForCode(record.primary_category_code || record.action_type || record.category_code) || "",
     reason_summary: reasonSummary,
     recommended_action: recommendedAction,
+    data_lineage: buildVesselDataLineage(record, {
+      pilotageSignal,
+      berthSignal,
+      tonnageSummary,
+      currentPort,
+      opportunityScore
+    }),
     data_sources: [...new Set([...displaySources(record), ...(berthSignal.has_berth_info && berthSignal.source ? [berthSignal.source] : []), ...vesselDisplayArray(record, ["vessel_display.data_sources"])])],
     enrichment_sources: [...new Set([
       ...vesselDisplayArray(record, ["enrichment_sources", "vessel_display.enrichment_sources"]),
