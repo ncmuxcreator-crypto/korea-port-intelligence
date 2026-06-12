@@ -1,0 +1,653 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-12T07:06:16.970Z",
+  "data_mode": "static_snapshot",
+  "run_id": "run_20260612065952169_5b648f9d",
+  "record_count": 11,
+  "item_count": 11,
+  "summary": {
+    "active_sources": 6,
+    "blocked_sources": 4,
+    "high_trust_sources": 8,
+    "sources_with_match_keys": 11,
+    "total_enrichable_fields": 58,
+    "source_csv_is_auxiliary": true,
+    "weak_name_only_matching_allowed_for_auto_apply": false
+  },
+  "items": [
+    {
+      "source_key": "port_operation",
+      "source_name": "Port Operation",
+      "available_fields": [
+        "vessel_name",
+        "call_sign",
+        "current_port",
+        "eta",
+        "etb",
+        "ata",
+        "atb",
+        "etd",
+        "atd",
+        "berth",
+        "vessel_type",
+        "gt",
+        "port"
+      ],
+      "enrichable_fields": [
+        "vessel_name",
+        "call_sign",
+        "current_port",
+        "current_port_korean",
+        "berth",
+        "eta",
+        "etb",
+        "ata",
+        "atb",
+        "etd",
+        "atd",
+        "stay_hours",
+        "vessel_type",
+        "gt"
+      ],
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "normalized_vessel_name",
+        "port",
+        "eta",
+        "ata",
+        "port_call_id"
+      ],
+      "trust_level": "HIGH",
+      "update_policy": "TIER_0_CORE_EVERY_UPDATE",
+      "conflict_policy": "Apply missing operational timing and port fields. Review conflicts with verified identity or manually confirmed values.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 7343,
+        "rows_normalized": 7343,
+        "rows_matched_to_vessels": 7343,
+        "fields_contributed": [
+          "vessel_name",
+          "port",
+          "eta",
+          "ata",
+          "etd",
+          "atd",
+          "berth"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 100,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "source_csv",
+      "source_name": "Verified Vessel Reference CSV",
+      "available_fields": [
+        "vessel_name",
+        "normalized_vessel_name",
+        "imo",
+        "mmsi",
+        "call_sign",
+        "operator",
+        "owner",
+        "manager",
+        "vessel_type",
+        "gt",
+        "dwt",
+        "flag",
+        "verified"
+      ],
+      "enrichable_fields": [
+        "imo",
+        "mmsi",
+        "call_sign",
+        "operator_display",
+        "owner",
+        "manager",
+        "vessel_type",
+        "gt",
+        "dwt",
+        "flag",
+        "fleet_group"
+      ],
+      "match_keys": [
+        "IMO",
+        "MMSI",
+        "call_sign",
+        "vessel_name",
+        "normalized_vessel_name",
+        "normalized_vessel_name+call_sign",
+        "normalized_vessel_name+gt+vessel_type"
+      ],
+      "trust_level": "HIGH_IF_VERIFIED",
+      "update_policy": "TIER_2_AUXILIARY_CACHE_USE_LAST_SUCCESS_ON_FAILURE",
+      "conflict_policy": "Verified rows can fill missing values. Do not overwrite manual or higher-confidence identifiers; send conflicts to review.",
+      "current_utilization": {
+        "status": "SOURCE_TOO_LARGE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 0,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "fields_contributed": [],
+        "freshness_minutes": 0,
+        "utilization_score": 30,
+        "quality_label": "FAILED",
+        "source_layer": "auxiliary",
+        "core_blocking": false,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Create a smaller verified vessel reference CSV for enrichment."
+      },
+      "blocker_reason": "API response too large: 72478261 bytes"
+    },
+    {
+      "source_key": "pilot_sources",
+      "source_name": "Pilotage Sources",
+      "available_fields": [
+        "vessel_name",
+        "call_sign",
+        "port",
+        "pilot_time",
+        "pilot_station",
+        "pilot_direction"
+      ],
+      "enrichable_fields": [
+        "pilotage_signal",
+        "pilotage_time",
+        "pilotage_time_text",
+        "pilot_station",
+        "pilotage_direction",
+        "arrival_departure_timing_signal"
+      ],
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "normalized_vessel_name",
+        "port",
+        "pilot_time",
+        "time_window"
+      ],
+      "trust_level": "HIGH_FOR_TIMING",
+      "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
+      "conflict_policy": "Auto-apply exact call sign or high-confidence name+port+time matches. Send weak name-only matches to review.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 385,
+        "rows_normalized": 72,
+        "rows_matched_to_vessels": 8,
+        "fields_contributed": [
+          "vessel_name",
+          "call_sign",
+          "port",
+          "pilot_time",
+          "pilot_direction"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 92,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 1,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "berth_sources",
+      "source_name": "Berth Sources",
+      "available_fields": [
+        "vessel_name",
+        "call_sign",
+        "port",
+        "berth",
+        "terminal",
+        "etb",
+        "atb",
+        "operation_status"
+      ],
+      "enrichable_fields": [
+        "berth_signal",
+        "berth",
+        "terminal",
+        "etb",
+        "atb",
+        "operation_status",
+        "berth_timing_signal"
+      ],
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "normalized_vessel_name",
+        "port",
+        "berth",
+        "time_window"
+      ],
+      "trust_level": "MEDIUM_HIGH",
+      "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
+      "conflict_policy": "Apply missing berth/terminal fields on high-confidence match. Review conflicts with newer port operation values.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 30,
+        "rows_normalized": 30,
+        "rows_matched_to_vessels": 19,
+        "fields_contributed": [
+          "vessel_name",
+          "berth"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 84,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "PNC_SOURCE_URLS",
+      "source_name": "PNC Berth / Terminal Sources",
+      "available_fields": [
+        "vessel_name",
+        "call_sign",
+        "port",
+        "berth",
+        "terminal",
+        "operator",
+        "route",
+        "operation_status"
+      ],
+      "enrichable_fields": [
+        "berth",
+        "terminal",
+        "operator_display",
+        "route",
+        "operation_status",
+        "berth_signal"
+      ],
+      "match_keys": [
+        "call_sign",
+        "vessel_name",
+        "normalized_vessel_name",
+        "port",
+        "time_window",
+        "berth"
+      ],
+      "trust_level": "MEDIUM_HIGH",
+      "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_CACHE",
+      "conflict_policy": "Prefer for berth and terminal. Use operator values as fallback only when current operator_display is missing.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 30,
+        "rows_normalized": 30,
+        "rows_matched_to_vessels": 19,
+        "fields_contributed": [
+          "vessel_name",
+          "berth"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 84,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "mof_ais_info",
+      "source_name": "MOF AIS Info",
+      "available_fields": [
+        "imo",
+        "mmsi",
+        "call_sign",
+        "vessel_name",
+        "vessel_type",
+        "flag",
+        "gt",
+        "dwt"
+      ],
+      "enrichable_fields": [
+        "imo",
+        "mmsi",
+        "call_sign",
+        "vessel_name",
+        "vessel_type",
+        "flag",
+        "gt",
+        "dwt"
+      ],
+      "match_keys": [
+        "MMSI",
+        "IMO",
+        "call_sign",
+        "vessel_name"
+      ],
+      "trust_level": "HIGH_FOR_IDENTITY",
+      "update_policy": "TIER_1_HIGH_VALUE_TARGETED_ENRICHMENT",
+      "conflict_policy": "Fill missing identifiers on exact key match. Do not overwrite existing non-empty identifiers unless verified confidence is higher.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "fields_contributed": [
+          "imo",
+          "mmsi",
+          "call_sign",
+          "vessel_name",
+          "vessel_type"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 84,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "mof_ais_dynamic",
+      "source_name": "MOF AIS Dynamic",
+      "available_fields": [
+        "mmsi",
+        "lat",
+        "lon",
+        "speed",
+        "course",
+        "last_seen_at",
+        "destination"
+      ],
+      "enrichable_fields": [
+        "last_seen_at",
+        "lat",
+        "lon",
+        "speed",
+        "course",
+        "destination",
+        "anchorage_signal",
+        "slow_steaming_signal"
+      ],
+      "match_keys": [
+        "MMSI",
+        "call_sign",
+        "vessel_name+time_window"
+      ],
+      "trust_level": "MEDIUM_HIGH_FOR_POSITION",
+      "update_policy": "TIER_2_TARGETED_SALES_TARGETS_FIRST",
+      "conflict_policy": "Use as fresh movement signal. Do not override port operation berth/timing without stronger timestamp evidence.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "fields_contributed": [
+          "mmsi",
+          "lat",
+          "lon",
+          "speed",
+          "course",
+          "last_seen_at"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 84,
+        "quality_label": "HIGH",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "No action required."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "mof_ais_stat",
+      "source_name": "MOF AIS Statistics",
+      "available_fields": [
+        "mmsi",
+        "port",
+        "visit_count",
+        "dwell_time",
+        "route_history",
+        "movement_statistics"
+      ],
+      "enrichable_fields": [
+        "repeat_caller_signal",
+        "korea_presence_score",
+        "dwell_history",
+        "route_signal",
+        "commercial_frequency_signal"
+      ],
+      "match_keys": [
+        "MMSI",
+        "IMO",
+        "port",
+        "vessel_name"
+      ],
+      "trust_level": "MEDIUM",
+      "update_policy": "TIER_2_MEDIUM_FREQUENCY_CACHE",
+      "conflict_policy": "Use for aggregate behavior and repeat-caller signals. Do not overwrite vessel identity fields from statistics alone.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 10,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "fields_contributed": [],
+        "freshness_minutes": null,
+        "utilization_score": 0,
+        "quality_label": "LOW",
+        "source_layer": "core",
+        "core_blocking": true,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY."
+      },
+      "blocker_reason": ""
+    },
+    {
+      "source_key": "vessel_spec",
+      "source_name": "Vessel Specification",
+      "available_fields": [
+        "imo",
+        "mmsi",
+        "call_sign",
+        "vessel_name",
+        "vessel_type",
+        "gt",
+        "dwt",
+        "flag",
+        "loa",
+        "beam"
+      ],
+      "enrichable_fields": [
+        "imo",
+        "mmsi",
+        "call_sign",
+        "vessel_type",
+        "gt",
+        "dwt",
+        "flag",
+        "loa",
+        "beam",
+        "tonnage_summary"
+      ],
+      "match_keys": [
+        "IMO",
+        "MMSI",
+        "call_sign",
+        "normalized_vessel_name+gt+vessel_type"
+      ],
+      "trust_level": "HIGH_FOR_SPEC",
+      "update_policy": "TIER_2_AUXILIARY_TARGETED_CACHE",
+      "conflict_policy": "Prefer for vessel specification when parser output is normalized. Send inconsistent GT/DWT/identity values to review.",
+      "current_utilization": {
+        "status": "ACTIVE",
+        "configured": true,
+        "attempted": true,
+        "collector_enabled": true,
+        "collector_attempted": true,
+        "rows_collected": 1,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "fields_contributed": [],
+        "freshness_minutes": 0,
+        "utilization_score": 45,
+        "quality_label": "LOW",
+        "source_layer": "auxiliary",
+        "core_blocking": false,
+        "missing_env": [],
+        "present_env_count": 2,
+        "recommended_fix": "Add/adjust vessel_spec parser aliases using sanitized raw sample keys."
+      },
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+    },
+    {
+      "source_key": "VTS",
+      "source_name": "VTS",
+      "available_fields": [
+        "mmsi",
+        "call_sign",
+        "vessel_name",
+        "lat",
+        "lon",
+        "speed",
+        "course",
+        "area",
+        "observed_at"
+      ],
+      "enrichable_fields": [
+        "last_seen_at",
+        "anchorage",
+        "anchorage_signal",
+        "waiting_hours",
+        "slow_steaming_hours",
+        "congestion_signal"
+      ],
+      "match_keys": [
+        "MMSI",
+        "call_sign",
+        "vessel_name",
+        "lat_lon_time_window",
+        "port_area"
+      ],
+      "trust_level": "MEDIUM",
+      "update_policy": "TIER_2_OPTIONAL_CACHE_WHEN_CONFIGURED",
+      "conflict_policy": "Use for movement and waiting signals only. Review identity enrichment unless MMSI/call_sign is exact.",
+      "current_utilization": {
+        "status": "NOT_CONFIGURED",
+        "configured": false,
+        "attempted": false,
+        "collector_enabled": false,
+        "collector_attempted": false,
+        "rows_collected": 0,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "fields_contributed": [],
+        "freshness_minutes": null,
+        "utilization_score": 0,
+        "quality_label": "LOW",
+        "source_layer": "auxiliary",
+        "core_blocking": false,
+        "missing_env": [],
+        "present_env_count": 0,
+        "recommended_fix": ""
+      },
+      "blocker_reason": "not_configured_or_not_collected"
+    },
+    {
+      "source_key": "port_facility",
+      "source_name": "Port Facility",
+      "available_fields": [
+        "port_code",
+        "port_name",
+        "berth",
+        "terminal",
+        "facility_name",
+        "cargo_type",
+        "capacity"
+      ],
+      "enrichable_fields": [
+        "port_facility_context",
+        "berth_context",
+        "terminal_context",
+        "cargo_context",
+        "port_capacity_signal"
+      ],
+      "match_keys": [
+        "port_code",
+        "port_name",
+        "berth",
+        "terminal",
+        "facility_name"
+      ],
+      "trust_level": "MEDIUM",
+      "update_policy": "TIER_3_LOW_FREQUENCY_REFERENCE_CACHE",
+      "conflict_policy": "Use as reference context for port/berth labels. Do not overwrite vessel-level operational fields.",
+      "current_utilization": {
+        "status": "NOT_CONFIGURED",
+        "configured": false,
+        "attempted": false,
+        "collector_enabled": false,
+        "collector_attempted": false,
+        "rows_collected": 0,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "fields_contributed": [],
+        "freshness_minutes": null,
+        "utilization_score": 0,
+        "quality_label": "LOW",
+        "source_layer": "auxiliary",
+        "core_blocking": false,
+        "missing_env": [],
+        "present_env_count": 0,
+        "recommended_fix": ""
+      },
+      "blocker_reason": "not_configured_or_not_collected"
+    }
+  ]
+}

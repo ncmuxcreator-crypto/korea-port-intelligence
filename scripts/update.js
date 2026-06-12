@@ -26,6 +26,7 @@ import {
   writeAuxiliarySourceCacheStatus
 } from "./lib/auxiliary-source-cache.js";
 import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
+import { buildSourceEnrichmentMatrixPayload } from "./lib/source-enrichment-matrix.js";
 import { buildSourceSchedulePayload } from "./lib/source-schedule.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
@@ -18398,6 +18399,13 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     referenceTime: completedAt
   }), finalRunOrigin);
+  const sourceEnrichmentMatrixPayload = withRunOrigin(buildSourceEnrichmentMatrixPayload({
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceQualityScore: sourceQualityScorePayload,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    runId: report.run_id || finalRunOrigin.run_id || null
+  }), finalRunOrigin);
   const sourceDataEnrichmentRecords = [
     ...allCollectedVessels,
     ...vessels,
@@ -19158,6 +19166,7 @@ try {
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
+  writeApiJson("dashboard/api/enrichment/source-capability-matrix.json", sourceEnrichmentMatrixPayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
   writeApiJson("dashboard/api/enrichment/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
   writeApiJson("dashboard/api/enrichment/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);
