@@ -23,7 +23,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|enrichment-utilization|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|enrichment-utilization|storage-efficiency-report|db-cleanup-plan|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -94,6 +94,7 @@ const IMPORTANT_ENDPOINTS = [
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
   ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
+  ["storage.cleanupPlan", "dashboard/api/db-cleanup-plan.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
