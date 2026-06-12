@@ -3545,9 +3545,121 @@ function rowCountFromPayload(payload) {
   return 0;
 }
 
+function auxStatusRank(status = "") {
+  const key = String(status || "").toUpperCase();
+  const rank = {
+    ACTIVE: 1,
+    PARTIAL: 2,
+    SOURCE_TOO_LARGE: 3,
+    NO_ROWS: 4,
+    SKIPPED: 5,
+    FETCH_FAILED: 6,
+    PARSE_FAILED: 7,
+    NOT_CONFIGURED: 8
+  };
+  return rank[key] || 9;
+}
+
+function summarizeAuxDiagnostics(diagnostics = []) {
+  const rows = Array.isArray(diagnostics) ? diagnostics : [];
+  const status_counts = rows.reduce((acc, item) => {
+    const status = String(item.status || item.skip_reason || "unknown");
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+  const http_status_counts = rows.reduce((acc, item) => {
+    const status = item.http_status === undefined || item.http_status === null ? "" : String(item.http_status);
+    if (!status) return acc;
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+  const sumField = key => rows.reduce((sum, item) => sum + Number(item?.[key] || 0), 0);
+  return {
+    source_count: rows.length,
+    status_counts,
+    http_status_counts,
+    rows_collected: sumField("rows_collected"),
+    rows_normalized: sumField("rows_normalized"),
+    rows_with_vessel_name: sumField("pilot_rows_with_vessel_name"),
+    rows_with_call_sign: sumField("pilot_rows_with_call_sign"),
+    rows_with_port: sumField("pilot_rows_with_port"),
+    rows_with_pilot_time: sumField("pilot_rows_with_pilot_time"),
+    rows_with_pilot_station: sumField("pilot_rows_with_pilot_station"),
+    time_only_rows: sumField("time_only_rows"),
+    invalid_time_rows: sumField("invalid_time_rows"),
+    sample_sources: rows.slice(0, 5).map(item => ({
+      key: item.key || item.source_key || "",
+      status: item.status || "",
+      http_status: item.http_status ?? null,
+      rows_collected: Number(item.rows_collected || 0),
+      rows_normalized: Number(item.rows_normalized || 0),
+      skip_reason: item.skip_reason || item.error_message || null
+    }))
+  };
+}
+
+function buildAuxSourceSummaryPayload({
+  sourceCollectionStatus = {},
+  sourceKeys = [],
+  generatedAt = new Date().toISOString(),
+  dataMode = "live",
+  report = {},
+  title = "",
+  summaryKey = ""
+} = {}) {
+  const allItems = Array.isArray(sourceCollectionStatus.items) ? sourceCollectionStatus.items : [];
+  const keySet = new Set(sourceKeys);
+  const items = allItems.filter(item => keySet.has(item.source_key));
+  const diagnostics = items.flatMap(item => Array.isArray(item.diagnostics) ? item.diagnostics : []);
+  const status = items.length
+    ? items.map(item => item.status || "UNKNOWN").sort((a, b) => auxStatusRank(a) - auxStatusRank(b))[0]
+    : "NOT_CONFIGURED";
+  const rowsCollected = items.reduce((sum, item) => sum + Number(item.rows_collected || 0), 0);
+  const rowsNormalized = items.reduce((sum, item) => sum + Number(item.rows_normalized || 0), 0);
+  const missingEnv = [...new Set(items.flatMap(item => Array.isArray(item.missing_env) ? item.missing_env : []))];
+  const attempted = items.some(item => item.collector_attempted === true || Number(item.rows_collected || 0) > 0);
+  const configured = items.some(item => item.configured !== false && item.status !== "NOT_CONFIGURED") || rowsCollected > 0;
+  const diag = summarizeAuxDiagnostics(diagnostics);
+  return withRunOrigin({
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    data_mode: contractDataMode(dataMode, report),
+    source_key: summaryKey,
+    title,
+    status,
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    core_blocking: false,
+    configured,
+    collector_enabled: items.some(item => item.collector_enabled !== false && item.status !== "NOT_CONFIGURED"),
+    collector_attempted: attempted,
+    rows_collected: rowsCollected,
+    rows_normalized: rowsNormalized,
+    source_count: items.length,
+    missing_env: missingEnv,
+    skip_reasons: [...new Set(items.map(item => item.skip_reason || item.error_message || "").filter(Boolean))].slice(0, 10),
+    business_impact: items.find(item => item.business_impact)?.business_impact || "",
+    fix_hint: items.find(item => item.fix_hint || item.exact_fix_instruction)?.fix_hint || items.find(item => item.exact_fix_instruction)?.exact_fix_instruction || "",
+    diagnostic_summary: diag,
+    detail_endpoint: "dashboard/api/source-collection-status.json",
+    recommendation: "상세 소스 진단은 데이터 품질·시스템 진단에서 필요할 때만 확인합니다.",
+    record_count: rowsCollected,
+    item_count: 0
+  }, buildRunOrigin({
+    runId: report.run_id,
+    validationMode: VALIDATION_MODE,
+    servingMode: shouldWriteDebugApiOutputs(report) ? "local_diagnostics" : "static_json"
+  }));
+}
+
 const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["bootstrap", "dashboard/api/bootstrap.json"],
   ["status.summary", "dashboard/api/status-summary.json"],
+  ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
+  ["vessels.index", "dashboard/api/vessels/index.json"],
+  ["ports", "dashboard/api/ports.json"],
+  ["candidates.top", "dashboard/api/candidates/top.json"],
   ["status", "dashboard/api/status.json"],
   ["dashboard-summary", "dashboard/api/dashboard-summary.json"],
   ["sales.actions", "dashboard/api/sales/actions.json"],
@@ -3559,9 +3671,15 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["targets.current", "dashboard/api/targets/current.json"],
   ["targets.categoriesSummary", "dashboard/api/targets/categories-summary.json"],
   ["targets.categories", "dashboard/api/targets/categories.json"],
-  ["vessels.index", "dashboard/api/vessels/index.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
-  ["vessel.countReconciliation", "dashboard/api/vessel-count-reconciliation.json"],
+  ["aux.sourceCsvSummary", "dashboard/api/aux/source-csv-summary.json"],
+  ["aux.pilotageSummary", "dashboard/api/aux/pilotage-summary.json"],
+  ["aux.berthSummary", "dashboard/api/aux/berth-summary.json"],
+  ["aux.aisInfoSummary", "dashboard/api/aux/ais-info-summary.json"],
+  ["aux.aisDynamicSummary", "dashboard/api/aux/ais-dynamic-summary.json"],
+  ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
+  ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
+  ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
   ["intelligence.revenueForecast", "dashboard/api/intelligence/revenue-forecast.json"],
@@ -3574,17 +3692,60 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
 const ENDPOINT_TOO_LARGE_BYTES = 500 * 1024;
 const STARTUP_SAFE_ENDPOINT_BYTES = 100 * 1024;
 const STARTUP_SAFE_BOOTSTRAP_BYTES = 150 * 1024;
+const AUXILIARY_ENDPOINT_PATTERNS = [
+  /dashboard\/api\/aux\//,
+  /source-csv/i,
+  /vessel-spec/i,
+  /ais-(?:info|dynamic|stat)/i,
+  /pilotage/i,
+  /berth/i,
+  /vts/i,
+  /ulsan/i
+];
+const DIAGNOSTIC_ENDPOINT_PATTERNS = [
+  /dashboard\/api\/(?:debug|quality|review)\//,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /diagnostic/i,
+  /imo-recovery-priority/i
+];
+const CORE_INITIAL_ENDPOINTS = new Set([
+  "dashboard/api/bootstrap.json",
+  "dashboard/api/status-summary.json",
+  "dashboard/api/vessel-count-reconciliation.json",
+  "dashboard/api/vessels/index.json",
+  "dashboard/api/ports.json",
+  "dashboard/api/targets/categories-summary.json",
+  "dashboard/api/sales/verification-queue-summary.json"
+]);
+
+function endpointSourceLayer(relativePath = "") {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  if (DIAGNOSTIC_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "diagnostic";
+  if (AUXILIARY_ENDPOINT_PATTERNS.some(pattern => pattern.test(normalized))) return "auxiliary";
+  return "core";
+}
+
+function endpointLoadStrategy(relativePath = "", { startupSafe = false } = {}) {
+  const normalized = String(relativePath || "").replace(/\\/g, "/");
+  const layer = endpointSourceLayer(normalized);
+  if (layer === "diagnostic") return "diagnostic_only";
+  if (layer === "auxiliary") return normalized.startsWith("dashboard/api/aux/") ? "lazy" : "on_demand";
+  return startupSafe && CORE_INITIAL_ENDPOINTS.has(normalized) ? "initial" : "lazy";
+}
 
 function endpointStartupSafe(relativePath, bytes = 0, { validJson = true, schemaValid = true } = {}) {
   const normalized = String(relativePath || "").replace(/\\/g, "/");
   if (!validJson || !schemaValid) return false;
+  if (endpointSourceLayer(normalized) !== "core") return false;
+  if (!CORE_INITIAL_ENDPOINTS.has(normalized)) return false;
   if (normalized === "dashboard/api/bootstrap.json") return bytes <= STARTUP_SAFE_BOOTSTRAP_BYTES;
   if (/dashboard\/api\/(?:status-summary|targets\/categories-summary|sales\/verification-queue-summary)\.json$/.test(normalized)) {
     return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
   }
-  if (/dashboard\/api\/(?:status|targets\/categories|sales\/verification-queue)\.json$/.test(normalized)) return false;
-  if (/dashboard\/api\/(?:all-collected-vessels|target-vessels|vessels\/page-\d+|imo-recovery-priority|debug|quality|review|audit|diagnostic)/i.test(normalized)) return false;
-  return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
+  if (normalized === "dashboard/api/vessel-count-reconciliation.json" || normalized === "dashboard/api/vessels/index.json" || normalized === "dashboard/api/ports.json") {
+    return bytes <= STARTUP_SAFE_ENDPOINT_BYTES;
+  }
+  return false;
 }
 
 function schemaProblemForEndpoint(relativePath, payload) {
@@ -3606,7 +3767,26 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
   const fullPath = normalized;
   const exists = fs.existsSync(fullPath);
   if (!exists) {
-    return { key, path: normalized, exists: false, first_char: "", root_type: "missing", parsed_from_disk: true, parse_checked_at: parseCheckedAt, valid_json: false, schema_valid: false, record_count: 0, item_count: 0, startup_safe: false, status: "MISSING", problem: "file_missing" };
+    return {
+      key,
+      path: normalized,
+      exists: false,
+      first_char: "",
+      root_type: "missing",
+      parsed_from_disk: true,
+      parse_checked_at: parseCheckedAt,
+      valid_json: false,
+      schema_valid: false,
+      record_count: 0,
+      item_count: 0,
+      size_kb: 0,
+      bytes: 0,
+      source_layer: endpointSourceLayer(normalized),
+      startup_safe: false,
+      load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
+      status: "MISSING",
+      problem: "file_missing"
+    };
   }
   try {
     const text = fs.readFileSync(fullPath, "utf8");
@@ -3619,6 +3799,7 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
     const bytes = Buffer.byteLength(text);
     const status = schemaProblem ? "SCHEMA_MISMATCH" : bytes > ENDPOINT_TOO_LARGE_BYTES ? "TOO_LARGE" : count === 0 ? "EMPTY_VALID" : "OK";
     const schemaValid = !schemaProblem;
+    const startupSafe = endpointStartupSafe(normalized, bytes, { validJson: true, schemaValid });
     return {
       key,
       path: normalized,
@@ -3631,8 +3812,11 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       schema_valid: schemaValid,
       record_count: count,
       item_count: itemCount,
+      size_kb: Math.round((bytes / 1024) * 10) / 10,
       bytes,
-      startup_safe: endpointStartupSafe(normalized, bytes, { validJson: true, schemaValid }),
+      source_layer: endpointSourceLayer(normalized),
+      startup_safe: startupSafe,
+      load_strategy: endpointLoadStrategy(normalized, { startupSafe }),
       status,
       problem: schemaProblem || (status === "TOO_LARGE" ? `${Math.round(bytes / 1024)}KB; summary/detail split recommended` : "")
     };
@@ -3649,8 +3833,11 @@ function endpointManifestEntry(key, relativePath, parseCheckedAt = new Date().to
       schema_valid: false,
       record_count: 0,
       item_count: 0,
+      size_kb: Math.round((fs.statSync(fullPath).size / 1024) * 10) / 10,
       bytes: fs.statSync(fullPath).size,
+      source_layer: endpointSourceLayer(normalized),
       startup_safe: false,
+      load_strategy: endpointLoadStrategy(normalized, { startupSafe: false }),
       status: "INVALID_JSON",
       problem: error.message
     };
@@ -15608,6 +15795,8 @@ function buildSourceHealthRuntimeReport({ report = {}, collectorDiagnostics = {}
     collection_mode: report.data_mode === "no_live_data" ? "no_live_data" : "collection_result",
     status_generated_at: report.completed_at || report.generated_at || null,
     stale_source_health: false,
+    record_count: sources.length,
+    item_count: 0,
     secrets_present: runtimeAudit.canonical_env_present || {},
     runtime_config_audit: runtimeAudit,
     expected_env_names: runtimeAudit.expected_env_names || [],
@@ -17371,12 +17560,56 @@ try {
     generatedAt: completedAt
   }), finalRunOrigin);
   sourceHealthRuntimeReport.source_collection_status = sourceCollectionStatusPayload;
-  const sourceCsvSummaryPayload = withRunOrigin(buildSourceCsvSummary({
+  const sourceCsvSummaryPayload = withRunOrigin({
+    ...buildSourceCsvSummary({
+      sourceCollectionStatus: sourceCollectionStatusPayload,
+      collectorDiagnostics: collectorDiagnosticsAfterCollection,
+      cache: sourceCsvReferenceCache,
+      generatedAt: completedAt
+    }),
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    core_blocking: false
+  }, finalRunOrigin);
+  const auxSummaryOptions = {
     sourceCollectionStatus: sourceCollectionStatusPayload,
-    collectorDiagnostics: collectorDiagnosticsAfterCollection,
-    cache: sourceCsvReferenceCache,
-    generatedAt: completedAt
-  }), finalRunOrigin);
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "live",
+    report
+  };
+  const auxSourceSummaryPayloads = {
+    "dashboard/api/aux/pilotage-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["pilot_sources"],
+      summaryKey: "pilotage",
+      title: "도선 정보 요약"
+    }),
+    "dashboard/api/aux/berth-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["berth_sources"],
+      summaryKey: "berth",
+      title: "선석 정보 요약"
+    }),
+    "dashboard/api/aux/ais-info-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["mof_ais_info"],
+      summaryKey: "ais_info",
+      title: "AIS 선박 제원 요약"
+    }),
+    "dashboard/api/aux/ais-dynamic-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["mof_ais_dynamic", "mof_ais_stat"],
+      summaryKey: "ais_dynamic",
+      title: "AIS 동정/통계 요약"
+    }),
+    "dashboard/api/aux/vessel-spec-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["vessel_spec"],
+      summaryKey: "vessel_spec",
+      title: "선박 제원 보강 요약"
+    })
+  };
   const healthPayload = withRunOrigin({
     run_id: report.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -17849,6 +18082,9 @@ try {
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
+  for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
+    writeApiJson(filePath, payload, report);
+  }
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
@@ -17996,6 +18232,9 @@ try {
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
+  for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
+    writeApiJson(filePath, payload, report);
+  }
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {
