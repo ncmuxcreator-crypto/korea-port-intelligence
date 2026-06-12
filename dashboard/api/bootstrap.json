@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T16:07:40.250Z",
+  "generated_at": "2026-06-12T16:29:25.792Z",
   "data_mode": "live",
   "fallback_used": false,
   "record_count": 32,
   "kpis": {
-    "total_vessels": 1015,
-    "total_detected_vessels": 1015,
+    "total_vessels": 1016,
+    "total_detected_vessels": 1016,
     "detail_eligible_vessel_count": 674,
     "gt_5000_plus_count": 611,
-    "gt_below_5000_count": 404,
+    "gt_below_5000_count": 405,
     "gt_unknown_count": 0,
     "sales_target_count": 32,
     "immediate_target_count": 10,
@@ -19,7 +19,7 @@
     "port_count": 8,
     "arrival_pipeline_count": 200,
     "staying_vessels_count": 500,
-    "anchorage_waiting_count": 320,
+    "anchorage_waiting_count": 321,
     "high_risk_count": 26,
     "contact_now_count": 32,
     "contact_now_vessel_count": 32,
@@ -57,39 +57,39 @@
   },
   "kpi_trends": {
     "total_vessels": {
-      "current_value": 1015,
-      "previous_value": 1016,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 1016,
+      "previous_value": 1015,
+      "delta": 1,
+      "delta_percent": 0.1,
+      "direction": "up"
     },
     "total_detected_vessels": {
-      "current_value": 1015,
-      "previous_value": 1016,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 1016,
+      "previous_value": 1015,
+      "delta": 1,
+      "delta_percent": 0.1,
+      "direction": "up"
     },
     "detail_eligible_vessel_count": {
       "current_value": 674,
-      "previous_value": 676,
-      "delta": -2,
-      "delta_percent": -0.3,
-      "direction": "down"
-    },
-    "gt_5000_plus_count": {
-      "current_value": 611,
-      "previous_value": 612,
-      "delta": -1,
-      "delta_percent": -0.2,
-      "direction": "down"
-    },
-    "gt_below_5000_count": {
-      "current_value": 404,
-      "previous_value": 404,
+      "previous_value": 674,
       "delta": 0,
       "delta_percent": 0,
       "direction": "flat"
+    },
+    "gt_5000_plus_count": {
+      "current_value": 611,
+      "previous_value": 611,
+      "delta": 0,
+      "delta_percent": 0,
+      "direction": "flat"
+    },
+    "gt_below_5000_count": {
+      "current_value": 405,
+      "previous_value": 404,
+      "delta": 1,
+      "delta_percent": 0.2,
+      "direction": "up"
     },
     "gt_unknown_count": {
       "current_value": 0,
@@ -155,11 +155,11 @@
       "direction": "flat"
     },
     "anchorage_waiting_count": {
-      "current_value": 320,
+      "current_value": 321,
       "previous_value": 320,
-      "delta": 0,
-      "delta_percent": 0,
-      "direction": "flat"
+      "delta": 1,
+      "delta_percent": 0.3,
+      "direction": "up"
     },
     "high_risk_count": {
       "current_value": 26,
@@ -205,10 +205,10 @@
     },
     "long_stay_risk_count": {
       "current_value": 317,
-      "previous_value": 321,
-      "delta": -4,
-      "delta_percent": -1.2,
-      "direction": "down"
+      "previous_value": 317,
+      "delta": 0,
+      "delta_percent": 0,
+      "direction": "flat"
     },
     "compliance_target_count": {
       "current_value": 6,
@@ -291,11 +291,11 @@
   "trend_metrics": {
     "vessel_growth": {
       "metric_key": "total_vessels",
-      "current_value": 1015,
-      "previous_value": 1016,
-      "delta": -1,
-      "delta_percent": -0.1,
-      "direction": "down"
+      "current_value": 1016,
+      "previous_value": 1015,
+      "delta": 1,
+      "delta_percent": 0.1,
+      "direction": "up"
     },
     "target_growth": {
       "metric_key": "sales_target_count",
@@ -335,7 +335,7 @@
       "port_code": "020",
       "port_name": "부산",
       "display_name": "부산",
-      "vessel_count": 383,
+      "vessel_count": 382,
       "target_count": 39,
       "sales_target_count": 39,
       "hot_count": 0,
@@ -349,7 +349,7 @@
       "port_code": "820",
       "port_name": "울산",
       "display_name": "울산",
-      "vessel_count": 179,
+      "vessel_count": 180,
       "target_count": 20,
       "sales_target_count": 20,
       "hot_count": 0,
@@ -391,7 +391,7 @@
       "port_code": "622",
       "port_name": "마산/창원",
       "display_name": "마산/창원",
-      "vessel_count": 82,
+      "vessel_count": 83,
       "target_count": 10,
       "sales_target_count": 10,
       "hot_count": 0,
@@ -399,7 +399,7 @@
       "immediate_target_count": 0,
       "immediate_count": 0,
       "hot_count_semantics": "qualified sales target with commercial score >= 75",
-      "avg_opportunity_score": 32.5
+      "avg_opportunity_score": 32.4
     },
     {
       "port_code": "620-YEOSU",
@@ -456,7 +456,7 @@
       "port_name": "울산",
       "high_risk_vessels": 1,
       "estimated_revenue": 15000,
-      "average_opportunity_score": 32,
+      "average_opportunity_score": 31,
       "demand_score": 45
     },
     {
@@ -481,18 +481,18 @@
       "demand_score": 32
     },
     {
+      "port_name": "미확인 항만",
+      "high_risk_vessels": 0,
+      "estimated_revenue": 0,
+      "average_opportunity_score": 38,
+      "demand_score": 31
+    },
+    {
       "port_name": "평택·당진",
       "high_risk_vessels": 0,
       "estimated_revenue": 0,
       "average_opportunity_score": 29,
       "demand_score": 31
-    },
-    {
-      "port_name": "미확인 항만",
-      "high_risk_vessels": 0,
-      "estimated_revenue": 0,
-      "average_opportunity_score": 38,
-      "demand_score": 30
     },
     {
       "port_name": "포항",
@@ -574,7 +574,7 @@
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -674,7 +674,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 2,
@@ -740,7 +740,7 @@
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -840,7 +840,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 3,
@@ -906,7 +906,7 @@
           "port_operation_incheon_o",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "FIONAN",
       "imo": "-",
@@ -1006,7 +1006,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 4,
@@ -1072,7 +1072,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -1172,7 +1172,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 5,
@@ -1238,7 +1238,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -1338,7 +1338,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 6,
@@ -1404,7 +1404,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "BERGE DOI INTHANON",
       "imo": "-",
@@ -1504,7 +1504,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 7,
@@ -1570,7 +1570,7 @@
           "merged_port_operation",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "CHANG HANG HU PO",
       "imo": "-",
@@ -1670,7 +1670,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 8,
@@ -1736,7 +1736,7 @@
           "port_operation_daesan_o",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "WASHINGTON",
       "imo": "-",
@@ -1836,7 +1836,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 9,
@@ -1902,7 +1902,7 @@
           "port_operation_busan_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "한유울산",
       "imo": "-",
@@ -2002,7 +2002,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 10,
@@ -2068,7 +2068,7 @@
           "port_operation_pyeongtaek_dangjin_i",
           "real_public_api_snapshot"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "ERSOZ WEST",
       "imo": "-",
@@ -2168,7 +2168,7 @@
         "real_public_api_snapshot",
         "port_operation"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     }
   ],
   "sales_priority": [
@@ -2231,7 +2231,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "MINERAL HOPE",
       "imo": "-",
@@ -2326,7 +2326,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 2,
@@ -2387,7 +2387,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "FIONAN",
       "imo": "-",
@@ -2482,7 +2482,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 3,
@@ -2544,7 +2544,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "PAN PEGASUS",
       "imo": "-",
@@ -2640,7 +2640,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 4,
@@ -2701,7 +2701,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "VITUS BERING",
       "imo": "-",
@@ -2796,7 +2796,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 5,
@@ -2857,7 +2857,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "BERGE DOI INTHANON",
       "imo": "-",
@@ -2952,7 +2952,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 6,
@@ -3014,7 +3014,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "MARCEL",
       "imo": "-",
@@ -3110,7 +3110,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 7,
@@ -3172,7 +3172,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "BEI HAI FENG HUANG",
       "imo": "-",
@@ -3268,7 +3268,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 8,
@@ -3330,7 +3330,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "스키야토스",
       "imo": "-",
@@ -3426,7 +3426,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 9,
@@ -3488,7 +3488,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "에이치엘 오셔닉",
       "imo": "-",
@@ -3584,7 +3584,7 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     },
     {
       "rank": 10,
@@ -3646,7 +3646,7 @@
           "risk_history",
           "explainability_snapshots"
         ],
-        "last_seen_at": "2026-06-12T16:00:15.366Z"
+        "last_seen_at": "2026-06-12T16:23:33.047Z"
       },
       "vessel_name": "CF DIAMOND",
       "imo": "-",
@@ -3742,17 +3742,17 @@
         "explainability_snapshots",
         "rule_evaluations"
       ],
-      "last_seen_at": "2026-06-12T16:00:15.366Z"
+      "last_seen_at": "2026-06-12T16:23:33.047Z"
     }
   ],
   "alerts": [],
   "data_health": {
     "status": "healthy",
-    "latest_successful_run_id": "run_20260612160015353_e7b1a2b2",
-    "last_success_at": "2026-06-12T16:07:40.250Z",
+    "latest_successful_run_id": "run_20260612162333036_517c92e3",
+    "last_success_at": "2026-06-12T16:29:25.792Z",
     "source_status": {
-      "source_rows_collected": 2637,
-      "normalized_rows": 1015,
+      "source_rows_collected": 2638,
+      "normalized_rows": 1016,
       "ports_attempted_count": 0,
       "environmental_source_status": {
         "status": "proxy",
@@ -3764,8 +3764,8 @@
       "supabase_write_status": "completed",
       "promotion_status": "promoted",
       "rows_written_by_table": {
-        "vessel_snapshots": 1015,
-        "opportunity_master": 1015,
+        "vessel_snapshots": 1016,
+        "opportunity_master": 1016,
         "dashboard_summary_snapshots": 1
       }
     },
@@ -3773,15 +3773,15 @@
       "output_mode": "static_json"
     },
     "technical_diagnostics": {
-      "total_rows": 1535,
+      "total_rows": 1537,
       "fallback_rows": 0,
-      "mock_rows": 1535,
+      "mock_rows": 1537,
       "scoring_errors": 0,
       "data_health_validation": {
         "status": "ok",
-        "total_rows": 1015,
-        "issue_count": 1015,
-        "missing_imo_mmsi_count": 1015,
+        "total_rows": 1016,
+        "issue_count": 1016,
+        "missing_imo_mmsi_count": 1016,
         "missing_port_code_count": 0,
         "date_parse_failed_count": 0,
         "lat_lon_range_error_count": 0,
@@ -4405,8 +4405,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "GWANGYANG",
@@ -4418,8 +4418,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "YEOSU",
@@ -4431,8 +4431,8 @@
       "marine_heatwave_level": "EXTREME",
       "biofouling_water_temp_factor": 30,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "ULSAN",
@@ -4444,8 +4444,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "POHANG",
@@ -4457,8 +4457,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "SAMCHEONPO",
@@ -4470,8 +4470,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "HADONG",
@@ -4483,8 +4483,8 @@
       "marine_heatwave_level": "HIGH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "INCHEON",
@@ -4496,8 +4496,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "PYEONGTAEK",
@@ -4509,8 +4509,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "GUNSAN",
@@ -4522,8 +4522,8 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "DONGHAE",
@@ -4535,8 +4535,8 @@
       "marine_heatwave_level": "WATCH",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     },
     {
       "port_code": "SAMCHEOK",
@@ -4548,26 +4548,26 @@
       "marine_heatwave_level": "NORMAL",
       "biofouling_water_temp_factor": 20,
       "source": "FALLBACK",
-      "observed_at": "2026-06-12T16:07:40.250Z",
-      "updated_at": "2026-06-12T16:07:40.250Z"
+      "observed_at": "2026-06-12T16:29:25.792Z",
+      "updated_at": "2026-06-12T16:29:25.792Z"
     }
   ],
   "ocean_data_health": {
     "source": "FALLBACK",
-    "last_updated": "2026-06-12T16:07:40.250Z",
+    "last_updated": "2026-06-12T16:29:25.792Z",
     "live_or_fallback": "fallback",
     "ports_covered": 12,
     "stale_warning": false,
     "stale_records_count": 0
   },
   "ocean_risk_geojson_path": "/api/ocean-risk.geojson",
-  "run_id": "run_20260612160015353_e7b1a2b2",
-  "source_run_id": "run_20260612160015353_e7b1a2b2",
+  "run_id": "run_20260612162333036_517c92e3",
+  "source_run_id": "run_20260612162333036_517c92e3",
   "snapshot_context": {
-    "run_id": "run_20260612160015353_e7b1a2b2",
-    "generated_at": "2026-06-12T16:07:40.250Z",
+    "run_id": "run_20260612162333036_517c92e3",
+    "generated_at": "2026-06-12T16:29:25.792Z",
     "data_mode": "live",
-    "source_run_id": "run_20260612160015353_e7b1a2b2"
+    "source_run_id": "run_20260612162333036_517c92e3"
   },
   "item_count": 8
 }
