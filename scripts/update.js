@@ -16,6 +16,7 @@ import {
 } from "./lib/runtime-config-audit.js";
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
+import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
@@ -2994,6 +2995,7 @@ let collectedRows = [];
 let collectorDiagnosticsAfterCollection = {};
 let vesselMasterCacheDiagnostics = {};
 let identityResolutionDiagnostics = {};
+let sourceCsvReferenceCache = null;
 let pilotageEnrichmentDiagnostics = { status: "not_run" };
 let startupConfigDiagnostics = configDiagnostics();
 let runtimeConfigAudit = buildRuntimeConfigAudit();
@@ -16431,7 +16433,19 @@ try {
   const dictionaries = loadReferenceDictionaries();
   collectedRows = await collectKoreaData({ apiSources });
   collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
-  const referenceEnrichedRows = enrichWithReferenceDictionaries(collectedRows, dictionaries);
+  sourceCsvReferenceCache = updateSourceCsvReferenceCache({
+    sourceRows: collectedRows.filter(row => String(row.source || row.source_name || "").toLowerCase() === "source_csv"),
+    generatedAt: new Date().toISOString()
+  });
+  const sourceCsvReferenceRows = (sourceCsvReferenceCache.items || []).map(row => ({
+    ...row,
+    reference_source: "source_csv_cache",
+    identity_source: row.identity_source || "source_csv_cache"
+  }));
+  const referenceEnrichedRows = [
+    ...enrichWithReferenceDictionaries(collectedRows, dictionaries),
+    ...sourceCsvReferenceRows
+  ];
   const cacheResult = await enrichWithVesselMasterCache(referenceEnrichedRows);
   vesselMasterCacheDiagnostics = cacheResult.diagnostics;
   const identityResolution = await resolveImoMmsiCandidates(cacheResult.records, { referenceRows: referenceEnrichedRows });
@@ -17233,6 +17247,12 @@ try {
     generatedAt: completedAt
   }), finalRunOrigin);
   sourceHealthRuntimeReport.source_collection_status = sourceCollectionStatusPayload;
+  const sourceCsvSummaryPayload = withRunOrigin(buildSourceCsvSummary({
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    collectorDiagnostics: collectorDiagnosticsAfterCollection,
+    cache: sourceCsvReferenceCache,
+    generatedAt: completedAt
+  }), finalRunOrigin);
   const healthPayload = withRunOrigin({
     run_id: report.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -17704,6 +17724,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
@@ -17850,6 +17871,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

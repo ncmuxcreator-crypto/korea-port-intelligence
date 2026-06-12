@@ -16,8 +16,10 @@ const SOURCE_SPECS = [
     expectedEnvNames: ["SOURCE_CSV_URL", "ENABLE_SOURCE_CSV"],
     requiredAny: ["SOURCE_CSV_URL"],
     activationEnv: ["ENABLE_SOURCE_CSV"],
-    businessImpact: "Identity, operator, and manually corrected vessel fields may not enrich generated snapshots.",
-    fixHint: "Set SOURCE_CSV_URL and ENABLE_SOURCE_CSV=true."
+    sourceLayer: "auxiliary",
+    coreBlocking: false,
+    businessImpact: "Verified source CSV enrichment cache may not refresh; existing cache is used if available.",
+    fixHint: "Set SOURCE_CSV_URL and ENABLE_SOURCE_CSV=true, or provide a smaller verified vessel reference CSV."
   },
   {
     key: "vessel_spec",
@@ -166,9 +168,30 @@ function matchesSource(spec, source = {}) {
 
 function classifyError(source = {}) {
   const text = String(source.error_message || source.error || source.raw_skip_reason || source.skip_reason || source.reason || "").toLowerCase();
+  if (/api_response_too_large|response too large|source_too_large/.test(text) || source.failure_reason === "api_response_too_large") return "SOURCE_TOO_LARGE";
   if (/parse|json|xml|csv|decode/.test(text)) return "PARSE_FAILED";
   if (/http|timeout|fetch|network|abort|econn|enotfound|status/.test(text) || source.http_status) return "FETCH_FAILED";
   return "FETCH_FAILED";
+}
+
+function isSourceCsvTooLarge(item = {}) {
+  if (String(item.source_key || item.key || item.source_name || "") !== "source_csv") return false;
+  const text = [
+    item.status,
+    item.skip_reason,
+    item.raw_skip_reason,
+    item.reason,
+    item.error_message,
+    item.error,
+    item.failure_reason,
+    ...(Array.isArray(item.diagnostics) ? item.diagnostics.flatMap(diagnostic => [
+      diagnostic?.status,
+      diagnostic?.skip_reason,
+      diagnostic?.error_message,
+      diagnostic?.failure_reason
+    ]) : [])
+  ].filter(Boolean).join(" ").toLowerCase();
+  return /source_too_large|api_response_too_large|response too large/.test(text);
 }
 
 function isHttp404Failure(item = {}) {
@@ -190,21 +213,29 @@ function isHttp404Failure(item = {}) {
 export function applySourcePriority(item = {}) {
   const sourceKey = String(item.source_key || item.key || item.source_name || "");
   const isUlsanAuxiliary = ULSAN_AUXILIARY_SOURCE_KEYS.has(sourceKey);
-  const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(item.status || ""));
+  const isSourceCsv = sourceKey === "source_csv";
+  const sourceCsvTooLarge = isSourceCsvTooLarge(item);
+  const status = sourceCsvTooLarge ? "SOURCE_TOO_LARGE" : item.status;
+  const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(status || ""));
   const deferred = isUlsanAuxiliary && isFailed && isHttp404Failure(item);
-  const sourceLayer = isUlsanAuxiliary ? "auxiliary" : (item.source_layer || "core");
-  const coreBlocking = isUlsanAuxiliary ? false : item.core_blocking !== false;
-  const severity = deferred
+  const sourceLayer = isUlsanAuxiliary || isSourceCsv ? "auxiliary" : (item.source_layer || "core");
+  const coreBlocking = isUlsanAuxiliary || isSourceCsv ? false : item.core_blocking !== false;
+  const severity = deferred || sourceCsvTooLarge
     ? "WARNING"
-    : item.severity || (isFailed || item.status === "PARTIAL" ? "WARNING" : "INFO");
+    : item.severity || (isFailed || status === "PARTIAL" ? "WARNING" : "INFO");
   return {
     ...item,
+    status,
     source_layer: sourceLayer,
     core_blocking: coreBlocking,
     severity,
-    business_impact: isUlsanAuxiliary ? ULSAN_AUXILIARY_BUSINESS_IMPACT : item.business_impact,
-    fix_status: deferred ? "deferred" : (item.fix_status || (item.status === "ACTIVE" ? "active" : "needs_action")),
-    ...(deferred ? {
+    business_impact: isUlsanAuxiliary ? ULSAN_AUXILIARY_BUSINESS_IMPACT : isSourceCsv ? "Verified source CSV enrichment cache may not refresh; existing cache is used if available." : item.business_impact,
+    fix_status: deferred ? "deferred" : (item.fix_status || (status === "ACTIVE" ? "active" : "needs_action")),
+    source_too_large: sourceCsvTooLarge || Boolean(item.source_too_large),
+    ...(sourceCsvTooLarge ? {
+      exact_fix_instruction: "Create a smaller verified vessel reference CSV for enrichment.",
+      fix_hint: "Create a smaller verified vessel reference CSV for enrichment."
+    } : deferred ? {
       exact_fix_instruction: "Deferred: 울산 보조 소스 경로는 이후 처리",
       fix_hint: "Deferred: 울산 보조 소스 경로는 이후 처리"
     } : {})
@@ -234,6 +265,9 @@ export function normalizeSourceCollectionStatusPayload(payload = {}) {
       .map(item => item.source_key),
     auxiliary_failed_sources: items
       .filter(item => failedStatuses.has(item.status) && item.core_blocking === false)
+      .map(item => item.source_key),
+    source_too_large_sources: items
+      .filter(item => item.status === "SOURCE_TOO_LARGE")
       .map(item => item.source_key),
     deferred_sources: items
       .filter(item => item.fix_status === "deferred")
@@ -353,7 +387,10 @@ function statusForSpec({ spec, env, sources }) {
       rows_normalized: Number(source.rows_normalized || source.normalized_count || 0),
       skip_reason: source.skip_reason || source.reason || null,
       error_message: source.error_message || source.error || null,
-      http_status: source.http_status || null
+      failure_reason: source.failure_reason || null,
+      http_status: source.http_status || null,
+      response_size_bytes: Number(source.response_size_bytes || 0) || null,
+      response_content_type: source.response_content_type || null
     })),
     business_impact: spec.businessImpact
   });

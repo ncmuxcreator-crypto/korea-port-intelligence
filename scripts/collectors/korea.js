@@ -831,6 +831,7 @@ async function fetchTextOnce(source, extraParams = {}) {
     if (MAX_API_RESPONSE_BYTES > 0 && contentLength > MAX_API_RESPONSE_BYTES) {
       const error = new Error(`API response too large: ${contentLength} bytes`);
       error.failure_reason = "api_response_too_large";
+      error.response_size_bytes = contentLength;
       error.response_content_type = contentType;
       throw error;
     }
@@ -838,6 +839,7 @@ async function fetchTextOnce(source, extraParams = {}) {
     if (MAX_API_RESPONSE_BYTES > 0 && buffer.byteLength > MAX_API_RESPONSE_BYTES) {
       const error = new Error(`API response too large: ${buffer.byteLength} bytes`);
       error.failure_reason = "api_response_too_large";
+      error.response_size_bytes = buffer.byteLength;
       error.response_content_type = contentType;
       throw error;
     }
@@ -2250,6 +2252,9 @@ async function collectRealRows() {
     } catch (error) {
       diag.error = error?.message || String(error);
       diag.error_message = diag.error;
+      diag.failure_reason = error?.failure_reason || null;
+      diag.response_size_bytes = Number(error?.response_size_bytes || 0) || null;
+      diag.response_content_type = error?.response_content_type || null;
       diag.http_status = error?.http_status || null;
       diag.retry_count = error?.retry_count || 0;
       diagnostics.failed_count += 1;

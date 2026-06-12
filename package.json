@@ -81,6 +81,7 @@
     "audit:contact-coverage": "node scripts/audit-contact-coverage.js",
     "audit:security": "node scripts/with-env.js scripts/audit-security.js",
     "audit:sources": "node scripts/with-env.js scripts/audit-sources.js",
+    "audit:source-csv": "node scripts/with-env.js scripts/audit-source-csv.js",
     "db:migrate": "node scripts/apply-migrations.js",
     "db:migrate:dry-run": "node scripts/apply-migrations.js --dry-run",
     "db:dedupe": "node scripts/with-env.js scripts/dedupe-production.js",
