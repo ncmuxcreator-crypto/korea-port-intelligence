@@ -19,7 +19,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .topbar{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:12px;padding:18px 16px;border:1px solid rgba(56,189,248,.22);border-radius:12px;background:linear-gradient(135deg,rgba(11,31,46,.98),rgba(7,16,24,.96));box-shadow:0 18px 48px rgba(0,0,0,.28);backdrop-filter:blur(10px)}
 .brand{min-width:0}.brand h1{margin:0;font-size:clamp(26px,4vw,46px);line-height:1.05;letter-spacing:0}.brand p{margin:8px 0 0;color:#c7d5df;font-size:clamp(13px,1.8vw,16px);max-width:680px}
 .actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
-.dashboard-nav{position:sticky;top:0;z-index:19;display:flex;gap:8px;overflow-x:auto;margin:-4px 0 12px;padding:8px;border:1px solid rgba(40,66,86,.74);border-radius:12px;background:rgba(7,16,24,.92);backdrop-filter:blur(10px);scrollbar-width:none}.dashboard-nav::-webkit-scrollbar{display:none}.dashboard-nav button{flex:0 0 auto;min-height:40px;padding:8px 12px;background:#0b1722;color:#c7d5df;border-color:rgba(40,66,86,.88);white-space:nowrap}.dashboard-nav button.active{background:#0f766e;border-color:#5eead4;color:#ecfeff}.page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px;padding:14px;border:1px solid rgba(56,189,248,.22);border-radius:10px;background:rgba(14,26,36,.86)}.page-intro h2{margin:0;font-size:20px}.page-intro p{margin:5px 0 0;color:#c7d5df}.page-panel[hidden],.business-block[hidden],.technical-diagnostics[hidden]{display:none!important}.overview-grid{display:grid;grid-template-columns:1fr;gap:12px}.overview-grid .panel{min-width:0}.overview-compact-list{display:grid;gap:8px}.overview-compact-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;border:1px solid rgba(40,66,86,.68);border-radius:8px;background:#0b1722;padding:10px}.overview-compact-item h3{margin:0;font-size:14px}.overview-compact-item .score{font-size:22px}.overview-link{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:#67e8f9;font-weight:900;text-decoration:none}
+.dashboard-nav{position:sticky;top:0;z-index:19;display:flex;gap:8px;overflow-x:auto;margin:-4px 0 12px;padding:8px;border:1px solid rgba(40,66,86,.74);border-radius:12px;background:rgba(7,16,24,.92);backdrop-filter:blur(10px);scrollbar-width:none}.dashboard-nav::-webkit-scrollbar{display:none}.dashboard-nav button{flex:0 0 auto;min-height:40px;padding:8px 12px;background:#0b1722;color:#c7d5df;border-color:rgba(40,66,86,.88);white-space:nowrap}.dashboard-nav button.active{background:#0f766e;border-color:#5eead4;color:#ecfeff}.page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px;padding:14px;border:1px solid rgba(56,189,248,.22);border-radius:10px;background:rgba(14,26,36,.86)}.page-intro h2{margin:0;font-size:20px}.page-intro p{margin:5px 0 0;color:#c7d5df}.tier-freshness{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:520px}.tier-freshness .chip{padding:5px 8px;font-size:11px}.page-panel[hidden],.business-block[hidden],.technical-diagnostics[hidden]{display:none!important}.overview-grid{display:grid;grid-template-columns:1fr;gap:12px}.overview-grid .panel{min-width:0}.overview-compact-list{display:grid;gap:8px}.overview-compact-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;border:1px solid rgba(40,66,86,.68);border-radius:8px;background:#0b1722;padding:10px}.overview-compact-item h3{margin:0;font-size:14px}.overview-compact-item .score{font-size:22px}.overview-link{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:#67e8f9;font-weight:900;text-decoration:none}
 .badge,.chip{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;white-space:nowrap}
 .badge{border:1px solid #0e7490;background:#083344;color:#a5f3fc}.badge.ok{border-color:#0f766e;background:#123c37;color:#ccfbf1}.badge.warn{border-color:#b45309;background:#422006;color:#fde68a}.badge.err{border-color:#be123c;background:#4c0519;color:#fecdd3}
 .chip{background:#172554;color:#bfdbfe}.chip.hot{background:#7f1d1d;color:#fecaca}.chip.warm{background:#713f12;color:#fde68a}.chip.good{background:#134e4a;color:#ccfbf1}.chip.gray{background:#1f2937;color:#d1d5db}
@@ -773,6 +773,223 @@ const renderPortDetailOceanBase=typeof renderPortDetailPanel==="function"?render
 if(renderPortDetailOceanBase)renderPortDetailPanel=function(){renderPortDetailOceanBase();const panel=$("portDetailPanel");const row=typeof selectedPortRow==="function"?selectedPortRow():null;if(panel&&!panel.querySelector(".port-ocean-detail")){const html=portOceanHtml(row);if(html)panel.querySelector(".panel-body")?.insertAdjacentHTML("afterbegin",html.replace("port-ocean","port-ocean port-ocean-detail"))}}
 const appendTechnicalSourceRowsOceanBase=typeof appendTechnicalSourceRows==="function"?appendTechnicalSourceRows:null;
 if(appendTechnicalSourceRowsOceanBase)appendTechnicalSourceRows=function(){appendTechnicalSourceRowsOceanBase();const node=$("healthRows");if(!node||node.querySelector(".ocean-tech-row"))return;const h=state.summary?.ocean_data_health||state.health?.ocean_data_health||{};const rows=[["Ocean source",h.source||"-"],["Ocean mode",h.live_or_fallback==="live"?"실측/위성":"추정값"],["Ocean last updated",h.last_updated||"-"],["Ocean ports covered",fmt(h.ports_covered||0)],["Ocean stale warning",h.stale_warning?"48시간 초과":"정상"]];node.insertAdjacentHTML("beforeend",rows.map(([a,b])=>`<div class="health-row ocean-tech-row"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join(""))}
+/* Desktop commercial workflow navigation layer. Keeps mobile navigation untouched. */
+const DESKTOP_NAV_CONFIG=[
+  {key:"overview",label:"홈 / 상황판",title:"홈 / 상황판",subtitle:"핵심 KPI, 오늘의 영업 우선순위, 항만 기회와 데이터 경고를 빠르게 봅니다.",sections:["executiveSummary","overviewCommandCenter"]},
+  {key:"sales",label:"영업 실행",title:"영업 실행",subtitle:"오늘 연락할 선박, 견적 기회, 검증 큐, 관심 선박과 타깃 카테고리를 한 흐름으로 봅니다.",sections:["dailyBriefingBlock","todaySalesActions","targetCategoryBlock","salesSupportBlock","salesExtraInsightsBlock"]},
+  {key:"vessels",label:"선박 인텔리전스",title:"선박 인텔리전스",subtitle:"전체 선박, Cleaning Window, Compliance, Contact Coverage, Opportunity Memory와 데이터 lineage를 확인합니다.",sections:["vesselIntelligenceBlock","riskComplianceBlock","fullVesselListBlock"]},
+  {key:"ports-fleets",label:"항만·선대 인텔리전스",title:"항만·선대 인텔리전스",subtitle:"항만 기회, Port DNA, Fleet Intelligence, Fleet Penetration, Revenue Forecast와 도선·선석 신호를 봅니다.",sections:["portIntelligenceBlock","fleetOperatorBlock","revenueOpportunityBlock"]},
+  {key:"sources",label:"데이터 소스·Enrichment",title:"데이터 소스·Enrichment",subtitle:"Source Quality, Enrichment Utilization, auxiliary summary, review queue와 source capability를 확인합니다.",sections:["dataSourceEnrichmentBlock"]},
+  {key:"diagnostics",label:"시스템 진단",title:"시스템 진단",subtitle:"runtime, endpoint manifest, budget, source collection, storage와 장애 원인을 지연 로드로 확인합니다.",sections:["technicalDiagnostics"]}
+];
+const DESKTOP_NAV_ENDPOINT_GROUPS={
+  cleaningWindow:"advanced",
+  complianceExposure:"advanced",
+  contactCoverage:"advanced",
+  opportunityMemory:"advanced",
+  biofoulingRisk:"advanced",
+  hullCleaningEngine:"advanced",
+  portDna:"port",
+  portOpportunities:"port",
+  portSeasonality:"port",
+  portDemandRadar:"port",
+  congestion:"port",
+  pilotageSummary:"port",
+  berthSummary:"port",
+  fleet:"operator",
+  fleetPenetration:"operator",
+  fleetGapFinder:"operator",
+  fleetDna:"operator",
+  fleetExpansion:"operator",
+  revenueForecast:"operator",
+  sourceHealth:"diagnostic"
+};
+INTELLIGENCE_ENDPOINTS.push(
+  {key:"enrichmentReviewQueue",title:"Enrichment Review Queue",path:"/api/enrichment/latest/review-queue.json",group:"basic",timeoutMs:2500},
+  {key:"sourceCapabilityMatrix",title:"Source Capability Matrix",path:"/api/enrichment/source-capability-matrix.json",group:"basic",timeoutMs:2500}
+);
+for(const def of INTELLIGENCE_ENDPOINTS){
+  if(DESKTOP_NAV_ENDPOINT_GROUPS[def.key])def.group=DESKTOP_NAV_ENDPOINT_GROUPS[def.key];
+}
+function applyDesktopWorkflowNavConfig(){
+  for(const config of DESKTOP_NAV_CONFIG){
+    const page=DASHBOARD_PAGES.find(item=>item.key===config.key);
+    if(page)Object.assign(page,config,{sections:[...new Set(config.sections)]});
+  }
+  const nav=$("dashboardNav");
+  if(nav){
+    nav.dataset.desktopWorkflowNav="commercial";
+    nav.setAttribute("aria-label","데스크톱 대시보드 메뉴");
+    nav.querySelectorAll("[data-page]").forEach(button=>{
+      const page=DASHBOARD_PAGES.find(item=>item.key===button.dataset.page);
+      if(page){
+        button.textContent=page.label;
+        button.title=page.title;
+      }
+    });
+  }
+  const headings=[["insightGroupSales","영업 실행 인사이트"],["insightGroupPort","항만 인텔리전스"],["insightGroupOperator","선대 인텔리전스"],["insightGroupAdvanced","선박 인텔리전스"],["insightGroupBasic","데이터 소스·Enrichment"]];
+  for(const [id,label] of headings){
+    const h2=$(id)?.querySelector("summary h2");
+    if(h2)h2.textContent=label;
+  }
+}
+function installTierFreshnessPanel(){
+  const intro=$("pageIntro");
+  if(!intro||$("tierFreshness"))return;
+  const panel=document.createElement("div");
+  panel.id="tierFreshness";
+  panel.className="tier-freshness";
+  panel.setAttribute("aria-label","티어별 데이터 최신성");
+  intro.appendChild(panel);
+}
+function shortTierTime(value){
+  const text=formatLastUpdatedAt(value);
+  return text||"대기";
+}
+function tierValue(payload,key){
+  return payload?.[`${key}_generated_at`]||payload?.tiers?.[key]?.generated_at||null;
+}
+function renderTierFreshness(){
+  installTierFreshnessPanel();
+  const panel=$("tierFreshness");
+  if(!panel)return;
+  const page=state.activePage||"overview";
+  if(page==="overview"&&!state.tierFreshness){
+    panel.innerHTML="";
+    return;
+  }
+  const tiers=state.tierFreshness||{};
+  const rows=[
+    ["Core",tierValue(tiers,"core")||currentLastUpdatedAt(),"good"],
+    ["Aux",tierValue(tiers,"fast_aux"),"gray"],
+    ["Enrich",tierValue(tiers,"reference_enrichment"),"gray"],
+    ["Audit",tierValue(tiers,"discovery_audit"),"gray"]
+  ];
+  panel.innerHTML=rows.map(([label,value,tone])=>`<span class="chip ${tone}">${esc(label)} ${esc(shortTierTime(value))}</span>`).join("");
+}
+async function ensureTierFreshness(){
+  if(state.tierFreshness||state.tierFreshnessLoading)return state.tierFreshness;
+  state.tierFreshnessLoading=true;
+  try{
+    const payload=await api("runtimeUpdateTiers","/api/runtime/update-tiers.json",2500);
+    state.tierFreshness=payload||{};
+    renderTierFreshness();
+    return state.tierFreshness;
+  }finally{
+    state.tierFreshnessLoading=false;
+  }
+}
+const SYSTEM_DIAGNOSTIC_ENDPOINTS=[
+  ["runtime.update-tiers","/api/runtime/update-tiers.json","runtime/update-tiers"],
+  ["runtime.budget","/api/runtime-budget-report.json","runtime-budget-report"],
+  ["source.healthRuntime","/api/source-health-runtime.json","source-health-runtime"],
+  ["source.collectionStatus","/api/source-collection-status.json","source-collection-status"],
+  ["endpoint.manifest","/api/endpoint-manifest.json","endpoint-manifest"],
+  ["storage.efficiency","/api/storage-efficiency-report.json","storage-efficiency-report"],
+  ["db.cleanupPlan","/api/db-cleanup-plan.json","DB cleanup audit"]
+];
+function ensureSystemDiagnosticPanel(){
+  const body=$("technicalDiagnosticsBody");
+  if(!body||$("systemRuntimeDiagnostics"))return;
+  const panel=document.createElement("section");
+  panel.id="systemRuntimeDiagnostics";
+  panel.className="panel";
+  panel.innerHTML='<div class="panel-head"><h2>시스템 진단 파일</h2><span id="systemRuntimeBadge" class="chip gray">지연 로드</span></div><div id="systemRuntimeRows" class="panel-body health"><div class="empty">시스템 진단 메뉴에서만 불러옵니다.</div></div>';
+  body.insertBefore(panel,body.firstChild);
+}
+function diagnosticCount(payload){
+  return apiRecordCount(payload)||payload?.endpoints?.length||payload?.stages?.length||payload?.items?.length||0;
+}
+function diagnosticStatus(payload){
+  if(!payload)return"대기";
+  if(payload.mixed_tier_status)return"mixed";
+  if(payload.status)return String(payload.status);
+  if(payload.generated_by)return String(payload.generated_by);
+  return"ok";
+}
+function renderSystemDiagnostics(){
+  ensureSystemDiagnosticPanel();
+  const rows=$("systemRuntimeRows"),badge=$("systemRuntimeBadge");
+  const data=state.systemDiagnostics||{};
+  const loaded=Object.keys(data).length;
+  if(badge){
+    badge.className=`chip ${loaded?"good":"gray"}`;
+    badge.textContent=loaded?`${fmt(loaded)}개 파일`:"지연 로드";
+  }
+  if(!rows)return;
+  rows.innerHTML=SYSTEM_DIAGNOSTIC_ENDPOINTS.map(([key,,label])=>{
+    const payload=data[key];
+    const latest=shortTierTime(getLastUpdatedAt(payload));
+    return `<div class="health-row"><span>${esc(label)}<br><small>${esc(latest)}</small></span><b>${esc(diagnosticStatus(payload))} · ${fmt(diagnosticCount(payload))}</b></div>`;
+  }).join("");
+}
+async function loadSystemDiagnostics(){
+  if(state.systemDiagnosticsLoaded||state.systemDiagnosticsLoading){renderSystemDiagnostics();return;}
+  ensureSystemDiagnosticPanel();
+  state.systemDiagnosticsLoading=true;
+  try{
+    const results=await Promise.all(SYSTEM_DIAGNOSTIC_ENDPOINTS.map(async ([key,path])=>[key,await api(`diagnostic:${key}`,path,3500)]));
+    state.systemDiagnostics=Object.fromEntries(results.filter(([,payload])=>payload));
+    state.systemDiagnosticsLoaded=true;
+    renderSystemDiagnostics();
+  }finally{
+    state.systemDiagnosticsLoading=false;
+  }
+}
+async function loadSalesExecutionSummaries(){
+  if(state.salesExecutionSummariesLoaded||state.salesExecutionSummariesLoading)return;
+  state.salesExecutionSummariesLoading=true;
+  try{
+    const [current,categories]=await Promise.all([
+      api("targetCurrentSummary","/api/targets/current-summary.json",2500),
+      api("targetCategoriesSummary","/api/targets/categories-summary.json",2500)
+    ]);
+    state.salesExecutionSummaries={current:current||{},categories:categories||{}};
+    if(current&&sameServingMode(state.summary,current))state.summary={...state.summary,target_current_summary:current};
+    if(categories&&sameServingMode(state.summary,categories))state.summary={...state.summary,target_categories_summary:categories};
+    state.salesExecutionSummariesLoaded=true;
+    renderTargetCategories();
+  }finally{
+    state.salesExecutionSummariesLoading=false;
+  }
+}
+const setDashboardPageDesktopWorkflow=setDashboardPage;
+setDashboardPage=function(key,options={}){
+  applyDesktopWorkflowNavConfig();
+  setDashboardPageDesktopWorkflow(key,options);
+  const page=state.activePage||"overview";
+  if(page==="sales"){
+    loadInsightGroup("sales").catch(()=>{});
+    loadSalesExecutionSummaries().catch(()=>{});
+  }
+  if(page==="vessels"){
+    loadInsightGroup("advanced").catch(()=>{});
+    setBioTab(state.bioTab||"next4d");
+  }
+  if(page==="ports-fleets"){
+    loadInsightGroup("port").catch(()=>{});
+    loadInsightGroup("operator").catch(()=>{});
+    ensureTierFreshness().catch(()=>{});
+  }
+  if(page==="sources"){
+    loadInsightGroup("basic").catch(()=>{});
+    ensureTierFreshness().catch(()=>{});
+  }
+  if(page==="diagnostics"){
+    ensureTierFreshness().catch(()=>{});
+    loadSystemDiagnostics().catch(()=>{});
+  }
+  renderTierFreshness();
+};
+const applyDashboardPageDesktopWorkflow=applyDashboardPage;
+applyDashboardPage=function(){
+  applyDesktopWorkflowNavConfig();
+  applyDashboardPageDesktopWorkflow();
+  renderTierFreshness();
+};
+applyDesktopWorkflowNavConfig();
+ensureSystemDiagnosticPanel();
 loadSummary();
 </script>
 </body>
