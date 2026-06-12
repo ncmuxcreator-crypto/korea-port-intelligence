@@ -9,6 +9,7 @@ import {
   matchConfidenceBand as sharedMatchConfidenceBand
 } from "../lib/matching.js";
 import { DEFAULT_PORT_OPERATION_API_URL } from "../lib/runtime-config-audit.js";
+import { SOURCE_SCHEDULE_PATH, sourceScheduleDecisionForKey } from "../lib/source-schedule.js";
 
 const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
@@ -56,6 +57,27 @@ let diagnostics = {
   sources: []
 };
 let portsRegistryCache = null;
+let sourceScheduleCache = undefined;
+
+function loadSourceSchedule() {
+  if (sourceScheduleCache !== undefined) return sourceScheduleCache;
+  try {
+    sourceScheduleCache = fs.existsSync(SOURCE_SCHEDULE_PATH)
+      ? JSON.parse(fs.readFileSync(SOURCE_SCHEDULE_PATH, "utf8"))
+      : null;
+  } catch {
+    sourceScheduleCache = null;
+  }
+  return sourceScheduleCache;
+}
+
+function sourceScheduleSkipDecision(source = {}) {
+  const schedule = loadSourceSchedule();
+  if (!schedule?.items) return null;
+  const decision = sourceScheduleDecisionForKey(source.key, schedule);
+  if (!decision || decision.source_layer === "core" || decision.should_run_now !== false) return null;
+  return decision;
+}
 
 const FIELD_ALIASES = {
   vessel_name: ["vessel_name", "ship_name", "shipNm", "shipname", "shipName", "vsslNm", "vslNm", "vesselNm", "VSL_NM", "VSSL_NM", "vsslEngNm", "vsslKrnNm", "선박명", "선명"],
@@ -279,6 +301,7 @@ function collectorSkipReason(reason = "", { validationMode = "" } = {}) {
   if (text.includes("missing_port_operation_service_key_and_api_url") || text.includes("missing_service_key_and_api_url")) return "missing_service_key_and_api_url";
   if (text.includes("no_enabled") || text.includes("enabled_ports_count_zero")) return "no_enabled_ports";
   if (text.includes("collector_disabled") || text.includes("source_disabled")) return "collector_disabled";
+  if (text.includes("source_schedule")) return "source_schedule_window_not_due";
   if (text.includes("validation_mode_blocks")) return "validation_mode_blocks_collection";
   if ((text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) && mode === "local") return "local_no_secret_mode";
   if (text.includes("missing_port_operation_service_key") || text.includes("missing_service_key") || text.includes("embedded_key")) return "missing_service_key";
@@ -2381,6 +2404,25 @@ async function collectRealRows() {
       diag.reason = collectorSkipReason("runtime_budget_exceeded");
       diag.skip_reason = diag.reason;
       diag.raw_skip_reason = "runtime_budget_exceeded";
+      diagnostics.skipped_count += 1;
+      diagnostics.sources.push(finishDiag("skipped"));
+      continue;
+    }
+    const scheduleSkip = sourceScheduleSkipDecision(source);
+    if (scheduleSkip) {
+      diag.skipped = true;
+      diag.reason = collectorSkipReason("source_schedule_window_not_due");
+      diag.skip_reason = scheduleSkip.skip_reason || "source_schedule_window_not_due";
+      diag.raw_skip_reason = "source_schedule_window_not_due";
+      diag.source_schedule = {
+        source_key: scheduleSkip.source_key,
+        tier: scheduleSkip.tier,
+        update_frequency: scheduleSkip.update_frequency,
+        last_attempt_at: scheduleSkip.last_attempt_at || null,
+        last_success_at: scheduleSkip.last_success_at || null,
+        next_attempt_at: scheduleSkip.next_attempt_at || null,
+        should_run_now: false
+      };
       diagnostics.skipped_count += 1;
       diagnostics.sources.push(finishDiag("skipped"));
       continue;

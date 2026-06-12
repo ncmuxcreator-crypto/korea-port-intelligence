@@ -25,6 +25,7 @@ import {
   writeAuxiliarySourceCacheStatus
 } from "./lib/auxiliary-source-cache.js";
 import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
+import { buildSourceSchedulePayload } from "./lib/source-schedule.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
@@ -3854,6 +3855,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.aisDynamicSummary", "dashboard/api/aux/ais-dynamic-summary.json"],
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["aux.cacheStatus", "dashboard/api/aux/cache-status.json"],
+  ["aux.sourceSchedule", "dashboard/api/aux/source-schedule.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
@@ -18236,6 +18238,22 @@ try {
     report
   }), finalRunOrigin);
   writeAuxiliarySourceCacheStatus(auxiliarySourceCacheStatusPayload);
+  const sourceSchedulePayload = withRunOrigin(buildSourceSchedulePayload({
+    sourceCollectionStatus: sourceCollectionStatusPayload,
+    sourceQualityScore: sourceQualityScorePayload,
+    auxiliaryCacheStatus: auxiliarySourceCacheStatusPayload,
+    previousSchedule: readJsonSafe("dashboard/api/aux/source-schedule.json", {}) || {},
+    diagnostics: {
+      bootstrap: dashboardSummary,
+      status: report,
+      sourceCollectionStatus: sourceCollectionStatusPayload,
+      sourceHealthRuntime: sourceHealthRuntimeReport,
+      storageEfficiencyReport: readJsonSafe("dashboard/api/storage-efficiency-report.json", {}) || {}
+    },
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    report
+  }), finalRunOrigin);
   const healthPayload = withRunOrigin({
     run_id: report.run_id || runId,
     status_run_id: summaryStatusRunId,
@@ -18886,6 +18904,7 @@ try {
     writeApiJson(filePath, payload, report);
   }
   writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
+  writeApiJson("dashboard/api/aux/source-schedule.json", sourceSchedulePayload, report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeApiJson("dashboard/api/all-collected-vessels-summary.json", allCollectedVesselsSummaryPayload, report);
@@ -19064,6 +19083,7 @@ try {
     writeApiJson(filePath, payload, report);
   }
   writeApiJson("dashboard/api/aux/cache-status.json", auxiliarySourceCacheStatusPayload, report);
+  writeApiJson("dashboard/api/aux/source-schedule.json", sourceSchedulePayload, report);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

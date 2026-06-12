@@ -88,6 +88,7 @@ const IMPORTANT_ENDPOINTS = [
   ["aux.aisDynamicSummary", "dashboard/api/aux/ais-dynamic-summary.json"],
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
   ["aux.cacheStatus", "dashboard/api/aux/cache-status.json"],
+  ["aux.sourceSchedule", "dashboard/api/aux/source-schedule.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
