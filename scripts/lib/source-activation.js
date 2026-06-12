@@ -1,3 +1,13 @@
+const ULSAN_AUXILIARY_SOURCE_KEYS = new Set([
+  "ulsan_core",
+  "ulsan_berth_detail",
+  "ulsan_cargo_plan",
+  "ulsan_berth_operation",
+  "ulsan_terminal_process"
+]);
+
+const ULSAN_AUXILIARY_BUSINESS_IMPACT = "울산 상세 선석/화물/터미널 보강은 지연됨";
+
 const SOURCE_SPECS = [
   {
     key: "source_csv",
@@ -161,6 +171,81 @@ function classifyError(source = {}) {
   return "FETCH_FAILED";
 }
 
+function isHttp404Failure(item = {}) {
+  const text = [
+    item.skip_reason,
+    item.raw_skip_reason,
+    item.reason,
+    item.error_message,
+    item.error,
+    ...(Array.isArray(item.diagnostics) ? item.diagnostics.flatMap(diagnostic => [
+      diagnostic?.skip_reason,
+      diagnostic?.error_message,
+      diagnostic?.http_status
+    ]) : [])
+  ].filter(Boolean).join(" ").toLowerCase();
+  return /\b404\b|http 404|status 404/.test(text);
+}
+
+export function applySourcePriority(item = {}) {
+  const sourceKey = String(item.source_key || item.key || item.source_name || "");
+  const isUlsanAuxiliary = ULSAN_AUXILIARY_SOURCE_KEYS.has(sourceKey);
+  const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(item.status || ""));
+  const deferred = isUlsanAuxiliary && isFailed && isHttp404Failure(item);
+  const sourceLayer = isUlsanAuxiliary ? "auxiliary" : (item.source_layer || "core");
+  const coreBlocking = isUlsanAuxiliary ? false : item.core_blocking !== false;
+  const severity = deferred
+    ? "WARNING"
+    : item.severity || (isFailed || item.status === "PARTIAL" ? "WARNING" : "INFO");
+  return {
+    ...item,
+    source_layer: sourceLayer,
+    core_blocking: coreBlocking,
+    severity,
+    business_impact: isUlsanAuxiliary ? ULSAN_AUXILIARY_BUSINESS_IMPACT : item.business_impact,
+    fix_status: deferred ? "deferred" : (item.fix_status || (item.status === "ACTIVE" ? "active" : "needs_action")),
+    ...(deferred ? {
+      exact_fix_instruction: "Deferred: 울산 보조 소스 경로는 이후 처리",
+      fix_hint: "Deferred: 울산 보조 소스 경로는 이후 처리"
+    } : {})
+  };
+}
+
+export function normalizeSourceCollectionStatusPayload(payload = {}) {
+  const items = (Array.isArray(payload.items) ? payload.items : []).map(applySourcePriority);
+  const counts = items.reduce((acc, item) => {
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, {});
+  const sourceKeysByStatus = status => items
+    .filter(item => item.status === status)
+    .map(item => item.source_key);
+  const failedStatuses = new Set(["FETCH_FAILED", "PARSE_FAILED"]);
+  return {
+    ...payload,
+    record_count: Number(payload.record_count || items.length),
+    item_count: items.length,
+    status_counts: counts,
+    active_sources: sourceKeysByStatus("ACTIVE"),
+    not_configured_sources: sourceKeysByStatus("NOT_CONFIGURED"),
+    partial_sources: sourceKeysByStatus("PARTIAL"),
+    failed_sources: items
+      .filter(item => failedStatuses.has(item.status) && item.core_blocking !== false)
+      .map(item => item.source_key),
+    auxiliary_failed_sources: items
+      .filter(item => failedStatuses.has(item.status) && item.core_blocking === false)
+      .map(item => item.source_key),
+    deferred_sources: items
+      .filter(item => item.fix_status === "deferred")
+      .map(item => item.source_key),
+    rows_collected_by_source: Object.fromEntries(items.map(item => [
+      item.source_key,
+      Number(item.rows_collected || 0)
+    ])),
+    items
+  };
+}
+
 function missingRequiredEnv(spec, env) {
   const missing = [];
   for (const name of spec.required || []) {
@@ -241,7 +326,7 @@ function statusForSpec({ spec, env, sources }) {
     skipReason = null;
   }
 
-  return {
+  return applySourcePriority({
     source_key: spec.key,
     source_label: spec.label,
     status,
@@ -271,7 +356,7 @@ function statusForSpec({ spec, env, sources }) {
       http_status: source.http_status || null
     })),
     business_impact: spec.businessImpact
-  };
+  });
 }
 
 export function buildSourceCollectionStatus({
@@ -282,35 +367,15 @@ export function buildSourceCollectionStatus({
 } = {}) {
   const sources = Array.isArray(collectorDiagnostics.sources) ? collectorDiagnostics.sources : [];
   const items = SOURCE_SPECS.map(spec => statusForSpec({ spec, env, sources }));
-  const counts = items.reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
-    return acc;
-  }, {});
-  const sourceKeysByStatus = status => items
-    .filter(item => item.status === status)
-    .map(item => item.source_key);
-  const failedStatuses = new Set(["FETCH_FAILED", "PARSE_FAILED"]);
-  return {
+  return normalizeSourceCollectionStatusPayload({
     schema_version: "1.0",
     generated_at: generatedAt,
     run_id: report.run_id || report.active_run_id || null,
     status_run_id: report.run_id || null,
     data_mode: report.data_mode || report.data_mode_detail?.mode || "unknown",
     record_count: items.length,
-    item_count: items.length,
-    status_counts: counts,
-    active_sources: sourceKeysByStatus("ACTIVE"),
-    not_configured_sources: sourceKeysByStatus("NOT_CONFIGURED"),
-    partial_sources: sourceKeysByStatus("PARTIAL"),
-    failed_sources: items
-      .filter(item => failedStatuses.has(item.status))
-      .map(item => item.source_key),
-    rows_collected_by_source: Object.fromEntries(items.map(item => [
-      item.source_key,
-      Number(item.rows_collected || 0)
-    ])),
     items
-  };
+  });
 }
 
 export function printSourceEnvDiagnostics(env = process.env, log = console.log) {
