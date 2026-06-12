@@ -28,8 +28,11 @@ const REQUIRED_LIGHTWEIGHT_OUTPUTS = [
   "dashboard/api/aux/latest/pilotage-summary.json",
   "dashboard/api/aux/latest/berth-summary.json",
   "dashboard/api/aux/latest/ais-info-summary.json",
+  "dashboard/api/aux/latest/ais-dynamic-summary.json",
+  "dashboard/api/aux/latest/ais-stat-summary.json",
   "dashboard/api/aux/latest/vessel-spec-summary.json",
   "dashboard/api/aux/latest/cache-status.json",
+  "dashboard/api/aux/latest/patch-hints.json",
   "dashboard/api/aux/source-csv-summary.json",
   "dashboard/api/enrichment/latest/index.json",
   "dashboard/api/enrichment/latest/summary.json",
@@ -90,7 +93,8 @@ function ageHours(generatedAt) {
 function sourceOwner(sourceKey = "") {
   const key = String(sourceKey || "");
   if (key === "port_operation") return "core";
-  if (key === "source_csv" || key === "vessel_spec") return "reference_enrichment";
+  if (key === "source_csv") return "reference_enrichment";
+  if (key === "vessel_spec") return "fast_aux";
   return AUX_SOURCE_KEYS.has(key) ? "fast_aux" : "fast_aux";
 }
 

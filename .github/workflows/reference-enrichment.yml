@@ -73,7 +73,7 @@ jobs:
           const fs = require("fs");
           const status = JSON.parse(fs.readFileSync("dashboard/api/source-collection-status.json", "utf8"));
           const enrichment = JSON.parse(fs.readFileSync("dashboard/api/enrichment/latest/index.json", "utf8"));
-          const owned = new Set(["source_csv", "vessel_spec"]);
+          const owned = new Set(["source_csv"]);
           const refreshedSources = (status.items || []).filter(item =>
             owned.has(item.source_key) &&
             ["ACTIVE", "PARTIAL"].includes(String(item.status || "").toUpperCase()) &&

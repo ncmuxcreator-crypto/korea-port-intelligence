@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:03:42.049Z",
+  "generated_at": "2026-06-12T18:39:25.859Z",
   "data_mode": "live",
   "source_table": "vessel_snapshots",
-  "record_count": 1010,
+  "record_count": 1009,
   "item_count": 0,
   "counts": {
-    "raw_rows_collected": 2642,
-    "total_detected_vessels": 1010,
-    "unique_vessel_count": 1010,
-    "gt_known_count": 1010,
+    "raw_rows_collected": 2643,
+    "total_detected_vessels": 1009,
+    "unique_vessel_count": 1009,
+    "gt_known_count": 1009,
     "gt_5000_plus_count": 605,
-    "gt_below_5000_count": 405,
+    "gt_below_5000_count": 404,
     "gt_unknown_count": 0,
-    "detail_eligible_vessel_count": 667,
+    "detail_eligible_vessel_count": 668,
     "sales_target_count": 32,
     "immediate_targets_current_count": 0,
     "contact_now_count": 32,
@@ -27,18 +27,18 @@
     "gt_below_5000_count": "전체 항만 활동에는 포함하지만 상세 영업 분석에서는 기본 제외하는 5천GT 미만 선박 수입니다.",
     "gt_unknown_count": "GT가 없어 0으로 취급하지 않고 별도 분리한 선박 수입니다."
   },
-  "raw_rows": 2642,
-  "raw_rows_collected": 2642,
-  "normalized_rows": 1010,
-  "total_detected_vessels": 1010,
-  "unique_vessel_count": 1010,
-  "total_vessels": 1010,
-  "display_vessel_count": 667,
-  "gt_known_count": 1010,
+  "raw_rows": 2643,
+  "raw_rows_collected": 2643,
+  "normalized_rows": 1009,
+  "total_detected_vessels": 1009,
+  "unique_vessel_count": 1009,
+  "total_vessels": 1009,
+  "display_vessel_count": 668,
+  "gt_known_count": 1009,
   "gt_5000_plus_count": 605,
-  "gt_below_5000_count": 405,
+  "gt_below_5000_count": 404,
   "gt_unknown_count": 0,
-  "detail_eligible_vessel_count": 667,
+  "detail_eligible_vessel_count": 668,
   "sales_target_count": 32,
   "immediate_targets_current_count": 0,
   "sales_actions_count": 62,
@@ -46,40 +46,40 @@
   "contact_now_vessel_count": 32,
   "contact_now_action_count": 35,
   "monitor_count": 2,
-  "monitor_candidate_count": 874,
+  "monitor_candidate_count": 873,
   "excluded_count": 71,
   "duplicate_removed_count": 0,
   "count_deltas": {
-    "raw_to_normalized_delta": 1632,
+    "raw_to_normalized_delta": 1634,
     "normalized_to_display_delta": 0,
-    "detected_to_detail_eligible_delta": 343,
-    "detail_eligible_to_sales_target_delta": 635,
+    "detected_to_detail_eligible_delta": 341,
+    "detail_eligible_to_sales_target_delta": 636,
     "sales_actions_to_sales_target_delta": 30,
     "contact_now_actions_to_vessels_delta": 3
   },
   "ratios": {
-    "detail_eligible_coverage_pct": 66,
+    "detail_eligible_coverage_pct": 66.2,
     "sales_target_ratio_pct": 3.2
   },
   "count_explanations": [
     {
       "field": "raw_rows_collected",
-      "value": 2642,
+      "value": 2643,
       "explanation": "외부/수집 원천에서 들어온 원시 행 수입니다. 같은 선박의 반복 관측이나 항만 이벤트가 포함될 수 있습니다."
     },
     {
       "field": "normalized_rows",
-      "value": 1010,
+      "value": 1009,
       "explanation": "원시 행을 선박/항만 기준으로 정규화한 뒤의 행 수입니다. 아직 동일 선박 중복 관측이 남아 있을 수 있습니다."
     },
     {
       "field": "total_detected_vessels",
-      "value": 1010,
+      "value": 1009,
       "explanation": "5천GT 미만과 GT 미확인 선박까지 포함한 전체 감지 선박 수입니다."
     },
     {
       "field": "detail_eligible_vessel_count",
-      "value": 667,
+      "value": 668,
       "explanation": "상세 영업 분석 대상으로 기본 표시되는 5천GT 이상 선박 수입니다. 명시적 예외 신호가 있는 선박도 포함될 수 있습니다."
     },
     {
@@ -94,7 +94,7 @@
     },
     {
       "field": "gt_below_5000_count",
-      "value": 405,
+      "value": 404,
       "explanation": "전체 항만 활동에는 포함하지만 상세 영업 분석에서는 기본 제외하는 5천GT 미만 선박 수입니다."
     },
     {
@@ -144,12 +144,12 @@
     }
   ],
   "items": [],
-  "run_id": "run_20260612175908816_801fb42c",
-  "source_run_id": "run_20260612175908816_801fb42c",
+  "run_id": "run_20260612183635978_2c565eee",
+  "source_run_id": "run_20260612183635978_2c565eee",
   "snapshot_context": {
-    "run_id": "run_20260612175908816_801fb42c",
-    "generated_at": "2026-06-12T18:03:42.049Z",
+    "run_id": "run_20260612183635978_2c565eee",
+    "generated_at": "2026-06-12T18:39:25.859Z",
     "data_mode": "live",
-    "source_run_id": "run_20260612175908816_801fb42c"
+    "source_run_id": "run_20260612183635978_2c565eee"
   }
 }

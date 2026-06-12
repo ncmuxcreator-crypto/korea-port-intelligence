@@ -61,9 +61,17 @@ jobs:
         timeout-minutes: 15
         run: npm run update:fast-aux
 
+      - name: Audit fast auxiliary cache
+        if: always()
+        run: npm run audit:fast-aux
+
       - name: Validate
         if: always()
         run: npm run validate
+
+      - name: Build
+        if: always()
+        run: npm run build
 
       - name: Guard fast auxiliary refresh
         run: |
@@ -104,6 +112,7 @@ jobs:
           add_if_exists dashboard/api/aux/berth-summary.json
           add_if_exists dashboard/api/aux/ais-info-summary.json
           add_if_exists dashboard/api/aux/ais-dynamic-summary.json
+          add_if_exists dashboard/api/aux/ais-stat-summary.json
           add_if_exists dashboard/api/aux/vessel-spec-summary.json
           add_if_exists dashboard/api/aux/cache-status.json
           add_if_exists dashboard/api/aux/source-schedule.json
@@ -128,6 +137,7 @@ jobs:
             dashboard/api/aux/berth-summary.json
             dashboard/api/aux/ais-info-summary.json
             dashboard/api/aux/ais-dynamic-summary.json
+            dashboard/api/aux/ais-stat-summary.json
             dashboard/api/aux/vessel-spec-summary.json
             dashboard/api/aux/cache-status.json
             dashboard/api/runtime/update-tiers.json

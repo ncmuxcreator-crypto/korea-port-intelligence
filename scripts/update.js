@@ -3628,7 +3628,8 @@ function localCorePreservationMetadata(base = {}, previous = {}, generatedAt = n
 function sourceOwnerTier(sourceKey = "") {
   const key = String(sourceKey || "");
   if (CORE_SOURCE_KEYS.has(key)) return "core";
-  if (key === "source_csv" || key === "vessel_spec") return "reference_enrichment";
+  if (key === "source_csv") return "reference_enrichment";
+  if (key === "vessel_spec") return "fast_aux";
   return "fast_aux";
 }
 
@@ -4304,7 +4305,7 @@ function buildAuxSummaryEnhancements({
     };
   }
 
-  if (["ais_info", "ais_dynamic"].includes(summaryKey)) {
+  if (["ais_info", "ais_dynamic", "ais_stat"].includes(summaryKey)) {
     const smokeLevel = rowsCollected > 0 && rowsCollected <= 10;
     return {
       ...base,
@@ -4317,6 +4318,102 @@ function buildAuxSummaryEnhancements({
   }
 
   return base;
+}
+
+const AUX_SUMMARY_SOURCE_NAMES = {
+  pilot_sources: "Pilotage Sources",
+  berth_sources: "Berth / PNC Sources",
+  mof_ais_info: "MOF AIS Info",
+  mof_ais_dynamic: "MOF AIS Dynamic",
+  mof_ais_stat: "MOF AIS Statistics",
+  vessel_spec: "Vessel Specification"
+};
+
+const AUX_SUMMARY_STALE_WARNING_HOURS = {
+  pilot_sources: 12,
+  berth_sources: 12,
+  mof_ais_info: 24,
+  mof_ais_dynamic: 24,
+  mof_ais_stat: 24,
+  vessel_spec: 24 * 7
+};
+
+function auxSummaryPrimarySourceKey(sourceKeys = [], summaryKey = "") {
+  const keys = (Array.isArray(sourceKeys) ? sourceKeys : []).filter(Boolean);
+  return keys.length === 1 ? keys[0] : summaryKey;
+}
+
+function auxSummaryHttpStatus(items = [], diagnostics = []) {
+  const explicit = [
+    ...items.map(item => item.http_status),
+    ...diagnostics.map(item => item.http_status)
+  ].find(value => value !== undefined && value !== null && value !== "");
+  return explicit ?? null;
+}
+
+function auxSummaryRowsMatchedToVessels({ summaryKey = "", rowsNormalized = 0, enhancements = {}, matchingDiagnostics = {}, report = {} } = {}) {
+  if (Number(enhancements.matched_vessels || 0) > 0) return Number(enhancements.matched_vessels || 0);
+  if (summaryKey === "pilotage") {
+    return Number(report.pilotage_enrichment?.matched_vessels || report.pilotage_enrichment?.applied_to_records || enhancements.pilotage_signal_count || 0);
+  }
+  if (summaryKey === "berth") {
+    return Number(matchingDiagnostics.pnc_rows_matched || matchingDiagnostics.berth_rows_matched || enhancements.berth_signal_count || 0);
+  }
+  if (["ais_info", "ais_dynamic", "ais_stat", "vessel_spec"].includes(summaryKey)) {
+    return Number(enhancements.matched_vessels || rowsNormalized || 0);
+  }
+  return Number(enhancements.matched_vessels || 0);
+}
+
+function auxSummaryLooksUseful(payload = {}) {
+  const status = String(payload.status || "").toUpperCase();
+  const usefulRows = Number(payload.rows_normalized || 0) +
+    Number(payload.rows_matched_to_vessels || 0) +
+    Number(payload.matched_vessels || 0) +
+    Number(payload.pilotage_signal_count || 0) +
+    Number(payload.berth_signal_count || 0);
+  return ["ACTIVE", "PARTIAL"].includes(status) && (Number(payload.rows_collected || 0) > 0 || usefulRows > 0);
+}
+
+function auxSummaryCurrentAttemptFailed(payload = {}) {
+  const status = String(payload.status || "").toUpperCase();
+  if (["FETCH_FAILED", "PARSE_FAILED", "SOURCE_TOO_LARGE", "NOT_CONFIGURED", "SKIPPED", "NOT_ATTEMPTED"].includes(status)) return true;
+  return Number(payload.rows_collected || 0) <= 0 && Number(payload.rows_normalized || 0) <= 0 && payload.configured === false;
+}
+
+function protectAuxSummaryForFastAux({ payload = {}, previous = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  if (UPDATE_MODE !== "fast_aux") return payload;
+  const previousUseful = previous && typeof previous === "object" && auxSummaryLooksUseful(previous);
+  if (!previousUseful || !auxSummaryCurrentAttemptFailed(payload)) return payload;
+  const cacheAgeHours = cacheAgeHoursFrom(previous.generated_at, generatedAt);
+  const sourceKey = payload.source_key || previous.source_key || "";
+  const staleWarningHours = AUX_SUMMARY_STALE_WARNING_HOURS[sourceKey] || 48;
+  const currentAttemptError = payload.blocker_reason || payload.skip_reasons?.[0] || payload.fix_hint || payload.recommended_fix || "";
+  return {
+    ...previous,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    aux_run_id: previous.aux_run_id || previous.run_id || previous.source_run_id || null,
+    using_previous_cache: true,
+    previous_cache_available: true,
+    previous_rows_collected: Number(previous.rows_collected || 0),
+    previous_rows_normalized: Number(previous.rows_normalized || 0),
+    previous_rows_matched_to_vessels: Number(previous.rows_matched_to_vessels || previous.matched_vessels || 0),
+    current_attempt_status: payload.status || "UNKNOWN",
+    current_attempt_error: currentAttemptError,
+    current_attempt_generated_at: generatedAt,
+    current_attempt_run_id: origin.run_id || payload.run_id || runId,
+    cache_status: cacheAgeHours !== null && cacheAgeHours > staleWarningHours ? "STALE_PREVIOUS" : "PREVIOUS",
+    cache_age_hours: cacheAgeHours,
+    stale_warning_hours: staleWarningHours,
+    stale_diagnostic: cacheAgeHours !== null && cacheAgeHours > staleWarningHours,
+    stale_reason: cacheAgeHours !== null && cacheAgeHours > staleWarningHours
+      ? `Previous fast_aux cache is older than ${staleWarningHours} hours.`
+      : "",
+    preservation_reason: "Fast auxiliary source failed; previous successful cache summary preserved.",
+    fast_aux_attempted_run_id: origin.run_id || payload.run_id || runId,
+    fast_aux_attempted_at: generatedAt
+  };
 }
 
 function buildAuxSourceSummaryPayload({
@@ -4352,22 +4449,65 @@ function buildAuxSourceSummaryPayload({
     matchingDiagnostics,
     bootstrapKpis
   });
+  const sourceKey = auxSummaryPrimarySourceKey(sourceKeys, summaryKey);
+  const sourceName = AUX_SUMMARY_SOURCE_NAMES[sourceKey] || title || summaryKey;
+  const httpStatus = auxSummaryHttpStatus(items, diagnostics);
+  const rowsMatchedToVessels = auxSummaryRowsMatchedToVessels({
+    summaryKey,
+    rowsNormalized,
+    enhancements,
+    matchingDiagnostics,
+    report
+  });
+  const staleWarningHours = AUX_SUMMARY_STALE_WARNING_HOURS[sourceKey] || 48;
+  const blocker = [...new Set([
+    ...items.map(item => item.blocker_reason || item.skip_reason || item.error_message || "").filter(Boolean),
+    ...(Array.isArray(enhancements.parser_blockers) ? enhancements.parser_blockers : [])
+  ])][0] || "";
+  const fixHint = items.find(item => item.fix_hint || item.exact_fix_instruction)?.fix_hint ||
+    items.find(item => item.exact_fix_instruction)?.exact_fix_instruction ||
+    "";
   return withRunOrigin({
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
+    aux_run_id: report.run_id || runId,
+    owner_tier: "fast_aux",
+    core_may_update: false,
     data_mode: contractDataMode(dataMode, report),
-    source_key: summaryKey,
+    source_key: sourceKey,
+    summary_key: summaryKey,
+    source_name: sourceName,
     title,
     status,
+    current_attempt_status: status,
+    current_attempt_error: blocker,
     source_layer: "auxiliary",
     load_strategy: "lazy",
     startup_safe: false,
     core_blocking: false,
     configured,
+    attempted,
     collector_enabled: items.some(item => item.collector_enabled !== false && item.status !== "NOT_CONFIGURED"),
     collector_attempted: attempted,
+    http_status: httpStatus,
     rows_collected: rowsCollected,
     rows_normalized: rowsNormalized,
+    rows_matched_to_vessels: rowsMatchedToVessels,
+    cache_status: auxSummaryLooksUseful({ status, rows_collected: rowsCollected, rows_normalized: rowsNormalized, rows_matched_to_vessels: rowsMatchedToVessels })
+      ? "CURRENT"
+      : status === "NOT_CONFIGURED"
+        ? "NOT_CONFIGURED"
+        : "EMPTY",
+    using_previous_cache: false,
+    previous_cache_available: false,
+    previous_rows_collected: 0,
+    previous_rows_normalized: 0,
+    previous_rows_matched_to_vessels: 0,
+    cache_age_hours: 0,
+    stale_warning_hours: staleWarningHours,
+    stale_diagnostic: false,
+    blocker_reason: blocker,
+    recommended_fix: fixHint,
     rows_with_imo: diag.rows_with_imo,
     rows_with_mmsi: diag.rows_with_mmsi,
     rows_with_gt: diag.rows_with_gt,
@@ -4378,13 +4518,106 @@ function buildAuxSourceSummaryPayload({
     missing_env: missingEnv,
     skip_reasons: [...new Set(items.map(item => item.skip_reason || item.error_message || "").filter(Boolean))].slice(0, 10),
     business_impact: items.find(item => item.business_impact)?.business_impact || "",
-    fix_hint: items.find(item => item.fix_hint || item.exact_fix_instruction)?.fix_hint || items.find(item => item.exact_fix_instruction)?.exact_fix_instruction || "",
+    fix_hint: fixHint,
     diagnostic_summary: diag,
     ...enhancements,
     detail_endpoint: "dashboard/api/source-collection-status.json",
     recommendation: "Detailed source diagnostics are available in source-collection-status and should be loaded only on demand.",
     record_count: rowsCollected,
     item_count: 0
+  }, buildRunOrigin({
+    runId: report.run_id,
+    validationMode: VALIDATION_MODE,
+    servingMode: shouldWriteDebugApiOutputs(report) ? "local_diagnostics" : "static_json"
+  }));
+}
+
+function compactAuxSignalPatch(signal = {}, signalType = "") {
+  const source = signalType === "pilotage_signal" ? "pilot_sources" : "berth_sources";
+  if (!signal || typeof signal !== "object") return null;
+  if (signalType === "pilotage_signal") {
+    return {
+      has_pilotage: signal.has_pilotage === true,
+      pilotage_status: signal.pilotage_status || signal.status || null,
+      pilotage_time: signal.pilotage_time || signal.pilot_time || null,
+      pilotage_time_text: signal.pilotage_time_text || null,
+      pilotage_direction: signal.pilotage_direction || signal.direction || null,
+      direction: signal.direction || signal.pilotage_direction || null,
+      pilot_station: signal.pilot_station || signal.pilotage_station || null,
+      confidence: nullableDisplayNumber(signal.confidence, signal.pilotage_confidence, 90),
+      match_type: signal.match_type || "aux_patch_hint",
+      source: signal.source || signal.pilotage_source || source,
+      updated_at: signal.updated_at || null
+    };
+  }
+  return {
+    has_berth_info: signal.has_berth_info === true || signal.has_berth === true,
+    has_berth: signal.has_berth === true || signal.has_berth_info === true,
+    berth: signal.berth || signal.berth_name || null,
+    terminal: signal.terminal || signal.terminal_name || null,
+    eta: signal.eta || null,
+    etb: signal.etb || null,
+    ata: signal.ata || null,
+    atb: signal.atb || null,
+    operation_status: signal.operation_status || null,
+    confidence: nullableDisplayNumber(signal.confidence, signal.berth_confidence, 90),
+    match_type: signal.match_type || "aux_patch_hint",
+    source: signal.source || source,
+    updated_at: signal.updated_at || null
+  };
+}
+
+function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toISOString(), auxIndex = {}, report = {} } = {}) {
+  const items = [];
+  const seen = new Set();
+  for (const record of Array.isArray(records) ? records : []) {
+    const display = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
+    const vesselKey = String(firstNonEmpty(display.vessel_key, record.vessel_key, vesselPatchKey(record)) || "").trim();
+    if (!vesselKey) continue;
+    const candidates = [
+      ["pilotage_signal", display.pilotage_signal || record.pilotage_signal, "pilot_sources"],
+      ["berth_signal", display.berth_signal || record.berth_signal, "berth_sources"]
+    ];
+    for (const [signalType, signal, sourceKey] of candidates) {
+      if (!signal || typeof signal !== "object") continue;
+      if (signalType === "pilotage_signal" && signal.has_pilotage !== true) continue;
+      if (signalType === "berth_signal" && signal.has_berth_info !== true && signal.has_berth !== true) continue;
+      const fieldPatch = compactAuxSignalPatch(signal, signalType);
+      if (!fieldPatch) continue;
+      const confidence = Number(fieldPatch.confidence || signal.confidence || 90);
+      if (confidence < 85) continue;
+      const id = `${vesselKey}:${signalType}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      items.push({
+        vessel_key: vesselKey,
+        signal_type: signalType,
+        field_patch: fieldPatch,
+        confidence,
+        match_type: fieldPatch.match_type || signal.match_type || "aux_patch_hint",
+        source_key: sourceKey,
+        source_generated_at: fieldPatch.updated_at || auxIndex.generated_at || generatedAt
+      });
+    }
+  }
+  return withRunOrigin({
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    aux_run_id: auxIndex.aux_run_id || auxIndex.run_id || report.run_id || null,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    source_run_id: auxIndex.source_run_id || auxIndex.aux_run_id || auxIndex.run_id || report.run_id || null,
+    source_endpoint: "dashboard/api/aux/latest/index.json",
+    patch_policy: "Compact non-raw auxiliary signal hints only. Identity conflicts stay in enrichment review.",
+    load_strategy: "lazy",
+    startup_safe: false,
+    record_count: items.length,
+    item_count: items.length,
+    signal_type_counts: items.reduce((acc, item) => {
+      acc[item.signal_type] = (acc[item.signal_type] || 0) + 1;
+      return acc;
+    }, {}),
+    items
   }, buildRunOrigin({
     runId: report.run_id,
     validationMode: VALIDATION_MODE,
@@ -4430,8 +4663,10 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.latestBerth", "dashboard/api/aux/latest/berth-summary.json"],
   ["aux.latestAisInfo", "dashboard/api/aux/latest/ais-info-summary.json"],
   ["aux.latestAisDynamic", "dashboard/api/aux/latest/ais-dynamic-summary.json"],
+  ["aux.latestAisStat", "dashboard/api/aux/latest/ais-stat-summary.json"],
   ["aux.latestVesselSpec", "dashboard/api/aux/latest/vessel-spec-summary.json"],
   ["aux.latestCacheStatus", "dashboard/api/aux/latest/cache-status.json"],
+  ["aux.latestPatchHints", "dashboard/api/aux/latest/patch-hints.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
@@ -18698,6 +18933,98 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
   };
 }
 
+function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString() } = {}) {
+  if (!IS_CORE_UPDATE) return { applied: 0, available: false, skipped_reason: "not_core_update" };
+  const payload = readJsonSafe("dashboard/api/aux/latest/patch-hints.json", null);
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  if (!items.length) return { applied: 0, available: false, skipped_reason: "no_aux_patch_hints" };
+  const recordByKey = new Map();
+  for (const record of records) {
+    const key = cachedPatchRecordVesselKey(record);
+    if (key && !recordByKey.has(key)) recordByKey.set(key, record);
+  }
+  let applied = 0;
+  let patchesEligible = 0;
+  const recordsUpdated = new Set();
+  const displayRecordsUpdated = new Set();
+  const fieldsAppliedByName = {};
+  const skippedByReason = {};
+  const skip = reason => {
+    skippedByReason[reason] = (skippedByReason[reason] || 0) + 1;
+  };
+  for (const item of items) {
+    const signalType = String(item.signal_type || "").trim();
+    const field = signalType === "pilotage_signal" || signalType === "berth_signal" ? signalType : "";
+    if (!field) {
+      skip("identity_or_unknown_hint_not_auto_applied");
+      continue;
+    }
+    const confidence = Number(item.confidence || item.match_confidence || 0);
+    const patch = item.field_patch && typeof item.field_patch === "object" ? item.field_patch : {};
+    const clearOperationalSignal = field === "pilotage_signal"
+      ? patch.has_pilotage === true
+      : patch.has_berth_info === true || patch.has_berth === true;
+    if (confidence < 85 && !clearOperationalSignal) {
+      skip("low_confidence");
+      continue;
+    }
+    patchesEligible += 1;
+    const key = String(item.vessel_key || item.target_vessel_key || "").trim().toUpperCase();
+    if (!key) {
+      skip("missing_vessel_key");
+      continue;
+    }
+    const record = recordByKey.get(key);
+    if (!record) {
+      skip("record_not_found");
+      continue;
+    }
+    const currentValue = record[field] ?? record.vessel_display?.[field];
+    const candidateValue = normalizeCachedSignalValue(field, patch, {
+      source_key: item.source_key || "aux_patch_hints",
+      match_confidence: confidence,
+      source_timestamp: item.source_generated_at || payload.generated_at || generatedAt
+    }, generatedAt);
+    if (!cachedPatchHasCandidateValue(candidateValue)) {
+      skip("empty_patch");
+      continue;
+    }
+    const nextValue = mergeCachedSignalValue(field, currentValue, candidateValue);
+    record[field] = nextValue;
+    if (!record.vessel_display || typeof record.vessel_display !== "object") record.vessel_display = {};
+    record.vessel_display[field] = nextValue;
+    record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
+    record.data_lineage[field] = {
+      source: item.source_key || "aux_patch_hints",
+      confidence: confidence || null,
+      updated_at: item.source_generated_at || payload.generated_at || generatedAt,
+      aux_patch_hint: true
+    };
+    record.vessel_display.data_lineage = record.vessel_display.data_lineage && typeof record.vessel_display.data_lineage === "object"
+      ? record.vessel_display.data_lineage
+      : {};
+    record.vessel_display.data_lineage[field] = record.data_lineage[field];
+    record.aux_patch_hint_applied = true;
+    record.vessel_display.aux_patch_hint_applied = true;
+    recordsUpdated.add(key);
+    displayRecordsUpdated.add(key);
+    fieldsAppliedByName[field] = (fieldsAppliedByName[field] || 0) + 1;
+    applied += 1;
+  }
+  return {
+    applied,
+    available: true,
+    patch_count: items.length,
+    patches_eligible: patchesEligible,
+    records_updated: recordsUpdated.size,
+    vessel_display_records_updated: displayRecordsUpdated.size,
+    fields_applied_by_name: fieldsAppliedByName,
+    skipped_by_reason: skippedByReason,
+    source_generated_at: payload.generated_at || null,
+    cache_age_hours: cacheAgeHoursFrom(payload.generated_at, generatedAt)
+  };
+}
+
 function mergeCachedPatchResults(...results) {
   const valid = results.filter(result => result && typeof result === "object");
   if (!valid.length) return {};
@@ -19099,15 +19426,23 @@ try {
   );
   const outputCachedPatchStage = beginRuntimeStage("apply cached aux/enrichment patches to output records");
   const outputCachedPatchResult = applyCachedEnrichmentPatches(allCollectedVessels, { generatedAt: completedAt });
+  const auxPatchHintResult = applyAuxPatchHints(allCollectedVessels, { generatedAt: completedAt });
   endRuntimeStage(
     outputCachedPatchStage,
-    outputCachedPatchResult.available ? "completed" : "skipped",
-    outputCachedPatchResult.skipped_reason || null
+    outputCachedPatchResult.available || auxPatchHintResult.available ? "completed" : "skipped",
+    outputCachedPatchResult.skipped_reason || auxPatchHintResult.skipped_reason || null
   );
   if (outputCachedPatchResult.available) {
     identityResolutionDiagnostics.cached_enrichment_patches = mergeCachedPatchResults(
       identityResolutionDiagnostics.cached_enrichment_patches || {},
       outputCachedPatchResult
+    );
+  }
+  if (auxPatchHintResult.available) {
+    identityResolutionDiagnostics.aux_patch_hints = auxPatchHintResult;
+    identityResolutionDiagnostics.cached_enrichment_patches = mergeCachedPatchResults(
+      identityResolutionDiagnostics.cached_enrichment_patches || {},
+      auxPatchHintResult
     );
   }
   pilotageEnrichmentDiagnostics = await enrichRecordsWithPilotageEvents(allCollectedVessels, {
@@ -19979,9 +20314,15 @@ try {
     }),
     "dashboard/api/aux/ais-dynamic-summary.json": buildAuxSourceSummaryPayload({
       ...auxSummaryOptions,
-      sourceKeys: ["mof_ais_dynamic", "mof_ais_stat"],
+      sourceKeys: ["mof_ais_dynamic"],
       summaryKey: "ais_dynamic",
       title: "AIS 동정/통계 요약"
+    }),
+    "dashboard/api/aux/ais-stat-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["mof_ais_stat"],
+      summaryKey: "ais_stat",
+      title: "AIS statistics summary"
     }),
     "dashboard/api/aux/vessel-spec-summary.json": buildAuxSourceSummaryPayload({
       ...auxSummaryOptions,
@@ -19992,9 +20333,14 @@ try {
   };
   const auxSourceSummaryPayloads = Object.fromEntries(Object.entries(auxSourceSummaryPayloadsRaw).map(([filePath, payload]) => [
     filePath,
-    protectAuxDiagnosticPayloadForCore({
-      payload,
-      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+    protectAuxSummaryForFastAux({
+      payload: protectAuxDiagnosticPayloadForCore({
+        payload,
+        sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+        generatedAt: completedAt,
+        origin: finalRunOrigin
+      }),
+      previous: readJsonSafe(filePath, null) || {},
       generatedAt: completedAt,
       origin: finalRunOrigin
     })
@@ -20008,7 +20354,8 @@ try {
       berth_sources: auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
       vessel_spec: auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
       mof_ais_info: auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
-      mof_ais_dynamic: auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"]
+      mof_ais_dynamic: auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
+      mof_ais_stat: auxSourceSummaryPayloads["dashboard/api/aux/ais-stat-summary.json"]
     },
     previousCache: readAuxiliarySourceCacheStatus(),
     generatedAt: completedAt,
@@ -20723,14 +21070,17 @@ try {
     "berth-summary.json",
     "ais-info-summary.json",
     "ais-dynamic-summary.json",
+    "ais-stat-summary.json",
     "vessel-spec-summary.json",
-    "cache-status.json"
+    "cache-status.json",
+    "patch-hints.json"
   ];
   const auxLatestPayloads = {
     "dashboard/api/aux/latest/pilotage-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
     "dashboard/api/aux/latest/berth-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
     "dashboard/api/aux/latest/ais-info-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
     "dashboard/api/aux/latest/ais-dynamic-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
+    "dashboard/api/aux/latest/ais-stat-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-stat-summary.json"],
     "dashboard/api/aux/latest/vessel-spec-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
     "dashboard/api/aux/latest/cache-status.json": auxiliarySourceCacheStatusPayload
   };
@@ -20747,6 +21097,21 @@ try {
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     generatedAt: completedAt,
     origin: finalRunOrigin
+  });
+  auxLatestPayloads["dashboard/api/aux/latest/patch-hints.json"] = protectCachedTierPayloadForCore({
+    payload: buildAuxPatchHintsPayload({
+      records: allCollectedVessels,
+      generatedAt: completedAt,
+      auxIndex: auxLatestIndexPayload,
+      report
+    }),
+    previous: readJsonSafe("dashboard/api/aux/latest/patch-hints.json", null) || {},
+    ownerTier: "fast_aux",
+    runIdField: "aux_run_id",
+    runIdValue: auxLatestIndexPayload.aux_run_id,
+    generatedAt: completedAt,
+    origin: finalRunOrigin,
+    preservationReason: AUXILIARY_QUALITY_PRESERVATION_NOTE
   });
   for (const [filePath, payload] of Object.entries(auxLatestPayloads)) {
     writeApiJson(filePath, protectCachedTierPayloadForCore({

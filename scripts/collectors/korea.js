@@ -67,7 +67,8 @@ const REFERENCE_ENRICHMENT_COLLECTOR_MODES = new Set(["reference_enrichment"]);
 function collectorSourceTier(source = {}) {
   const key = String(source.key || source.source_name || "");
   if (key.startsWith("port_operation_") || key === "port_operation") return "core";
-  if (key === "source_csv" || key === "vessel_spec") return "reference_enrichment";
+  if (key === "source_csv") return "reference_enrichment";
+  if (key === "vessel_spec") return "fast_aux";
   if (
     key.startsWith("pilot_source_") ||
     key.startsWith("pnc_source_") ||

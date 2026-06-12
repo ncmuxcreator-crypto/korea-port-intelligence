@@ -23,7 +23,7 @@
   "fallback_used": false,
   "supabase_write_status": "completed",
   "dataset_promotion_status": "promoted",
-  "local_core_non_promoted": false,
+  "local_core_non_promoted": true,
   "data_continuity": {
     "status": "healthy",
     "storage_verification_status": {
@@ -106,5 +106,12 @@
     "generated_at": "2026-06-12T18:12:31.333Z",
     "data_mode": "live",
     "source_run_id": "run_20260612180712000_4efc3b84"
-  }
+  },
+  "local_core_run_id": "run_20260612183635978_2c565eee",
+  "local_core_generated_at": "2026-06-12T18:39:25.859Z",
+  "local_core_generated_by": "local",
+  "local_core_status_summary_preserved": true,
+  "local_core_note": "Local core diagnostics were generated, but production status-summary remains canonical until a GitHub Actions production run promotes the dataset.",
+  "mixed_tier_status": true,
+  "mixed_tier_note": "Production status-summary is preserved while local core diagnostics are non-promoted."
 }

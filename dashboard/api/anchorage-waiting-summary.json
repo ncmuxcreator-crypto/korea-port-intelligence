@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T18:03:42.049Z",
+  "generated_at": "2026-06-12T18:39:25.859Z",
   "data_mode": "live",
-  "record_count": 322,
+  "record_count": 321,
   "item_count": 5,
   "source_table": "vessel_snapshots",
   "detail_endpoint": "dashboard/api/anchorage-waiting.json",
-  "total_count": 322,
+  "total_count": 321,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 257,
+    "0_49": 256,
     "50_69": 25,
     "70_84": 7,
     "85_100": 33,
@@ -17,10 +17,10 @@
   },
   "priority_counts": {
     "WARM": 12,
-    "LOW": 310
+    "LOW": 309
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 65,
+    "VERIFY_CONTACT": 64,
     "MONITOR": 232,
     "CONTACT_NOW": 3,
     "HOLD": 22
@@ -236,7 +236,7 @@
     {
       "severity": "INFO",
       "feature": "묘박/대기 선박",
-      "message": "상세 322건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 321건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/anchorage-waiting.json lazy load 사용"
     }
   ]

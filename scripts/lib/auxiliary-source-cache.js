@@ -10,7 +10,8 @@ export const AUXILIARY_CACHE_SOURCE_KEYS = [
   "berth_sources",
   "vessel_spec",
   "mof_ais_info",
-  "mof_ais_dynamic"
+  "mof_ais_dynamic",
+  "mof_ais_stat"
 ];
 
 const SUMMARY_PATH_BY_SOURCE = {
@@ -19,7 +20,18 @@ const SUMMARY_PATH_BY_SOURCE = {
   berth_sources: "dashboard/api/aux/berth-summary.json",
   vessel_spec: "dashboard/api/aux/vessel-spec-summary.json",
   mof_ais_info: "dashboard/api/aux/ais-info-summary.json",
-  mof_ais_dynamic: "dashboard/api/aux/ais-dynamic-summary.json"
+  mof_ais_dynamic: "dashboard/api/aux/ais-dynamic-summary.json",
+  mof_ais_stat: "dashboard/api/aux/ais-stat-summary.json"
+};
+
+const STALE_WARNING_HOURS_BY_SOURCE = {
+  pilot_sources: 12,
+  berth_sources: 12,
+  mof_ais_info: 24,
+  mof_ais_dynamic: 24,
+  mof_ais_stat: 24,
+  vessel_spec: 24 * 7,
+  source_csv: 24 * 7
 };
 
 const FAILURE_STATUSES = new Set([
@@ -80,6 +92,18 @@ function usefulRecordCount(sourceKey, item = {}, summary = {}) {
     return number(summary.rows_normalized || item.rows_normalized, 0);
   }
   return number(summary.rows_normalized || item.rows_normalized || summary.record_count, 0);
+}
+
+function rowsMatchedToVessels(item = {}, summary = {}) {
+  return number(
+    summary.rows_matched_to_vessels ??
+    summary.matched_vessels ??
+    summary.pilotage_signal_count ??
+    summary.berth_signal_count ??
+    item.rows_matched_to_vessels ??
+    item.rows_matched,
+    0
+  );
 }
 
 function hasUsefulCurrentCache(sourceKey, item = {}, summary = {}) {
@@ -144,21 +168,32 @@ export function buildAuxiliarySourceCacheStatusPayload({
     const lastSuccessRecordCount = currentUseful ? currentCount : previousSuccessCount;
     const cacheAgeHours = lastSuccessAt ? hoursBetween(generatedAt, lastSuccessAt) : null;
     const usingPreviousCache = !currentUseful && lastSuccessRecordCount > 0;
-    const stale = usingPreviousCache && cacheAgeHours !== null && cacheAgeHours > 48;
+    const staleWarningHours = STALE_WARNING_HOURS_BY_SOURCE[sourceKey] || 48;
+    const stale = usingPreviousCache && cacheAgeHours !== null && cacheAgeHours > staleWarningHours;
     const blocker = currentUseful ? "" : blockerReason(item, summary);
+    const currentAttemptError = currentUseful ? "" : blocker || item.error_message || item.skip_reason || "";
     return {
       source_key: sourceKey,
       cache_format_version: CACHE_FORMAT_VERSION,
       current_attempt_status: status,
+      current_attempt_error: currentAttemptError,
       configured: Boolean(summary.configured ?? item.configured ?? (item.present_env || []).length),
       attempted: Boolean(summary.collector_attempted ?? item.collector_attempted ?? number(item.rows_collected) > 0),
+      http_status: summary.http_status ?? item.http_status ?? null,
       rows_collected: number(summary.rows_collected ?? item.rows_collected, 0),
       rows_normalized: number(summary.rows_normalized ?? item.rows_normalized, 0),
+      rows_matched_to_vessels: rowsMatchedToVessels(item, summary),
       last_success_at: lastSuccessAt,
       last_success_record_count: lastSuccessRecordCount,
+      previous_cache_available: Boolean(previousItem.last_success_at || previousItem.last_success_record_count || summary.previous_cache_available),
+      previous_rows_collected: number(previousItem.rows_collected ?? previousItem.previous_rows_collected, 0),
+      previous_rows_normalized: number(previousItem.rows_normalized ?? previousItem.previous_rows_normalized, 0),
+      previous_rows_matched_to_vessels: number(previousItem.rows_matched_to_vessels ?? previousItem.previous_rows_matched_to_vessels, 0),
       cache_age_hours: cacheAgeHours,
+      stale_warning_hours: staleWarningHours,
       using_previous_cache: usingPreviousCache,
       cache_stale_warning: stale,
+      stale_diagnostic: stale,
       cache_status: currentUseful
         ? "CURRENT"
         : usingPreviousCache
@@ -167,6 +202,8 @@ export function buildAuxiliarySourceCacheStatusPayload({
             ? "NOT_CONFIGURED"
             : "EMPTY",
       source_layer: "auxiliary",
+      owner_tier: "fast_aux",
+      core_may_update: false,
       core_blocking: false,
       summary_endpoint: SUMMARY_PATH_BY_SOURCE[sourceKey],
       blocker_reason: blocker,
@@ -180,6 +217,9 @@ export function buildAuxiliarySourceCacheStatusPayload({
     schema_version: "1.0",
     cache_format_version: CACHE_FORMAT_VERSION,
     generated_at: generatedAt,
+    aux_run_id: report.run_id || sourceCollectionStatus.run_id || null,
+    owner_tier: "fast_aux",
+    core_may_update: false,
     data_mode: dataMode,
     source_run_id: sourceCollectionStatus.run_id || report.run_id || null,
     cache_policy: {
