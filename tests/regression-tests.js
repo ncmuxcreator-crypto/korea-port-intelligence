@@ -5,6 +5,12 @@ import {
   calculateOceanRiskScore,
   oceanRiskLabelKo
 } from "../src/lib/oceanIntelligence.js";
+import {
+  buildSourceCsvEnrichmentDryRun,
+  buildSourceCsvReferenceIndexes,
+  normalizeSourceCsvReferenceRow,
+  validateSourceCsvReferenceRows
+} from "../scripts/lib/source-csv-cache.js";
 
 const failures = [];
 const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
@@ -70,12 +76,39 @@ const fixtureFiles = [
   "tests/fixtures/port-operation-sample.json",
   "tests/fixtures/pilot-schedule-sample.json",
   "tests/fixtures/pnc-berth-sample.html",
-  "tests/fixtures/ulsan-berth-cargo-sample.json"
+  "tests/fixtures/ulsan-berth-cargo-sample.json",
+  "test/fixtures/source-csv-reference-small.csv"
 ];
 
 for (const file of fixtureFiles) {
   assert(fs.existsSync(file), `Missing regression fixture: ${file}`);
 }
+
+function parseSmallCsv(text = "") {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  const headers = lines.shift().split(",");
+  return lines.map(line => Object.fromEntries(line.split(",").map((value, index) => [headers[index], value])));
+}
+
+const sourceCsvFixtureRows = parseSmallCsv(fs.readFileSync("test/fixtures/source-csv-reference-small.csv", "utf8"));
+const normalizedSourceCsvRows = sourceCsvFixtureRows.map(row => normalizeSourceCsvReferenceRow(row)).filter(Boolean);
+const sourceCsvSchema = validateSourceCsvReferenceRows(normalizedSourceCsvRows);
+const sourceCsvIndexes = buildSourceCsvReferenceIndexes(normalizedSourceCsvRows);
+assert(normalizedSourceCsvRows.length >= 4, "Source CSV fixture should keep usable rows and drop incomplete rows.");
+assert(sourceCsvSchema.duplicate_issues.duplicate_imo >= 1, "Source CSV schema validation must detect duplicate IMO.");
+assert(Object.keys(sourceCsvIndexes.by_call_sign).length >= 2, "Source CSV index must include call sign keys.");
+const sourceCsvDryRun = buildSourceCsvEnrichmentDryRun({
+  records: [
+    { vessel_name: "CSV MATCH ONE", call_sign: "CSV1", operator_display: "-", data_lineage: {} },
+    { vessel_name: "CSV MATCH ONE", call_sign: "CSV1", imo: "9999999", data_lineage: { imo: { source: "manual", verified: true, confidence: 99 } } }
+  ],
+  cache: { status: "available", items: normalizedSourceCsvRows, last_success_at: "2026-06-12T00:00:00.000Z" },
+  generatedAt: "2026-06-12T00:00:00.000Z",
+  apply: true
+});
+assert(sourceCsvDryRun.auto_apply_count > 0, "Source CSV dry-run should produce safe auto-apply candidates for empty fields.");
+assert(sourceCsvDryRun.review_count > 0, "Source CSV dry-run should send trusted/conflicting fields to review.");
+assert(sourceCsvDryRun.items.some(item => item.field_name === "operator_display"), "Source CSV dry-run should include operator candidates.");
 
 const portOperationFixture = readJson("tests/fixtures/port-operation-sample.json", {});
 assert(rows(portOperationFixture).length >= 2, "Port Operation fixture must include I/O rows for dedupe testing.");

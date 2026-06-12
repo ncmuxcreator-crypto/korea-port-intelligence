@@ -257,8 +257,8 @@ export function applySourcePriority(item = {}) {
     fix_status: deferred ? "deferred" : (item.fix_status || (status === "ACTIVE" ? "active" : "needs_action")),
     source_too_large: sourceCsvTooLarge || Boolean(item.source_too_large),
     ...(sourceCsvTooLarge ? {
-      exact_fix_instruction: "Create a smaller verified vessel reference CSV for enrichment.",
-      fix_hint: "Create a smaller verified vessel reference CSV for enrichment."
+      exact_fix_instruction: "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV.",
+      fix_hint: "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
     } : deferred ? {
       exact_fix_instruction: "Deferred: 울산 보조 소스 경로는 이후 처리",
       fix_hint: "Deferred: 울산 보조 소스 경로는 이후 처리"
@@ -425,6 +425,10 @@ function statusForSpec({ spec, env, sources }) {
       response_size_bytes: Number(source.response_size_bytes || 0) || null,
       max_allowed_bytes: Number(source.max_allowed_bytes || 0) || null,
       response_content_type: source.response_content_type || null,
+      content_type: source.content_type || source.response_content_type || null,
+      file_name_hint: source.file_name_hint || null,
+      header_row_fields: Array.isArray(source.header_row_fields) ? source.header_row_fields : undefined,
+      row_count_estimate: Number(source.row_count_estimate || 0) || undefined,
       raw_sample_keys: Array.isArray(source.raw_sample_keys) ? source.raw_sample_keys : undefined,
       sanitized_raw_samples: Array.isArray(source.sanitized_raw_samples) ? source.sanitized_raw_samples : undefined,
       expected_field_aliases_matched: source.expected_field_aliases_matched || undefined,

@@ -44,6 +44,12 @@ const summary = summaryFile && !summaryFile.__parse_error
     generatedAt: new Date().toISOString()
   });
 const maxAllowedBytes = Number(summary.max_allowed_bytes || process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || 5000000);
+const sourceTooLarge = Boolean(summary.source_too_large || summary.status === "SOURCE_TOO_LARGE" || Number(summary.response_size_bytes || 0) > maxAllowedBytes);
+const probablyLargeRawCsv = Boolean(summary.is_probably_large_raw_csv || sourceTooLarge);
+const probablyLightweightCsv = Boolean(summary.is_probably_lightweight_reference_csv || Number(summary.usable_reference_rows || 0) > 0);
+const recommendedFix = sourceTooLarge
+  ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
+  : summary.recommended_fix || summary.recommendation || "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file.";
 
 console.log("Source CSV Reference Cache Audit");
 console.log("================================");
@@ -55,7 +61,13 @@ console.log(`source_layer=${summary.source_layer || "auxiliary"}`);
 console.log(`core_blocking=${summary.core_blocking === false ? "false" : "true"}`);
 console.log(`response_size_bytes=${Number(summary.response_size_bytes || 0)}`);
 console.log(`max_allowed_bytes=${maxAllowedBytes}`);
-console.log(`source_too_large=${summary.source_too_large ? "yes" : "no"}`);
+console.log(`content_type=${summary.content_type || "-"}`);
+console.log(`file_name_hint=${summary.file_name_hint || "-"}`);
+console.log(`header_row_fields=${(summary.header_row_fields || []).join(",") || "-"}`);
+console.log(`row_count_estimate=${summary.row_count_estimate ?? "-"}`);
+console.log(`is_probably_large_raw_csv=${probablyLargeRawCsv ? "yes" : "no"}`);
+console.log(`is_probably_lightweight_reference_csv=${probablyLightweightCsv ? "yes" : "no"}`);
+console.log(`source_too_large=${sourceTooLarge ? "yes" : "no"}`);
 console.log(`previous_cache_available=${summary.previous_cache_available ? "yes" : "no"}`);
 console.log(`using_previous_cache=${summary.using_previous_cache ? "yes" : "no"}`);
 console.log(`rows_collected=${Number(summary.rows_collected || 0)}`);
@@ -76,9 +88,9 @@ console.log(`schema_issues=${JSON.stringify(summary.schema_issues || {})}`);
 console.log(`duplicate_issues=${JSON.stringify(summary.duplicate_issues || {})}`);
 console.log(`summary_endpoint=${SOURCE_CSV_SUMMARY_PATH}`);
 console.log(`cache_file=${SOURCE_CSV_REFERENCE_CACHE_PATH}`);
-console.log(`recommended_next_action=${summary.recommended_fix || summary.recommendation || "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file."}`);
+console.log(`recommended_next_action=${recommendedFix}`);
 
-if (summary.source_too_large) {
+if (sourceTooLarge) {
   console.log("WARN: SOURCE_CSV_URL response exceeds MAX_API_RESPONSE_BYTES; using previous lightweight cache if available.");
 }
 if (summary.configured && summary.source_too_large && Number(summary.usable_reference_rows || 0) === 0) {

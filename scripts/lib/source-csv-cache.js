@@ -188,6 +188,237 @@ export function buildSourceCsvReferenceIndexes(rows = []) {
   return indexes;
 }
 
+function mergedDisplay(record = {}) {
+  return record.vessel_display && typeof record.vessel_display === "object"
+    ? { ...record, ...record.vessel_display }
+    : record;
+}
+
+function recordIdentity(record = {}) {
+  const data = mergedDisplay(record);
+  return {
+    imo: String(data.imo || "").trim(),
+    mmsi: String(data.mmsi || "").trim(),
+    call_sign: normalizeCallSign(data.call_sign || data.callsign || ""),
+    normalized_vessel_name: normalizeVesselName(data.normalized_vessel_name || data.vessel_name || data.name || ""),
+    gt: numberOrNull(data.gt ?? data.tonnage_summary?.gt),
+    vessel_type: String(data.vessel_type || "").trim(),
+    vessel_key: String(data.vessel_key || data.vessel_id || data.imo || data.mmsi || data.call_sign || data.vessel_name || "").trim()
+  };
+}
+
+function findSourceCsvMatch(record = {}, indexes = {}) {
+  const identity = recordIdentity(record);
+  if (identity.imo && indexes.by_imo?.[identity.imo]) return { reference: indexes.by_imo[identity.imo], match_type: "IMO", confidence: 98 };
+  if (identity.mmsi && indexes.by_mmsi?.[identity.mmsi]) return { reference: indexes.by_mmsi[identity.mmsi], match_type: "MMSI", confidence: 96 };
+  if (identity.call_sign && indexes.by_call_sign?.[identity.call_sign]) return { reference: indexes.by_call_sign[identity.call_sign], match_type: "CALL_SIGN", confidence: 90 };
+  const nameCallKey = identity.normalized_vessel_name && identity.call_sign ? `${identity.normalized_vessel_name}|${identity.call_sign}` : "";
+  if (nameCallKey && indexes.by_normalized_vessel_name_call_sign?.[nameCallKey]) {
+    return { reference: indexes.by_normalized_vessel_name_call_sign[nameCallKey], match_type: "VESSEL_NAME_CALL_SIGN", confidence: 88 };
+  }
+  const gtTypeKey = identity.normalized_vessel_name && identity.gt !== null && identity.vessel_type
+    ? `${identity.normalized_vessel_name}|${identity.gt}|${identity.vessel_type}`
+    : "";
+  if (gtTypeKey && indexes.by_normalized_vessel_name_gt_vessel_type?.[gtTypeKey]) {
+    return { reference: indexes.by_normalized_vessel_name_gt_vessel_type[gtTypeKey], match_type: "VESSEL_NAME_GT_TYPE", confidence: 86 };
+  }
+  return null;
+}
+
+const SOURCE_CSV_ENRICH_FIELDS = {
+  imo: "imo",
+  mmsi: "mmsi",
+  call_sign: "call_sign",
+  operator_display: "operator",
+  owner: "owner",
+  manager: "manager",
+  vessel_type: "vessel_type",
+  gt: "gt",
+  dwt: "dwt",
+  flag: "flag"
+};
+
+function currentValue(record = {}, field = "") {
+  const data = mergedDisplay(record);
+  if (field === "operator_display") return data.operator_display || data.operator || "";
+  return data[field];
+}
+
+function valueEmpty(value) {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "number") return !Number.isFinite(value);
+  return String(value).trim() === "" || String(value).trim() === "-";
+}
+
+function trustedField(record = {}, field = "") {
+  const lineage = record.data_lineage?.[field] || record.vessel_display?.data_lineage?.[field] || {};
+  return record.manual === true || record.verified === true || lineage.verified === true || Number(lineage.confidence || 0) >= 90;
+}
+
+function setRecordField(record = {}, field = "", value) {
+  if (field === "operator_display") {
+    record.operator_display = value;
+    if (valueEmpty(record.operator)) record.operator = value;
+  } else {
+    record[field] = value;
+  }
+  if (!record.data_sources || !Array.isArray(record.data_sources)) record.data_sources = Array.isArray(record.data_sources) ? record.data_sources : [];
+  if (!record.enrichment_sources || !Array.isArray(record.enrichment_sources)) record.enrichment_sources = Array.isArray(record.enrichment_sources) ? record.enrichment_sources : [];
+  if (!record.data_sources.includes("source_csv")) record.data_sources.push("source_csv");
+  if (!record.enrichment_sources.includes("source_csv")) record.enrichment_sources.push("source_csv");
+}
+
+function setSourceCsvLineage(record = {}, field = "", { confidence = 0, matchType = "", updatedAt = null, verified = false } = {}) {
+  if (!record.data_lineage || typeof record.data_lineage !== "object") record.data_lineage = {};
+  record.data_lineage[field] = {
+    source: "source_csv",
+    confidence,
+    match_type: matchType,
+    updated_at: updatedAt,
+    verified: verified === true
+  };
+}
+
+function compactTarget(record = {}) {
+  const data = mergedDisplay(record);
+  return {
+    vessel_key: recordIdentity(record).vessel_key || `${data.vessel_name || "-"}|${data.current_port || data.port_name || ""}`,
+    vessel_name: data.vessel_name || data.name || "-",
+    imo: data.imo || "-",
+    mmsi: data.mmsi || "-",
+    call_sign: data.call_sign || "-",
+    current_port: data.current_port_korean || data.current_port || data.port_name || "-",
+    operator_display: data.operator_display || data.operator || "-"
+  };
+}
+
+export function buildSourceCsvIndexPayload({ cache = null, generatedAt = new Date().toISOString() } = {}) {
+  const currentCache = cache || readSourceCsvReferenceCache();
+  const rows = uniqueReferenceRows(currentCache.items || []);
+  const indexes = buildSourceCsvReferenceIndexes(rows);
+  return {
+    schema_version: "1.0",
+    generated_at: generatedAt,
+    status: rows.length ? "available" : currentCache.status || "missing",
+    record_count: Object.keys(indexes).length,
+    item_count: Object.keys(indexes).length,
+    source_key: "source_csv",
+    cache_status: currentCache.status,
+    last_success_at: currentCache.last_success_at || null,
+    index_counts: Object.fromEntries(Object.entries(indexes).map(([key, value]) => [key, Object.keys(value).length])),
+    indexes: Object.fromEntries(Object.entries(indexes).map(([key, value]) => [key, Object.keys(value)]))
+  };
+}
+
+export function buildSourceCsvEnrichmentDryRun({ records = [], cache = null, generatedAt = new Date().toISOString(), apply = false } = {}) {
+  const currentCache = cache || readSourceCsvReferenceCache();
+  const rows = uniqueReferenceRows(currentCache.items || []);
+  const indexes = buildSourceCsvReferenceIndexes(rows);
+  const counters = {
+    matches_by_imo: 0,
+    matches_by_mmsi: 0,
+    matches_by_call_sign: 0,
+    matches_by_name_call_sign: 0,
+    matches_by_name_gt_type: 0,
+    operator_candidates: 0,
+    imo_candidates: 0,
+    mmsi_candidates: 0,
+    conflicts: 0,
+    weak_matches: 0,
+    auto_apply_count: 0,
+    review_count: 0,
+    reject_count: 0
+  };
+  const applied = [];
+  const review = [];
+  const rejected = [];
+  const matchedVessels = new Set();
+  for (const record of records) {
+    if (!record || typeof record !== "object") continue;
+    const match = findSourceCsvMatch(record, indexes);
+    if (!match) continue;
+    matchedVessels.add(compactTarget(record).vessel_key);
+    if (match.match_type === "IMO") counters.matches_by_imo += 1;
+    else if (match.match_type === "MMSI") counters.matches_by_mmsi += 1;
+    else if (match.match_type === "CALL_SIGN") counters.matches_by_call_sign += 1;
+    else if (match.match_type === "VESSEL_NAME_CALL_SIGN") counters.matches_by_name_call_sign += 1;
+    else if (match.match_type === "VESSEL_NAME_GT_TYPE") counters.matches_by_name_gt_type += 1;
+
+    for (const [field, sourceField] of Object.entries(SOURCE_CSV_ENRICH_FIELDS)) {
+      const candidateValue = match.reference[sourceField];
+      if (valueEmpty(candidateValue)) continue;
+      if (field === "operator_display") counters.operator_candidates += 1;
+      if (field === "imo") counters.imo_candidates += 1;
+      if (field === "mmsi") counters.mmsi_candidates += 1;
+      const current = currentValue(record, field);
+      const conflict = !valueEmpty(current) && String(current).trim() !== String(candidateValue).trim();
+      const item = {
+        source_key: "source_csv",
+        field_name: field,
+        target_vessel_key: compactTarget(record).vessel_key,
+        target_vessel: compactTarget(record),
+        match_type: match.match_type,
+        match_confidence: match.confidence,
+        confidence: match.confidence,
+        current_value: valueEmpty(current) ? null : current,
+        candidate_value: candidateValue,
+        raw_value: candidateValue,
+        source_timestamp: match.reference.updated_at || generatedAt,
+        lineage: {
+          raw_source: "source_csv",
+          normalized_field: field,
+          source_row_id: match.reference.imo || match.reference.mmsi || match.reference.call_sign || match.reference.normalized_vessel_name
+        }
+      };
+      if (conflict || trustedField(record, field)) {
+        counters.conflicts += conflict ? 1 : 0;
+        counters.review_count += 1;
+        review.push({
+          ...item,
+          action: "REVIEW",
+          conflict_type: conflict ? (field === "imo" ? "DIFFERENT_IMO" : field === "mmsi" ? "DIFFERENT_MMSI" : "OPERATOR_CONFLICT") : "TRUSTED_CURRENT_VALUE",
+          recommended_action: "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
+          reason: "source_csv candidate conflicts with an existing or trusted field."
+        });
+      } else if (valueEmpty(current) && match.confidence >= 85) {
+        counters.auto_apply_count += 1;
+        const appliedItem = { ...item, action: "APPLY", reason: "source_csv supplied a missing field with high-confidence match." };
+        applied.push(appliedItem);
+        if (apply) {
+          setRecordField(record, field, candidateValue);
+          setSourceCsvLineage(record, field, {
+            confidence: match.confidence,
+            matchType: match.match_type,
+            updatedAt: match.reference.updated_at || generatedAt,
+            verified: match.reference.verified === true
+          });
+        }
+      } else {
+        counters.reject_count += 1;
+        counters.weak_matches += match.confidence < 85 ? 1 : 0;
+        rejected.push({ ...item, action: "REJECT", reason: "source_csv match confidence or target field state is not safe for automatic apply." });
+      }
+    }
+  }
+  return {
+    schema_version: "1.0",
+    generated_at: generatedAt,
+    source_key: "source_csv",
+    cache_status: currentCache.status,
+    usable_reference_rows: rows.length,
+    candidate_vessels_checked: records.length,
+    matched_vessels: matchedVessels.size,
+    ...counters,
+    applied_fields: applied.length,
+    review_items: review.length,
+    rejected_items: rejected.length,
+    items: applied.slice(0, 100),
+    applied,
+    review,
+    rejected
+  };
+}
+
 export function readSourceCsvReferenceCache(filePath = SOURCE_CSV_REFERENCE_CACHE_PATH) {
   try {
     if (!fs.existsSync(filePath)) return { status: "missing", items: [], last_success_at: null };
@@ -271,42 +502,76 @@ function responseSizeFromText(...values) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function flattenedDiagnostics(item = {}, diagnostic = {}) {
+  const nested = Array.isArray(item.diagnostics) ? item.diagnostics[0] || {} : {};
+  return { ...nested, ...diagnostic, ...item };
+}
+
+function likelyRawCsv({ responseSizeBytes = 0, headerFields = [], sourceTooLarge = false } = {}) {
+  if (sourceTooLarge || responseSizeBytes > 25_000_000) return true;
+  const headers = headerFields.map(field => String(field || "").toLowerCase());
+  const expectedMatches = REFERENCE_FIELDS.filter(field => headers.includes(field.toLowerCase())).length;
+  return headerFields.length > 25 && expectedMatches < 5;
+}
+
+function likelyLightweightCsv({ headerFields = [], rows = [] } = {}) {
+  if (rows.length > 0) return true;
+  const headers = headerFields.map(field => String(field || "").toLowerCase());
+  const expectedMatches = REFERENCE_FIELDS.filter(field => headers.includes(field.toLowerCase())).length;
+  return expectedMatches >= 5;
+}
+
 export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDiagnostics = {}, cache = null, generatedAt = new Date().toISOString() } = {}) {
   const item = findSourceCsvItem(sourceCollectionStatus);
   const diagnostic = sourceCsvDiagnostic(collectorDiagnostics);
+  const diag = flattenedDiagnostics(item, diagnostic);
   const currentCache = cache || readSourceCsvReferenceCache();
   const rows = currentCache.items || [];
   const summary = summarizeSourceCsvReferenceRows(rows);
   const maxAllowedBytes = Number(process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || DEFAULT_MAX_SOURCE_CSV_BYTES);
-  const responseSizeBytes = Number(diagnostic.response_size_bytes || item.response_size_bytes || 0)
+  const responseSizeBytes = Number(diag.response_size_bytes || 0)
     || responseSizeFromText(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
   const sourceTooLarge = item.status === "SOURCE_TOO_LARGE"
-    || diagnostic.failure_reason === "api_response_too_large"
+    || diag.failure_reason === "api_response_too_large"
     || Boolean(item.source_too_large)
     || isSourceTooLargeSignal(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
   const previousCacheAvailable = currentCache.status === "available" && summary.usable_reference_rows > 0;
   const cacheAgeHours = currentCache.last_success_at
     ? Math.max(0, (Date.parse(generatedAt) - Date.parse(currentCache.last_success_at)) / 36e5)
     : null;
+  const headerFields = Array.isArray(diag.header_row_fields) ? diag.header_row_fields : Array.isArray(diag.sample_keys) ? diag.sample_keys : [];
+  const isProbablyRaw = likelyRawCsv({ responseSizeBytes, headerFields, sourceTooLarge });
+  const isProbablyLightweight = likelyLightweightCsv({ headerFields, rows });
+  const status = sourceTooLarge
+    ? (previousCacheAvailable ? "USING_PREVIOUS_CACHE" : "SOURCE_TOO_LARGE")
+    : summary.usable_reference_rows > 0
+      ? "ACTIVE"
+      : (item.status || (currentCache.status === "available" ? "CACHE_AVAILABLE" : "NOT_CONFIGURED"));
   const recommendedFix = sourceTooLarge
-    ? "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file."
+    ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
     : previousCacheAvailable
       ? "Keep source_csv as a lightweight verified vessel reference cache."
       : "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file.";
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
-    status: sourceTooLarge ? "SOURCE_TOO_LARGE" : (item.status || (currentCache.status === "available" ? "CACHE_AVAILABLE" : "NOT_CONFIGURED")),
+    status,
     source_layer: item.source_layer || "auxiliary",
     core_blocking: false,
     configured: (item.present_env || []).includes("SOURCE_CSV_URL"),
     collector_enabled: Boolean(item.collector_enabled),
     collector_attempted: Boolean(item.collector_attempted),
     source_too_large: sourceTooLarge,
+    is_probably_large_raw_csv: isProbablyRaw,
+    is_probably_lightweight_reference_csv: isProbablyLightweight,
     previous_cache_available: previousCacheAvailable,
     using_previous_cache: sourceTooLarge && previousCacheAvailable,
     response_size_bytes: responseSizeBytes,
     max_allowed_bytes: maxAllowedBytes,
+    content_type: diag.content_type || diag.response_content_type || null,
+    file_name_hint: diag.file_name_hint || null,
+    header_row_fields: headerFields,
+    row_count_estimate: Number(diag.row_count_estimate || 0) || null,
     rows_collected: Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0),
     rows_normalized: sourceTooLarge ? 0 : Number(item.rows_normalized || diagnostic.normalized_count || diagnostic.rows_normalized || 0),
     usable_reference_rows: summary.usable_reference_rows,

@@ -16,7 +16,7 @@ import {
 } from "./lib/runtime-config-audit.js";
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
-import { buildSourceCsvReferencePayload, buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
+import { buildSourceCsvEnrichmentDryRun, buildSourceCsvIndexPayload, buildSourceCsvReferencePayload, buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
 import { buildSourceDataEnrichmentPayloads } from "./lib/source-data-enrichment-engine.js";
 import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
@@ -3852,6 +3852,8 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
   ["aux.sourceCsvSummary", "dashboard/api/aux/source-csv-summary.json"],
   ["cache.sourceCsvReference", "dashboard/api/cache/source-csv-reference.json"],
+  ["cache.sourceCsvIndex", "dashboard/api/cache/source-csv-index.json"],
+  ["enrichment.sourceCsvDryRun", "dashboard/api/enrichment/source-csv-dry-run.json"],
   ["aux.pilotageSummary", "dashboard/api/aux/pilotage-summary.json"],
   ["aux.berthSummary", "dashboard/api/aux/berth-summary.json"],
   ["aux.aisInfoSummary", "dashboard/api/aux/ais-info-summary.json"],
@@ -6756,10 +6758,16 @@ function buildVesselDataLineage(record = {}, context = {}) {
   const updatedAt = firstDisplayText(record.updated_at, record.collected_at, record.last_seen_at, record.generated_at) || null;
   return {
     vessel_name: lineageEntry(existing.vessel_name, vesselDisplayHasText(record.vessel_name || record.name || record.ship_name || record.vessel_display?.vessel_name) ? portOperationSource : "unknown", { updatedAt }),
+    imo: lineageEntry(existing.imo, vesselDisplayHasText(record.imo || record.vessel_display?.imo) ? normalizeLineageSource(record.identity_source || portOperationSource) : "unknown", { confidence: nullableDisplayNumber(record.identity_confidence, null), updatedAt }),
+    mmsi: lineageEntry(existing.mmsi, vesselDisplayHasText(record.mmsi || record.vessel_display?.mmsi) ? normalizeLineageSource(record.identity_source || portOperationSource) : "unknown", { confidence: nullableDisplayNumber(record.identity_confidence, null), updatedAt }),
     call_sign: lineageEntry(existing.call_sign, vesselDisplayHasText(record.call_sign || record.callsign || record.clsgn || record.vessel_display?.call_sign) ? portOperationSource : "unknown", { updatedAt }),
     gt: lineageEntry(existing.gt, inferTonnageLineage(record, "gt", tonnageSummary), { confidence: tonnageSummary.tonnage_confidence ?? null, updatedAt }),
     dwt: lineageEntry(existing.dwt, inferTonnageLineage(record, "dwt", tonnageSummary), { confidence: tonnageSummary.tonnage_confidence ?? null, updatedAt }),
+    flag: lineageEntry(existing.flag, vesselDisplayHasText(record.flag || record.vessel_display?.flag) ? normalizeLineageSource(record.identity_source || portOperationSource) : "unknown", { updatedAt }),
+    vessel_type: lineageEntry(existing.vessel_type, vesselDisplayHasText(record.vessel_type || record.vessel_display?.vessel_type) ? normalizeLineageSource(record.identity_source || portOperationSource) : "unknown", { updatedAt }),
     operator_display: lineageEntry(existing.operator_display, inferOperatorDisplayLineage(record), { confidence: nullableDisplayNumber(record.operator_confidence, 70), updatedAt }),
+    owner: lineageEntry(existing.owner, vesselDisplayHasText(record.owner || record.vessel_display?.owner) ? inferOperatorDisplayLineage(record) : "unknown", { confidence: nullableDisplayNumber(record.operator_confidence, null), updatedAt }),
+    manager: lineageEntry(existing.manager, vesselDisplayHasText(record.manager || record.vessel_display?.manager) ? inferOperatorDisplayLineage(record) : "unknown", { confidence: nullableDisplayNumber(record.operator_confidence, null), updatedAt }),
     current_port: lineageEntry(existing.current_port, vesselDisplayHasText(context.currentPort || record.current_port || record.port_name || record.port || record.vessel_display?.current_port) ? portOperationSource : "unknown", { updatedAt }),
     berth: lineageEntry(existing.berth, berthSignal?.source ? normalizeLineageSource(berthSignal.source) : vesselDisplayHasText(record.berth || record.berth_name || record.vessel_display?.berth) ? portOperationSource : "unknown", {
       confidence: berthSignal?.confidence ?? null,
@@ -18483,6 +18491,42 @@ try {
     startup_safe: false,
     core_blocking: false
   }, finalRunOrigin);
+  const sourceCsvIndexPayload = withRunOrigin({
+    ...buildSourceCsvIndexPayload({
+      cache: sourceCsvReferenceCache,
+      generatedAt: completedAt
+    }),
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    core_blocking: false
+  }, finalRunOrigin);
+  const sourceCsvTargetRecords = [
+    ...allCollectedVessels,
+    ...vessels,
+    ...targetVessels,
+    ...salesCandidates,
+    ...immediateTargets,
+    ...candidateList,
+    ...hotVessels,
+    ...arrivalPipeline,
+    ...anchorageWaiting,
+    ...stayingVessels
+  ].filter(record => record && typeof record === "object");
+  const sourceCsvDryRunPayload = withRunOrigin({
+    ...buildSourceCsvEnrichmentDryRun({
+      records: sourceCsvTargetRecords,
+      cache: sourceCsvReferenceCache,
+      generatedAt: completedAt,
+      apply: true
+    }),
+    data_mode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    record_count: 1,
+    item_count: 0,
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false
+  }, finalRunOrigin);
   const sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
     sourceCollectionStatus: sourceCollectionStatusPayload,
     matchingDiagnostics,
@@ -18496,6 +18540,17 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     referenceTime: completedAt
   }), finalRunOrigin);
+  const sourceCsvQualityItem = (sourceQualityScorePayload.items || []).find(item => item.source_key === "source_csv");
+  if (sourceCsvQualityItem && Number(sourceCsvSummaryPayload.usable_reference_rows || 0) > 0) {
+    sourceCsvQualityItem.rows_collected = Math.max(Number(sourceCsvQualityItem.rows_collected || 0), Number(sourceCsvSummaryPayload.usable_reference_rows || 0));
+    sourceCsvQualityItem.rows_normalized = Math.max(Number(sourceCsvQualityItem.rows_normalized || 0), Number(sourceCsvSummaryPayload.usable_reference_rows || 0));
+    sourceCsvQualityItem.rows_matched_to_vessels = Math.max(Number(sourceCsvQualityItem.rows_matched_to_vessels || 0), Number(sourceCsvDryRunPayload.matched_vessels || 0));
+    sourceCsvQualityItem.fields_contributed = [...new Set([...(sourceCsvQualityItem.fields_contributed || []), "imo", "mmsi", "call_sign", "operator_display", "owner", "manager", "vessel_type", "gt", "dwt", "flag"])].filter(Boolean);
+    sourceCsvQualityItem.blocker_reason = Number(sourceCsvDryRunPayload.matched_vessels || 0) > 0 ? "" : sourceCsvQualityItem.blocker_reason;
+    sourceCsvQualityItem.quality_label = Number(sourceCsvDryRunPayload.matched_vessels || 0) > 0 ? "MEDIUM" : sourceCsvQualityItem.quality_label;
+    sourceCsvQualityItem.coverage_label = sourceCsvQualityItem.quality_label;
+    sourceCsvQualityItem.recommended_fix = Number(sourceCsvDryRunPayload.matched_vessels || 0) > 0 ? "No action required." : "Lightweight source_csv cache exists; improve match keys to apply enrichment.";
+  }
   const sourceEnrichmentMatrixPayload = withRunOrigin(buildSourceEnrichmentMatrixPayload({
     sourceCollectionStatus: sourceCollectionStatusPayload,
     sourceQualityScore: sourceQualityScorePayload,
@@ -19279,6 +19334,8 @@ try {
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
+  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
+  writeApiJson("dashboard/api/enrichment/source-csv-dry-run.json", sourceCsvDryRunPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }
@@ -19459,6 +19516,8 @@ try {
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
+  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-index.json", sourceCsvIndexPayload, report);
+  writeApiJson("dashboard/api/enrichment/source-csv-dry-run.json", sourceCsvDryRunPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }

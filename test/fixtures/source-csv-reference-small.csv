@@ -1,0 +1,6 @@
+vessel_name,normalized_vessel_name,imo,mmsi,call_sign,operator,owner,manager,vessel_type,gt,dwt,flag,verified,notes,updated_at
+CSV MATCH ONE,CSVMATCHONE,9812345,440123456,CSV1,CSV Operator,CSV Owner,CSV Manager,BULK,12000,22000,KR,true,verified row,2026-06-12T00:00:00.000Z
+CSV CALLSIGN ONLY,CSVCALLSIGNONLY,,,CSV2,Callsign Operator,,,TANKER,,,,true,call sign only,2026-06-12T00:00:00.000Z
+CSV NAME ONLY,CSVNAMEONLY,,,,Name Operator,,,GENERAL CARGO,,,,false,name only should not auto match,2026-06-12T00:00:00.000Z
+CSV MATCH ONE,CSVMATCHONE,9812345,440123456,CSV1,Duplicate Operator,CSV Owner,CSV Manager,BULK,12000,22000,KR,true,duplicate row,2026-06-12T00:00:00.000Z
+,,,,,,,,,,,,false,incomplete row,

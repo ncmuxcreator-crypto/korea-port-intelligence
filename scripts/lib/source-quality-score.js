@@ -149,7 +149,7 @@ function blockerReason({ item, rowsCollected, rowsNormalized, rowsMatched, field
 function recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched }) {
   if (!blocker) return "No action required.";
   if (sourceKey === "source_csv" && item.status === "SOURCE_TOO_LARGE") {
-    return "Create a smaller verified vessel reference CSV for enrichment.";
+    return "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV.";
   }
   if (sourceKey === "vessel_spec" && number(item.rows_collected) > 0 && rowsNormalized === 0) {
     return "Add/adjust vessel_spec parser aliases using sanitized raw sample keys.";

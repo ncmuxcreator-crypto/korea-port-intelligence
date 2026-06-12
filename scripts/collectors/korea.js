@@ -534,8 +534,25 @@ function resultMeta(text) {
     } catch {
       // Diagnostics only; ignore malformed metadata.
     }
+  } else {
+    const firstLine = trimmed.split(/\r?\n/, 1)[0] || "";
+    if (firstLine.includes(",")) {
+      meta.header_fields = parseLine(firstLine).map(field => String(field || "").trim()).filter(Boolean).slice(0, 80);
+      meta.row_count_estimate = Math.max(0, trimmed.split(/\r?\n/).filter(Boolean).length - 1);
+    }
   }
   return meta;
+}
+
+function fileNameHintFromResponse(url, headers) {
+  const disposition = headers.get("content-disposition") || "";
+  const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+  if (match) return decodeURIComponent(match[1]).replace(/[\\/?#].*$/, "").slice(0, 120);
+  try {
+    return path.basename(new URL(url).pathname).slice(0, 120) || null;
+  } catch {
+    return null;
+  }
 }
 
 function firstValue(row, aliases) {
@@ -980,6 +997,7 @@ async function fetchTextOnce(source, extraParams = {}) {
     const res = await fetch(url, { signal: controller.signal, headers: { accept: "application/json, text/csv, text/xml, */*" } });
     const contentType = res.headers.get("content-type") || "";
     const contentLength = Number(res.headers.get("content-length") || 0);
+    const fileNameHint = fileNameHintFromResponse(url, res.headers);
     const maxResponseBytes = source?.key === "source_csv" ? MAX_SOURCE_CSV_BYTES : MAX_API_RESPONSE_BYTES;
     if (maxResponseBytes > 0 && contentLength > maxResponseBytes) {
       const error = new Error(`API response too large: ${contentLength} bytes`);
@@ -987,6 +1005,7 @@ async function fetchTextOnce(source, extraParams = {}) {
       error.response_size_bytes = contentLength;
       error.max_allowed_bytes = maxResponseBytes;
       error.response_content_type = contentType;
+      error.file_name_hint = fileNameHint;
       throw error;
     }
     const buffer = await res.arrayBuffer();
@@ -996,6 +1015,7 @@ async function fetchTextOnce(source, extraParams = {}) {
       error.response_size_bytes = buffer.byteLength;
       error.max_allowed_bytes = maxResponseBytes;
       error.response_content_type = contentType;
+      error.file_name_hint = fileNameHint;
       throw error;
     }
     const text = decodeResponse(buffer, contentType);
@@ -1006,7 +1026,7 @@ async function fetchTextOnce(source, extraParams = {}) {
       error.response_text = text.slice(0, 500);
       throw error;
     }
-    return { text, url, http_status: res.status, response_content_type: contentType, latency_ms: Date.now() - started, result_meta: resultMeta(text) };
+    return { text, url, http_status: res.status, response_content_type: contentType, file_name_hint: fileNameHint, latency_ms: Date.now() - started, result_meta: resultMeta(text) };
   } finally {
     clearTimeout(timer);
   }
@@ -2453,7 +2473,7 @@ async function collectRealRows() {
     diagnostics.attempted_count += 1;
     try {
       const rowLimit = Math.max(1, Math.min(Number(source.maxRows || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS));
-      const { text, url, http_status, latency_ms, result_meta, service_key_variant, retry_count, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated } = await fetchPagedRows(source, rowLimit, deadline);
+      const { text, url, http_status, latency_ms, result_meta, service_key_variant, retry_count, rows, pages_attempted, page_summaries, pagination_total_count, pagination_total_pages_expected, pagination_pages_collected, pagination_rows_collected, pagination_truncated, response_content_type, file_name_hint } = await fetchPagedRows(source, rowLimit, deadline);
       diag.success = true;
       diag.latency_ms = latency_ms;
       diag.http_status = http_status;
@@ -2464,6 +2484,11 @@ async function collectRealRows() {
       diag.resultCode = result_meta?.resultCode || null;
       diag.resultMsg = result_meta?.resultMsg || null;
       diag.totalCount = result_meta?.totalCount !== undefined ? Number(result_meta.totalCount) || result_meta.totalCount : null;
+      diag.response_content_type = response_content_type || null;
+      diag.content_type = response_content_type || null;
+      diag.file_name_hint = file_name_hint || null;
+      diag.header_row_fields = result_meta?.header_fields || [];
+      diag.row_count_estimate = result_meta?.row_count_estimate ?? null;
       diag.pages_attempted = pages_attempted;
       diag.totalPages_expected = pagination_total_pages_expected;
       diag.pages_collected = pagination_pages_collected;
@@ -2564,6 +2589,8 @@ async function collectRealRows() {
       diag.response_size_bytes = Number(error?.response_size_bytes || 0) || null;
       diag.max_allowed_bytes = Number(error?.max_allowed_bytes || 0) || null;
       diag.response_content_type = error?.response_content_type || null;
+      diag.content_type = error?.response_content_type || null;
+      diag.file_name_hint = error?.file_name_hint || null;
       diag.http_status = error?.http_status || null;
       diag.retry_count = error?.retry_count || 0;
       diagnostics.failed_count += 1;

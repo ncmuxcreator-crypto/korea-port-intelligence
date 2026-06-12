@@ -105,6 +105,7 @@
     "db:cleanup:dry-run": "node scripts/with-env.js scripts/apply-db-cleanup-plan.js",
     "db:cleanup:apply": "node scripts/with-env.js scripts/apply-db-cleanup-plan.js --apply",
     "audit:source-csv": "node scripts/with-env.js scripts/audit-source-csv.js",
+    "audit:source-csv-enrichment": "node scripts/audit-source-csv-enrichment.js",
     "build:source-csv-reference": "node scripts/build-source-csv-reference.js",
     "audit:vessel-spec": "node scripts/with-env.js scripts/audit-vessel-spec.js",
     "db:migrate": "node scripts/apply-migrations.js",
