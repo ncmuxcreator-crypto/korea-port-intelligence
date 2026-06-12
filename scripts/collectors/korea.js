@@ -539,13 +539,14 @@ function maskServiceKey(url) {
 function serviceKeyVariants(value) {
   const raw = String(value || "").trim();
   if (!raw) return [];
-  const variants = [{ name: "as_provided", value: raw }];
+  const variants = [];
   try {
     const decoded = decodeURIComponent(raw);
     if (decoded && decoded !== raw) variants.push({ name: "decoded", value: decoded });
   } catch {
     // Keep only the provided key.
   }
+  variants.push({ name: "as_provided", value: raw });
   return variants;
 }
 
@@ -974,6 +975,18 @@ function decodeResponse(buffer, contentType = "") {
   return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
 }
 
+function looksLikeHtmlErrorPage(text = "", contentType = "") {
+  const type = String(contentType || "").toLowerCase();
+  const body = String(text || "").trim().toLowerCase();
+  if (!body || !type.includes("html")) return false;
+  if (/<table\b/i.test(body)) return false;
+  return body.includes("<title>오류페이지</title>") ||
+    body.includes("error.png") ||
+    body.includes("error page") ||
+    body.includes("exception") ||
+    body.includes("service error");
+}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -1017,7 +1030,7 @@ async function fetchText(source, extraParams = {}) {
         await sleep(Math.min(5000, 500 * (2 ** attempt)));
       }
     }
-    if (!source.serviceKeyVariants?.length || isPermanentCollectorError(lastError)) break;
+    if (!source.serviceKeyVariants?.length) break;
   }
   throw lastError || new Error("request_failed");
 }
@@ -1096,6 +1109,14 @@ async function fetchTextOnce(source, extraParams = {}) {
       throw error;
     }
     const text = decodeResponse(buffer, contentType);
+    if (looksLikeHtmlErrorPage(text, contentType)) {
+      const error = new Error("API returned an HTML error page");
+      error.failure_reason = "html_error_response";
+      error.http_status = res.status;
+      error.response_content_type = contentType;
+      error.response_text = text.slice(0, 500);
+      throw error;
+    }
     if (!res.ok) {
       const error = new Error(`HTTP ${res.status}`);
       error.http_status = res.status;
