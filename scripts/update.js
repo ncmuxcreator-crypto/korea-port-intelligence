@@ -17,6 +17,7 @@ import {
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
+import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
 import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
@@ -3849,6 +3850,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
+  ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
@@ -3875,7 +3877,7 @@ const AUXILIARY_ENDPOINT_PATTERNS = [
 ];
 const DIAGNOSTIC_ENDPOINT_PATTERNS = [
   /dashboard\/api\/(?:debug|quality|review)\//,
-  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
+  /dashboard\/api\/(?:status|source-health-runtime|source-collection-status|source-quality-score|enrichment-utilization|storage-efficiency-report|health\/pipeline|backend|readiness|snapshot|coverage|doctor|audit|collector-plan|data-continuity|continuity)\.json$/i,
   /diagnostic/i,
   /imo-recovery-priority/i
 ];
@@ -18030,6 +18032,20 @@ try {
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
     referenceTime: completedAt
   }), finalRunOrigin);
+  const enrichmentUtilizationPayload = withRunOrigin(buildEnrichmentUtilizationPayload({
+    records: allCollectedVessels,
+    sourceQualityScore: sourceQualityScorePayload,
+    bootstrapKpis: {
+      ...(dashboardSummary.kpis || {}),
+      total_vessels: Number(dashboardSummary.kpis?.total_vessels || dashboardSummary.all_vessels_count || allCollectedVessels.length || 0),
+      detail_eligible_vessel_count: Number(dashboardSummary.kpis?.detail_eligible_vessel_count || dashboardSummary.detail_eligible_vessel_count || targetVessels.length || 0),
+      pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
+    },
+    report,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot"
+  }), finalRunOrigin);
   const auxSummaryOptions = {
     sourceCollectionStatus: sourceCollectionStatusPayload,
     generatedAt: completedAt,
@@ -18717,6 +18733,7 @@ try {
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
+  writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
