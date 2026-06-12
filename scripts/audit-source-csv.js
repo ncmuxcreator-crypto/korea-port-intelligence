@@ -43,6 +43,7 @@ const summary = summaryFile && !summaryFile.__parse_error
     cache,
     generatedAt: new Date().toISOString()
   });
+const maxAllowedBytes = Number(summary.max_allowed_bytes || process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || 5000000);
 
 console.log("Source CSV Reference Cache Audit");
 console.log("================================");
@@ -53,19 +54,29 @@ console.log(`status=${summary.status || "unknown"}`);
 console.log(`source_layer=${summary.source_layer || "auxiliary"}`);
 console.log(`core_blocking=${summary.core_blocking === false ? "false" : "true"}`);
 console.log(`response_size_bytes=${Number(summary.response_size_bytes || 0)}`);
+console.log(`max_allowed_bytes=${maxAllowedBytes}`);
 console.log(`source_too_large=${summary.source_too_large ? "yes" : "no"}`);
+console.log(`previous_cache_available=${summary.previous_cache_available ? "yes" : "no"}`);
+console.log(`using_previous_cache=${summary.using_previous_cache ? "yes" : "no"}`);
 console.log(`rows_collected=${Number(summary.rows_collected || 0)}`);
+console.log(`rows_normalized=${Number(summary.rows_normalized || 0)}`);
 console.log(`usable_reference_rows=${Number(summary.usable_reference_rows || 0)}`);
 console.log(`rows_with_imo=${Number(summary.rows_with_imo || 0)}`);
 console.log(`rows_with_mmsi=${Number(summary.rows_with_mmsi || 0)}`);
 console.log(`rows_with_call_sign=${Number(summary.rows_with_call_sign || 0)}`);
 console.log(`rows_with_operator=${Number(summary.rows_with_operator || 0)}`);
 console.log(`cache_status=${summary.cache_status || cache.status || "unknown"}`);
+console.log(`cache_age_hours=${summary.cache_age_hours ?? "-"}`);
 console.log(`last_success_at=${summary.last_success_at || "-"}`);
 console.log(`fields_available=${(summary.fields_available || []).join(",") || "-"}`);
+console.log(`missing_recommended_columns=${(summary.missing_recommended_columns || []).join(",") || "-"}`);
+console.log(`reference_indexes_built=${summary.reference_indexes_built ? "yes" : "no"}`);
+console.log(`reference_index_keys=${JSON.stringify(summary.reference_index_keys || {})}`);
+console.log(`schema_issues=${JSON.stringify(summary.schema_issues || {})}`);
+console.log(`duplicate_issues=${JSON.stringify(summary.duplicate_issues || {})}`);
 console.log(`summary_endpoint=${SOURCE_CSV_SUMMARY_PATH}`);
 console.log(`cache_file=${SOURCE_CSV_REFERENCE_CACHE_PATH}`);
-console.log(`recommendation=${summary.recommendation || "Create a smaller verified vessel reference CSV for enrichment."}`);
+console.log(`recommended_next_action=${summary.recommended_fix || summary.recommendation || "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file."}`);
 
 if (summary.source_too_large) {
   console.log("WARN: SOURCE_CSV_URL response exceeds MAX_API_RESPONSE_BYTES; using previous lightweight cache if available.");

@@ -17,6 +17,7 @@ const MAX_SOURCE_ROWS = Number(process.env.MAX_SOURCE_ROWS || 5000);
 const MAX_PORTS_PER_RUN = Number(process.env.MAX_PORTS_PER_RUN || 50);
 const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.MAX_CHILD_ENRICHMENT_ROWS || 100);
 const MAX_API_RESPONSE_BYTES = Number(process.env.MAX_API_RESPONSE_BYTES || 25000000);
+const MAX_SOURCE_CSV_BYTES = Number(process.env.MAX_SOURCE_CSV_BYTES || 5000000);
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
 const SOURCE_MAX_RETRIES = Number(process.env.SOURCE_MAX_RETRIES || 2);
 const DEFAULT_CARGO_HARBOR_USE_API_URL = "http://apis.data.go.kr/1192000/CargHarborUse2/Info";
@@ -979,18 +980,21 @@ async function fetchTextOnce(source, extraParams = {}) {
     const res = await fetch(url, { signal: controller.signal, headers: { accept: "application/json, text/csv, text/xml, */*" } });
     const contentType = res.headers.get("content-type") || "";
     const contentLength = Number(res.headers.get("content-length") || 0);
-    if (MAX_API_RESPONSE_BYTES > 0 && contentLength > MAX_API_RESPONSE_BYTES) {
+    const maxResponseBytes = source?.key === "source_csv" ? MAX_SOURCE_CSV_BYTES : MAX_API_RESPONSE_BYTES;
+    if (maxResponseBytes > 0 && contentLength > maxResponseBytes) {
       const error = new Error(`API response too large: ${contentLength} bytes`);
       error.failure_reason = "api_response_too_large";
       error.response_size_bytes = contentLength;
+      error.max_allowed_bytes = maxResponseBytes;
       error.response_content_type = contentType;
       throw error;
     }
     const buffer = await res.arrayBuffer();
-    if (MAX_API_RESPONSE_BYTES > 0 && buffer.byteLength > MAX_API_RESPONSE_BYTES) {
+    if (maxResponseBytes > 0 && buffer.byteLength > maxResponseBytes) {
       const error = new Error(`API response too large: ${buffer.byteLength} bytes`);
       error.failure_reason = "api_response_too_large";
       error.response_size_bytes = buffer.byteLength;
+      error.max_allowed_bytes = maxResponseBytes;
       error.response_content_type = contentType;
       throw error;
     }
@@ -2558,6 +2562,7 @@ async function collectRealRows() {
       diag.error_message = diag.error;
       diag.failure_reason = error?.failure_reason || null;
       diag.response_size_bytes = Number(error?.response_size_bytes || 0) || null;
+      diag.max_allowed_bytes = Number(error?.max_allowed_bytes || 0) || null;
       diag.response_content_type = error?.response_content_type || null;
       diag.http_status = error?.http_status || null;
       diag.retry_count = error?.retry_count || 0;

@@ -16,7 +16,7 @@ import {
 } from "./lib/runtime-config-audit.js";
 import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
-import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
+import { buildSourceCsvReferencePayload, buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
 import { buildSourceDataEnrichmentPayloads } from "./lib/source-data-enrichment-engine.js";
 import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
@@ -3851,6 +3851,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["targets.categories", "dashboard/api/targets/categories.json"],
   ["vessels.page1", "dashboard/api/vessels/page-1.json"],
   ["aux.sourceCsvSummary", "dashboard/api/aux/source-csv-summary.json"],
+  ["cache.sourceCsvReference", "dashboard/api/cache/source-csv-reference.json"],
   ["aux.pilotageSummary", "dashboard/api/aux/pilotage-summary.json"],
   ["aux.berthSummary", "dashboard/api/aux/berth-summary.json"],
   ["aux.aisInfoSummary", "dashboard/api/aux/ais-info-summary.json"],
@@ -18472,6 +18473,16 @@ try {
     startup_safe: false,
     core_blocking: false
   }, finalRunOrigin);
+  const sourceCsvReferencePayload = withRunOrigin({
+    ...buildSourceCsvReferencePayload({
+      cache: sourceCsvReferenceCache,
+      generatedAt: completedAt
+    }),
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    core_blocking: false
+  }, finalRunOrigin);
   const sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
     sourceCollectionStatus: sourceCollectionStatusPayload,
     matchingDiagnostics,
@@ -19267,6 +19278,7 @@ try {
   writeApiJson("dashboard/api/enrichment/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
+  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }
@@ -19446,6 +19458,7 @@ try {
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
+  if (Number(sourceCsvReferencePayload.item_count || 0) > 0) writeApiJson("dashboard/api/cache/source-csv-reference.json", sourceCsvReferencePayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
   }

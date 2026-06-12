@@ -3,7 +3,9 @@ import path from "node:path";
 import { normalizeCallSign, normalizeVesselName } from "./matching.js";
 
 export const SOURCE_CSV_REFERENCE_CACHE_PATH = "data/cache/source-csv-reference-cache.json";
+export const SOURCE_CSV_PUBLIC_REFERENCE_PATH = "dashboard/api/cache/source-csv-reference.json";
 export const SOURCE_CSV_SUMMARY_PATH = "dashboard/api/aux/source-csv-summary.json";
+export const DEFAULT_MAX_SOURCE_CSV_BYTES = 5_000_000;
 
 const REFERENCE_FIELDS = [
   "vessel_name",
@@ -19,7 +21,8 @@ const REFERENCE_FIELDS = [
   "dwt",
   "flag",
   "verified",
-  "notes"
+  "notes",
+  "updated_at"
 ];
 
 const FIELD_ALIASES = {
@@ -36,7 +39,8 @@ const FIELD_ALIASES = {
   dwt: ["dwt", "deadweight", "DWT"],
   flag: ["flag", "flag_state"],
   verified: ["verified", "is_verified", "validated"],
-  notes: ["notes", "note", "memo"]
+  notes: ["notes", "note", "memo"],
+  updated_at: ["updated_at", "updatedAt", "last_updated", "lastUpdated"]
 };
 
 function hasText(value) {
@@ -83,6 +87,7 @@ export function normalizeSourceCsvReferenceRow(row = {}) {
     flag: firstValue(row, "flag"),
     verified: normalizedBool(firstValue(row, "verified")) || Boolean(firstValue(row, "imo") || firstValue(row, "mmsi") || callSign),
     notes: firstValue(row, "notes"),
+    updated_at: firstValue(row, "updated_at"),
     reference_source: "source_csv_cache"
   };
   const hasIdentifier = hasText(reference.imo) || hasText(reference.mmsi) || hasText(reference.call_sign);
@@ -111,13 +116,52 @@ function uniqueReferenceRows(rows = []) {
 
 export function summarizeSourceCsvReferenceRows(rows = []) {
   const fieldsAvailable = REFERENCE_FIELDS.filter(field => rows.some(row => hasText(row[field]) || row[field] === 0 || row[field] === false || row[field] === true));
+  const schema = validateSourceCsvReferenceRows(rows);
   return {
     usable_reference_rows: rows.length,
     rows_with_imo: rows.filter(row => hasText(row.imo)).length,
     rows_with_mmsi: rows.filter(row => hasText(row.mmsi)).length,
     rows_with_call_sign: rows.filter(row => hasText(row.call_sign)).length,
     rows_with_operator: rows.filter(row => hasText(row.operator)).length,
-    fields_available: fieldsAvailable
+    fields_available: fieldsAvailable,
+    schema_issues: schema.schema_issues,
+    duplicate_issues: schema.duplicate_issues
+  };
+}
+
+export function validateSourceCsvReferenceRows(rows = []) {
+  const fieldsAvailable = REFERENCE_FIELDS.filter(field => rows.some(row => hasText(row[field]) || row[field] === 0 || row[field] === false || row[field] === true));
+  const missingRecommendedColumns = REFERENCE_FIELDS.filter(field => !fieldsAvailable.includes(field));
+  const rowsMissingVesselName = rows.filter(row => !hasText(row.vessel_name) && !hasText(row.normalized_vessel_name)).length;
+  const rowsMissingAllIdentityKeys = rows.filter(row => !hasText(row.imo) && !hasText(row.mmsi) && !hasText(row.call_sign)).length;
+  const duplicateCount = keyFn => {
+    const counts = new Map();
+    for (const row of rows) {
+      const key = keyFn(row);
+      if (!key) continue;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return [...counts.values()].filter(count => count > 1).reduce((sum, count) => sum + count - 1, 0);
+  };
+  const duplicateImo = duplicateCount(row => hasText(row.imo) ? String(row.imo).trim() : "");
+  const duplicateMmsi = duplicateCount(row => hasText(row.mmsi) ? String(row.mmsi).trim() : "");
+  const duplicateCallSignName = duplicateCount(row => {
+    if (!hasText(row.call_sign) || !hasText(row.normalized_vessel_name || row.vessel_name)) return "";
+    return `${row.call_sign}|${row.normalized_vessel_name || normalizeVesselName(row.vessel_name)}`;
+  });
+  return {
+    fields_available: fieldsAvailable,
+    missing_recommended_columns: missingRecommendedColumns,
+    schema_issues: {
+      missing_recommended_columns: missingRecommendedColumns,
+      rows_missing_vessel_name: rowsMissingVesselName,
+      rows_missing_all_identity_keys: rowsMissingAllIdentityKeys
+    },
+    duplicate_issues: {
+      duplicate_imo: duplicateImo,
+      duplicate_mmsi: duplicateMmsi,
+      duplicate_call_sign_vessel_name: duplicateCallSignName
+    }
   };
 }
 
@@ -158,6 +202,24 @@ export function readSourceCsvReferenceCache(filePath = SOURCE_CSV_REFERENCE_CACH
   } catch (error) {
     return { status: "invalid", items: [], last_success_at: null, error: error.message };
   }
+}
+
+export function buildSourceCsvReferencePayload({ cache = null, generatedAt = new Date().toISOString() } = {}) {
+  const currentCache = cache || readSourceCsvReferenceCache();
+  const rows = uniqueReferenceRows(currentCache.items || []);
+  const summary = summarizeSourceCsvReferenceRows(rows);
+  return {
+    schema_version: "1.0",
+    generated_at: generatedAt,
+    data_mode: rows.length ? "cache" : "empty",
+    status: rows.length ? "available" : currentCache.status || "missing",
+    record_count: rows.length,
+    item_count: rows.length,
+    last_success_at: currentCache.last_success_at || null,
+    fields: REFERENCE_FIELDS,
+    summary,
+    items: rows
+  };
 }
 
 export function updateSourceCsvReferenceCache({ sourceRows = [], generatedAt = new Date().toISOString(), filePath = SOURCE_CSV_REFERENCE_CACHE_PATH } = {}) {
@@ -215,6 +277,7 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const currentCache = cache || readSourceCsvReferenceCache();
   const rows = currentCache.items || [];
   const summary = summarizeSourceCsvReferenceRows(rows);
+  const maxAllowedBytes = Number(process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || DEFAULT_MAX_SOURCE_CSV_BYTES);
   const responseSizeBytes = Number(diagnostic.response_size_bytes || item.response_size_bytes || 0)
     || responseSizeFromText(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
   const sourceTooLarge = item.status === "SOURCE_TOO_LARGE"
@@ -222,6 +285,14 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     || Boolean(item.source_too_large)
     || isSourceTooLargeSignal(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
   const previousCacheAvailable = currentCache.status === "available" && summary.usable_reference_rows > 0;
+  const cacheAgeHours = currentCache.last_success_at
+    ? Math.max(0, (Date.parse(generatedAt) - Date.parse(currentCache.last_success_at)) / 36e5)
+    : null;
+  const recommendedFix = sourceTooLarge
+    ? "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file."
+    : previousCacheAvailable
+      ? "Keep source_csv as a lightweight verified vessel reference cache."
+      : "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file.";
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -235,7 +306,9 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     previous_cache_available: previousCacheAvailable,
     using_previous_cache: sourceTooLarge && previousCacheAvailable,
     response_size_bytes: responseSizeBytes,
+    max_allowed_bytes: maxAllowedBytes,
     rows_collected: Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0),
+    rows_normalized: sourceTooLarge ? 0 : Number(item.rows_normalized || diagnostic.normalized_count || diagnostic.rows_normalized || 0),
     usable_reference_rows: summary.usable_reference_rows,
     rows_with_imo: summary.rows_with_imo,
     rows_with_mmsi: summary.rows_with_mmsi,
@@ -243,11 +316,15 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     rows_with_operator: summary.rows_with_operator,
     cache_status: currentCache.status,
     last_success_at: currentCache.last_success_at || null,
+    cache_age_hours: cacheAgeHours === null || !Number.isFinite(cacheAgeHours) ? null : Number(cacheAgeHours.toFixed(2)),
     fields_available: summary.fields_available,
     fields_expected: REFERENCE_FIELDS,
+    missing_recommended_columns: summary.schema_issues.missing_recommended_columns,
+    schema_issues: summary.schema_issues,
+    duplicate_issues: summary.duplicate_issues,
     reference_index_keys: Object.fromEntries(Object.entries(buildSourceCsvReferenceIndexes(rows)).map(([key, value]) => [key, Object.keys(value).length])),
-    recommendation: sourceTooLarge
-      ? "Create a smaller verified vessel reference CSV for enrichment."
-      : "Keep source_csv as a lightweight verified vessel reference cache."
+    reference_indexes_built: summary.usable_reference_rows > 0,
+    recommended_fix: recommendedFix,
+    recommendation: recommendedFix
   };
 }

@@ -423,6 +423,7 @@ function statusForSpec({ spec, env, sources }) {
       failure_reason: source.failure_reason || null,
       http_status: source.http_status || null,
       response_size_bytes: Number(source.response_size_bytes || 0) || null,
+      max_allowed_bytes: Number(source.max_allowed_bytes || 0) || null,
       response_content_type: source.response_content_type || null,
       raw_sample_keys: Array.isArray(source.raw_sample_keys) ? source.raw_sample_keys : undefined,
       sanitized_raw_samples: Array.isArray(source.sanitized_raw_samples) ? source.sanitized_raw_samples : undefined,
