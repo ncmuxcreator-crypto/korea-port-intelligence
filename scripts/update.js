@@ -3555,7 +3555,8 @@ function auxStatusRank(status = "") {
     SKIPPED: 5,
     FETCH_FAILED: 6,
     PARSE_FAILED: 7,
-    NOT_CONFIGURED: 8
+    NOT_ATTEMPTED: 8,
+    NOT_CONFIGURED: 9
   };
   return rank[key] || 9;
 }
@@ -3585,6 +3586,12 @@ function summarizeAuxDiagnostics(diagnostics = []) {
     rows_with_port: sumField("pilot_rows_with_port"),
     rows_with_pilot_time: sumField("pilot_rows_with_pilot_time"),
     rows_with_pilot_station: sumField("pilot_rows_with_pilot_station"),
+    rows_with_imo: sumField("rows_with_imo"),
+    rows_with_mmsi: sumField("rows_with_mmsi"),
+    rows_with_gt: sumField("rows_with_gt"),
+    rows_with_dwt: sumField("rows_with_dwt"),
+    rows_with_flag: sumField("rows_with_flag"),
+    rows_with_vessel_type: sumField("rows_with_vessel_type"),
     time_only_rows: sumField("time_only_rows"),
     invalid_time_rows: sumField("invalid_time_rows"),
     sample_sources: rows.slice(0, 5).map(item => ({
@@ -3636,6 +3643,12 @@ function buildAuxSourceSummaryPayload({
     collector_attempted: attempted,
     rows_collected: rowsCollected,
     rows_normalized: rowsNormalized,
+    rows_with_imo: diag.rows_with_imo,
+    rows_with_mmsi: diag.rows_with_mmsi,
+    rows_with_gt: diag.rows_with_gt,
+    rows_with_dwt: diag.rows_with_dwt,
+    rows_with_flag: diag.rows_with_flag,
+    rows_with_vessel_type: diag.rows_with_vessel_type,
     source_count: items.length,
     missing_env: missingEnv,
     skip_reasons: [...new Set(items.map(item => item.skip_reason || item.error_message || "").filter(Boolean))].slice(0, 10),

@@ -657,6 +657,7 @@ function toNumber(value) {
 
 function sourceType(source = {}) {
   if (String(source.key || "").startsWith("pilot_source_")) return "pilot_schedule";
+  if (source.key === "vessel_spec") return "identity";
   if (isPncSourceConfig(source)) return "schedule_or_berth";
   if (source.key === "mof_ais_dynamic") return "movement_only";
   if (source.key === "mof_ais_info") return "identity";
@@ -807,6 +808,7 @@ function allSourceConfigs() {
 
   return [
     { key: "source_csv", label: "Core external snapshot CSV", url: sourceCsvEnabled() ? env("SOURCE_CSV_URL") : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
+    { key: "vessel_spec", label: "MOF vessel specification", url: env("VESSEL_SPEC_API_URL"), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     ...portOperationSources,
     ...pilotSources,
     { key: "ulsan_core", label: "Ulsan core", url: env("ULSAN_API_URL"), serviceKey: env("ULSAN_API_KEY") },
@@ -2434,6 +2436,15 @@ async function collectRealRows() {
         diag.pilot_rows_with_pilot_direction = sourceRecords.filter(record => String(record.pilot_direction || record.movement_type || "").trim()).length;
         diag.time_only_rows = sourceRecords.filter(record => record.pilot_time_parse_status === "time_only_missing_date").length;
         diag.invalid_time_rows = sourceRecords.filter(record => record.pilot_time_parse_status === "invalid_date_time").length;
+      }
+      if (source.key === "vessel_spec") {
+        diag.rows_with_imo = sourceRecords.filter(record => String(record.imo || "").trim()).length;
+        diag.rows_with_mmsi = sourceRecords.filter(record => String(record.mmsi || "").trim()).length;
+        diag.rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;
+        diag.rows_with_dwt = sourceRecords.filter(record => Number(record.dwt || 0) > 0).length;
+        diag.rows_with_flag = sourceRecords.filter(record => String(record.flag || "").trim()).length;
+        diag.rows_with_gt = sourceRecords.filter(record => Number(record.gt || record.grtg || record.intrlGrtg || 0) > 0).length;
+        diag.rows_with_vessel_type = sourceRecords.filter(record => String(record.vessel_type || record.vsslKndNm || "").trim()).length;
       }
       diag.actionable_count = sourceRecords.filter(record => record.actionable_source_row).length;
       diag.rows_matched = diag.actionable_count;

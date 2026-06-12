@@ -6,6 +6,12 @@ const ULSAN_AUXILIARY_SOURCE_KEYS = new Set([
   "ulsan_terminal_process"
 ]);
 
+const AUXILIARY_SOURCE_KEYS = new Set([
+  "source_csv",
+  "vessel_spec",
+  ...ULSAN_AUXILIARY_SOURCE_KEYS
+]);
+
 const ULSAN_AUXILIARY_BUSINESS_IMPACT = "울산 상세 선석/화물/터미널 보강은 지연됨";
 
 const SOURCE_SPECS = [
@@ -27,6 +33,8 @@ const SOURCE_SPECS = [
     collectorKeys: ["vessel_spec"],
     expectedEnvNames: ["VESSEL_SPEC_SERVICE_KEY", "VESSEL_SPEC_API_URL"],
     required: ["VESSEL_SPEC_SERVICE_KEY", "VESSEL_SPEC_API_URL"],
+    sourceLayer: "auxiliary",
+    coreBlocking: false,
     businessImpact: "Vessel particulars such as IMO, MMSI, GT, DWT, flag, and vessel type may remain incomplete.",
     fixHint: "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL."
   },
@@ -214,12 +222,13 @@ export function applySourcePriority(item = {}) {
   const sourceKey = String(item.source_key || item.key || item.source_name || "");
   const isUlsanAuxiliary = ULSAN_AUXILIARY_SOURCE_KEYS.has(sourceKey);
   const isSourceCsv = sourceKey === "source_csv";
+  const isAuxiliary = AUXILIARY_SOURCE_KEYS.has(sourceKey);
   const sourceCsvTooLarge = isSourceCsvTooLarge(item);
   const status = sourceCsvTooLarge ? "SOURCE_TOO_LARGE" : item.status;
   const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(status || ""));
   const deferred = isUlsanAuxiliary && isFailed && isHttp404Failure(item);
-  const sourceLayer = isUlsanAuxiliary || isSourceCsv ? "auxiliary" : (item.source_layer || "core");
-  const coreBlocking = isUlsanAuxiliary || isSourceCsv ? false : item.core_blocking !== false;
+  const sourceLayer = isAuxiliary ? "auxiliary" : (item.source_layer || "core");
+  const coreBlocking = isAuxiliary ? false : item.core_blocking !== false;
   const severity = deferred || sourceCsvTooLarge
     ? "WARNING"
     : item.severity || (isFailed || status === "PARTIAL" ? "WARNING" : "INFO");
@@ -355,10 +364,17 @@ function statusForSpec({ spec, env, sources }) {
     status = "NO_ROWS";
     skipReason = skipReason || "no_rows";
   }
+  if (missing.length === 0 && matched.length === 0 && status === "NOT_CONFIGURED") {
+    status = "NOT_ATTEMPTED";
+    skipReason = "not_registered_collector";
+  }
   if (rowsCollected > 0) {
     status = "ACTIVE";
     skipReason = null;
   }
+  const fixInstruction = skipReason === "not_registered_collector"
+    ? `Register or enable the ${spec.key} collector.`
+    : exactFixInstruction(spec, env, missing);
 
   return applySourcePriority({
     source_key: spec.key,
@@ -372,8 +388,10 @@ function statusForSpec({ spec, env, sources }) {
     collector_enabled: (missing.length === 0 && activationEnabled(spec, env)) || rowsCollected > 0,
     collector_attempted: attempted,
     skip_reason: skipReason,
-    exact_fix_instruction: exactFixInstruction(spec, env, missing),
-    fix_hint: exactFixInstruction(spec, env, missing),
+    exact_fix_instruction: fixInstruction,
+    fix_hint: fixInstruction,
+    source_layer: spec.sourceLayer || "core",
+    core_blocking: spec.coreBlocking === false ? false : true,
     rows_collected: rowsCollected,
     rows_normalized: matched.reduce((sum, source) => sum + Number(source.rows_normalized || source.normalized_count || 0), 0),
     diagnostics_count: matched.length,
@@ -404,7 +422,14 @@ function statusForSpec({ spec, env, sources }) {
       pilot_rows_with_pilot_station: Number(source.pilot_rows_with_pilot_station || 0) || undefined,
       pilot_rows_with_pilot_direction: Number(source.pilot_rows_with_pilot_direction || 0) || undefined,
       time_only_rows: Number(source.time_only_rows || 0) || undefined,
-      invalid_time_rows: Number(source.invalid_time_rows || 0) || undefined
+      invalid_time_rows: Number(source.invalid_time_rows || 0) || undefined,
+      rows_with_imo: Number(source.rows_with_imo || 0) || undefined,
+      rows_with_mmsi: Number(source.rows_with_mmsi || 0) || undefined,
+      rows_with_call_sign: Number(source.rows_with_call_sign || 0) || undefined,
+      rows_with_gt: Number(source.rows_with_gt || 0) || undefined,
+      rows_with_dwt: Number(source.rows_with_dwt || 0) || undefined,
+      rows_with_flag: Number(source.rows_with_flag || 0) || undefined,
+      rows_with_vessel_type: Number(source.rows_with_vessel_type || 0) || undefined
     })),
     business_impact: spec.businessImpact
   });
