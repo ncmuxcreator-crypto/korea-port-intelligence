@@ -287,6 +287,11 @@ jobs:
         timeout-minutes: 2
         run: npm run validate
 
+      - name: Audit source diagnostics
+        if: always()
+        timeout-minutes: 2
+        run: npm run audit:sources
+
       - name: Verify source diagnostics provenance
         if: always()
         run: |

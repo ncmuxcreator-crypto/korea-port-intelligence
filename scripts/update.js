@@ -3876,6 +3876,19 @@ function writeSourceHealthRuntimeJson(payload, origin = {}) {
   return normalized;
 }
 
+function writeSourceCollectionStatusJson(payload, origin = {}) {
+  const isGithubActionsRuntime = Boolean(origin.is_github_actions || payload?.is_github_actions);
+  const normalized = isGithubActionsRuntime
+    ? "dashboard/api/source-collection-status.json"
+    : "dashboard/api/debug/source-collection-status-local.json";
+  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
+  writeDashboardJson(normalized, body);
+  if (isGithubActionsRuntime) {
+    writeDashboardJson(`${DEBUG_API_DIR}/source-collection-status.json`, body);
+  }
+  return normalized;
+}
+
 function riskLevel(score = 0) {
   if (score >= 85) return "Critical";
   if (score >= 70) return "High";
@@ -17690,7 +17703,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
-  writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
+  writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
   writeStaticDatasetJson("dashboard/api/target-vessels.json", targetVessels, report, staticOutputManifest);
@@ -17836,7 +17849,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/snapshot-guard.json", snapshotGuardRuntimeReport, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
-  writeApiJson("dashboard/api/source-collection-status.json", sourceCollectionStatusPayload, report);
+  writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   const repairedJsonRoots = repairDashboardApiRootObjects({ generatedAt: completedAt });
   if (repairedJsonRoots.length) {
     report.dashboard_json_root_repairs = {

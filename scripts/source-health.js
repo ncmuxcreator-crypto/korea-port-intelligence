@@ -52,8 +52,10 @@ function pickCurrentStatus() {
 const { status, status_path: statusPath, diagnostics_only: diagnosticsOnly } = pickCurrentStatus();
 const datasetState = getBaseDatasetState({ statusPath });
 const canonicalRuntimePath = "dashboard/api/source-health-runtime.json";
+const canonicalCollectionStatusPath = "dashboard/api/source-collection-status.json";
 const registryPath = "dashboard/api/source-health.json";
 const localRuntimePath = "dashboard/api/debug/source-health-local.json";
+const localCollectionStatusPath = "dashboard/api/debug/source-collection-status-local.json";
 const debugRegistryPath = "dashboard/api/debug/source-health.json";
 const previousRuntime = readJson(canonicalRuntimePath, null);
 const diagnostics = status.collector_diagnostics || {};
@@ -82,7 +84,9 @@ const runtimeConfigAudit = buildRuntimeConfigAudit();
 const portOperationApiUrl = portOperationApiUrlInfo();
 const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
 const runtimePath = isGithubActionsRuntime ? canonicalRuntimePath : localRuntimePath;
+const collectionStatusPath = isGithubActionsRuntime ? canonicalCollectionStatusPath : localCollectionStatusPath;
 const debugRuntimePath = isGithubActionsRuntime ? "dashboard/api/debug/source-health-runtime.json" : localRuntimePath;
+const debugCollectionStatusPath = isGithubActionsRuntime ? "dashboard/api/debug/source-collection-status.json" : localCollectionStatusPath;
 const missingPortOperationSecret = !portOperationServiceKeyPresent();
 const missingPortOperationUrl = !portOperationApiUrl.effective_present;
 const portOperationAttemptedCount = Number(diagnostics.coverage?.ports_attempted_count || diagnostics.ports_attempted_count || 0);
@@ -189,9 +193,13 @@ const registryReport = {
   paid_ais_policy: "MarineTraffic and VesselFinder are not required for the current public-data-first backend."
 };
 fs.writeFileSync(runtimePath, JSON.stringify(report, null, 2));
+fs.writeFileSync(collectionStatusPath, JSON.stringify(report.source_collection_status, null, 2));
 fs.writeFileSync(registryPath, JSON.stringify(registryReport, null, 2));
 if (debugRuntimePath !== runtimePath) {
   fs.writeFileSync(debugRuntimePath, JSON.stringify(report, null, 2));
+}
+if (debugCollectionStatusPath !== collectionStatusPath) {
+  fs.writeFileSync(debugCollectionStatusPath, JSON.stringify(report.source_collection_status, null, 2));
 }
 fs.writeFileSync(debugRegistryPath, JSON.stringify(registryReport, null, 2));
 fs.writeFileSync("data/source-health.json", JSON.stringify(registryReport, null, 2));

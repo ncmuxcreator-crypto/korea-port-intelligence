@@ -17,8 +17,13 @@ const status = readJson("dashboard/api/status.json", {});
 const sourceHealthRuntime = readJson("dashboard/api/source-health-runtime.json", null);
 const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", null);
 const sourceHealthLocal = readJson("dashboard/api/debug/source-health-local.json", null);
-const payload = sourceCollectionStatus?.items
-  ? sourceCollectionStatus
+const sourceCollectionStatusLocal = readJson("dashboard/api/debug/source-collection-status-local.json", null);
+const isGithubActionsRuntime = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
+const selectedSourceCollectionStatus = !isGithubActionsRuntime && sourceCollectionStatusLocal?.items
+  ? sourceCollectionStatusLocal
+  : sourceCollectionStatus;
+const payload = selectedSourceCollectionStatus?.items
+  ? selectedSourceCollectionStatus
   : buildSourceCollectionStatus({
     report: status,
     collectorDiagnostics: status.collector_diagnostics || {},
@@ -50,6 +55,26 @@ if (payload.generated_by === "local" || sourceHealthLocal?.generated_by === "loc
 }
 if (sourceHealthRuntime?.generated_by === "local" || sourceHealthRuntime?.is_github_actions === false) {
   console.log("WARN: Repo source diagnostics may not reflect GitHub Actions secrets. Check hwk-generated-snapshot artifact.");
+}
+if (isGithubActionsRuntime) {
+  const provenanceProblems = [];
+  for (const [label, diagnostic] of [
+    ["source-health-runtime.json", sourceHealthRuntime],
+    ["source-collection-status.json", sourceCollectionStatus]
+  ]) {
+    if (!diagnostic || diagnostic.__parse_error) {
+      provenanceProblems.push(`${label} missing_or_invalid`);
+      continue;
+    }
+    if (diagnostic.generated_by !== "github_actions") provenanceProblems.push(`${label} generated_by=${diagnostic.generated_by || "missing"}`);
+    if (diagnostic.is_github_actions !== true) provenanceProblems.push(`${label} is_github_actions=${diagnostic.is_github_actions}`);
+    if (!diagnostic.GITHUB_RUN_ID) provenanceProblems.push(`${label} missing GITHUB_RUN_ID`);
+    if (!diagnostic.GITHUB_WORKFLOW) provenanceProblems.push(`${label} missing GITHUB_WORKFLOW`);
+  }
+  if (provenanceProblems.length) {
+    console.error(`ERROR: GitHub Actions source diagnostics provenance invalid: ${provenanceProblems.join("; ")}`);
+    process.exitCode = 1;
+  }
 }
 console.log("");
 console.log("Source | Status | Env Present | Missing Env | Attempted | Rows | Skip Reason | Fix");

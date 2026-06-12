@@ -29,6 +29,10 @@ function outputPath(file) {
     const localSourceHealthPath = `${DEBUG_API_DIR}/source-health-local.json`;
     if (fs.existsSync(localSourceHealthPath)) return localSourceHealthPath;
   }
+  if (String(file).replace(/\\/g, "/") === "dashboard/api/source-collection-status.json") {
+    const localSourceCollectionStatusPath = `${DEBUG_API_DIR}/source-collection-status-local.json`;
+    if (fs.existsSync(localSourceCollectionStatusPath)) return localSourceCollectionStatusPath;
+  }
   const debugPath = `${DEBUG_API_DIR}/${String(file).slice("dashboard/api/".length)}`;
   if (!fs.existsSync(debugPath)) return file;
   const rootRows = countRowsInFile(file);
@@ -88,12 +92,19 @@ function validateRunOrigin(label, payload) {
   }
 }
 
+function isPreservedGithubActionsSourceDiagnostic(label, payload) {
+  return validationMode === "local" &&
+    ["source-health-runtime.json", "source-collection-status.json"].includes(label) &&
+    payload?.generated_by === "github_actions" &&
+    payload?.is_github_actions === true;
+}
+
 function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } = {}) {
   try {
     validateRunOrigin(label, payload);
   } catch (error) {
     const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
-    if (allowPlaceholder || localNoLiveDataDiagnostics || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
+    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
       validationWarnings.push(`${label} is a legacy/protected diagnostic missing run origin fields: ${error.message}`);
     } else {
       throw error;
@@ -103,7 +114,7 @@ function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } 
     .filter(marker => !(marker in (payload || {})));
   if (missingRuntimeMarkers.length) {
     const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
-    if (allowPlaceholder || localNoLiveDataDiagnostics || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
+    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
       validationWarnings.push(`${label} is a legacy/protected diagnostic missing runtime markers: ${missingRuntimeMarkers.join(",")}`);
     } else {
       throw new Error(`${label} missing runtime diagnostic field: ${missingRuntimeMarkers[0]}`);
@@ -113,6 +124,10 @@ function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } 
     throw new Error(`${label} is a placeholder and must not be used as runtime truth`);
   }
   if (status?.run_id && payload?.run_id && String(status.run_id) !== String(payload.run_id) && payload.stale_diagnostic !== true) {
+    if (isPreservedGithubActionsSourceDiagnostic(label, payload)) {
+      validationWarnings.push(`${label} is preserved from GitHub Actions and may not match the local status.json run_id.`);
+      return;
+    }
     throw new Error(`${label} must mark stale_diagnostic=true when run_id differs from status.json`);
   }
 }
@@ -715,13 +730,14 @@ if (outputExists("dashboard/api/source-health-runtime.json")) {
   const sourceHealth = readOutputJson("dashboard/api/source-health-runtime.json");
   validateRuntimeDiagnostic("source-health-runtime.json", sourceHealth);
   const sourceHealthHasCurrentRunFields = ["run_id", "generated_at", "secrets_present", "enabled_collectors", "attempted_collectors", "skipped_collectors"].every(marker => marker in sourceHealth);
+  const preservedGithubActionsSourceHealth = isPreservedGithubActionsSourceDiagnostic("source-health-runtime.json", sourceHealth);
   const localDebugStatusWithStaleMainSourceHealth = validationMode === "local" &&
     String(status.data_mode || "") === "no_live_data" &&
     !usingDebugOutput("dashboard/api/source-health-runtime.json");
   const staleLegacySourceHealth = !sourceHealthHasCurrentRunFields &&
     status.run_id &&
     !usingDebugOutput("dashboard/api/source-health-runtime.json");
-  if (status.run_id && sourceHealth.run_id && String(status.run_id) !== String(sourceHealth.run_id) && sourceHealth.stale_source_health !== true && !localDebugStatusWithStaleMainSourceHealth) {
+  if (status.run_id && sourceHealth.run_id && String(status.run_id) !== String(sourceHealth.run_id) && sourceHealth.stale_source_health !== true && !localDebugStatusWithStaleMainSourceHealth && !preservedGithubActionsSourceHealth) {
     throw new Error("Source health runtime must mark stale_source_health=true when run_id differs from status.json");
   }
   if (staleLegacySourceHealth) {
