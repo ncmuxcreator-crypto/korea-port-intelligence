@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 30
 
     permissions:
-      contents: read
+      contents: write
 
     env:
       CI: true
@@ -171,7 +171,9 @@ jobs:
             VALIDATION_MODE: process.env.VALIDATION_MODE,
             UPDATE_MODE: process.env.UPDATE_MODE,
             CI: process.env.CI,
-            GITHUB_ACTIONS: process.env.GITHUB_ACTIONS
+            GITHUB_ACTIONS: process.env.GITHUB_ACTIONS,
+            GITHUB_RUN_ID: process.env.GITHUB_RUN_ID,
+            GITHUB_WORKFLOW: process.env.GITHUB_WORKFLOW
           });
           NODE
 
@@ -284,6 +286,41 @@ jobs:
         if: always()
         timeout-minutes: 2
         run: npm run validate
+
+      - name: Verify source diagnostics provenance
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+          for (const file of ["dashboard/api/source-health-runtime.json", "dashboard/api/source-collection-status.json"]) {
+            if (!fs.existsSync(file)) {
+              console.log(`::warning::${file} missing; check update output and hwk-generated-snapshot artifact.`);
+              continue;
+            }
+            const payload = JSON.parse(fs.readFileSync(file, "utf8"));
+            const generatedBy = payload.generated_by || "unknown";
+            const isGithubActions = payload.is_github_actions === true;
+            const runId = payload.GITHUB_RUN_ID || null;
+            const workflow = payload.GITHUB_WORKFLOW || null;
+            console.log(`${file}: generated_by=${generatedBy}; is_github_actions=${isGithubActions}; GITHUB_RUN_ID=${runId || "null"}; GITHUB_WORKFLOW=${workflow || "null"}; run_id=${payload.run_id || "null"}`);
+            if (generatedBy === "local" || !isGithubActions || !runId || !workflow) {
+              console.log(`::warning::Repo source diagnostics may not reflect GitHub Actions secrets. Check hwk-generated-snapshot artifact.`);
+            }
+          }
+          NODE
+
+      - name: Commit source diagnostics snapshot
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboard/api/source-health-runtime.json dashboard/api/source-collection-status.json
+          if git diff --cached --quiet; then
+            echo "No source diagnostics changes to commit"
+          else
+            git commit -m "chore: refresh source diagnostics [skip ci]"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
 
       - name: Run health audit
         timeout-minutes: 2

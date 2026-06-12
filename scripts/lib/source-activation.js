@@ -286,6 +286,10 @@ export function buildSourceCollectionStatus({
     acc[item.status] = (acc[item.status] || 0) + 1;
     return acc;
   }, {});
+  const sourceKeysByStatus = status => items
+    .filter(item => item.status === status)
+    .map(item => item.source_key);
+  const failedStatuses = new Set(["FETCH_FAILED", "PARSE_FAILED"]);
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -295,6 +299,16 @@ export function buildSourceCollectionStatus({
     record_count: items.length,
     item_count: items.length,
     status_counts: counts,
+    active_sources: sourceKeysByStatus("ACTIVE"),
+    not_configured_sources: sourceKeysByStatus("NOT_CONFIGURED"),
+    partial_sources: sourceKeysByStatus("PARTIAL"),
+    failed_sources: items
+      .filter(item => failedStatuses.has(item.status))
+      .map(item => item.source_key),
+    rows_collected_by_source: Object.fromEntries(items.map(item => [
+      item.source_key,
+      Number(item.rows_collected || 0)
+    ])),
     items
   };
 }

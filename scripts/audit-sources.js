@@ -14,6 +14,7 @@ function readJson(relativePath, fallback = {}) {
 }
 
 const status = readJson("dashboard/api/status.json", {});
+const sourceHealthRuntime = readJson("dashboard/api/source-health-runtime.json", null);
 const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", null);
 const sourceHealthLocal = readJson("dashboard/api/debug/source-health-local.json", null);
 const payload = sourceCollectionStatus?.items
@@ -23,6 +24,15 @@ const payload = sourceCollectionStatus?.items
     collectorDiagnostics: status.collector_diagnostics || {},
     generatedAt: new Date().toISOString()
   });
+const sourceItems = payload.items || [];
+const activeSources = payload.active_sources || sourceItems.filter(item => item.status === "ACTIVE").map(item => item.source_key);
+const notConfiguredSources = payload.not_configured_sources || sourceItems.filter(item => item.status === "NOT_CONFIGURED").map(item => item.source_key);
+const partialSources = payload.partial_sources || sourceItems.filter(item => item.status === "PARTIAL").map(item => item.source_key);
+const failedSources = payload.failed_sources || sourceItems.filter(item => ["FETCH_FAILED", "PARSE_FAILED"].includes(item.status)).map(item => item.source_key);
+const rowsCollectedBySource = payload.rows_collected_by_source || Object.fromEntries(sourceItems.map(item => [
+  item.source_key,
+  Number(item.rows_collected || 0)
+]));
 
 console.log("Source Configuration and Activation Audit");
 console.log("=========================================");
@@ -30,12 +40,20 @@ console.log(`run_id=${payload.run_id || "unknown"}`);
 console.log(`generated_at=${payload.generated_at || "unknown"}`);
 console.log(`record_count=${payload.record_count || 0}`);
 console.log(`status_counts=${JSON.stringify(payload.status_counts || {})}`);
+console.log(`active_sources=${activeSources.join(",") || "-"}`);
+console.log(`not_configured_sources=${notConfiguredSources.join(",") || "-"}`);
+console.log(`partial_sources=${partialSources.join(",") || "-"}`);
+console.log(`failed_sources=${failedSources.join(",") || "-"}`);
+console.log(`rows_collected_by_source=${JSON.stringify(rowsCollectedBySource)}`);
 if (payload.generated_by === "local" || sourceHealthLocal?.generated_by === "local" || sourceHealthLocal?.is_github_actions === false) {
   console.log("WARN: This diagnostic was generated locally and may not reflect GitHub Actions secrets.");
 }
+if (sourceHealthRuntime?.generated_by === "local" || sourceHealthRuntime?.is_github_actions === false) {
+  console.log("WARN: Repo source diagnostics may not reflect GitHub Actions secrets. Check hwk-generated-snapshot artifact.");
+}
 console.log("");
 console.log("Source | Status | Env Present | Missing Env | Attempted | Rows | Skip Reason | Fix");
-for (const item of payload.items || []) {
+for (const item of sourceItems) {
   console.log([
     item.source_key,
     item.status,
@@ -50,7 +68,7 @@ for (const item of payload.items || []) {
 
 console.log("");
 console.log("Detailed env diagnostics");
-for (const item of payload.items || []) {
+for (const item of sourceItems) {
   console.log(`\n[${item.source_key}] ${item.source_label}`);
   console.log(`expected_env_names=${(item.expected_env_names || []).join(",") || "-"}`);
   console.log(`present_env=${(item.present_env || []).join(",") || "-"}`);
@@ -63,7 +81,7 @@ for (const item of payload.items || []) {
   console.log(`fix_hint=${item.exact_fix_instruction || item.fix_hint || "-"}`);
 }
 
-const problemCount = (payload.items || []).filter(item => !["ACTIVE", "NOT_CONFIGURED"].includes(item.status)).length;
+const problemCount = sourceItems.filter(item => !["ACTIVE", "NOT_CONFIGURED"].includes(item.status)).length;
 if (problemCount > 0) {
   console.log("");
   console.log(`WARN: ${problemCount} configured or partially configured source(s) need action.`);
