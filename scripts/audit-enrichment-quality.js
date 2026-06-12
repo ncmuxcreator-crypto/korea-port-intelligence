@@ -19,6 +19,18 @@ function readJson(relativePath, fallback = {}) {
   }
 }
 
+function readDiagnosticJson(relativePath, fallback = {}) {
+  const main = readJson(relativePath, fallback);
+  const debugPath = String(relativePath).replace(/^dashboard\/api\//, "dashboard/api/debug/");
+  const debug = debugPath === relativePath ? null : readJson(debugPath, null);
+  if (!debug || debug._error) return main;
+  if (main._error) return debug;
+  const debugGenerated = Date.parse(debug.generated_at || debug.tier_index_generated_at || "");
+  const mainGenerated = Date.parse(main.generated_at || main.tier_index_generated_at || "");
+  if (Number.isFinite(debugGenerated) && (!Number.isFinite(mainGenerated) || debugGenerated >= mainGenerated)) return debug;
+  return main;
+}
+
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.items)) return payload.items;
@@ -36,6 +48,15 @@ function countSignal(items, key, predicate) {
     if (predicate(d?.[key])) count += 1;
   }
   return count;
+}
+
+function isAuxConfirmedBerthSignal(value) {
+  if (!value || typeof value !== "object") return false;
+  if (value.placeholder === true) return false;
+  if (value.has_berth_info !== true && value.has_berth !== true) return false;
+  if (String(value.signal_strength || "").toUpperCase() === "BASELINE") return false;
+  if (String(value.match_type || "").toLowerCase() === "none") return false;
+  return !/^(?:port_operation|core|core_field)$/i.test(String(value.source || ""));
 }
 
 function collectUiVisibleSignals() {
@@ -65,7 +86,7 @@ function collectUiVisibleSignals() {
     const items = Array.isArray(payload.top_candidates) ? payload.top_candidates : rows(payload);
     result.ui_visible_records += items.length;
     result.pilotage_signal_display_count += countSignal(items, "pilotage_signal", value => value?.has_pilotage === true);
-    result.berth_signal_display_count += countSignal(items, "berth_signal", value => value?.has_berth_info === true || value?.has_berth === true);
+    result.berth_signal_display_count += countSignal(items, "berth_signal", isAuxConfirmedBerthSignal);
     result.data_lineage_display_count += countSignal(items, "data_lineage", value => value && typeof value === "object");
   }
 
@@ -79,13 +100,13 @@ function staleAgainst(reference, payload) {
 
 const bootstrap = readJson("dashboard/api/bootstrap.json", {});
 const statusSummary = readJson("dashboard/api/status-summary.json", {});
-const updateTiers = readJson("dashboard/api/runtime/update-tiers.json", {});
-const sourceQuality = readJson("dashboard/api/source-quality-score.json", { items: [] });
-const utilization = readJson("dashboard/api/enrichment-utilization.json", { items: [] });
-const candidates = readJson("dashboard/api/enrichment/candidates.json", { items: [] });
-const applied = readJson("dashboard/api/enrichment/applied.json", { items: [] });
-const review = readJson("dashboard/api/enrichment/review-queue.json", { items: [] });
-const summary = readJson("dashboard/api/enrichment/summary.json", {});
+const updateTiers = readDiagnosticJson("dashboard/api/runtime/update-tiers.json", {});
+const sourceQuality = readDiagnosticJson("dashboard/api/source-quality-score.json", { items: [] });
+const utilization = readDiagnosticJson("dashboard/api/enrichment-utilization.json", { items: [] });
+const candidates = readDiagnosticJson("dashboard/api/enrichment/candidates.json", { items: [] });
+const applied = readDiagnosticJson("dashboard/api/enrichment/applied.json", { items: [] });
+const review = readDiagnosticJson("dashboard/api/enrichment/review-queue.json", { items: [] });
+const summary = readDiagnosticJson("dashboard/api/enrichment/summary.json", {});
 const uiSignals = collectUiVisibleSignals();
 const mixedReferenceCacheAllowed = updateTiers.mixed_tier_status === true &&
   Boolean(updateTiers.reference_enrichment_run_id || updateTiers.enrichment_reused_from_cache);
@@ -103,6 +124,7 @@ const staleFiles = [
   ["enrichment-review-queue", review]
 ].filter(([, payload]) => staleAgainst(bootstrap, payload));
 const allowedMixedTierStaleFiles = staleFiles.filter(([name, payload]) => {
+  if (name === "source-quality-score" && (payload.reused_from_cache === true || updateTiers.local_preview === true)) return true;
   if (name === "enrichment-utilization" && (payload.reused_from_cache === true || mixedReferenceCacheAllowed)) return true;
   if (name.startsWith("enrichment-") && mixedReferenceCacheAllowed) return true;
   return false;

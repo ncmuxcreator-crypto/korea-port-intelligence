@@ -1,0 +1,247 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-12T23:18:38.032Z",
+  "status": "WARNING",
+  "tier_pointer_status": {
+    "status_summary_run_id": "run_20260612215215093_9a4e8bcc",
+    "update_tiers_core_run_id": "run_20260612215215093_9a4e8bcc",
+    "production_core_run_id": "run_20260612215215093_9a4e8bcc",
+    "local_preview_run_id": "run_20260612231727371_584cf3d7",
+    "core_pointer_source": "production_status_summary_preserved",
+    "core_pointer_matches_status_summary": true,
+    "generated_by_mismatch": false,
+    "local_run_promoted_over_production": false
+  },
+  "source_quality_counts_by_source": {
+    "source_csv": {
+      "rows_collected": 0,
+      "rows_normalized": 0,
+      "rows_matched_to_vessels": 0,
+      "blocker_reason": "API response too large: 72478261 bytes",
+      "match_blockers": []
+    },
+    "pilot_sources": {
+      "rows_collected": 403,
+      "rows_normalized": 72,
+      "rows_matched_to_vessels": 0,
+      "blocker_reason": "missing_call_sign; missing_vessel_name; missing_port; time_only_without_date; no_current_vessel_same_port; confidence_below_threshold; vessel_key_mismatch; compact_mapper_dropped_signal",
+      "match_blockers": [
+        "missing_call_sign",
+        "missing_vessel_name",
+        "missing_port",
+        "time_only_without_date",
+        "no_current_vessel_same_port",
+        "confidence_below_threshold",
+        "vessel_key_mismatch",
+        "compact_mapper_dropped_signal"
+      ]
+    },
+    "berth_sources": {
+      "rows_collected": 30,
+      "rows_normalized": 30,
+      "rows_matched_to_vessels": 0,
+      "blocker_reason": "no_vessel_match_or_signal",
+      "match_blockers": []
+    },
+    "vessel_spec": {
+      "rows_collected": 1,
+      "rows_normalized": 0,
+      "rows_matched_to_vessels": 0,
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+      "match_blockers": []
+    },
+    "mof_ais_info": {
+      "rows_collected": 10,
+      "rows_normalized": 10,
+      "rows_matched_to_vessels": 10,
+      "blocker_reason": "",
+      "match_blockers": []
+    },
+    "mof_ais_dynamic": {
+      "rows_collected": 10,
+      "rows_normalized": 10,
+      "rows_matched_to_vessels": 10,
+      "blocker_reason": "",
+      "match_blockers": []
+    },
+    "port_operation": {
+      "rows_collected": 7937,
+      "rows_normalized": 7937,
+      "rows_matched_to_vessels": 7937,
+      "blocker_reason": "",
+      "match_blockers": []
+    }
+  },
+  "enrichment_utilization_counts_by_source": {
+    "source_csv": {
+      "matched_vessels": 0,
+      "rows_matched_to_vessels": 0,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "unmatched_records"
+    },
+    "pilot_sources": {
+      "matched_vessels": 0,
+      "rows_matched_to_vessels": 0,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "unmatched_records"
+    },
+    "berth_sources": {
+      "matched_vessels": 0,
+      "rows_matched_to_vessels": 0,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "unmatched_records"
+    },
+    "vessel_spec": {
+      "matched_vessels": 0,
+      "rows_matched_to_vessels": 0,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "unmatched_records"
+    },
+    "mof_ais_info": {
+      "matched_vessels": 10,
+      "rows_matched_to_vessels": 10,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "matched_records"
+    },
+    "mof_ais_dynamic": {
+      "matched_vessels": 10,
+      "rows_matched_to_vessels": 10,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "matched_records"
+    },
+    "port_operation": {
+      "matched_vessels": 0,
+      "rows_matched_to_vessels": 0,
+      "enrichment_patches_created": 0,
+      "vessel_display_records_updated": 0,
+      "ui_visible_records": 0,
+      "count_inconsistency": false,
+      "sample_basis": "unmatched_records"
+    }
+  },
+  "output_scan_counts": {
+    "files_checked": 26,
+    "records_scanned": 796,
+    "pilotage_signal_display_count": 0,
+    "pilotage_placeholders": 796,
+    "aux_confirmed_berth_count": 0,
+    "baseline_berth_count": 783,
+    "berth_placeholders": 0,
+    "samples": {
+      "pilotage_confirmed": [],
+      "aux_berth_confirmed": [],
+      "baseline_berth": [
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "MINERAL HOPE",
+          "berth": "송악부두 5번선석",
+          "terminal": null,
+          "signal": null
+        },
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "MINERAL HOPE",
+          "berth": "송악부두 5번선석",
+          "terminal": null,
+          "signal": null
+        },
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "FIONAN",
+          "berth": "영흥도 영흥화력3돌핀",
+          "terminal": null,
+          "signal": null
+        },
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "VITUS BERING",
+          "berth": "D-1정박지",
+          "terminal": null,
+          "signal": null
+        },
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "VITUS BERING",
+          "berth": "D-1정박지",
+          "terminal": null,
+          "signal": null
+        }
+      ]
+    },
+    "berth_info_detected_count": 783
+  },
+  "bootstrap_counts": {
+    "pilotage_detected_count": 0,
+    "aux_confirmed_berth_count": 0,
+    "baseline_berth_count": 0,
+    "berth_info_detected_count": 990
+  },
+  "berth_signal_semantics_breakdown": {
+    "aux_confirmed": 0,
+    "baseline_core_field": 783,
+    "placeholders": 0
+  },
+  "pilotage_signal_semantics_breakdown": {
+    "matched_confirmed": 0,
+    "placeholders": 796,
+    "unmatched": 72
+  },
+  "count_inconsistencies_found": [],
+  "count_inconsistencies_fixed": true,
+  "remaining_blockers": [
+    {
+      "source_key": "source_csv",
+      "blocker_reason": "API response too large: 72478261 bytes",
+      "match_blockers": []
+    },
+    {
+      "source_key": "pilot_sources",
+      "blocker_reason": "missing_call_sign; missing_vessel_name; missing_port; time_only_without_date; no_current_vessel_same_port; confidence_below_threshold; vessel_key_mismatch; compact_mapper_dropped_signal",
+      "match_blockers": [
+        "missing_call_sign",
+        "missing_vessel_name",
+        "missing_port",
+        "time_only_without_date",
+        "no_current_vessel_same_port",
+        "confidence_below_threshold",
+        "vessel_key_mismatch",
+        "compact_mapper_dropped_signal"
+      ]
+    },
+    {
+      "source_key": "berth_sources",
+      "blocker_reason": "no_vessel_match_or_signal",
+      "match_blockers": []
+    },
+    {
+      "source_key": "vessel_spec",
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+      "match_blockers": []
+    }
+  ],
+  "critical_issues": [],
+  "warnings": [
+    "bootstrap baseline_berth_count=0 differs from output scan=783",
+    "bootstrap berth_info_detected_count=990 differs from output scan=783",
+    "mixed tiers are documented"
+  ],
+  "recommended_fix": "none"
+}

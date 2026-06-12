@@ -92,11 +92,46 @@ function countPilotageSignals(records = []) {
   return records.filter(row => display(row).pilotage_signal?.has_pilotage === true).length;
 }
 
+function berthSignal(row = {}) {
+  const d = display(row);
+  return d.berth_signal && typeof d.berth_signal === "object" ? d.berth_signal : {};
+}
+
+function berthSignalSource(signal = {}) {
+  return String(signal.source || signal.berth_source || signal.data_source || "").toLowerCase();
+}
+
+function isAuxConfirmedBerthSignalValue(signal = {}) {
+  if (!signal || typeof signal !== "object") return false;
+  if (signal.placeholder === true) return false;
+  if (signal.has_berth_info !== true && signal.has_berth !== true) return false;
+  if (String(signal.signal_strength || "").toUpperCase() === "BASELINE") return false;
+  if (String(signal.match_type || "").toLowerCase() === "none") return false;
+  const source = berthSignalSource(signal);
+  if (source === "port_operation" || source === "core" || source === "core_field") return false;
+  return true;
+}
+
+function isAuxConfirmedBerthSignal(row = {}) {
+  return isAuxConfirmedBerthSignalValue(berthSignal(row));
+}
+
+function isBaselineBerthRecord(row = {}) {
+  const d = display(row);
+  const signal = berthSignal(row);
+  if (isAuxConfirmedBerthSignalValue(signal)) return false;
+  return hasValue(d.berth) ||
+    hasValue(d.terminal) ||
+    String(signal.signal_strength || "").toUpperCase() === "BASELINE" ||
+    String(signal.match_type || "").toUpperCase() === "CORE_FIELD";
+}
+
 function countBerthSignals(records = []) {
-  return records.filter(row => {
-    const d = display(row);
-    return hasValue(d.berth_source) || d.berth_signal?.has_berth === true || d.berth_signal?.has_berth_info === true;
-  }).length;
+  return records.filter(isAuxConfirmedBerthSignal).length;
+}
+
+function countBaselineBerthRecords(records = []) {
+  return records.filter(isBaselineBerthRecord).length;
 }
 
 function compactSample(row = {}, fields = []) {
@@ -132,7 +167,7 @@ function sourceSamples(records = [], sourceKey = "", fields = []) {
 
   if (sourceKey === "berth_sources") {
     return records
-      .filter(row => hasValue(display(row).berth))
+      .filter(isAuxConfirmedBerthSignal)
       .map(row => compactSample(row, ["berth"]))
       .slice(0, 5);
   }
@@ -146,7 +181,9 @@ function fieldCountsForSource(records = [], sourceKey = "", fields = [], matched
     if (field === "pilotage_signal") {
       counts[field] = countPilotageSignals(records);
     } else if (sourceKey === "berth_sources" && ["berth", "berth_signal"].includes(field)) {
-      counts[field] = field === "berth_signal" ? countBerthSignals(records) : countDisplayField(records, "berth");
+      counts[field] = field === "berth_signal"
+        ? countBerthSignals(records)
+        : records.filter(row => isAuxConfirmedBerthSignal(row) && hasValue(display(row).berth)).length;
     } else if (sourceKey === "port_operation") {
       counts[field] = records.filter(row => sourceMatchesRow(row, sourceKey) && hasValue(display(row)[field])).length;
     } else {
@@ -185,7 +222,7 @@ function sourceMatchedCount({ sourceKey, quality = {}, bootstrapKpis = {}, recor
   if (sourceKey === "berth_sources") {
     return Math.max(
       number(quality.rows_matched_to_vessels),
-      number(bootstrapKpis.berth_info_detected_count),
+      number(bootstrapKpis.aux_confirmed_berth_count),
       countBerthSignals(records)
     );
   }
@@ -281,8 +318,9 @@ export function buildEnrichmentUtilizationPayload({
 
   const pilotageDisplayCount = countPilotageSignals(dedupedRecords);
   const berthDisplayCount = countBerthSignals(dedupedRecords);
+  const baselineBerthCount = countBaselineBerthRecords(dedupedRecords);
   const pilotageMatchedCount = Math.max(pilotageDisplayCount, number(bootstrapKpis.pilotage_detected_count));
-  const berthMatchedCount = Math.max(berthDisplayCount, number(bootstrapKpis.berth_info_detected_count));
+  const berthMatchedCount = Math.max(berthDisplayCount, number(bootstrapKpis.aux_confirmed_berth_count));
   const sourceRowsCollected = sumQuality(sourceQualityScore, "rows_collected");
   const rowsNormalized = sumQuality(sourceQualityScore, "rows_normalized");
   const rowsMatchedToVessels = sumQuality(sourceQualityScore, "rows_matched_to_vessels");
@@ -340,6 +378,9 @@ export function buildEnrichmentUtilizationPayload({
     pilotage_signal_display_count: pilotageDisplayCount,
     berth_signal_count: berthMatchedCount,
     berth_signal_display_count: berthDisplayCount,
+    aux_confirmed_berth_count: berthDisplayCount,
+    baseline_berth_count: baselineBerthCount,
+    berth_info_detected_count: berthDisplayCount + baselineBerthCount,
     display_gap_explanations: displayGapExplanations,
     operator_recovered_count: displayCounts.operator_display,
     imo_recovered_count: displayCounts.imo,

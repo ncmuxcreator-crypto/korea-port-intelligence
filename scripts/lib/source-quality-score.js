@@ -99,8 +99,8 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
   }
   if (sourceKey === "berth_sources") {
     return number(
-      bootstrapKpis.berth_info_detected_count ??
-      report.berth_info_detected_count ??
+      bootstrapKpis.aux_confirmed_berth_count ??
+      report.aux_confirmed_berth_count ??
       matchingDiagnostics.pnc_rows_matched ??
       matchingDiagnostics.berth_rows_matched,
       0
@@ -114,6 +114,32 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
     return number(item.rows_normalized, 0);
   }
   return 0;
+}
+
+function diagnosticCount(item = {}, key = "") {
+  return (item.diagnostics || []).reduce((sum, diagnostic) => sum + number(diagnostic?.[key]), 0);
+}
+
+function pilotSourceMatchBlockers({ item = {}, rowsNormalized = 0, rowsMatched = 0, matchingDiagnostics = {}, bootstrapKpis = {} } = {}) {
+  if (rowsNormalized <= 0 || rowsMatched > 0) return [];
+  const blockers = [];
+  const callSignRows = diagnosticCount(item, "pilot_rows_with_call_sign");
+  const vesselNameRows = diagnosticCount(item, "pilot_rows_with_vessel_name");
+  const portRows = diagnosticCount(item, "pilot_rows_with_port");
+  const dateRows = diagnosticCount(item, "pilot_rows_with_pilot_date");
+  const timeRows = diagnosticCount(item, "pilot_rows_with_pilot_time");
+  if (callSignRows > 0 && callSignRows < rowsNormalized) blockers.push("missing_call_sign");
+  if (callSignRows === 0) blockers.push("missing_call_sign");
+  if (vesselNameRows > 0 && vesselNameRows < rowsNormalized) blockers.push("missing_vessel_name");
+  if (vesselNameRows === 0) blockers.push("missing_vessel_name");
+  if (portRows > 0 && portRows < rowsNormalized) blockers.push("missing_port");
+  if (portRows === 0) blockers.push("missing_port");
+  if (timeRows > 0 && dateRows === 0) blockers.push("time_only_without_date");
+  if (number(matchingDiagnostics.pilot_rows_same_port || matchingDiagnostics.pilot_same_port_candidates) <= 0) blockers.push("no_current_vessel_same_port");
+  if (number(matchingDiagnostics.pilot_weak_matches || matchingDiagnostics.pilotage_weak_matches || matchingDiagnostics.weak_matches) > 0) blockers.push("confidence_below_threshold");
+  if (number(matchingDiagnostics.pilot_vessel_key_mismatch || matchingDiagnostics.vessel_key_mismatch) > 0) blockers.push("vessel_key_mismatch");
+  if (number(bootstrapKpis.pilotage_detected_count) > 0 && rowsMatched <= 0) blockers.push("compact_mapper_dropped_signal");
+  return [...new Set(blockers.length ? blockers : ["no_current_vessel_same_port"])];
 }
 
 function freshnessMinutes(generatedAt, referenceTime) {
@@ -131,7 +157,7 @@ function freshnessScore(minutes) {
   return 0;
 }
 
-function blockerReason({ item, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes }) {
+function blockerReason({ item, sourceKey, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes, matchingDiagnostics = {}, bootstrapKpis = {} }) {
   if (item.status === "SOURCE_TOO_LARGE") return item.skip_reason || item.exact_fix_instruction || "source_response_too_large";
   if (["FETCH_FAILED", "PARSE_FAILED", "NOT_CONFIGURED", "SKIPPED"].includes(String(item.status || ""))) {
     return item.skip_reason || item.exact_fix_instruction || item.status;
@@ -140,6 +166,9 @@ function blockerReason({ item, rowsCollected, rowsNormalized, rowsMatched, field
   if (!item.collector_attempted) return item.skip_reason || "collector_not_attempted";
   if (rowsCollected <= 0) return item.skip_reason || "no_rows_collected";
   if (rowsNormalized <= 0) return item.utilization_note || "rows_not_normalized";
+  if (sourceKey === "pilot_sources" && rowsMatched <= 0) {
+    return pilotSourceMatchBlockers({ item, rowsNormalized, rowsMatched, matchingDiagnostics, bootstrapKpis }).join("; ");
+  }
   if (rowsMatched <= 0) return "no_vessel_match_or_signal";
   if (!fieldsContributed.length) return "no_useful_fields_detected";
   if (minutes !== null && minutes > 2880) return "source_snapshot_stale";
@@ -188,7 +217,10 @@ function scoreSource({ item, sourceKey, sourceCollectionStatus, matchingDiagnost
   const fieldsScore = clamp(fieldsContributed.length * 2, 0, 10);
   const freshScore = freshnessScore(minutes);
   const utilizationScore = Math.round(clamp(envScore + attemptScore + fetchScore + parseScore + normalizedScore + matchedScore + fieldsScore + freshScore));
-  const blocker = blockerReason({ item, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes });
+  const matchBlockers = sourceKey === "pilot_sources"
+    ? pilotSourceMatchBlockers({ item, rowsNormalized, rowsMatched, matchingDiagnostics, bootstrapKpis })
+    : [];
+  const blocker = blockerReason({ item, sourceKey, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes, matchingDiagnostics, bootstrapKpis });
   const quality = qualityLabel(utilizationScore, item);
   return {
     source_key: sourceKey,
@@ -206,6 +238,7 @@ function scoreSource({ item, sourceKey, sourceCollectionStatus, matchingDiagnost
       ? "Fetch and parse work, but current coverage is smoke-level compared with the vessel universe."
       : "",
     blocker_reason: blocker,
+    match_blockers: matchBlockers,
     recommended_fix: smokeLevel
       ? "Expand enrichment gradually: sales targets first, then contact_now vessels, then detail eligible top 100."
       : recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched }),

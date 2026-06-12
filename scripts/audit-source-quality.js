@@ -13,7 +13,19 @@ function readJson(relativePath, fallback = null) {
   }
 }
 
-const existing = readJson("dashboard/api/source-quality-score.json", null);
+function readDiagnosticJson(relativePath, fallback = null) {
+  const main = readJson(relativePath, fallback);
+  const debugPath = String(relativePath).replace(/^dashboard\/api\//, "dashboard/api/debug/");
+  const debug = debugPath === relativePath ? null : readJson(debugPath, null);
+  if (!debug || debug.__parse_error) return main;
+  if (!main || main.__parse_error) return debug;
+  const debugGenerated = Date.parse(debug.generated_at || "");
+  const mainGenerated = Date.parse(main.generated_at || "");
+  if (Number.isFinite(debugGenerated) && (!Number.isFinite(mainGenerated) || debugGenerated >= mainGenerated)) return debug;
+  return main;
+}
+
+const existing = readDiagnosticJson("dashboard/api/source-quality-score.json", null);
 const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", {}) || {};
 const status = readJson("dashboard/api/status.json", {}) || {};
 const bootstrap = readJson("dashboard/api/bootstrap.json", {}) || {};

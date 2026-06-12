@@ -3088,6 +3088,9 @@ function routeApiOutputPath(filePath, report = {}) {
   if (UPDATE_MODE === "reference_enrichment" && /^dashboard\/api\/(?:enrichment\/latest\/|enrichment\/(?:summary|candidates|applied|review-queue|source-csv-dry-run)\.json$|cache\/source-csv-(?:reference|index)\.json$|aux\/source-csv-summary\.json$)/.test(normalized)) {
     return normalized;
   }
+  if (IS_CORE_UPDATE && normalized === "dashboard/api/storage-efficiency-report.json") {
+    return normalized;
+  }
   if (!shouldWriteDebugApiOutputs(report) || !normalized.startsWith("dashboard/api/")) return normalized;
   return `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
 }
@@ -3577,7 +3580,21 @@ function writeApiJson(filePath, payload, report = {}) {
     contractDataMode(preparedPayload?.data_mode, report) !== "live" &&
     rowCountFromPayload(preparedPayload) > 0 &&
     String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
-  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic)) {
+  const shouldBackfillDiagnosticOwnership = target !== normalized &&
+    normalized === "dashboard/api/storage-efficiency-report.json" &&
+    existingPayload &&
+    preparedPayload &&
+    preparedPayload.stale_diagnostic === true &&
+    preparedPayload.owner_tier === tierOwnershipForPath(normalized).owner_tier &&
+    preparedPayload.core_may_update === tierOwnershipForPath(normalized).core_may_update &&
+    (
+      existingPayload.owner_tier !== preparedPayload.owner_tier ||
+      existingPayload.core_may_update !== preparedPayload.core_may_update
+    ) &&
+    String(existingPayload.run_id || existingPayload.active_run_id || existingPayload.source_run_id || "") ===
+      String(preparedPayload.run_id || preparedPayload.active_run_id || preparedPayload.source_run_id || "") &&
+    String(existingPayload.generated_at || "") === String(preparedPayload.generated_at || "");
+  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic || shouldBackfillDiagnosticOwnership)) {
     writeDashboardJson(normalized, preparedPayload);
   }
   return target;
@@ -3722,6 +3739,30 @@ function sourceQualityItemLooksUnsuccessfulRefresh(item = {}) {
   const rows = Number(item.rows_collected || 0) + Number(item.rows_normalized || 0) + Number(item.rows_matched_to_vessels || 0);
   return rows <= 0 && ["FAILED", "UNKNOWN"].includes(label) &&
     /missing_env|missing_api|not_configured|not_attempted|no_rows|fetch|parse|timeout|set /.test(blocker);
+}
+
+function preservedPilotSourceQualityBlockers(item = {}) {
+  if (String(item.source_key || "") !== "pilot_sources") return {};
+  if (Number(item.rows_normalized || 0) <= 0 || Number(item.rows_matched_to_vessels || 0) > 0) return {};
+  const blockers = Array.isArray(item.match_blockers) && item.match_blockers.length
+    ? item.match_blockers
+    : [
+      "missing_call_sign",
+      "missing_vessel_name",
+      "missing_port",
+      "time_only_without_date",
+      "no_current_vessel_same_port",
+      "confidence_below_threshold",
+      "vessel_key_mismatch",
+      "compact_mapper_dropped_signal"
+    ];
+  return {
+    match_blockers: blockers,
+    blocker_reason: !item.blocker_reason || item.blocker_reason === "no_vessel_match_or_signal"
+      ? blockers.join("; ")
+      : item.blocker_reason,
+    match_blocker_note: "Exact pilotage blockers are preserved with cached source quality because core mode does not refetch pilot sources."
+  };
 }
 
 function annotateSourceCollectionOwnership(payload = {}, { reusedFromCache = false, generatedAt = null, coreRunId = null } = {}) {
@@ -3880,6 +3921,7 @@ function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxInde
     return {
       ...base,
       source_key: sourceKey,
+      ...preservedPilotSourceQualityBlockers(base),
       owner_tier: sourceOwnerTier(sourceKey),
       core_may_update: false,
       reused_from_cache: true,
@@ -4048,11 +4090,21 @@ function enrichmentUtilizationLooksLocalMissing(payload = {}) {
   );
 }
 
+function enrichmentUtilizationItemHasSampleCountContradiction(item = {}) {
+  const samples = Array.isArray(item.sample_enriched_vessels) ? item.sample_enriched_vessels : [];
+  return Number(item.matched_vessels || item.rows_matched_to_vessels || 0) <= 0 &&
+    samples.some(sample => Array.isArray(sample.fields_added) && sample.fields_added.length > 0);
+}
+
 function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sourceQualityScore = {}, enrichmentIndex = {}, cachedPatchResult = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  const previousItems = Array.isArray(previous?.items) ? previous.items : [];
+  const previousHasCountInconsistency = previous?.count_inconsistency === true ||
+    previousItems.some(item => item?.count_inconsistency === true || enrichmentUtilizationItemHasSampleCountContradiction(item));
   const shouldUsePrevious = shouldPreserveAuxDiagnosticsForCore() &&
     previous &&
     typeof previous === "object" &&
-    !enrichmentUtilizationLooksLocalMissing(previous);
+    !enrichmentUtilizationLooksLocalMissing(previous) &&
+    !previousHasCountInconsistency;
   const base = shouldUsePrevious ? previous : payload;
   const cachedApplied = Number(cachedPatchResult?.applied ?? base.cached_patch_applied_count ?? 0);
   const cachedDisplayUpdates = Number(cachedPatchResult?.vessel_display_records_updated ?? cachedPatchResult?.records_updated ?? cachedApplied);
@@ -4092,11 +4144,18 @@ function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sour
     cached_patch_applied_count: cachedApplied,
     cached_patch_source_generated_at: cachedPatchResult?.source_generated_at || base.cached_patch_source_generated_at || null,
     cached_patch_fields_applied_by_name: cachedPatchResult?.fields_applied_by_name || base.cached_patch_fields_applied_by_name || {},
-    pilotage_signal_display_count: Math.max(Number(base.pilotage_signal_display_count || 0), currentPilotageDisplay),
-    berth_signal_display_count: Math.max(Number(base.berth_signal_display_count || 0), currentBerthDisplay),
-    pilotage_signal_count: Math.max(Number(base.pilotage_signal_count || 0), Number(payload.pilotage_signal_count || 0), currentPilotageDisplay),
-    berth_signal_count: Math.max(Number(base.berth_signal_count || 0), Number(payload.berth_signal_count || 0), currentBerthDisplay),
-    vessel_display_records_updated: Math.max(Number(base.vessel_display_records_updated || 0), cachedDisplayUpdates, currentDisplayUpdates),
+    count_reconciled_at: generatedAt,
+    count_reconciliation_basis: previousHasCountInconsistency
+      ? "current_lightweight_output_scan_replaced_previous_count_inconsistency"
+      : "current_lightweight_output_scan",
+    pilotage_signal_display_count: currentPilotageDisplay,
+    berth_signal_display_count: currentBerthDisplay,
+    pilotage_signal_count: Math.max(Number(payload.pilotage_signal_count || 0), currentPilotageDisplay),
+    berth_signal_count: Math.max(Number(payload.berth_signal_count || 0), currentBerthDisplay),
+    aux_confirmed_berth_count: Number(payload.aux_confirmed_berth_count || currentBerthDisplay || 0),
+    baseline_berth_count: Number(payload.baseline_berth_count || 0),
+    berth_info_detected_count: Number(payload.berth_info_detected_count || 0),
+    vessel_display_records_updated: Math.max(cachedDisplayUpdates, currentDisplayUpdates),
     count_reconciliation: countReconciliation
   };
 }
@@ -4353,7 +4412,8 @@ function buildAuxSummaryEnhancements({
 
   if (summaryKey === "berth") {
     const matchedVessels = Number(matchingDiagnostics.pnc_rows_matched || matchingDiagnostics.berth_rows_matched || 0);
-    const signalCount = Number(bootstrapKpis.berth_info_detected_count || report.berth_info_detected_count || matchedVessels || 0);
+    const signalCount = Number(bootstrapKpis.aux_confirmed_berth_count || report.aux_confirmed_berth_count || matchedVessels || 0);
+    const baselineCount = Number(bootstrapKpis.baseline_berth_count || report.baseline_berth_count || 0);
     const sampleRows = collectAuxSampleRows(diagnostics);
     return {
       ...base,
@@ -4361,6 +4421,8 @@ function buildAuxSummaryEnhancements({
       normalized_rows: rowsNormalized,
       matched_vessels: matchedVessels,
       berth_signal_count: signalCount,
+      aux_confirmed_berth_count: signalCount,
+      baseline_berth_count: baselineCount,
       rows_with_terminal: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /terminal|터미널/i.test(key))).length,
       rows_with_berth: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /berth|선석|부두/i.test(key))).length,
       matched_by_call_sign: Number(matchingDiagnostics.pnc_matched_by_call_sign || matchingDiagnostics.berth_matched_by_call_sign || 0),
@@ -4646,6 +4708,8 @@ function compactAuxSignalPatch(signal = {}, signalType = "") {
     confidence: nullableDisplayNumber(signal.confidence, signal.berth_confidence, 90),
     match_type: signal.match_type || "aux_patch_hint",
     source: signal.source || source,
+    signal_strength: signal.signal_strength || "AUX_CONFIRMED",
+    placeholder: false,
     updated_at: signal.updated_at || null
   };
 }
@@ -4763,6 +4827,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["enrichment.latestPatches", "dashboard/api/enrichment/latest/patches.json"],
   ["enrichment.summary", "dashboard/api/enrichment/summary.json"],
   ["enrichment.reviewQueue", "dashboard/api/enrichment/review-queue.json"],
+  ["enrichment.vesselDisplayPropagationReport", "dashboard/api/enrichment/vessel-display-propagation-report.json"],
   ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
   ["runtime.budget", "dashboard/api/runtime-budget-report.json"],
   ["runtime.updateTiers", "dashboard/api/runtime/update-tiers.json"],
@@ -8127,13 +8192,15 @@ function buildPilotageSignal(record = {}) {
     existing.direction,
     existing.pilotage_direction
   ));
-  if (existing.has_pilotage === true || existingHasPilotageDetails) {
+  if (existing.has_pilotage === true) {
     const status = existing.status || existing.pilotage_status || "DETECTED";
     const direction = existing.direction || existing.pilotage_direction || "UNKNOWN";
     const source = existing.source || existing.pilotage_source || "pilot_sources";
+    const confidence = nullableDisplayNumber(existing.confidence, existing.pilotage_confidence, 70);
     return {
       ...existing,
       has_pilotage: true,
+      placeholder: false,
       status,
       pilotage_status: existing.pilotage_status || status,
       port: existing.port || existing.pilotage_port || null,
@@ -8141,9 +8208,23 @@ function buildPilotageSignal(record = {}) {
       pilotage_direction: existing.pilotage_direction || direction,
       source,
       pilotage_source: existing.pilotage_source || source,
-      confidence: nullableDisplayNumber(existing.confidence, existing.pilotage_confidence),
-      pilotage_confidence: nullableDisplayNumber(existing.pilotage_confidence, existing.confidence),
+      confidence,
+      pilotage_confidence: nullableDisplayNumber(existing.pilotage_confidence, existing.confidence, confidence),
+      match_type: existing.match_type && existing.match_type !== "none" ? existing.match_type : "pilot_sources_match",
       reason: existing.reason || "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다."
+    };
+  }
+  if (existingHasPilotageDetails) {
+    return {
+      ...existing,
+      has_pilotage: false,
+      placeholder: true,
+      status: existing.status || existing.pilotage_status || "UNKNOWN",
+      pilotage_status: existing.pilotage_status || existing.status || "UNKNOWN",
+      match_type: "none",
+      confidence: nullableDisplayNumber(existing.confidence, existing.pilotage_confidence, 0),
+      pilotage_confidence: nullableDisplayNumber(existing.pilotage_confidence, existing.confidence, 0),
+      reason: existing.reason || "Pilotage details are present only as an unconfirmed placeholder."
     };
   }
   const pilotTime = firstNonEmpty(
@@ -8172,7 +8253,13 @@ function buildPilotageSignal(record = {}) {
   const movementTimeWithPilotContext = pilotageHasText(movementTime) && (matched || sourceIndicatesPilotage || Boolean(direction));
   const stationOrStatus = pilotageHasText(station) || pilotageHasText(status);
   const timeOnly = !explicitPilotTime && explicitPilotTimeText && (parseStatus === "time_only_missing_date" || pilotageIsTimeOnly(pilotTimeText));
-  const hasPilotage = matched || explicitPilotTime || explicitPilotTimeText || movementTimeWithPilotContext || stationOrStatus || (Boolean(direction) && sourceIndicatesPilotage);
+  const hasPilotage = matched || (sourceIndicatesPilotage && (
+    explicitPilotTime ||
+    explicitPilotTimeText ||
+    movementTimeWithPilotContext ||
+    stationOrStatus ||
+    Boolean(direction)
+  ));
   const normalizedPort = normalizedPortObject(record);
   const confidence = hasPilotage
     ? matched ? 90
@@ -8183,7 +8270,7 @@ function buildPilotageSignal(record = {}) {
     : null;
   const pilotageTime = explicitPilotTime ? pilotTime : movementTimeWithPilotContext ? movementTime : null;
   const source = matched
-    ? "pilot_schedule"
+    ? "pilot_sources"
     : sourceNames.find(value => /pilot|pilotage|도선/i.test(value)) || null;
   const pilotageStatus = hasPilotage
     ? timeOnly ? "TIME_ONLY"
@@ -8210,7 +8297,10 @@ function buildPilotageSignal(record = {}) {
     pilotage_source: sourceValue,
     confidence,
     pilotage_confidence: confidence,
-    match_type: record.pilotage_match_type || record.pilot_match_method || (timeOnly ? "time_only" : matched ? "pilot_schedule" : ""),
+    match_type: hasPilotage
+      ? record.pilotage_match_type || record.pilot_match_method || (timeOnly ? "time_only" : matched ? "pilot_sources_match" : "pilot_sources_signal")
+      : "none",
+    placeholder: !hasPilotage,
     arrival_window: hasPilotage && pilotageTime ? {
       basis: "pilotage_time",
       time: pilotageTime,
@@ -8251,15 +8341,31 @@ function buildBerthSignal(record = {}) {
     existing.operation_start,
     existing.operation_end
   ));
-  if (existing.has_berth_info === true || existingHasBerthDetails) {
+  if (existing.has_berth_info === true || existing.has_berth === true) {
     return {
       ...existing,
       has_berth_info: true,
       has_berth: existing.has_berth === true || Boolean(firstNonEmpty(existing.berth, existing.berth_name, existing.berth_no, existing.berth_code, existing.terminal, existing.terminal_name)),
       source: existing.source || "berth_sources",
+      signal_strength: existing.signal_strength || "AUX_CONFIRMED",
+      match_type: existing.match_type && existing.match_type !== "none" ? existing.match_type : "berth_sources_match",
+      placeholder: false,
       berth_direction: existing.berth_direction || existing.direction || null,
-      confidence: nullableDisplayNumber(existing.confidence, existing.berth_match_confidence),
+      confidence: nullableDisplayNumber(existing.confidence, existing.berth_match_confidence, 70),
       reason: existing.reason || "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다."
+    };
+  }
+  if (existingHasBerthDetails) {
+    return {
+      ...existing,
+      has_berth_info: false,
+      has_berth: false,
+      source: existing.source || "port_operation",
+      signal_strength: "BASELINE",
+      match_type: "CORE_FIELD",
+      placeholder: false,
+      confidence: nullableDisplayNumber(existing.confidence, existing.berth_match_confidence, 0),
+      reason: existing.reason || "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it."
     };
   }
   const sourceNames = [
@@ -8283,14 +8389,21 @@ function buildBerthSignal(record = {}) {
   const operationEnd = firstNonEmpty(record.operation_end, record.work_end, record.cargo_end);
   const berthDirection = pilotageKnownDirection(firstNonEmpty(record.berth_direction, record.movement_type, record.direction));
   const hasBerthInfo = Boolean((explicitMatched || berthSource) && (terminal || berth || eta || etb || ata || atb || operationStart || operationEnd));
+  const hasBaselineBerth = !hasBerthInfo && Boolean(terminal || berth);
   const confidenceValue = Number(record.berth_match_confidence || record.berth_signal?.confidence || record.enrichment_confidence || 0);
   const confidence = Number.isFinite(confidenceValue) && confidenceValue > 0
     ? Math.min(100, Math.round(confidenceValue))
     : hasBerthInfo ? (explicitMatched ? 70 : 55) : null;
   const normalizedPort = normalizedPortObject(record);
+  const signalSource = hasBerthInfo
+    ? (pncSource ? "PNC" : sourceNames.find(value => /berth|terminal|pnc/i.test(value)) || "berth_sources")
+    : hasBaselineBerth ? "port_operation" : null;
   return {
     has_berth_info: Boolean(hasBerthInfo),
-    source: hasBerthInfo ? (pncSource ? "PNC" : sourceNames.find(value => /berth|terminal|pnc/i.test(value)) || "berth_sources") : null,
+    has_berth: hasBerthInfo ? Boolean(terminal || berth) : false,
+    source: signalSource,
+    signal_strength: hasBerthInfo ? "AUX_CONFIRMED" : hasBaselineBerth ? "BASELINE" : "NONE",
+    placeholder: !hasBerthInfo && !hasBaselineBerth,
     terminal: pilotageHasText(terminal) ? terminal : null,
     berth: pilotageHasText(berth) ? berth : null,
     berth_direction: berthDirection && berthDirection !== "PILOTAGE" ? berthDirection : null,
@@ -8301,18 +8414,40 @@ function buildBerthSignal(record = {}) {
     operation_start: pilotageHasText(operationStart) ? operationStart : null,
     operation_end: pilotageHasText(operationEnd) ? operationEnd : null,
     port: normalizedPort.display_name || null,
-    match_type: record.berth_match_method || record.berth_signal?.match_type || (pncSource ? "pnc_berth_match" : hasBerthInfo ? "berth_enrichment" : "none"),
+    match_type: hasBerthInfo
+      ? record.berth_match_method || record.berth_signal?.match_type || (pncSource ? "pnc_berth_match" : "berth_sources_match")
+      : hasBaselineBerth ? "CORE_FIELD" : "none",
     confidence,
+    reason_code: hasBerthInfo ? "aux_confirmed_berth" : hasBaselineBerth ? "baseline_core_field_only" : "no_berth_signal",
+    baseline_reason: hasBaselineBerth ? "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it." : "",
     reason: hasBerthInfo ? "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다." : ""
   };
 }
 
 function hasBerthSignal(record = {}) {
-  return buildBerthSignal(record).has_berth_info === true;
+  const signal = buildBerthSignal(record);
+  if (signal.has_berth_info !== true && signal.has_berth !== true) return false;
+  if (signal.placeholder === true) return false;
+  if (String(signal.signal_strength || "").toUpperCase() === "BASELINE") return false;
+  if (String(signal.match_type || "").toLowerCase() === "none") return false;
+  return !/^(?:port_operation|core|core_field)$/i.test(String(signal.source || ""));
 }
 
 function berthInfoDetectedCount(records = []) {
   return Array.isArray(records) ? records.filter(hasBerthSignal).length : 0;
+}
+
+function hasBaselineBerthInfo(record = {}) {
+  const display = record.vessel_display && typeof record.vessel_display === "object" ? record.vessel_display : {};
+  const signal = buildBerthSignal(record);
+  if (hasBerthSignal(record)) return false;
+  return pilotageHasText(display.berth || record.berth || record.berth_name || display.terminal || record.terminal) ||
+    String(signal.signal_strength || "").toUpperCase() === "BASELINE" ||
+    String(signal.match_type || "").toUpperCase() === "CORE_FIELD";
+}
+
+function baselineBerthInfoCount(records = []) {
+  return Array.isArray(records) ? records.filter(hasBaselineBerthInfo).length : 0;
 }
 
 function pilotageNormalizeIdentity(value) {
@@ -10662,6 +10797,8 @@ function buildBootstrapSnapshot({
     monitor_count: Number(dashboardSummary.monitor_count || 0),
     hold_count: Number(dashboardSummary.hold_count || 0),
     pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+    aux_confirmed_berth_count: Number(dashboardSummary.aux_confirmed_berth_count || report.aux_confirmed_berth_count || 0),
+    baseline_berth_count: Number(dashboardSummary.baseline_berth_count || report.baseline_berth_count || 0),
     berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0),
     biofouling_high_risk_count: Number(dashboardSummary.biofouling_high_risk_count || report.hull_cleaning_prediction_kpis?.biofouling_high_risk_count || 0),
     cleaning_immediate_candidate_count: Number(dashboardSummary.cleaning_immediate_candidate_count || report.hull_cleaning_prediction_kpis?.cleaning_immediate_candidate_count || 0),
@@ -18848,7 +18985,7 @@ function staleDiagnosticPayload(filePath, fallbackPayload, generatedAt, reason =
     ? existing
     : fallbackPayload;
   const ownership = tierOwnershipForPath(filePath);
-  const ownerTier = base?.owner_tier || ownership.owner_tier || "diagnostic";
+  const ownerTier = ownership.owner_tier || base?.owner_tier || "diagnostic";
   const inheritedReason = /heavy workflow/i.test(String(base?.stale_reason || ""))
     ? ""
     : base?.stale_reason || "";
@@ -18857,7 +18994,7 @@ function staleDiagnosticPayload(filePath, fallbackPayload, generatedAt, reason =
     ...(base || {}),
     schema_version: base?.schema_version || PUBLIC_API_SCHEMA_VERSION,
     owner_tier: ownerTier,
-    core_may_update: base?.core_may_update ?? ownership.core_may_update ?? false,
+    core_may_update: ownership.core_may_update ?? base?.core_may_update ?? false,
     source_run_id: base?.source_run_id || base?.run_id || base?.status_run_id || null,
     stale_diagnostic: true,
     stale_reason: staleReason,
@@ -19120,6 +19257,17 @@ function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enri
   if (!tiers.fast_aux.generated_at) staleWarnings.push("fast_aux cache is not available yet.");
   if (!tiers.reference_enrichment.generated_at) staleWarnings.push("reference enrichment patch cache is not available yet.");
   if (!tiers.discovery_audit.generated_at) staleWarnings.push("discovery/audit reports have not been refreshed by the tiered workflow yet.");
+  const productionStatusSummary = statusSummaryLooksProduction(currentStatusSummary)
+    ? currentStatusSummary
+    : statusSummaryLooksProduction(previousCanonicalStatus) ? previousCanonicalStatus : {};
+  const productionCoreRunId = statusSummaryRunId(productionStatusSummary) || null;
+  const statusReferenceRunId = statusSummaryRunId(coreStatusReference) || null;
+  const corePointerSource = localCoreShouldPreserveProduction
+    ? "production_status_summary_preserved"
+    : statusSummaryLooksProduction(currentStatusSummary) && String(statusReferenceRunId || "") === String(tiers.core.run_id || "")
+      ? "status-summary"
+      : coreIsCurrent ? "current_core_run" : "previous_update_tiers";
+  const corePointerMatchesStatusSummary = Boolean(statusReferenceRunId && tiers.core.run_id && String(statusReferenceRunId) === String(tiers.core.run_id));
   const tierRunIds = [...new Set(Object.values(tiers).map(tier => tier.run_id).filter(Boolean))];
   const mixedTierStatus = tierRunIds.length > 1;
   const mixedTierNote = localCoreShouldPreserveProduction
@@ -19146,9 +19294,15 @@ function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enri
     tier_index_generated_at: generatedAt,
     tier_index_generated_by: currentGeneratedBy,
     local_core_run_id: localCoreShouldPreserveProduction ? currentRunId : null,
+    local_run_id: localCoreShouldPreserveProduction ? currentRunId : null,
     local_core_generated_at: localCoreShouldPreserveProduction ? generatedAt : null,
     local_core_generated_by: localCoreShouldPreserveProduction ? currentGeneratedBy : null,
     local_core_not_promoted: localCoreShouldPreserveProduction,
+    production_core_run_id: productionCoreRunId,
+    local_preview_run_id: localCoreShouldPreserveProduction ? currentRunId : previous.local_preview_run_id || null,
+    local_preview: localCoreShouldPreserveProduction,
+    core_pointer_source: corePointerSource,
+    core_pointer_matches_status_summary: corePointerMatchesStatusSummary,
     core_run_id: tiers.core.run_id,
     core_generated_at: tiers.core.generated_at,
     core_generated_by: tiers.core.generated_by,
@@ -19269,6 +19423,8 @@ function normalizeCachedSignalValue(field, value, item = {}, generatedAt = new D
       source: base.source || source || "berth_sources",
       confidence: nullableDisplayNumber(base.confidence, item.match_confidence, item.candidate_quality),
       match_type: base.match_type || "cached_enrichment_patch",
+      signal_strength: base.signal_strength || "AUX_CONFIRMED",
+      placeholder: false,
       updated_at: base.updated_at || item.source_timestamp || generatedAt
     };
   }
@@ -20014,7 +20170,9 @@ try {
   const hullCleaningPredictionKpis = buildHullCleaningPredictionKpis(allCollectedVessels, hullCleaningPredictionDiagnostics);
   const dataHealthValidation = validateVesselRecords(allCollectedVessels);
   const pilotageDetectedTotal = pilotageDetectedCount(allCollectedVessels);
-  const berthInfoDetectedTotal = berthInfoDetectedCount(allCollectedVessels);
+  const auxConfirmedBerthTotal = berthInfoDetectedCount(allCollectedVessels);
+  const baselineBerthTotal = baselineBerthInfoCount(allCollectedVessels);
+  const berthInfoDetectedTotal = auxConfirmedBerthTotal + baselineBerthTotal;
   const portOpportunities = buildPortOpportunityRanking(vessels);
   const contactReadyVessels = buildContactReadyVessels(vessels);
   const fleetOpportunities = buildFleetOpportunityRows(vessels);
@@ -20154,6 +20312,9 @@ try {
     staying_vessel_count: stayingVessels.length,
     long_stay_risk_count: longStayRiskCount,
     pilotage_detected_count: pilotageDetectedTotal,
+    aux_confirmed_berth_count: auxConfirmedBerthTotal,
+    baseline_berth_count: baselineBerthTotal,
+    berth_info_detected_count: berthInfoDetectedTotal,
     anchorage_waiting_count: anchorageWaiting.length,
     arrival_pipeline_count: arrivalPipeline.length,
     predicted_arrivals_count: arrivalPipeline.length,
@@ -20392,6 +20553,8 @@ try {
     anchorage_opportunity_count: targetCategorySummary.kpis.anchorage_opportunity_count || 0,
     long_stay_risk_count: targetCategorySummary.kpis.long_stay_risk_count || 0,
     pilotage_detected_count: pilotageDetectedTotal,
+    aux_confirmed_berth_count: auxConfirmedBerthTotal,
+    baseline_berth_count: baselineBerthTotal,
     berth_info_detected_count: berthInfoDetectedTotal,
     compliance_target_count: targetCategorySummary.kpis.compliance_target_count || 0,
     repeat_caller_count: targetCategorySummary.kpis.repeat_caller_count || 0,
@@ -20658,6 +20821,8 @@ try {
     bootstrapKpis: {
       ...(dashboardSummary.kpis || {}),
       pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      aux_confirmed_berth_count: Number(dashboardSummary.aux_confirmed_berth_count || report.aux_confirmed_berth_count || 0),
+      baseline_berth_count: Number(dashboardSummary.baseline_berth_count || report.baseline_berth_count || 0),
       berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
     },
     report,
@@ -20793,6 +20958,8 @@ try {
       total_vessels: Number(dashboardSummary.kpis?.total_vessels || dashboardSummary.all_vessels_count || allCollectedVessels.length || 0),
       detail_eligible_vessel_count: Number(dashboardSummary.kpis?.detail_eligible_vessel_count || dashboardSummary.detail_eligible_vessel_count || targetVessels.length || 0),
       pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      aux_confirmed_berth_count: Number(dashboardSummary.aux_confirmed_berth_count || report.aux_confirmed_berth_count || 0),
+      baseline_berth_count: Number(dashboardSummary.baseline_berth_count || report.baseline_berth_count || 0),
       berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
     },
     report,
@@ -20840,6 +21007,8 @@ try {
     bootstrapKpis: {
       ...(dashboardSummary.kpis || {}),
       pilotage_detected_count: Number(dashboardSummary.pilotage_detected_count || report.pilotage_detected_count || 0),
+      aux_confirmed_berth_count: Number(dashboardSummary.aux_confirmed_berth_count || report.aux_confirmed_berth_count || 0),
+      baseline_berth_count: Number(dashboardSummary.baseline_berth_count || report.baseline_berth_count || 0),
       berth_info_detected_count: Number(dashboardSummary.berth_info_detected_count || report.berth_info_detected_count || 0)
     }
   };
@@ -21255,6 +21424,8 @@ try {
     ? staleDiagnosticPayload("dashboard/api/storage-efficiency-report.json", {
       schema_version: PUBLIC_API_SCHEMA_VERSION,
       generated_at: completedAt,
+      owner_tier: "discovery_audit",
+      core_may_update: false,
       data_mode: report.data_mode,
       record_count: 0,
       item_count: 0,
