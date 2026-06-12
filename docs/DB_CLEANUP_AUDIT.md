@@ -1,12 +1,12 @@
 # Supabase DB Cleanup Audit
 
-Generated at: 2026-06-12T06:32:18.515Z
+Generated at: 2026-06-12T12:13:09.239Z
 
 ## Summary
 
 - DB health score: 42
 - Tables checked: 38
-- Estimated rows: 80577
+- Estimated rows: 79127
 - Cleanup candidate tables: 8
 - Protected tables: 4
 - Critical issues: 0
@@ -14,8 +14,8 @@ Generated at: 2026-06-12T06:32:18.515Z
 
 ## Protected Data
 
-- active_dataset_pointer: run_20260612061752520_06a37656 (protected)
-- latest_successful_run: run_20260612061752520_06a37656 (protected)
+- active_dataset_pointer: run_20260612115543811_77de9ec1 (protected)
+- latest_successful_run: run_20260612115543811_77de9ec1 (protected)
 - vessel_master: canonical identity rows (protected)
 - commercial_sales_history: commercial_leads/operator_contact_history/sales_pipeline/quote/customer_memory (protected)
 - manual_reference_data: verified source_csv/manual watchlist records (protected)
@@ -24,47 +24,50 @@ Generated at: 2026-06-12T06:32:18.515Z
 
 | Table | Exists | Rows | Risk | Protection |
 | --- | --- | ---: | --- | --- |
-| data_collection_runs | yes | 369 | NEEDS_MANUAL_REVIEW | not_protected |
+| data_collection_runs | yes | 373 | NEEDS_MANUAL_REVIEW | not_protected |
 | active_dataset_pointer | yes | 1 | NEVER_DELETE | BLOCKED_BY_PROTECTION_RULE |
-| sales_candidates_current | yes | 126 | NEEDS_MANUAL_REVIEW | not_protected |
+| sales_candidates_current | yes | 140 | NEEDS_MANUAL_REVIEW | not_protected |
 | immediate_targets_current | yes | 0 | NEEDS_MANUAL_REVIEW | not_protected |
 | port_summary_current | yes | 8 | NEEDS_MANUAL_REVIEW | not_protected |
-| vessel_master | yes | 2853 | RETAIN_LONG_TERM | BLOCKED_BY_PROTECTION_RULE |
-| vessel_entities | yes | 2938 | RETAIN_LONG_TERM | not_protected |
-| vessel_snapshots | yes | 1009 | SAFE_CLEANUP_CANDIDATE | not_protected |
-| port_call_master | yes | 1009 | SAFE_CLEANUP_CANDIDATE | not_protected |
-| opportunity_master | yes | 6698 | SAFE_CLEANUP_CANDIDATE | not_protected |
-| vessel_events | yes | 42309 | RETAIN_LONG_TERM | not_protected |
-| risk_history | yes | 321 | RETAIN_MEDIUM_TERM | not_protected |
-| explainability_snapshots | yes | 321 | RETAIN_MEDIUM_TERM | not_protected |
-| rule_evaluations | yes | 700 | RETAIN_MEDIUM_TERM | not_protected |
-| feature_store | yes | 321 | RETAIN_MEDIUM_TERM | not_protected |
-| feature_snapshots | yes | 321 | RETAIN_MEDIUM_TERM | not_protected |
-| model_training_rows | yes | 208 | RETAIN_MEDIUM_TERM | not_protected |
-| vessel_snapshot_daily | yes | 1009 | RETAIN_LONG_TERM | not_protected |
+| vessel_master | yes | 2876 | RETAIN_LONG_TERM | BLOCKED_BY_PROTECTION_RULE |
+| vessel_entities | yes | 2961 | RETAIN_LONG_TERM | not_protected |
+| vessel_snapshots | yes | 2054 | SAFE_CLEANUP_CANDIDATE | not_protected |
+| port_call_master | yes | 1027 | SAFE_CLEANUP_CANDIDATE | not_protected |
+| opportunity_master | yes | 6753 | SAFE_CLEANUP_CANDIDATE | not_protected |
+| vessel_events | yes | 37134 | RETAIN_LONG_TERM | not_protected |
+| risk_history | yes | 523 | RETAIN_MEDIUM_TERM | not_protected |
+| explainability_snapshots | yes | 323 | RETAIN_MEDIUM_TERM | not_protected |
+| rule_evaluations | yes | 699 | RETAIN_MEDIUM_TERM | not_protected |
+| feature_store | yes | 323 | RETAIN_MEDIUM_TERM | not_protected |
+| feature_snapshots | yes | 323 | RETAIN_MEDIUM_TERM | not_protected |
+| model_training_rows | yes | 215 | RETAIN_MEDIUM_TERM | not_protected |
+| vessel_snapshot_daily | yes | 1027 | RETAIN_LONG_TERM | not_protected |
 | port_snapshot_daily | yes | 72 | RETAIN_LONG_TERM | not_protected |
-| commercial_opportunity_daily | yes | 29 | RETAIN_LONG_TERM | not_protected |
-| route_snapshot_daily | yes | 3933 | RETAIN_LONG_TERM | not_protected |
+| commercial_opportunity_daily | yes | 32 | RETAIN_LONG_TERM | not_protected |
+| route_snapshot_daily | yes | 3983 | RETAIN_LONG_TERM | not_protected |
 | operator_snapshot_daily | yes | 87 | RETAIN_LONG_TERM | not_protected |
-| vessel_universe_audit | yes | 358 | NEEDS_MANUAL_REVIEW | not_protected |
-| port_congestion_snapshots | yes | 1046 | RETAIN_SHORT_TERM | not_protected |
+| vessel_universe_audit | yes | 362 | NEEDS_MANUAL_REVIEW | not_protected |
+| port_congestion_snapshots | yes | 979 | RETAIN_SHORT_TERM | not_protected |
 | port_daily_summary | yes | 18 | RETAIN_LONG_TERM | not_protected |
 | port_weekly_summary | yes | 18 | RETAIN_LONG_TERM | not_protected |
 | port_monthly_summary | yes | 18 | RETAIN_LONG_TERM | not_protected |
 | commercial_leads | yes | 4 | RETAIN_LONG_TERM | BLOCKED_BY_PROTECTION_RULE |
-| operator_contact_history | yes | 1009 | RETAIN_LONG_TERM | BLOCKED_BY_PROTECTION_RULE |
+| operator_contact_history | yes | 2054 | RETAIN_LONG_TERM | BLOCKED_BY_PROTECTION_RULE |
 | sales_pipeline | no | - | RETAIN_LONG_TERM | not_protected |
 | quote_opportunities | no | - | RETAIN_LONG_TERM | not_protected |
 | customer_memory | no | - | RETAIN_LONG_TERM | not_protected |
-| enrichment_match_candidates | yes | 692 | RETAIN_SHORT_TERM | not_protected |
-| imo_recovery_queue | yes | 4575 | RETAIN_SHORT_TERM | not_protected |
-| vessel_identity_candidates | yes | 1009 | RETAIN_SHORT_TERM | not_protected |
-| vessel_aliases | yes | 6952 | RETAIN_LONG_TERM | not_protected |
-| pilot_schedule_events | yes | 201 | RETAIN_MEDIUM_TERM | not_protected |
-| source_collection_logs | yes | 35 | RETAIN_SHORT_TERM | not_protected |
+| enrichment_match_candidates | yes | 746 | RETAIN_SHORT_TERM | not_protected |
+| imo_recovery_queue | yes | 4621 | RETAIN_SHORT_TERM | not_protected |
+| vessel_identity_candidates | yes | 2054 | RETAIN_SHORT_TERM | not_protected |
+| vessel_aliases | yes | 7027 | RETAIN_LONG_TERM | not_protected |
+| pilot_schedule_events | yes | 196 | RETAIN_MEDIUM_TERM | not_protected |
+| source_collection_logs | yes | 96 | RETAIN_SHORT_TERM | not_protected |
 
 ## Cleanup Candidates
 
+- run_20260611131613067_56717d6a: completed run outside recent 20 detailed runs (candidate)
+- run_20260611131111423_f0d63fa7: completed run outside recent 20 detailed runs (candidate)
+- run_20260611130540620_e5d891fb: completed run outside recent 20 detailed runs (candidate)
 - run_20260611103308821_aea4733e: completed run outside recent 20 detailed runs (candidate)
 - run_20260611094049200_540e1000: completed run outside recent 20 detailed runs (candidate)
 - run_20260611093628081_fa869604: completed run outside recent 20 detailed runs (candidate)
@@ -87,9 +90,6 @@ Generated at: 2026-06-12T06:32:18.515Z
 - run_20260611034748756_79da3159: completed run outside recent 20 detailed runs (candidate)
 - run_20260611032538498_b4f7ac82: completed run outside recent 20 detailed runs (candidate)
 - run_20260611032047881_cc3c1c41: completed run outside recent 20 detailed runs (candidate)
-- run_20260611031424592_8981c987: completed run outside recent 20 detailed runs (candidate)
-- run_20260611030904330_ff81ea5b: completed run outside recent 20 detailed runs (candidate)
-- run_20260611023859390_d3f7ea00: completed run outside recent 20 detailed runs (candidate)
 - vessel_snapshots: run-level detailed snapshot table
 - port_call_master: run-level detailed snapshot table
 - opportunity_master: run-level detailed snapshot table
@@ -101,13 +101,13 @@ Generated at: 2026-06-12T06:32:18.515Z
 
 ## Duplicates
 
-- imo_recovery_queue: duplicate recovery queue rows -> 143 duplicates
+- imo_recovery_queue: duplicate recovery queue rows -> 152 duplicates
 
 ## Orphans
 
-- opportunity_master: master_vessel_id_missing_from_vessel_master -> 507 (WARNING)
-- risk_history: master_vessel_id_missing_from_vessel_master -> 230 (WARNING)
-- sales_candidates_current: master_vessel_id_missing_from_vessel_master -> 56 (WARNING)
+- opportunity_master: master_vessel_id_missing_from_vessel_master -> 509 (WARNING)
+- risk_history: master_vessel_id_missing_from_vessel_master -> 234 (WARNING)
+- sales_candidates_current: master_vessel_id_missing_from_vessel_master -> 69 (WARNING)
 
 ## Retention Recommendations
 
@@ -121,7 +121,7 @@ Generated at: 2026-06-12T06:32:18.515Z
 
 ## Next Actions
 
-- [MANUAL_REVIEW] imo_recovery_queue: duplicate recovery queue rows duplicates=143
-- [WARNING] opportunity_master: master_vessel_id_missing_from_vessel_master count=507
-- [WARNING] risk_history: master_vessel_id_missing_from_vessel_master count=230
-- [WARNING] sales_candidates_current: master_vessel_id_missing_from_vessel_master count=56
+- [MANUAL_REVIEW] imo_recovery_queue: duplicate recovery queue rows duplicates=152
+- [WARNING] opportunity_master: master_vessel_id_missing_from_vessel_master count=509
+- [WARNING] risk_history: master_vessel_id_missing_from_vessel_master count=234
+- [WARNING] sales_candidates_current: master_vessel_id_missing_from_vessel_master count=69

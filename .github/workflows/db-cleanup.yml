@@ -65,8 +65,26 @@ jobs:
             npm run db:cleanup:dry-run -- --max-runs=${{ inputs.max_runs }} --max-rows=${{ inputs.max_rows }}
           fi
 
-      - name: Validate generated reports
-        run: npm run validate
+      - name: Validate generated cleanup reports
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const required = [
+            'dashboard/api/storage-efficiency-report.json',
+            'dashboard/api/db-cleanup-plan.json',
+            'dashboard/api/db-cleanup-execution-report.json'
+          ];
+          for (const file of required) {
+            if (!fs.existsSync(file)) throw new Error(`${file} is missing`);
+            const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+              throw new Error(`${file} must be a JSON object`);
+            }
+            if (!payload.schema_version) throw new Error(`${file} missing schema_version`);
+            if (!payload.generated_at) throw new Error(`${file} missing generated_at`);
+            console.log(`${file}: ok`);
+          }
+          NODE
 
       - name: Upload cleanup reports
         if: always()

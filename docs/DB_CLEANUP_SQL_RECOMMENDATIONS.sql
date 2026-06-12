@@ -22,6 +22,87 @@
 -- Keep active/latest successful runs, current serving rows, vessel_master, and commercial history protected.
 -- REVIEW BEFORE RUNNING
 -- DELETE FROM public.vessel_snapshots
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_call_master
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.opportunity_master
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.risk_history
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.feature_snapshots
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.explainability_snapshots
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.rule_evaluations
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_congestion_snapshots
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.source_collection_logs
+-- WHERE run_id = 'run_20260611131613067_56717d6a'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.vessel_snapshots
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_call_master
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.opportunity_master
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.risk_history
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.feature_snapshots
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.explainability_snapshots
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.rule_evaluations
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_congestion_snapshots
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.source_collection_logs
+-- WHERE run_id = 'run_20260611131111423_f0d63fa7'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.vessel_snapshots
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_call_master
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.opportunity_master
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.risk_history
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.feature_snapshots
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.explainability_snapshots
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.rule_evaluations
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.port_congestion_snapshots
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.source_collection_logs
+-- WHERE run_id = 'run_20260611130540620_e5d891fb'; -- completed run outside recent 20 detailed runs
+-- REVIEW BEFORE RUNNING
+-- DELETE FROM public.vessel_snapshots
 -- WHERE run_id = 'run_20260611103308821_aea4733e'; -- completed run outside recent 20 detailed runs
 -- REVIEW BEFORE RUNNING
 -- DELETE FROM public.port_call_master
@@ -614,87 +695,6 @@
 -- REVIEW BEFORE RUNNING
 -- DELETE FROM public.source_collection_logs
 -- WHERE run_id = 'run_20260611032047881_cc3c1c41'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.vessel_snapshots
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_call_master
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.opportunity_master
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.risk_history
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.feature_snapshots
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.explainability_snapshots
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.rule_evaluations
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_congestion_snapshots
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.source_collection_logs
--- WHERE run_id = 'run_20260611031424592_8981c987'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.vessel_snapshots
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_call_master
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.opportunity_master
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.risk_history
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.feature_snapshots
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.explainability_snapshots
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.rule_evaluations
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_congestion_snapshots
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.source_collection_logs
--- WHERE run_id = 'run_20260611030904330_ff81ea5b'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.vessel_snapshots
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_call_master
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.opportunity_master
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.risk_history
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.feature_snapshots
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.explainability_snapshots
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.rule_evaluations
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.port_congestion_snapshots
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
--- REVIEW BEFORE RUNNING
--- DELETE FROM public.source_collection_logs
--- WHERE run_id = 'run_20260611023859390_d3f7ea00'; -- completed run outside recent 20 detailed runs
 
 -- Source log retention example
 -- DELETE FROM public.source_collection_logs

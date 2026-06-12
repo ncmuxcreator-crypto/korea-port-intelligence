@@ -1,20 +1,158 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T12:08:58.668Z",
-  "mode": "dry_run",
-  "apply": false,
+  "generated_at": "2026-06-12T12:12:53.503Z",
+  "mode": "apply",
+  "apply": true,
   "source_plan": "dashboard/api/db-cleanup-plan.json",
-  "source_plan_generated_at": "2026-06-12T09:59:37.639Z",
-  "source_run_id": "run_20260612061752520_06a37656",
-  "supabase_configured": false,
+  "source_plan_generated_at": "2026-06-12T12:12:00.203Z",
+  "source_run_id": "run_20260612115543811_77de9ec1",
+  "supabase_configured": true,
   "max_runs": 5,
   "max_rows_per_table": 1000,
   "candidate_runs_selected": 5,
-  "tables_touched": 0,
-  "rows_backed_up": 0,
-  "rows_deleted_estimate": 0,
-  "results": [],
-  "warnings": [
-    "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. No production data was changed."
-  ]
+  "tables_touched": 8,
+  "rows_backed_up": 89,
+  "rows_deleted_estimate": 89,
+  "results": [
+    {
+      "run_id": "run_20260611131613067_56717d6a",
+      "reason": "completed run outside recent 20 detailed runs",
+      "row_count_estimate": 12,
+      "tables": [
+        {
+          "table": "opportunity_master",
+          "run_id": "run_20260611131613067_56717d6a",
+          "estimated_rows": 4,
+          "before_count": 4,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611131613067_56717d6a/opportunity_master.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        },
+        {
+          "table": "port_congestion_snapshots",
+          "run_id": "run_20260611131613067_56717d6a",
+          "estimated_rows": 8,
+          "before_count": 8,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611131613067_56717d6a/port_congestion_snapshots.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "run_20260611131111423_f0d63fa7",
+      "reason": "completed run outside recent 20 detailed runs",
+      "row_count_estimate": 8,
+      "tables": [
+        {
+          "table": "port_congestion_snapshots",
+          "run_id": "run_20260611131111423_f0d63fa7",
+          "estimated_rows": 8,
+          "before_count": 8,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611131111423_f0d63fa7/port_congestion_snapshots.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "run_20260611130540620_e5d891fb",
+      "reason": "completed run outside recent 20 detailed runs",
+      "row_count_estimate": 9,
+      "tables": [
+        {
+          "table": "port_congestion_snapshots",
+          "run_id": "run_20260611130540620_e5d891fb",
+          "estimated_rows": 9,
+          "before_count": 9,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611130540620_e5d891fb/port_congestion_snapshots.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "run_20260611103308821_aea4733e",
+      "reason": "completed run outside recent 20 detailed runs",
+      "row_count_estimate": 36,
+      "tables": [
+        {
+          "table": "opportunity_master",
+          "run_id": "run_20260611103308821_aea4733e",
+          "estimated_rows": 27,
+          "before_count": 27,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611103308821_aea4733e/opportunity_master.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        },
+        {
+          "table": "port_congestion_snapshots",
+          "run_id": "run_20260611103308821_aea4733e",
+          "estimated_rows": 9,
+          "before_count": 9,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611103308821_aea4733e/port_congestion_snapshots.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "run_20260611094049200_540e1000",
+      "reason": "completed run outside recent 20 detailed runs",
+      "row_count_estimate": 24,
+      "tables": [
+        {
+          "table": "opportunity_master",
+          "run_id": "run_20260611094049200_540e1000",
+          "estimated_rows": 16,
+          "before_count": 16,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611094049200_540e1000/opportunity_master.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        },
+        {
+          "table": "port_congestion_snapshots",
+          "run_id": "run_20260611094049200_540e1000",
+          "estimated_rows": 8,
+          "before_count": 8,
+          "backup_file": "data/db-cleanup-backups/20260612121253/run_20260611094049200_540e1000/port_congestion_snapshots.json",
+          "skipped": false,
+          "skip_reason": null,
+          "deleted": true,
+          "delete_status": 204,
+          "after_count": 0,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "warnings": []
 }
