@@ -1089,7 +1089,7 @@ if (!pushSmokeWorkflow.includes("name: Push Smoke Test") || !pushSmokeWorkflow.i
 }
 
 for (const warning of validationWarnings) {
-  console.warn(`[HWK] ${warning}`);
+  console.warn(`[Port Intelligence] ${warning}`);
 }
-console.log(`[HWK] validation success (${validationMode})`);
+console.log(`[Port Intelligence] validation success (${validationMode})`);
 
