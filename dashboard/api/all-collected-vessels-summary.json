@@ -1,16 +1,16 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T15:54:59.421Z",
+  "generated_at": "2026-06-12T17:29:12.770Z",
   "data_mode": "live",
-  "record_count": 1016,
+  "record_count": 1015,
   "item_count": 5,
   "source_table": "all_collected_vessels",
   "detail_endpoint": "dashboard/api/all-collected-vessels.json",
-  "total_count": 1016,
+  "total_count": 1015,
   "returned_count": 5,
   "score_distribution": {
     "0_49": 982,
-    "50_69": 33,
+    "50_69": 32,
     "70_84": 1,
     "85_100": 0,
     "unknown": 0
@@ -18,13 +18,13 @@
   "priority_counts": {
     "HOT": 3,
     "WARM": 12,
-    "LOW": 1001
+    "LOW": 1000
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 144,
+    "VERIFY_CONTACT": 143,
     "CONTACT_NOW": 7,
-    "MONITOR": 796,
-    "HOLD": 69
+    "MONITOR": 797,
+    "HOLD": 68
   },
   "items": [
     {
@@ -237,7 +237,7 @@
     {
       "severity": "INFO",
       "feature": "전체 수집 선박",
-      "message": "상세 1016건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 1015건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/all-collected-vessels.json lazy load 사용"
     }
   ]

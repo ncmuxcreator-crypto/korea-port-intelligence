@@ -146,7 +146,7 @@ function fieldCountsForSource(records = [], sourceKey = "", fields = [], matched
     if (field === "pilotage_signal") {
       counts[field] = countPilotageSignals(records);
     } else if (sourceKey === "berth_sources" && ["berth", "berth_signal"].includes(field)) {
-      counts[field] = Math.min(Math.max(matchedVessels, countBerthSignals(records)), countDisplayField(records, "berth"));
+      counts[field] = field === "berth_signal" ? countBerthSignals(records) : countDisplayField(records, "berth");
     } else if (sourceKey === "port_operation") {
       counts[field] = records.filter(row => sourceMatchesRow(row, sourceKey) && hasValue(display(row)[field])).length;
     } else {
@@ -199,6 +199,11 @@ function sumQuality(sourceQualityScore = {}, key = "") {
   return (sourceQualityScore.items || []).reduce((sum, item) => sum + number(item?.[key]), 0);
 }
 
+function maxFieldCount(fieldCounts = {}) {
+  const values = Object.values(fieldCounts).map(value => number(value));
+  return values.length ? Math.max(...values) : 0;
+}
+
 export function buildEnrichmentUtilizationPayload({
   records = [],
   sourceQualityScore = {},
@@ -220,12 +225,20 @@ export function buildEnrichmentUtilizationPayload({
   const items = SOURCE_QUALITY_KEYS.map(sourceKey => {
     const quality = qualityMap.get(sourceKey) || {};
     const fields = unique([...(FIELD_GROUPS[sourceKey] || []), ...(quality.fields_contributed || [])]);
-    const matchedVessels = sourceMatchedCount({ sourceKey, quality, bootstrapKpis, records: dedupedRecords });
+    const rawMatchedVessels = sourceMatchedCount({ sourceKey, quality, bootstrapKpis, records: dedupedRecords });
+    const samples = sourceSamples(dedupedRecords, sourceKey, fields);
+    const visibleSignalCount = sourceKey === "pilot_sources"
+      ? countPilotageSignals(dedupedRecords)
+      : sourceKey === "berth_sources"
+        ? countBerthSignals(dedupedRecords)
+        : 0;
+    const matchedVessels = Math.max(rawMatchedVessels, samples.length, visibleSignalCount);
     const fieldCounts = fieldCountsForSource(dedupedRecords, sourceKey, fields, matchedVessels);
     const fieldsAdded = Object.entries(fieldCounts).map(([field, count]) => ({ field, count }));
     const fieldsUpdated = fieldsAdded.filter(item => item.count > 0);
     const fieldsBlocked = blockedFields({ sourceKey, quality, fieldCounts, displayCounts });
-    const samples = sourceSamples(dedupedRecords, sourceKey, fields);
+    const displayUpdatedCount = maxFieldCount(fieldCounts);
+    const countInconsistency = rawMatchedVessels === 0 && samples.length > 0;
     const blockerParts = unique([
       quality.blocker_reason,
       matchedVessels > 0 && samples.length === 0 ? "matched_source_rows_not_attributed_to_vessel_display_samples" : ""
@@ -233,6 +246,16 @@ export function buildEnrichmentUtilizationPayload({
     return {
       source_key: sourceKey,
       matched_vessels: matchedVessels,
+      source_rows_collected: number(quality.rows_collected),
+      rows_normalized: number(quality.rows_normalized),
+      rows_matched_to_vessels: matchedVessels,
+      enrichment_patches_created: fieldsAdded.reduce((sum, item) => sum + number(item.count), 0),
+      vessel_display_records_updated: displayUpdatedCount,
+      ui_visible_records: samples.length,
+      count_inconsistency: countInconsistency,
+      count_inconsistency_note: countInconsistency
+        ? "Sample enriched vessels were visible even though source quality reported zero matched vessels; matched_vessels was reconciled from visible samples."
+        : "",
       fields_added: fieldsAdded,
       fields_updated: fieldsUpdated,
       fields_blocked: fieldsBlocked,
@@ -260,12 +283,29 @@ export function buildEnrichmentUtilizationPayload({
   const berthDisplayCount = countBerthSignals(dedupedRecords);
   const pilotageMatchedCount = Math.max(pilotageDisplayCount, number(bootstrapKpis.pilotage_detected_count));
   const berthMatchedCount = Math.max(berthDisplayCount, number(bootstrapKpis.berth_info_detected_count));
+  const sourceRowsCollected = sumQuality(sourceQualityScore, "rows_collected");
+  const rowsNormalized = sumQuality(sourceQualityScore, "rows_normalized");
+  const rowsMatchedToVessels = sumQuality(sourceQualityScore, "rows_matched_to_vessels");
+  const enrichmentPatchesCreated = number(
+    report.enrichment_patches_created ||
+    report.enrichment_candidates_created ||
+    report.source_data_enrichment?.enrichment_patches_created ||
+    report.source_data_enrichment?.total_candidates
+  );
+  const enrichmentPatchesApplied = number(
+    report.enrichment_patches_applied ||
+    report.source_data_enrichment?.enrichment_patches_applied ||
+    report.source_data_enrichment?.auto_applied
+  );
   const countReconciliation = {
-    source_rows_collected: sumQuality(sourceQualityScore, "rows_collected"),
-    source_rows_normalized: sumQuality(sourceQualityScore, "rows_normalized"),
-    source_rows_matched_to_vessels: sumQuality(sourceQualityScore, "rows_matched_to_vessels"),
-    enrichment_candidates_created: number(report.enrichment_candidates_created || report.source_data_enrichment?.total_candidates),
-    enrichment_patches_applied: number(report.enrichment_patches_applied || report.source_data_enrichment?.auto_applied),
+    source_rows_collected: sourceRowsCollected,
+    rows_normalized: rowsNormalized,
+    rows_matched_to_vessels: rowsMatchedToVessels,
+    source_rows_normalized: rowsNormalized,
+    source_rows_matched_to_vessels: rowsMatchedToVessels,
+    enrichment_patches_created: enrichmentPatchesCreated,
+    enrichment_candidates_created: enrichmentPatchesCreated,
+    enrichment_patches_applied: enrichmentPatchesApplied,
     vessel_display_records_updated: pilotageDisplayCount + berthDisplayCount,
     ui_visible_records: dedupedRecords.length
   };
@@ -307,6 +347,7 @@ export function buildEnrichmentUtilizationPayload({
     dwt_recovered_count: displayCounts.dwt,
     flag_recovered_count: displayCounts.flag,
     enrichment_failures: enrichmentFailures,
+    count_inconsistency: items.some(item => item.count_inconsistency === true),
     record_count: items.length,
     item_count: items.length,
     items

@@ -79,6 +79,7 @@ function staleAgainst(reference, payload) {
 
 const bootstrap = readJson("dashboard/api/bootstrap.json", {});
 const statusSummary = readJson("dashboard/api/status-summary.json", {});
+const updateTiers = readJson("dashboard/api/runtime/update-tiers.json", {});
 const sourceQuality = readJson("dashboard/api/source-quality-score.json", { items: [] });
 const utilization = readJson("dashboard/api/enrichment-utilization.json", { items: [] });
 const candidates = readJson("dashboard/api/enrichment/candidates.json", { items: [] });
@@ -86,6 +87,8 @@ const applied = readJson("dashboard/api/enrichment/applied.json", { items: [] })
 const review = readJson("dashboard/api/enrichment/review-queue.json", { items: [] });
 const summary = readJson("dashboard/api/enrichment/summary.json", {});
 const uiSignals = collectUiVisibleSignals();
+const mixedReferenceCacheAllowed = updateTiers.mixed_tier_status === true &&
+  Boolean(updateTiers.reference_enrichment_run_id || updateTiers.enrichment_reused_from_cache);
 
 const sourceRowsCollected = rows(sourceQuality).reduce((sum, item) => sum + Number(item.rows_collected || 0), 0);
 const sourceRowsNormalized = rows(sourceQuality).reduce((sum, item) => sum + Number(item.rows_normalized || 0), 0);
@@ -99,6 +102,12 @@ const staleFiles = [
   ["enrichment-applied", applied],
   ["enrichment-review-queue", review]
 ].filter(([, payload]) => staleAgainst(bootstrap, payload));
+const allowedMixedTierStaleFiles = staleFiles.filter(([name, payload]) => {
+  if (name === "enrichment-utilization" && (payload.reused_from_cache === true || mixedReferenceCacheAllowed)) return true;
+  if (name.startsWith("enrichment-") && mixedReferenceCacheAllowed) return true;
+  return false;
+});
+const blockingStaleFiles = staleFiles.filter(([name, payload]) => !allowedMixedTierStaleFiles.some(([allowedName, allowedPayload]) => allowedName === name && allowedPayload === payload));
 
 console.log("Enrichment Quality Audit");
 console.log("========================");
@@ -106,6 +115,10 @@ console.log(`bootstrap_generated_at=${bootstrap.generated_at || "-"}`);
 console.log(`status_summary_generated_at=${statusSummary.generated_at || "-"}`);
 console.log(`run_id=${bootstrap.run_id || statusSummary.run_id || "-"}`);
 console.log(`latest_successful_run_id=${bootstrap.latest_successful_run_id || statusSummary.latest_successful_run_id || "-"}`);
+console.log(`mixed_tier_status=${Boolean(updateTiers.mixed_tier_status)} reference_enrichment_run_id=${updateTiers.reference_enrichment_run_id || "-"}`);
+if (allowedMixedTierStaleFiles.length) {
+  console.log(`allowed_mixed_tier_stale_files=${allowedMixedTierStaleFiles.map(([name]) => name).join(",")}`);
+}
 console.log("");
 console.log("Flow counts");
 console.log(`A source_rows_collected=${fmt(sourceRowsCollected)}`);
@@ -138,7 +151,7 @@ for (const gap of utilization.display_gap_explanations || []) {
 }
 
 const problems = [];
-for (const [name, payload] of staleFiles) {
+for (const [name, payload] of blockingStaleFiles) {
   problems.push(`${name} generated_at ${payload.generated_at || "missing"} differs from bootstrap ${bootstrap.generated_at || "missing"}`);
 }
 if (rows(candidates).length !== Number(summary.total_candidates || rows(candidates).length)) {

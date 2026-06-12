@@ -3568,6 +3568,8 @@ function readJsonSafe(filePath, fallback = null) {
   }
 }
 
+const INITIAL_STATUS_SUMMARY = readJsonSafe("dashboard/api/status-summary.json", null) || {};
+
 function shouldPreserveAuxDiagnosticsForCore() {
   return PRESERVE_AUX_DIAGNOSTICS_IN_CORE;
 }
@@ -3753,8 +3755,14 @@ function protectSourceQualityScoreForCore({ payload = {}, previous = {}, auxInde
     };
   }
   const previousByKey = mapItemsBySourceKey(previous?.items || []);
-  const mergedItems = items.map(item => {
-    const sourceKey = String(item.source_key || "");
+  const currentByKey = mapItemsBySourceKey(items);
+  const mergedSourceKeys = [...new Set([
+    ...items.map(item => item.source_key).filter(Boolean),
+    ...(Array.isArray(previous?.items) ? previous.items.map(item => item.source_key).filter(Boolean) : [])
+  ])];
+  const mergedItems = mergedSourceKeys.map(sourceKeyValue => {
+    const item = currentByKey.get(sourceKeyValue) || previousByKey.get(sourceKeyValue) || {};
+    const sourceKey = String(item.source_key || sourceKeyValue || "");
     if (currentTierMayUpdateSource(sourceKey)) {
       const previousItem = previousByKey.get(sourceKey);
       const currentLooksUnsuccessful = sourceQualityItemLooksLocalMissing(item) || sourceQualityItemLooksUnsuccessfulRefresh(item);
@@ -3869,9 +3877,9 @@ function protectAuxLatestIndexForCore({ payload = {}, previous = {}, sourceColle
   }
   const auxRunId = sourceCollectionStatus.run_id || sourceCollectionStatus.status_run_id || previous.aux_run_id || previous.run_id || base.aux_run_id || null;
   const sourceStatus = Object.fromEntries((sourceCollectionStatus.items || []).map(item => [item.source_key, item.status]));
+  const preservedBase = previous && typeof previous === "object" && Object.keys(previous).length ? previous : base;
   return {
-    ...previous,
-    ...base,
+    ...preservedBase,
     owner_tier: "fast_aux",
     core_may_update: false,
     reused_from_cache: true,
@@ -3893,6 +3901,52 @@ function protectAuxLatestIndexForCore({ payload = {}, previous = {}, sourceColle
   };
 }
 
+function protectCachedTierPayloadForCore({
+  payload = {},
+  previous = {},
+  ownerTier = "fast_aux",
+  runIdField = "run_id",
+  runIdValue = null,
+  generatedAt = new Date().toISOString(),
+  origin = {},
+  preservationReason = AUXILIARY_QUALITY_PRESERVATION_NOTE
+} = {}) {
+  const base = payload && typeof payload === "object" ? payload : {};
+  if (!shouldPreserveAuxDiagnosticsForCore()) {
+    return {
+      ...base,
+      owner_tier: ownerTier,
+      core_may_update: false
+    };
+  }
+  const preservedBase = previous && typeof previous === "object" && Object.keys(previous).length ? previous : base;
+  const preservedRunId = runIdValue ||
+    preservedBase[runIdField] ||
+    preservedBase.run_id ||
+    preservedBase.source_run_id ||
+    preservedBase.status_run_id ||
+    null;
+  return {
+    ...preservedBase,
+    owner_tier: ownerTier,
+    core_may_update: false,
+    reused_from_cache: true,
+    cache_reused_at: generatedAt,
+    preservation_reason: preservationReason,
+    core_run_id: origin.run_id || runId,
+    core_generated_at: generatedAt,
+    core_generated_by: GENERATED_BY,
+    [runIdField]: preservedRunId,
+    run_id: preservedRunId || preservedBase.run_id || null,
+    status_run_id: preservedRunId || preservedBase.status_run_id || null,
+    source_run_id: preservedRunId || preservedBase.source_run_id || null,
+    active_run_id: preservedRunId || preservedBase.active_run_id || null,
+    generated_at: preservedBase.generated_at || base.generated_at || generatedAt,
+    generated_by: preservedBase.generated_by || base.generated_by || "github_actions",
+    is_github_actions: preservedBase.is_github_actions ?? base.is_github_actions ?? true
+  };
+}
+
 function enrichmentUtilizationLooksLocalMissing(payload = {}) {
   if (!payload || typeof payload !== "object") return false;
   if (payload.generated_by !== "local") return false;
@@ -3911,6 +3965,26 @@ function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sour
     typeof previous === "object" &&
     !enrichmentUtilizationLooksLocalMissing(previous);
   const base = shouldUsePrevious ? previous : payload;
+  const cachedApplied = Number(cachedPatchResult?.applied ?? base.cached_patch_applied_count ?? 0);
+  const cachedDisplayUpdates = Number(cachedPatchResult?.vessel_display_records_updated ?? cachedPatchResult?.records_updated ?? cachedApplied);
+  const cachedPatchCount = Number(cachedPatchResult?.patches_eligible ?? cachedPatchResult?.patch_count ?? cachedPatchResult?.available_patches ?? 0);
+  const currentDisplayCounts = payload.count_reconciliation && typeof payload.count_reconciliation === "object"
+    ? payload.count_reconciliation
+    : {};
+  const currentPilotageDisplay = Number(payload.pilotage_signal_display_count || 0);
+  const currentBerthDisplay = Number(payload.berth_signal_display_count || 0);
+  const currentDisplayUpdates = Number(currentDisplayCounts.vessel_display_records_updated || currentPilotageDisplay + currentBerthDisplay || 0);
+  const currentUiVisible = Number(currentDisplayCounts.ui_visible_records || payload.display_vessel_count || payload.total_vessels || 0);
+  const countReconciliation = base.count_reconciliation && typeof base.count_reconciliation === "object"
+    ? { ...base.count_reconciliation }
+    : {};
+  if (shouldPreserveAuxDiagnosticsForCore() && cachedPatchResult?.available) {
+    countReconciliation.enrichment_patches_created = Math.max(Number(countReconciliation.enrichment_patches_created || 0), cachedPatchCount, cachedApplied);
+    countReconciliation.enrichment_candidates_created = Math.max(Number(countReconciliation.enrichment_candidates_created || 0), Number(countReconciliation.enrichment_patches_created || 0));
+    countReconciliation.enrichment_patches_applied = Math.max(Number(countReconciliation.enrichment_patches_applied || 0), cachedApplied);
+    countReconciliation.vessel_display_records_updated = Math.max(Number(countReconciliation.vessel_display_records_updated || 0), cachedDisplayUpdates, currentDisplayUpdates);
+    countReconciliation.ui_visible_records = Math.max(Number(countReconciliation.ui_visible_records || 0), currentUiVisible);
+  }
   return {
     ...base,
     owner_tier: "reference_enrichment",
@@ -3926,8 +4000,15 @@ function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sour
     enrichment_run_id: enrichmentIndex.enrichment_run_id || base.enrichment_run_id || base.source_run_id || base.run_id || null,
     source_quality_run_id: sourceQualityScore.run_id || sourceQualityScore.source_run_id || null,
     cached_patch_available: cachedPatchResult?.available ?? base.cached_patch_available ?? null,
-    cached_patch_applied_count: Number(cachedPatchResult?.applied ?? base.cached_patch_applied_count ?? 0),
-    cached_patch_source_generated_at: cachedPatchResult?.source_generated_at || base.cached_patch_source_generated_at || null
+    cached_patch_applied_count: cachedApplied,
+    cached_patch_source_generated_at: cachedPatchResult?.source_generated_at || base.cached_patch_source_generated_at || null,
+    cached_patch_fields_applied_by_name: cachedPatchResult?.fields_applied_by_name || base.cached_patch_fields_applied_by_name || {},
+    pilotage_signal_display_count: Math.max(Number(base.pilotage_signal_display_count || 0), currentPilotageDisplay),
+    berth_signal_display_count: Math.max(Number(base.berth_signal_display_count || 0), currentBerthDisplay),
+    pilotage_signal_count: Math.max(Number(base.pilotage_signal_count || 0), Number(payload.pilotage_signal_count || 0), currentPilotageDisplay),
+    berth_signal_count: Math.max(Number(base.berth_signal_count || 0), Number(payload.berth_signal_count || 0), currentBerthDisplay),
+    vessel_display_records_updated: Math.max(Number(base.vessel_display_records_updated || 0), cachedDisplayUpdates, currentDisplayUpdates),
+    count_reconciliation: countReconciliation
   };
 }
 
@@ -3939,10 +4020,10 @@ function protectEnrichmentLatestIndexForCore({ payload = {}, previous = {}, summ
       core_may_update: false
     };
   }
-  const enrichmentRunId = payload.enrichment_run_id || previous.enrichment_run_id || summary.run_id || previous.run_id || payload.run_id || null;
+  const base = previous && typeof previous === "object" && Object.keys(previous).length ? previous : payload;
+  const enrichmentRunId = previous.enrichment_run_id || previous.run_id || payload.enrichment_run_id || summary.run_id || payload.run_id || null;
   return {
-    ...previous,
-    ...payload,
+    ...base,
     owner_tier: "reference_enrichment",
     core_may_update: false,
     reused_from_cache: true,
@@ -3955,9 +4036,9 @@ function protectEnrichmentLatestIndexForCore({ payload = {}, previous = {}, summ
     status_run_id: enrichmentRunId,
     source_run_id: enrichmentRunId,
     active_run_id: enrichmentRunId,
-    generated_at: summary.generated_at || previous.generated_at || payload.generated_at,
-    generated_by: summary.generated_by || previous.generated_by || payload.generated_by || "github_actions",
-    is_github_actions: summary.is_github_actions ?? previous.is_github_actions ?? payload.is_github_actions ?? true
+    generated_at: previous.generated_at || summary.generated_at || payload.generated_at,
+    generated_by: previous.generated_by || summary.generated_by || payload.generated_by || "github_actions",
+    is_github_actions: previous.is_github_actions ?? summary.is_github_actions ?? payload.is_github_actions ?? true
   };
 }
 
@@ -7363,12 +7444,22 @@ function buildPilotageSignal(record = {}) {
   const existing = record.vessel_display?.pilotage_signal && typeof record.vessel_display.pilotage_signal === "object"
     ? record.vessel_display.pilotage_signal
     : {};
-  if (existing.has_pilotage === true) {
+  const existingHasPilotageDetails = Boolean(firstNonEmpty(
+    existing.pilotage_time,
+    existing.pilotage_time_text,
+    existing.pilot_time,
+    existing.pilot_station,
+    existing.pilotage_station,
+    existing.direction,
+    existing.pilotage_direction
+  ));
+  if (existing.has_pilotage === true || existingHasPilotageDetails) {
     const status = existing.status || existing.pilotage_status || "DETECTED";
     const direction = existing.direction || existing.pilotage_direction || "UNKNOWN";
     const source = existing.source || existing.pilotage_source || "pilot_sources";
     return {
       ...existing,
+      has_pilotage: true,
       status,
       pilotage_status: existing.pilotage_status || status,
       port: existing.port || existing.pilotage_port || null,
@@ -7472,9 +7563,26 @@ function buildBerthSignal(record = {}) {
   const existing = record.vessel_display?.berth_signal && typeof record.vessel_display.berth_signal === "object"
     ? record.vessel_display.berth_signal
     : {};
-  if (existing.has_berth_info === true) {
+  const existingHasBerthDetails = Boolean(firstNonEmpty(
+    existing.berth,
+    existing.berth_name,
+    existing.berth_no,
+    existing.berth_code,
+    existing.terminal,
+    existing.terminal_name,
+    existing.eta,
+    existing.etb,
+    existing.ata,
+    existing.atb,
+    existing.operation_start,
+    existing.operation_end
+  ));
+  if (existing.has_berth_info === true || existingHasBerthDetails) {
     return {
       ...existing,
+      has_berth_info: true,
+      has_berth: existing.has_berth === true || Boolean(firstNonEmpty(existing.berth, existing.berth_name, existing.berth_no, existing.berth_code, existing.terminal, existing.terminal_name)),
+      source: existing.source || "berth_sources",
       berth_direction: existing.berth_direction || existing.direction || null,
       confidence: nullableDisplayNumber(existing.confidence, existing.berth_match_confidence),
       reason: existing.reason || "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다."
@@ -18103,6 +18211,38 @@ function cacheAgeHoursFrom(generatedAt, referenceAt = new Date().toISOString()) 
   return Number.isFinite(age) ? Math.max(0, Math.round(age * 10) / 10) : null;
 }
 
+function statusSummaryRunId(payload = {}) {
+  return firstNonEmpty(payload.active_run_id, payload.run_id, payload.status_run_id, payload.source_run_id);
+}
+
+function statusSummaryLooksProduction(payload = {}) {
+  if (!payload || typeof payload !== "object") return false;
+  const generatedBy = String(payload.generated_by || "").toLowerCase();
+  const dataMode = String(payload.data_mode || payload.data_mode_detail?.mode || "").toLowerCase();
+  const supabaseStatus = String(payload.supabase_write_status || payload.supabase_write?.status || payload.storage_status?.supabase?.status || "").toLowerCase();
+  const promotionStatus = String(payload.dataset_promotion_status || payload.promotion_status || "").toLowerCase();
+  return generatedBy === "github_actions" &&
+    (payload.is_github_actions === true || dataMode === "live" || supabaseStatus === "completed" || promotionStatus === "promoted") &&
+    Boolean(statusSummaryRunId(payload));
+}
+
+function protectStatusSummaryForLocalCore({ payload = {}, previous = {}, generatedAt = new Date().toISOString(), origin = {} } = {}) {
+  if (!(IS_CORE_UPDATE && GENERATED_BY === "local" && statusSummaryLooksProduction(previous))) return payload;
+  return {
+    ...previous,
+    owner_tier: "core",
+    core_may_update: true,
+    local_core_run_id: origin.run_id || payload.run_id || runId,
+    local_core_generated_at: generatedAt,
+    local_core_generated_by: GENERATED_BY,
+    local_core_non_promoted: true,
+    local_core_status_summary_preserved: true,
+    local_core_note: "Local core diagnostics were generated, but production status-summary remains canonical until a GitHub Actions production run promotes the dataset.",
+    mixed_tier_status: true,
+    mixed_tier_note: "Production status-summary is preserved while local core diagnostics are non-promoted."
+  };
+}
+
 function buildAuxLatestIndex({ generatedAt, report = {}, availableFiles = [], sourceCollectionStatus = {}, cacheStatus = {} } = {}) {
   const sources = Array.isArray(sourceCollectionStatus.items) ? sourceCollectionStatus.items : [];
   return {
@@ -18137,20 +18277,47 @@ function buildEnrichmentLatestIndex({ generatedAt, summary = {}, patches = {}, r
   };
 }
 
-function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enrichmentIndex = {} } = {}) {
+function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enrichmentIndex = {}, previousStatusSummary = {}, statusSummary = {} } = {}) {
   const previous = readJsonSafe("dashboard/api/runtime/update-tiers.json", {}) || {};
-  const previousStatusSummary = readJsonSafe("dashboard/api/status-summary.json", {}) || {};
+  const previousCanonicalStatus = previousStatusSummary && Object.keys(previousStatusSummary).length
+    ? previousStatusSummary
+    : readJsonSafe("dashboard/api/status-summary.json", {}) || {};
+  const currentStatusSummary = statusSummary && Object.keys(statusSummary).length
+    ? statusSummary
+    : readJsonSafe("dashboard/api/status-summary.json", {}) || {};
   const currentRunId = report.run_id || runId;
   const currentGeneratedBy = GENERATED_BY;
-  const coreIsCurrent = IS_CORE_UPDATE || UPDATE_MODE === "scheduled";
+  const localCoreShouldPreserveProduction = IS_CORE_UPDATE &&
+    currentGeneratedBy === "local" &&
+    statusSummaryLooksProduction(previousCanonicalStatus);
+  const coreStatusReference = localCoreShouldPreserveProduction ? previousCanonicalStatus : currentStatusSummary;
+  const previousCoreRunId = (localCoreShouldPreserveProduction ? statusSummaryRunId(coreStatusReference) : null) ||
+    previous.core_run_id ||
+    previous.core?.run_id ||
+    statusSummaryRunId(coreStatusReference) ||
+    statusSummaryRunId(previousCanonicalStatus) ||
+    null;
+  const previousCoreGeneratedAt = (localCoreShouldPreserveProduction ? coreStatusReference.generated_at : null) ||
+    previous.core_generated_at ||
+    previous.core?.generated_at ||
+    coreStatusReference.generated_at ||
+    previousCanonicalStatus.generated_at ||
+    null;
+  const previousCoreGeneratedBy = (localCoreShouldPreserveProduction ? coreStatusReference.generated_by : null) ||
+    previous.core_generated_by ||
+    previous.core?.generated_by ||
+    coreStatusReference.generated_by ||
+    previousCanonicalStatus.generated_by ||
+    null;
+  const coreIsCurrent = (IS_CORE_UPDATE || UPDATE_MODE === "scheduled") && !localCoreShouldPreserveProduction;
   const fastAuxIsCurrent = UPDATE_MODE === "fast_aux";
   const referenceEnrichmentIsCurrent = UPDATE_MODE === "reference_enrichment";
   const discoveryAuditIsCurrent = UPDATE_MODE === "discovery_audit";
   const tiers = {
     core: {
-      run_id: coreIsCurrent ? currentRunId : previous.core_run_id || previous.core?.run_id || previousStatusSummary.run_id || null,
-      generated_at: coreIsCurrent ? generatedAt : previous.core_generated_at || previous.core?.generated_at || previousStatusSummary.generated_at || null,
-      generated_by: coreIsCurrent ? currentGeneratedBy : previous.core_generated_by || previous.core?.generated_by || previousStatusSummary.generated_by || null
+      run_id: coreIsCurrent ? currentRunId : previousCoreRunId,
+      generated_at: coreIsCurrent ? generatedAt : previousCoreGeneratedAt,
+      generated_by: coreIsCurrent ? currentGeneratedBy : previousCoreGeneratedBy
     },
     fast_aux: {
       run_id: fastAuxIsCurrent ? currentRunId : auxIndex.aux_run_id || previous.fast_aux_run_id || previous.fast_aux?.run_id || null,
@@ -18174,12 +18341,33 @@ function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enri
   if (!tiers.discovery_audit.generated_at) staleWarnings.push("discovery/audit reports have not been refreshed by the tiered workflow yet.");
   const tierRunIds = [...new Set(Object.values(tiers).map(tier => tier.run_id).filter(Boolean))];
   const mixedTierStatus = tierRunIds.length > 1;
+  const mixedTierNote = localCoreShouldPreserveProduction
+    ? "Local core run was generated for diagnostics only; the production GitHub Actions core status remains the canonical tier reference. Auxiliary/enrichment outputs are intentionally reused from cache."
+    : mixedTierStatus
+      ? "Core output was refreshed separately from auxiliary/enrichment/discovery diagnostics; older tier outputs are intentionally reused from cache."
+      : "All tier references currently point to the same run.";
   return {
     schema_version: PUBLIC_API_SCHEMA_VERSION,
-    generated_at: generatedAt,
+    run_id: tiers.core.run_id,
+    status_run_id: tiers.core.run_id,
+    active_run_id: tiers.core.run_id,
+    source_run_id: tiers.core.run_id,
+    generated_at: tiers.core.generated_at || generatedAt,
+    generated_by: tiers.core.generated_by || currentGeneratedBy,
+    is_github_actions: String(tiers.core.generated_by || "").toLowerCase() === "github_actions",
+    validation_mode: coreStatusReference.validation_mode || (String(tiers.core.generated_by || "").toLowerCase() === "github_actions" ? "production" : VALIDATION_MODE),
+    serving_mode: coreStatusReference.serving_mode || (localCoreShouldPreserveProduction ? "static_json" : undefined),
+    GITHUB_RUN_ID: coreStatusReference.GITHUB_RUN_ID || previous.GITHUB_RUN_ID || null,
+    GITHUB_WORKFLOW: coreStatusReference.GITHUB_WORKFLOW || previous.GITHUB_WORKFLOW || null,
     owner_tier: "core",
     core_may_update: true,
     update_mode: UPDATE_MODE,
+    tier_index_generated_at: generatedAt,
+    tier_index_generated_by: currentGeneratedBy,
+    local_core_run_id: localCoreShouldPreserveProduction ? currentRunId : null,
+    local_core_generated_at: localCoreShouldPreserveProduction ? generatedAt : null,
+    local_core_generated_by: localCoreShouldPreserveProduction ? currentGeneratedBy : null,
+    local_core_not_promoted: localCoreShouldPreserveProduction,
     core_run_id: tiers.core.run_id,
     core_generated_at: tiers.core.generated_at,
     core_generated_by: tiers.core.generated_by,
@@ -18193,9 +18381,7 @@ function buildUpdateTiersPayload({ generatedAt, report = {}, auxIndex = {}, enri
     discovery_audit_generated_at: tiers.discovery_audit.generated_at,
     discovery_audit_generated_by: tiers.discovery_audit.generated_by,
     mixed_tier_status: mixedTierStatus,
-    mixed_tier_note: mixedTierStatus
-      ? "Core output was refreshed separately from auxiliary/enrichment/discovery diagnostics; older tier outputs are intentionally reused from cache."
-      : "All tier references currently point to the same run.",
+    mixed_tier_note: mixedTierNote,
     aux_reused_from_cache: Boolean(auxIndex.reused_from_cache),
     enrichment_reused_from_cache: Boolean(enrichmentIndex.reused_from_cache),
     active_aux_cache_available: fileExists("dashboard/api/aux/latest/index.json") || Boolean(auxIndex.generated_at),
@@ -18224,6 +18410,110 @@ function vesselPatchKey(record = {}) {
   ) || "").trim().toUpperCase();
 }
 
+function cachedPatchRecordVesselKey(record = {}) {
+  const key = String(firstNonEmpty(record.vessel_key, record.vessel_display?.vessel_key) || "").trim();
+  const derivedKey = key || vesselPatchKey(record);
+  if (!derivedKey) return "";
+  record.vessel_key = derivedKey;
+  if (!record.vessel_display || typeof record.vessel_display !== "object") record.vessel_display = {};
+  record.vessel_display.vessel_key = record.vessel_display.vessel_key || derivedKey;
+  return String(derivedKey).trim().toUpperCase();
+}
+
+function cachedPatchTargetVesselKey(item = {}) {
+  return String(firstNonEmpty(item.target_vessel_key, item.target_vessel?.vessel_key) || "").trim().toUpperCase();
+}
+
+function cachedPatchHasCandidateValue(value) {
+  if (value === undefined || value === null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === "object") return Object.values(value).some(cachedPatchHasCandidateValue);
+  return String(value).trim() !== "";
+}
+
+function normalizeCachedSignalValue(field, value, item = {}, generatedAt = new Date().toISOString()) {
+  if (!["pilotage_signal", "berth_signal"].includes(field)) return value;
+  const source = item.source_key || item.lineage?.raw_source || "enrichment_patch_cache";
+  const base = value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
+  if (field === "berth_signal") {
+    const berth = firstNonEmpty(base.berth, base.berth_name, base.berth_no, base.berth_code, item.raw_value);
+    const terminal = firstNonEmpty(base.terminal, base.terminal_name);
+    const hasBerthData = Boolean(firstNonEmpty(
+      berth,
+      terminal,
+      base.eta,
+      base.etb,
+      base.ata,
+      base.atb,
+      base.operation_start,
+      base.operation_end
+    ));
+    return {
+      ...base,
+      has_berth_info: base.has_berth_info === true || hasBerthData,
+      has_berth: base.has_berth === true || Boolean(firstNonEmpty(berth, terminal)),
+      berth: berth || base.berth || null,
+      terminal: terminal || base.terminal || null,
+      source: base.source || source || "berth_sources",
+      confidence: nullableDisplayNumber(base.confidence, item.match_confidence, item.candidate_quality),
+      match_type: base.match_type || "cached_enrichment_patch",
+      updated_at: base.updated_at || item.source_timestamp || generatedAt
+    };
+  }
+  const pilotageTime = firstNonEmpty(
+    base.pilotage_time,
+    base.pilot_time,
+    base.pilotage_time_text,
+    base.movement_time,
+    item.raw_value
+  );
+  const hasPilotage = base.has_pilotage === true || Boolean(firstNonEmpty(
+    pilotageTime,
+    base.pilot_station,
+    base.pilotage_station,
+    base.direction,
+    base.pilotage_direction,
+    base.status,
+    base.pilotage_status
+  ));
+  return {
+    ...base,
+    has_pilotage: Boolean(hasPilotage),
+    status: base.status || base.pilotage_status || (hasPilotage ? "DETECTED" : "UNKNOWN"),
+    pilotage_status: base.pilotage_status || base.status || (hasPilotage ? "DETECTED" : "UNKNOWN"),
+    pilotage_time: base.pilotage_time || base.pilot_time || null,
+    pilotage_time_text: base.pilotage_time_text || pilotageTime || null,
+    direction: base.direction || base.pilotage_direction || "UNKNOWN",
+    pilotage_direction: base.pilotage_direction || base.direction || "UNKNOWN",
+    source: base.source || source || "pilot_sources",
+    pilotage_source: base.pilotage_source || base.source || source || "pilot_sources",
+    confidence: nullableDisplayNumber(base.confidence, item.match_confidence, item.candidate_quality),
+    pilotage_confidence: nullableDisplayNumber(base.pilotage_confidence, base.confidence, item.match_confidence, item.candidate_quality),
+    match_type: base.match_type || "cached_enrichment_patch",
+    updated_at: base.updated_at || item.source_timestamp || generatedAt
+  };
+}
+
+function cachedPatchCurrentValueProtected(field, value) {
+  if (field === "data_lineage") return false;
+  if (field === "pilotage_signal") return value && typeof value === "object" && value.has_pilotage === true;
+  if (field === "berth_signal") return value && typeof value === "object" && (value.has_berth_info === true || value.has_berth === true);
+  return hasValue(value) && String(value) !== "-";
+}
+
+function mergeCachedSignalValue(field, currentValue, candidateValue) {
+  if (!["pilotage_signal", "berth_signal"].includes(field)) return candidateValue;
+  const current = currentValue && typeof currentValue === "object" && !Array.isArray(currentValue) ? currentValue : {};
+  const candidate = candidateValue && typeof candidateValue === "object" && !Array.isArray(candidateValue) ? candidateValue : {};
+  return {
+    ...current,
+    ...candidate,
+    has_pilotage: field === "pilotage_signal" ? Boolean(current.has_pilotage || candidate.has_pilotage) : undefined,
+    has_berth_info: field === "berth_signal" ? Boolean(current.has_berth_info || candidate.has_berth_info) : undefined,
+    has_berth: field === "berth_signal" ? Boolean(current.has_berth || candidate.has_berth) : undefined
+  };
+}
+
 function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().toISOString() } = {}) {
   if (!IS_CORE_UPDATE && ENRICHMENT_MODE !== "lightweight_apply_cache") {
     return { applied: 0, available: false, skipped_reason: "not_core_lightweight_mode" };
@@ -18235,25 +18525,62 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
   const allowedFields = new Set(["pilotage_signal", "berth_signal", "operator_display", "imo", "mmsi", "dwt", "flag", "vessel_type", "data_lineage"]);
   const recordByKey = new Map();
   for (const record of records) {
-    const key = vesselPatchKey(record);
+    const key = cachedPatchRecordVesselKey(record);
     if (key && !recordByKey.has(key)) recordByKey.set(key, record);
   }
   let applied = 0;
+  let patchesEligible = 0;
+  const recordsUpdated = new Set();
+  const displayRecordsUpdated = new Set();
+  const fieldsAppliedByName = {};
+  const skippedByReason = {};
+  const skip = reason => {
+    skippedByReason[reason] = (skippedByReason[reason] || 0) + 1;
+  };
   for (const item of items) {
-    if (String(item.action || "").toUpperCase() !== "APPLY") continue;
-    if (Number(item.match_confidence || 0) < 85) continue;
+    if (String(item.action || "").toUpperCase() !== "APPLY") {
+      skip("action_not_apply");
+      continue;
+    }
+    if (Number(item.match_confidence || 0) < 85) {
+      skip("low_confidence");
+      continue;
+    }
     const field = String(item.field_name || "").trim();
-    if (!allowedFields.has(field)) continue;
-    const key = vesselPatchKey(item.target_vessel || { vessel_key: item.target_vessel_key });
+    if (!allowedFields.has(field)) {
+      skip("field_not_allowed");
+      continue;
+    }
+    patchesEligible += 1;
+    const key = cachedPatchTargetVesselKey(item);
+    if (!key) {
+      skip("missing_target_vessel_key");
+      continue;
+    }
     const record = recordByKey.get(key);
-    if (!record) continue;
-    const candidateValue = item.candidate_value ?? item.raw_value;
-    if (candidateValue === undefined || candidateValue === null || String(candidateValue).trim() === "") continue;
+    if (!record) {
+      skip("record_not_found");
+      continue;
+    }
+    const candidateValue = normalizeCachedSignalValue(field, item.candidate_value ?? item.raw_value, item, generatedAt);
+    if (!cachedPatchHasCandidateValue(candidateValue)) {
+      skip("empty_candidate_value");
+      continue;
+    }
     const currentValue = record[field] ?? record.vessel_display?.[field];
     const currentTrusted = record[`${field}_verified`] === true || record.manual === true || record.vessel_display?.data_lineage?.[field]?.verified === true;
-    if (currentTrusted) continue;
-    if (hasValue(currentValue) && String(currentValue) !== "-" && field !== "data_lineage") continue;
-    record[field] = candidateValue;
+    if (currentTrusted) {
+      skip("current_value_verified");
+      continue;
+    }
+    if (cachedPatchCurrentValueProtected(field, currentValue) && !["pilotage_signal", "berth_signal"].includes(field)) {
+      skip("current_value_present");
+      continue;
+    }
+    const nextValue = mergeCachedSignalValue(field, currentValue, candidateValue);
+    record[field] = nextValue;
+    if (!record.vessel_display || typeof record.vessel_display !== "object") record.vessel_display = {};
+    if (field !== "data_lineage") record.vessel_display[field] = nextValue;
     record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
     record.data_lineage[field] = {
       source: item.source_key || item.lineage?.raw_source || "enrichment_patch_cache",
@@ -18261,14 +18588,62 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
       updated_at: item.source_timestamp || generatedAt,
       cached_patch: true
     };
+    record.vessel_display.data_lineage = record.vessel_display.data_lineage && typeof record.vessel_display.data_lineage === "object"
+      ? record.vessel_display.data_lineage
+      : {};
+    record.vessel_display.data_lineage[field] = record.data_lineage[field];
+    record.cached_enrichment_patch_applied = true;
+    record.vessel_display.cached_enrichment_patch_applied = true;
+    recordsUpdated.add(key);
+    if (record.vessel_display?.[field] !== undefined || ["pilotage_signal", "berth_signal"].includes(field)) displayRecordsUpdated.add(key);
+    fieldsAppliedByName[field] = (fieldsAppliedByName[field] || 0) + 1;
     applied += 1;
   }
   return {
     applied,
     available: true,
+    patch_count: items.length,
+    patches_eligible: patchesEligible,
+    records_updated: recordsUpdated.size,
+    vessel_display_records_updated: displayRecordsUpdated.size,
+    fields_applied_by_name: fieldsAppliedByName,
+    skipped_by_reason: skippedByReason,
     source_generated_at: payload.generated_at || null,
     cache_age_hours: cacheAgeHoursFrom(payload.generated_at, generatedAt)
   };
+}
+
+function mergeCachedPatchResults(...results) {
+  const valid = results.filter(result => result && typeof result === "object");
+  if (!valid.length) return {};
+  const merged = {
+    applied: 0,
+    available: valid.some(result => result.available === true),
+    patch_count: 0,
+    patches_eligible: 0,
+    records_updated: 0,
+    vessel_display_records_updated: 0,
+    fields_applied_by_name: {},
+    skipped_by_reason: {},
+    source_generated_at: valid.find(result => result.source_generated_at)?.source_generated_at || null,
+    cache_age_hours: valid.find(result => result.cache_age_hours !== undefined)?.cache_age_hours ?? null
+  };
+  const skippedReasons = {};
+  for (const result of valid) {
+    merged.applied += Number(result.applied || 0);
+    merged.patch_count = Math.max(merged.patch_count, Number(result.patch_count || 0));
+    merged.patches_eligible = Math.max(merged.patches_eligible, Number(result.patches_eligible || 0));
+    merged.records_updated += Number(result.records_updated || 0);
+    merged.vessel_display_records_updated += Number(result.vessel_display_records_updated || 0);
+    for (const [field, count] of Object.entries(result.fields_applied_by_name || {})) {
+      merged.fields_applied_by_name[field] = (merged.fields_applied_by_name[field] || 0) + Number(count || 0);
+    }
+    for (const [reason, count] of Object.entries(result.skipped_by_reason || {})) {
+      skippedReasons[reason] = (skippedReasons[reason] || 0) + Number(count || 0);
+    }
+  }
+  merged.skipped_by_reason = skippedReasons;
+  return merged;
 }
 
 function buildMasterDbRoadmap(apiSources = []) {
@@ -18637,6 +19012,19 @@ try {
       }
     )
   );
+  const outputCachedPatchStage = beginRuntimeStage("apply cached aux/enrichment patches to output records");
+  const outputCachedPatchResult = applyCachedEnrichmentPatches(allCollectedVessels, { generatedAt: completedAt });
+  endRuntimeStage(
+    outputCachedPatchStage,
+    outputCachedPatchResult.available ? "completed" : "skipped",
+    outputCachedPatchResult.skipped_reason || null
+  );
+  if (outputCachedPatchResult.available) {
+    identityResolutionDiagnostics.cached_enrichment_patches = mergeCachedPatchResults(
+      identityResolutionDiagnostics.cached_enrichment_patches || {},
+      outputCachedPatchResult
+    );
+  }
   pilotageEnrichmentDiagnostics = await enrichRecordsWithPilotageEvents(allCollectedVessels, {
     referenceRows: [...collectedRows, ...snapshotOutputs.merged]
   });
@@ -19235,6 +19623,9 @@ try {
     coreRunId: finalRunOrigin.run_id || runId
   });
   const previousSourceCollectionStatus = readJsonSafe("dashboard/api/source-collection-status.json", null);
+  const previousStatusSummary = INITIAL_STATUS_SUMMARY && Object.keys(INITIAL_STATUS_SUMMARY).length
+    ? INITIAL_STATUS_SUMMARY
+    : readJsonSafe("dashboard/api/status-summary.json", null) || {};
   const previousSourceQualityScore = readJsonSafe("dashboard/api/source-quality-score.json", null) || {};
   const previousAuxLatestIndex = readJsonSafe("dashboard/api/aux/latest/index.json", null) || {};
   const previousEnrichmentLatestIndex = readJsonSafe("dashboard/api/enrichment/latest/index.json", null) || {};
@@ -20194,10 +20585,16 @@ try {
     storage_verification: dataContinuityReport.storage_verification
   };
   report.backend_ops = withRunOrigin(report.backend_ops || snapshotOutputs.backendOps, finalRunOrigin);
-  const statusSummaryPayload = buildStatusSummaryPayload({
+  let statusSummaryPayload = buildStatusSummaryPayload({
     report,
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+  });
+  statusSummaryPayload = protectStatusSummaryForLocalCore({
+    payload: statusSummaryPayload,
+    previous: previousStatusSummary,
+    generatedAt: completedAt,
+    origin: finalRunOrigin
   });
   const outputWriteStage = beginRuntimeStage("generate dashboard JSON");
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
@@ -20267,7 +20664,16 @@ try {
     origin: finalRunOrigin
   });
   for (const [filePath, payload] of Object.entries(auxLatestPayloads)) {
-    writeApiJson(filePath, payload, report);
+    writeApiJson(filePath, protectCachedTierPayloadForCore({
+      payload,
+      previous: readJsonSafe(filePath, null) || {},
+      ownerTier: "fast_aux",
+      runIdField: "aux_run_id",
+      runIdValue: auxLatestIndexPayload.aux_run_id,
+      generatedAt: completedAt,
+      origin: finalRunOrigin,
+      preservationReason: AUXILIARY_QUALITY_PRESERVATION_NOTE
+    }), report);
   }
   writeApiJson("dashboard/api/aux/latest/index.json", auxLatestIndexPayload, report);
   const enrichmentPatchesPayload = withRunOrigin({
@@ -20290,17 +20696,33 @@ try {
     generatedAt: completedAt,
     origin: finalRunOrigin
   });
-  writeApiJson("dashboard/api/enrichment/latest/summary.json", sourceDataEnrichmentPayloads.summaryPayload, report);
-  writeApiJson("dashboard/api/enrichment/latest/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
-  writeApiJson("dashboard/api/enrichment/latest/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);
-  writeApiJson("dashboard/api/enrichment/latest/review-queue.json", sourceDataEnrichmentPayloads.reviewQueuePayload, report);
-  writeApiJson("dashboard/api/enrichment/latest/patches.json", enrichmentPatchesPayload, report);
+  const enrichmentLatestPayloads = {
+    "dashboard/api/enrichment/latest/summary.json": sourceDataEnrichmentPayloads.summaryPayload,
+    "dashboard/api/enrichment/latest/candidates.json": sourceDataEnrichmentPayloads.candidatesPayload,
+    "dashboard/api/enrichment/latest/applied.json": sourceDataEnrichmentPayloads.appliedPayload,
+    "dashboard/api/enrichment/latest/review-queue.json": sourceDataEnrichmentPayloads.reviewQueuePayload,
+    "dashboard/api/enrichment/latest/patches.json": enrichmentPatchesPayload
+  };
+  for (const [filePath, payload] of Object.entries(enrichmentLatestPayloads)) {
+    writeApiJson(filePath, protectCachedTierPayloadForCore({
+      payload,
+      previous: readJsonSafe(filePath, null) || {},
+      ownerTier: "reference_enrichment",
+      runIdField: "enrichment_run_id",
+      runIdValue: enrichmentLatestIndexPayload.enrichment_run_id,
+      generatedAt: completedAt,
+      origin: finalRunOrigin,
+      preservationReason: "Reference enrichment cache preserved until the reference_enrichment tier refreshes successfully."
+    }), report);
+  }
   writeApiJson("dashboard/api/enrichment/latest/index.json", enrichmentLatestIndexPayload, report);
   writeApiJson("dashboard/api/runtime/update-tiers.json", withRunOrigin(buildUpdateTiersPayload({
     generatedAt: completedAt,
     report,
     auxIndex: auxLatestIndexPayload,
-    enrichmentIndex: enrichmentLatestIndexPayload
+    enrichmentIndex: enrichmentLatestIndexPayload,
+    previousStatusSummary,
+    statusSummary: statusSummaryPayload
   }), finalRunOrigin), report);
 
   writeStaticDatasetJson("dashboard/api/all-collected-vessels.json", allCollectedVessels, report, staticOutputManifest);
@@ -20454,18 +20876,28 @@ try {
   writeApiJson("dashboard/api/port-congestion-heatmap.json", portCongestionHeatmap, report);
   writeApiJson("dashboard/api/biofouling-timeline.json", biofoulingTimeline, report);
   writeApiJson("dashboard/api/status.json", report, report);
-  writeApiJson("dashboard/api/status-summary.json", buildStatusSummaryPayload({
-    report,
+  writeApiJson("dashboard/api/status-summary.json", protectStatusSummaryForLocalCore({
+    payload: buildStatusSummaryPayload({
+      report,
+      generatedAt: completedAt,
+      dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+    }),
+    previous: previousStatusSummary,
     generatedAt: completedAt,
-    dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+    origin: finalRunOrigin
   }), report);
   writeApiJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, report);
   writeApiJson("dashboard/api/readiness-gate-runtime.json", currentReadinessGateReport, report);
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
-  writeApiJson("dashboard/api/status-summary.json", buildStatusSummaryPayload({
-    report,
+  writeApiJson("dashboard/api/status-summary.json", protectStatusSummaryForLocalCore({
+    payload: buildStatusSummaryPayload({
+      report,
+      generatedAt: completedAt,
+      dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+    }),
+    previous: previousStatusSummary,
     generatedAt: completedAt,
-    dataMode: report.data_mode || dashboardSummary.data_mode || "live"
+    origin: finalRunOrigin
   }), report);
   writeRuntimeDiagnosticJson("dashboard/api/backend-ops.json", report.backend_ops, finalRunOrigin);
   writeRuntimeDiagnosticJson("dashboard/api/readiness-gate.json", currentReadinessGateReport, finalRunOrigin);

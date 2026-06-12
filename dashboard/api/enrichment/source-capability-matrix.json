@@ -6,18 +6,18 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260612155142519_efee8294",
-  "active_run_id": "run_20260612155142519_efee8294",
+  "run_id": "run_20260612172530060_4f249554",
+  "active_run_id": "run_20260612172530060_4f249554",
   "latest_successful_run_id": null,
   "latest_successful_summary_run_id": null,
-  "source_run_id": "run_20260612155142519_efee8294",
-  "generated_at": "2026-06-12T15:54:59.421Z",
+  "source_run_id": "run_20260612172530060_4f249554",
+  "generated_at": "2026-06-12T17:29:12.770Z",
   "data_mode": "static_snapshot",
   "record_count": 11,
   "item_count": 11,
   "summary": {
     "active_sources": 6,
-    "blocked_sources": 8,
+    "blocked_sources": 9,
     "high_trust_sources": 8,
     "sources_with_match_keys": 11,
     "total_enrichable_fields": 58,
@@ -77,9 +77,9 @@
         "attempted": true,
         "collector_enabled": true,
         "collector_attempted": true,
-        "rows_collected": 7907,
-        "rows_normalized": 7907,
-        "rows_matched_to_vessels": 7907,
+        "rows_collected": 7922,
+        "rows_normalized": 7922,
+        "rows_matched_to_vessels": 7922,
         "fields_contributed": [
           "vessel_name",
           "port",
@@ -89,7 +89,7 @@
           "atd",
           "berth"
         ],
-        "freshness_minutes": 47,
+        "freshness_minutes": 82,
         "utilization_score": 100,
         "quality_label": "HIGH",
         "source_layer": "core",
@@ -195,11 +195,11 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
       "conflict_policy": "Auto-apply exact call sign or high-confidence name+port+time matches. Send weak name-only matches to review.",
       "current_utilization": {
-        "status": "ACTIVE",
+        "status": "SKIPPED",
         "configured": true,
         "attempted": true,
         "collector_enabled": true,
-        "collector_attempted": true,
+        "collector_attempted": false,
         "rows_collected": 403,
         "rows_normalized": 72,
         "rows_matched_to_vessels": 0,
@@ -255,11 +255,11 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_EACH_PRIORITY_RUN",
       "conflict_policy": "Apply missing berth/terminal fields on high-confidence match. Review conflicts with newer port operation values.",
       "current_utilization": {
-        "status": "ACTIVE",
+        "status": "SKIPPED",
         "configured": true,
         "attempted": true,
         "collector_enabled": true,
-        "collector_attempted": true,
+        "collector_attempted": false,
         "rows_collected": 30,
         "rows_normalized": 30,
         "rows_matched_to_vessels": 0,
@@ -311,11 +311,11 @@
       "update_policy": "TIER_1_HIGH_VALUE_AUXILIARY_CACHE",
       "conflict_policy": "Prefer for berth and terminal. Use operator values as fallback only when current operator_display is missing.",
       "current_utilization": {
-        "status": "ACTIVE",
+        "status": "SKIPPED",
         "configured": true,
         "attempted": true,
         "collector_enabled": true,
-        "collector_attempted": true,
+        "collector_attempted": false,
         "rows_collected": 30,
         "rows_normalized": 30,
         "rows_matched_to_vessels": 0,
@@ -367,11 +367,11 @@
       "update_policy": "TIER_1_HIGH_VALUE_TARGETED_ENRICHMENT",
       "conflict_policy": "Fill missing identifiers on exact key match. Do not overwrite existing non-empty identifiers unless verified confidence is higher.",
       "current_utilization": {
-        "status": "ACTIVE",
+        "status": "SKIPPED",
         "configured": true,
         "attempted": true,
         "collector_enabled": true,
-        "collector_attempted": true,
+        "collector_attempted": false,
         "rows_collected": 10,
         "rows_normalized": 10,
         "rows_matched_to_vessels": 10,
@@ -391,7 +391,7 @@
         "present_env_count": 2,
         "recommended_fix": "No action required."
       },
-      "blocker_reason": ""
+      "blocker_reason": "waiting_until_next_window:2026-06-12T21:07:34.749Z"
     },
     {
       "source_key": "mof_ais_dynamic",
@@ -449,7 +449,7 @@
         "present_env_count": 2,
         "recommended_fix": "No action required."
       },
-      "blocker_reason": "not_configured"
+      "blocker_reason": "waiting_until_next_window:2026-06-13T08:35:08.970Z"
     },
     {
       "source_key": "mof_ais_stat",
@@ -660,7 +660,7 @@
       "blocker_reason": "not_configured_or_not_collected"
     }
   ],
-  "status_run_id": "run_20260612155142519_efee8294",
+  "status_run_id": "run_20260612172530060_4f249554",
   "stale_diagnostic": false,
   "stale_reason": "",
   "placeholder": false

@@ -1,26 +1,26 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T15:54:59.421Z",
+  "generated_at": "2026-06-12T17:29:12.770Z",
   "data_mode": "live",
-  "record_count": 13,
+  "record_count": 12,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/820/vessels.json",
-  "total_count": 13,
+  "total_count": 12,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 13,
+    "0_49": 12,
     "50_69": 0,
     "70_84": 0,
     "85_100": 0,
     "unknown": 0
   },
   "priority_counts": {
-    "LOW": 13
+    "LOW": 12
   },
   "actionability_counts": {
     "VERIFY_CONTACT": 2,
-    "MONITOR": 11
+    "MONITOR": 10
   },
   "items": [
     {
@@ -106,6 +106,46 @@
     },
     {
       "rank": 3,
+      "vessel_name": "째즈",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "9V5491",
+      "operator_display": "동진상운(주)",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "울산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 35,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "동진상운(주)",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
+    },
+    {
+      "rank": 4,
       "vessel_name": "VARI TRADER",
       "imo": "",
       "mmsi": "",
@@ -146,51 +186,11 @@
       "display_name": "울산"
     },
     {
-      "rank": 4,
+      "rank": 5,
       "vessel_name": "FUJI GALAXY",
       "imo": "",
       "mmsi": "",
       "call_sign": "V7UF2",
-      "operator_display": "동진상운(주)",
-      "current_port": "울산",
-      "current_port_korean": "울산",
-      "normalized_port": {
-        "port_code": "820",
-        "port_name": "울산",
-        "display_name": "울산",
-        "raw_port": "Ulsan",
-        "raw_aliases": [
-          "Ulsan",
-          "울산",
-          "울산항"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "opportunity_score": 35,
-      "risk_score": 45,
-      "confidence_score": 66,
-      "missing_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "동진상운(주)",
-      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "recommended_action": "운영선사 확인",
-      "port_code": "820",
-      "port_name": "울산",
-      "port_display_name": "울산",
-      "display_name": "울산"
-    },
-    {
-      "rank": 5,
-      "vessel_name": "째즈",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "9V5491",
       "operator_display": "동진상운(주)",
       "current_port": "울산",
       "current_port_korean": "울산",
@@ -230,7 +230,7 @@
     {
       "severity": "INFO",
       "feature": "부산신항 선박",
-      "message": "상세 13건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 12건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/820/vessels.json lazy load 사용"
     }
   ]
