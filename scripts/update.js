@@ -18,6 +18,7 @@ import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
+import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
 import {
   buildAuxiliarySourceCacheStatusPayload,
   readAuxiliarySourceCacheStatus,
@@ -3857,6 +3858,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
+  ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],
@@ -18052,6 +18054,13 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot"
   }), finalRunOrigin);
+  const pilotageBerthMatchReviewPayload = withRunOrigin(buildPilotageBerthMatchReviewPayload({
+    sourceRows: collectedRows,
+    vessels: allCollectedVessels,
+    generatedAt: completedAt,
+    dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot",
+    report
+  }), finalRunOrigin);
   const auxSummaryOptions = {
     sourceCollectionStatus: sourceCollectionStatusPayload,
     generatedAt: completedAt,
@@ -18756,6 +18765,7 @@ try {
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
+  writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);
@@ -18933,6 +18943,7 @@ try {
   writeRuntimeDiagnosticJson("dashboard/api/collector-plan-runtime.json", collectorPlanRuntimeReport, finalRunOrigin);
   writeSourceHealthRuntimeJson(sourceHealthRuntimeReport, finalRunOrigin);
   writeSourceCollectionStatusJson(sourceCollectionStatusPayload, finalRunOrigin);
+  writeApiJson("dashboard/api/review/pilotage-berth-matches.json", pilotageBerthMatchReviewPayload, report);
   writeApiJson("dashboard/api/aux/source-csv-summary.json", sourceCsvSummaryPayload, report);
   for (const [filePath, payload] of Object.entries(auxSourceSummaryPayloads)) {
     writeApiJson(filePath, payload, report);

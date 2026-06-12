@@ -92,6 +92,7 @@ const IMPORTANT_ENDPOINTS = [
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
+  ["review.pilotageBerthMatches", "dashboard/api/review/pilotage-berth-matches.json"],
   ["storage.efficiency", "dashboard/api/storage-efficiency-report.json"],
   ["intelligence.fleetIntelligence", "dashboard/api/intelligence/fleet-intelligence.json"],
   ["intelligence.fleetPenetration", "dashboard/api/intelligence/fleet-penetration.json"],

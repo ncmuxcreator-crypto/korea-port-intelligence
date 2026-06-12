@@ -10,8 +10,8 @@
     "data_mode": "live",
     "source_run_id": "run_20260612065952169_5b648f9d"
   },
-  "record_count": 399,
-  "item_count": 399,
+  "record_count": 400,
+  "item_count": 400,
   "endpoints": [
     {
       "key": "agent-followup-queue",
@@ -1236,7 +1236,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "154h old"
+      "problem": "155h old"
     },
     {
       "key": "dashboard-summary",
@@ -4998,10 +4998,10 @@
       "parse_checked_at": "2026-06-12T07:06:16.970Z",
       "valid_json": true,
       "schema_valid": true,
-      "record_count": 399,
-      "item_count": 399,
-      "size_kb": 293.6,
-      "bytes": 300675,
+      "record_count": 400,
+      "item_count": 400,
+      "size_kb": 294.3,
+      "bytes": 301396,
       "source_layer": "core",
       "startup_safe": false,
       "load_strategy": "lazy",
@@ -7111,7 +7111,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "46h old"
+      "problem": "47h old"
     },
     {
       "key": "ports.620-YEOSU.berths",
@@ -7136,7 +7136,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "46h old"
+      "problem": "47h old"
     },
     {
       "key": "ports.620-YEOSU.candidates",
@@ -7161,7 +7161,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "46h old"
+      "problem": "47h old"
     },
     {
       "key": "ports.620-YEOSU.congestion",
@@ -7211,7 +7211,7 @@
       "recommended_load": "lazy",
       "max_recommended_size_kb": 500,
       "status": "STALE",
-      "problem": "46h old"
+      "problem": "47h old"
     },
     {
       "key": "ports.620-YEOSU.vessels-summary",
@@ -7236,7 +7236,7 @@
       "recommended_load": "summary",
       "max_recommended_size_kb": 100,
       "status": "STALE",
-      "problem": "46h old"
+      "problem": "47h old"
     },
     {
       "key": "ports.620-YEOSU.vessels",
@@ -8552,6 +8552,31 @@
       "item_count": 26,
       "size_kb": 47.2,
       "bytes": 48300,
+      "source_layer": "diagnostic",
+      "startup_safe": false,
+      "load_strategy": "diagnostic_only",
+      "duplicated_payload_risk": "LOW",
+      "summary_available": false,
+      "detail_available": false,
+      "recommended_load": "diagnostic_only",
+      "max_recommended_size_kb": 500,
+      "status": "OK",
+      "problem": ""
+    },
+    {
+      "key": "review.pilotageBerthMatches",
+      "path": "dashboard/api/review/pilotage-berth-matches.json",
+      "exists": true,
+      "first_char": "{",
+      "root_type": "object",
+      "parsed_from_disk": true,
+      "parse_checked_at": "2026-06-12T07:06:16.970Z",
+      "valid_json": true,
+      "schema_valid": true,
+      "record_count": 5,
+      "item_count": 5,
+      "size_kb": 19,
+      "bytes": 19487,
       "source_layer": "diagnostic",
       "startup_safe": false,
       "load_strategy": "diagnostic_only",
