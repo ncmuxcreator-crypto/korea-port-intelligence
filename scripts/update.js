@@ -4328,7 +4328,15 @@ function writeSourceHealthRuntimeJson(payload, origin = {}) {
   const normalized = isGithubActionsRuntime
     ? "dashboard/api/source-health-runtime.json"
     : "dashboard/api/debug/source-health-local.json";
-  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
+  const runtimePayload = withRunOrigin(payload, origin);
+  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(isGithubActionsRuntime
+    ? runtimePayload
+    : {
+      ...runtimePayload,
+      stale_diagnostic: true,
+      stale_source_health: true,
+      stale_reason: runtimePayload.stale_reason || "Local debug source diagnostic is not the main runtime snapshot."
+    }));
   writeDashboardJson(normalized, body);
   if (isGithubActionsRuntime) {
     writeDashboardJson(`${DEBUG_API_DIR}/source-health-runtime.json`, body);
@@ -4341,7 +4349,15 @@ function writeSourceCollectionStatusJson(payload, origin = {}) {
   const normalized = isGithubActionsRuntime
     ? "dashboard/api/source-collection-status.json"
     : "dashboard/api/debug/source-collection-status-local.json";
-  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
+  const runtimePayload = withRunOrigin(payload, origin);
+  const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(isGithubActionsRuntime
+    ? runtimePayload
+    : {
+      ...runtimePayload,
+      stale_diagnostic: true,
+      stale_source_health: true,
+      stale_reason: runtimePayload.stale_reason || "Local debug source collection status is not the main runtime snapshot."
+    }));
   writeDashboardJson(normalized, body);
   if (isGithubActionsRuntime) {
     writeDashboardJson(`${DEBUG_API_DIR}/source-collection-status.json`, body);
@@ -6013,6 +6029,11 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
     .filter(item => item.primary_category_code !== "HOLD")
     .map((item, index) => {
       const display = buildVesselDisplay(item);
+      const commercialConfidence = buildCommercialDataConfidence(item, {
+        pilotageSignal: display.pilotage_signal,
+        berthSignal: display.berth_signal,
+        generatedAt
+      });
       return {
         rank: index + 1,
         vessel_display: display,
@@ -6037,6 +6058,11 @@ function buildSalesActionsPayload({ summary = {}, generatedAt = new Date().toISO
         opportunity_score: item.opportunity_score,
         risk_score: item.risk_score,
         confidence_score: item.confidence_score,
+        commercial_data_confidence: commercialConfidence.commercial_data_confidence,
+        confidence_label: commercialConfidence.confidence_label,
+        missing_critical_fields: commercialConfidence.missing_critical_fields,
+        available_strong_fields: commercialConfidence.available_strong_fields,
+        confidence_reason: commercialConfidence.confidence_reason,
         reason_summary: item.actionability_reason || item.primary_category?.reason || item.reason_summary || item.why_now || "",
         recommended_action: item.actionability_category === "VERIFY_CONTACT"
           ? "선사/에이전트 확인 후 영업 연락 준비"
@@ -7540,6 +7566,17 @@ function buildVesselDisplay(record = {}) {
       tonnage_confidence: Math.max(Number(baseTonnageSummary.tonnage_confidence || 0), 55)
     }
     : baseTonnageSummary;
+  const commercialConfidence = buildCommercialDataConfidence({
+    ...record,
+    operator_display: operatorDisplay,
+    current_port: currentPortKorean,
+    gt: tonnageSummary.gt,
+    dwt: tonnageSummary.dwt
+  }, {
+    pilotageSignal,
+    berthSignal,
+    generatedAt: firstNonEmpty(record.generated_at, record.updated_at, record.collected_at, record.last_seen_at, new Date().toISOString())
+  });
   return {
     vessel_name: vesselDisplayText(source, ["vessel_name", "name", "ship_name", "vsslNm", "vessel_display.vessel_name"], "선명 확인 필요"),
     imo: vesselDisplayText(source, ["imo", "imo_no", "imoNo", "vessel_imo", "recovered_imo", "vessel_display.imo"]),
@@ -7595,6 +7632,11 @@ function buildVesselDisplay(record = {}) {
     identity_match_type: vesselDisplayText(source, ["identity_match_type", "identity_match_strategy", "identification_method", "vessel_display.identity_match_type"]),
     identity_conflict: record.identity_conflict || record.identity_conflicts || null,
     confidence_score: roundedDisplayNumber(confidenceScore),
+    commercial_data_confidence: commercialConfidence.commercial_data_confidence,
+    confidence_label: commercialConfidence.confidence_label,
+    missing_critical_fields: commercialConfidence.missing_critical_fields,
+    available_strong_fields: commercialConfidence.available_strong_fields,
+    confidence_reason: commercialConfidence.confidence_reason,
     opportunity_score: roundedDisplayNumber(opportunityScore),
     risk_score: roundedDisplayNumber(riskScore),
     biofouling_score: roundedDisplayNumber(biofoulingRiskScore),
@@ -7649,6 +7691,160 @@ function buildVesselDisplay(record = {}) {
 
 function vesselDisplay(record = {}) {
   return buildVesselDisplay(record);
+}
+
+const COMMERCIAL_CONFIDENCE_FIELDS = [
+  { key: "vessel_name", label: "선명", weight: 10, critical: true },
+  { key: "call_sign", label: "콜사인", weight: 10, critical: true },
+  { key: "imo_mmsi", label: "IMO/MMSI", weight: 12, critical: true },
+  { key: "gt", label: "GT", weight: 8, critical: false },
+  { key: "vessel_type", label: "선종", weight: 8, critical: false },
+  { key: "operator_display", label: "운영사/회사", weight: 12, critical: true },
+  { key: "current_port", label: "현재 항만", weight: 10, critical: true },
+  { key: "eta_ata", label: "ETA/ATA", weight: 8, critical: false },
+  { key: "berth_signal", label: "선석 신호", weight: 8, critical: false },
+  { key: "pilotage_signal", label: "도선 신호", weight: 6, critical: false },
+  { key: "source_count", label: "복수 데이터 출처", weight: 4, critical: false },
+  { key: "freshness", label: "데이터 최신성", weight: 4, critical: false }
+];
+
+function commercialConfidenceKnown(value) {
+  if (value === undefined || value === null) return false;
+  if (typeof value === "number") return Number.isFinite(value) && value > 0;
+  if (typeof value === "boolean") return value === true;
+  const text = String(value).normalize("NFKC").trim();
+  if (!text || text === "-") return false;
+  return !/^(unknown|unknown vessel|n\/a|na|null|undefined|미확인|확인 필요|선명 확인 필요)$/i.test(text);
+}
+
+function sourceCountForCommercialConfidence(record = {}) {
+  const values = [
+    ...displaySources(record),
+    ...vesselDisplayArray(record, ["data_sources", "vessel_display.data_sources"]),
+    ...vesselDisplayArray(record, ["enrichment_sources", "vessel_display.enrichment_sources"]),
+    record.source,
+    record.source_name,
+    record.source_table,
+    record.data_source_used,
+    record.source_mode
+  ];
+  return new Set(values.filter(commercialConfidenceKnown).map(value => String(value).trim())).size;
+}
+
+function commercialFreshnessHours(record = {}, generatedAt = new Date().toISOString()) {
+  const value = firstNonEmpty(
+    record.last_seen_at,
+    record.updated_at,
+    record.collected_at,
+    record.generated_at,
+    record.vessel_display?.last_seen_at,
+    record.ata,
+    record.eta
+  );
+  const seen = parseScheduleTime(value);
+  const base = parseScheduleTime(generatedAt) || new Date();
+  if (!seen || Number.isNaN(seen.getTime()) || !base || Number.isNaN(base.getTime())) return null;
+  return Math.max(0, Math.round(((base.getTime() - seen.getTime()) / 3600000) * 10) / 10);
+}
+
+function confidenceLabel(score = 0) {
+  const value = Number(score || 0);
+  if (value >= 75) return "HIGH";
+  if (value >= 50) return "MEDIUM";
+  return "LOW";
+}
+
+function buildCommercialDataConfidence(record = {}, { pilotageSignal = null, berthSignal = null, generatedAt = new Date().toISOString() } = {}) {
+  const source = { ...(record.vessel_display || {}), ...record };
+  const computedPilotageSignal = pilotageSignal || record.pilotage_signal || record.vessel_display?.pilotage_signal || {};
+  const computedBerthSignal = berthSignal || record.berth_signal || record.vessel_display?.berth_signal || {};
+  const sourceCount = sourceCountForCommercialConfidence(record);
+  const freshnessHours = commercialFreshnessHours(record, generatedAt);
+  const values = {
+    vessel_name: vesselDisplayText(source, ["vessel_name", "name", "ship_name", "vessel_display.vessel_name"], ""),
+    call_sign: vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn", "vessel_display.call_sign"], ""),
+    imo_mmsi: firstNonEmpty(source.imo, source.imo_no, source.mmsi, source.mmsi_no, source.vessel_display?.imo, source.vessel_display?.mmsi),
+    gt: firstFiniteNumber(source.gt, source.grtg, source.gross_tonnage, source.vessel_display?.gt, null),
+    vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_display.vessel_type"], ""),
+    operator_display: firstNonEmpty(
+      source.operator_display,
+      source.operator,
+      source.shipping_company,
+      source.company,
+      source.company_name,
+      source.technical_manager,
+      source.manager,
+      source.owner,
+      source.vessel_display?.operator_display
+    ),
+    current_port: vesselDisplayText(source, ["current_port", "port_name", "port", "arrival_port", "destination_port", "vessel_display.current_port"], ""),
+    eta_ata: firstNonEmpty(source.eta, source.ata, source.etb, source.atb, source.vessel_display?.eta, source.vessel_display?.ata),
+    berth_signal: Boolean(computedBerthSignal?.has_berth_info || computedBerthSignal?.berth || computedBerthSignal?.terminal || source.berth || source.berth_name),
+    pilotage_signal: Boolean(computedPilotageSignal?.has_pilotage),
+    source_count: sourceCount >= 2,
+    freshness: freshnessHours !== null && freshnessHours <= 72
+  };
+
+  let score = 0;
+  const availableStrongFields = [];
+  const missingCriticalFields = [];
+  const scoring = {};
+  for (const field of COMMERCIAL_CONFIDENCE_FIELDS) {
+    const available = commercialConfidenceKnown(values[field.key]);
+    const points = available
+      ? field.key === "freshness" && freshnessHours !== null && freshnessHours > 24
+        ? Math.round(field.weight * 0.6)
+        : field.key === "source_count" && sourceCount === 1
+          ? Math.round(field.weight * 0.5)
+          : field.weight
+      : 0;
+    score += points;
+    scoring[field.key] = {
+      label: field.label,
+      available,
+      points,
+      max_points: field.weight
+    };
+    if (available) availableStrongFields.push(field.label);
+    else if (field.critical) missingCriticalFields.push(field.label);
+  }
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  const label = confidenceLabel(score);
+  const reasonParts = [];
+  if (availableStrongFields.length) reasonParts.push(`${availableStrongFields.slice(0, 5).join(", ")} 확인`);
+  if (missingCriticalFields.length) reasonParts.push(`${missingCriticalFields.join(", ")} 보강 필요`);
+  if (freshnessHours !== null) reasonParts.push(`최신성 ${freshnessHours}시간`);
+  if (sourceCount > 0) reasonParts.push(`출처 ${sourceCount}개`);
+  return {
+    commercial_data_confidence: score,
+    confidence_label: label,
+    missing_critical_fields: missingCriticalFields,
+    available_strong_fields: availableStrongFields,
+    confidence_reason: reasonParts.join("; ") || "상업 판단에 필요한 핵심 데이터가 부족합니다.",
+    confidence_factors: scoring,
+    source_count: sourceCount,
+    freshness_hours: freshnessHours
+  };
+}
+
+function addCommercialConfidenceFields(record = {}, options = {}) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) return record;
+  const display = record.vessel_display && typeof record.vessel_display === "object"
+    ? record.vessel_display
+    : null;
+  const confidence = buildCommercialDataConfidence({ ...record, ...(display ? { vessel_display: display } : {}) }, {
+    pilotageSignal: display?.pilotage_signal || record.pilotage_signal,
+    berthSignal: display?.berth_signal || record.berth_signal,
+    generatedAt: options.generatedAt
+  });
+  return {
+    ...record,
+    commercial_data_confidence: confidence.commercial_data_confidence,
+    confidence_label: confidence.confidence_label,
+    missing_critical_fields: confidence.missing_critical_fields,
+    available_strong_fields: confidence.available_strong_fields,
+    confidence_reason: confidence.confidence_reason
+  };
 }
 
 function buildTargetSplitCounts(records = []) {
@@ -7715,6 +7911,11 @@ const PUBLIC_VESSEL_ITEM_FIELDS = [
   "ship_manager",
   "technical_manager",
   "contact_readiness_score",
+  "commercial_data_confidence",
+  "confidence_label",
+  "missing_critical_fields",
+  "available_strong_fields",
+  "confidence_reason",
   "identity_source",
   "identity_confidence",
   "identity_match_type",
@@ -8155,6 +8356,11 @@ function withVesselDisplay(record = {}) {
   if (Array.isArray(compact.target_categories)) compact.target_categories = compact.target_categories.map(normalizeBusinessCategory);
   if (compact.primary_category && typeof compact.primary_category === "object") compact.primary_category = normalizeBusinessCategory(compact.primary_category);
   compact.vessel_display = vesselDisplay(record);
+  compact.commercial_data_confidence = compact.vessel_display.commercial_data_confidence;
+  compact.confidence_label = compact.vessel_display.confidence_label;
+  compact.missing_critical_fields = compact.vessel_display.missing_critical_fields || [];
+  compact.available_strong_fields = compact.vessel_display.available_strong_fields || [];
+  compact.confidence_reason = compact.vessel_display.confidence_reason || "";
   return compact;
 }
 
@@ -8986,6 +9192,11 @@ function compactBootstrapVesselDisplay(display = {}, item = {}) {
     opportunity_score: display.opportunity_score ?? item.opportunity_score ?? item.sales_priority_score ?? item.commercial_value_score ?? null,
     risk_score: display.risk_score ?? item.risk_score ?? null,
     confidence_score: display.confidence_score ?? item.confidence_score ?? item.data_confidence_score ?? null,
+    commercial_data_confidence: display.commercial_data_confidence ?? item.commercial_data_confidence ?? null,
+    confidence_label: display.confidence_label || item.confidence_label || null,
+    missing_critical_fields: display.missing_critical_fields || item.missing_critical_fields || [],
+    available_strong_fields: display.available_strong_fields || item.available_strong_fields || [],
+    confidence_reason: display.confidence_reason || item.confidence_reason || "",
     priority_label: display.priority_label || item.priority_label || item.sales_priority_band || "LOW",
     priority_label_ko: display.priority_label_ko || item.priority_label_ko || salesPriorityLabelKo(item.priority_label || item.sales_priority_band || "LOW"),
     reason_summary: display.reason_summary || item.reason_summary || compactReasonSummary(item),
@@ -9018,6 +9229,11 @@ function compactBootstrapVesselItem(item = {}, index = 0) {
     opportunity_score: firstFiniteNumber(item.opportunity_score, item.sales_priority_score, item.commercial_value_score, display.opportunity_score, 0),
     risk_score: firstFiniteNumber(item.risk_score, item.biofouling_exposure_score, item.biofouling_score, display.risk_score, 0),
     confidence_score: firstFiniteNumber(item.confidence_score, item.data_confidence_score, display.confidence_score, 0),
+    commercial_data_confidence: display.commercial_data_confidence,
+    confidence_label: display.confidence_label,
+    missing_critical_fields: display.missing_critical_fields || [],
+    available_strong_fields: display.available_strong_fields || [],
+    confidence_reason: display.confidence_reason || "",
     biofoulingRiskScore: firstFiniteNumber(item.biofoulingRiskScore, item.biofouling_risk_score, display.biofoulingRiskScore, 0),
     ocean_risk_score: firstFiniteNumber(item.ocean_risk_score, display.ocean_risk_score, 0),
     ocean_risk_label_ko: item.ocean_risk_label_ko || display.ocean_risk_label_ko || oceanRiskLabelKo(item.ocean_risk_score || item.biofouling_risk_score || 0),
@@ -12126,6 +12342,11 @@ function buildQuoteOpportunitiesPayload({
   const items = candidates
     .map((record, index) => {
       const display = vesselDisplay(record);
+      const commercialConfidence = buildCommercialDataConfidence(record, {
+        pilotageSignal: display.pilotage_signal,
+        berthSignal: display.berth_signal,
+        generatedAt
+      });
       const readinessScore = quoteReadinessScore(record);
       const readinessLabel = quoteReadinessLabel(readinessScore);
       const missing = missingQuoteFields(record);
@@ -12155,6 +12376,11 @@ function buildQuoteOpportunitiesPayload({
         opportunity_score: firstFiniteNumber(record.opportunity_score, display.opportunity_score, salesPriorityScore(record), 0) || 0,
         risk_score: firstFiniteNumber(record.risk_score, display.risk_score, recordRiskScore(record), 0) || 0,
         confidence_score: firstFiniteNumber(record.confidence_score, display.confidence_score, record.data_confidence_score, readinessScore, 0) || 0,
+        commercial_data_confidence: commercialConfidence.commercial_data_confidence,
+        confidence_label: commercialConfidence.confidence_label,
+        missing_critical_fields: commercialConfidence.missing_critical_fields,
+        available_strong_fields: commercialConfidence.available_strong_fields,
+        confidence_reason: commercialConfidence.confidence_reason,
         priority_label: firstNonEmpty(record.priority_label, record.sales_priority_band, display.priority_label, salesPriorityBand(salesPriorityScore(record))),
         data_sources: [...new Set([...(record.quote_source_names || []), ...displaySources(record), "quote_opportunity_builder"])].filter(Boolean)
       };
@@ -15147,6 +15373,11 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
       const changeEvents = watchlistChangeEvents(record, generatedAt);
       const band = salesPriorityBand(opportunityScore);
       const actionability = salesActionability({ ...record, priority_label: band });
+      const commercialConfidence = buildCommercialDataConfidence(record, {
+        pilotageSignal: display.pilotage_signal,
+        berthSignal: display.berth_signal,
+        generatedAt
+      });
       return {
         rank: index + 1,
         watch_type: "VESSEL",
@@ -15170,6 +15401,11 @@ function buildWatchlistVesselItems(records = [], generatedAt = new Date().toISOS
         actionability_score: actionability.actionability_score,
         actionability_reason: actionability.actionability_reason,
         missing_action_fields: actionability.missing_action_fields,
+        commercial_data_confidence: commercialConfidence.commercial_data_confidence,
+        confidence_label: commercialConfidence.confidence_label,
+        missing_critical_fields: commercialConfidence.missing_critical_fields,
+        available_strong_fields: commercialConfidence.available_strong_fields,
+        confidence_reason: commercialConfidence.confidence_reason,
         last_seen_at: watchlistLastSeen(record, generatedAt),
         change_events: changeEvents,
         reason_summary: compactReasonSummary(record),
