@@ -4,8 +4,11 @@ import {
   normalizeCallSign,
   normalizeDateTime,
   normalizeFlag,
+  normalizeImo,
+  normalizeMmsi,
   normalizeNumeric,
   normalizePort,
+  normalizeTimeWindow,
   normalizeVesselName,
   normalizeVesselType,
   pickAlias
@@ -163,20 +166,29 @@ function nodeFromRecord(record = {}, sourceKey = "core") {
   if (!key) return null;
   const canonicalName = firstNonEmpty(d.vessel_name, d.display_name, d.name);
   const normalizedName = normalizeVesselName(canonicalName || d.normalized_vessel_name);
-  const callSign = normalizeCallSign(firstNonEmpty(d.call_sign, d.callsign, d.clsgn));
-  const imo = String(firstNonEmpty(d.imo)).replace(/^IMO/i, "").trim();
-  const mmsi = String(firstNonEmpty(d.mmsi)).trim();
+  const rawCallSign = firstNonEmpty(d.raw_call_sign, d.call_sign, d.callsign, d.clsgn);
+  const callSign = normalizeCallSign(firstNonEmpty(d.canonical_call_sign, rawCallSign));
+  const imo = normalizeImo(firstNonEmpty(d.imo, d.imo_no, d.IMO_NO));
+  const mmsi = normalizeMmsi(firstNonEmpty(d.mmsi, d.mmsi_no, d.MMSI_NO));
   const gt = gtValue(d);
   const port = normalizedPortValue(d);
   const berth = normalizedBerthValue(d);
   const vesselType = normalizeVesselType(firstNonEmpty(d.vessel_type, d.vsslKndNm, d.tonnage_summary?.vessel_type));
   const times = recordTimes(d);
+  const primaryTime = latestIso([d.ata, d.atb, d.eta, d.etb, d.atd, d.etd, d.pilot_time, d.movement_time]);
+  const timeBucket = normalizeTimeWindow(primaryTime);
   return {
     vessel_key: key,
+    canonical_vessel_key: firstNonEmpty(d.canonical_vessel_key, key),
     canonical_vessel_name: canonicalName || normalizedName || key,
     normalized_vessel_name: normalizedName,
     vessel_name_aliases: unique([canonicalName, d.normalized_vessel_name, normalizedName]),
+    raw_call_sign: rawCallSign || "",
+    canonical_call_sign: callSign,
     call_sign: callSign,
+    call_sign_source: firstNonEmpty(d.call_sign_source, sourceKey === "core" ? "port_operation" : sourceKey),
+    call_sign_confidence: callSign ? number(d.call_sign_confidence, sourceKey === "core" ? 100 : 70) : 0,
+    call_sign_valid: Boolean(callSign),
     imo,
     mmsi,
     flag: normalizeFlag(firstNonEmpty(d.flag)),
@@ -185,6 +197,7 @@ function nodeFromRecord(record = {}, sourceKey = "core") {
     vessel_type: vesselType,
     current_port: firstNonEmpty(d.current_port, d.port, d.port_name, d.port_display_name),
     normalized_current_port: port,
+    time_bucket: timeBucket,
     recent_ports: unique([port, normalizedPortValue({ port: d.previous_port }), normalizedPortValue({ port: d.next_port })]),
     recent_berths: unique([berth]),
     last_arrival_at: latestIso([d.ata, d.atb, d.eta, d.etb]),
@@ -258,7 +271,11 @@ function matchLookupKeyFromNode(node = {}) {
     imo: keys.imo || "",
     mmsi: keys.mmsi || "",
     call_sign: keys.call_sign || "",
+    call_sign_port: keys.call_sign_port || "",
+    call_sign_port_time_bucket: keys.call_sign_port_time_bucket || "",
     vessel_name: keys.vessel_name || node.normalized_vessel_name || "",
+    vessel_name_call_sign: keys.vessel_name_call_sign || "",
+    vessel_name_port_time_bucket: keys.vessel_name_port_time_bucket || "",
     vessel_name_gt_type: keys.vessel_name_gt_type || ""
   };
 }
@@ -274,7 +291,11 @@ export function buildVesselIdentityGraphPayload({
     by_imo: new Map(),
     by_mmsi: new Map(),
     by_call_sign: new Map(),
+    by_call_sign_port: new Map(),
+    by_call_sign_port_time_bucket: new Map(),
     by_normalized_vessel_name: new Map(),
+    by_name_call_sign: new Map(),
+    by_name_port_time: new Map(),
     by_vessel_name_gt_type: new Map()
   };
   const remember = node => {
@@ -285,7 +306,13 @@ export function buildVesselIdentityGraphPayload({
     const keys = matchLookupKeyFromNode(merged);
     for (const [name, value] of Object.entries(keys)) {
       if (!value) continue;
-      const mapName = name === "vessel_name" ? "by_normalized_vessel_name" : `by_${name}`;
+      const mapName = name === "vessel_name"
+        ? "by_normalized_vessel_name"
+        : name === "vessel_name_call_sign"
+          ? "by_name_call_sign"
+          : name === "vessel_name_port_time_bucket"
+            ? "by_name_port_time"
+            : `by_${name}`;
       if (!lookup[mapName]) continue;
       if (!lookup[mapName].has(value)) lookup[mapName].set(value, merged.vessel_key);
     }
@@ -301,6 +328,9 @@ export function buildVesselIdentityGraphPayload({
     const targetKey = lookup.by_imo.get(keys.imo) ||
       lookup.by_mmsi.get(keys.mmsi) ||
       lookup.by_call_sign.get(keys.call_sign) ||
+      lookup.by_call_sign_port.get(keys.call_sign_port) ||
+      lookup.by_call_sign_port_time_bucket.get(keys.call_sign_port_time_bucket) ||
+      lookup.by_name_call_sign.get(keys.vessel_name_call_sign) ||
       lookup.by_vessel_name_gt_type.get(keys.vessel_name_gt_type) ||
       lookup.by_normalized_vessel_name.get(keys.vessel_name);
     if (targetKey && nodes.has(targetKey)) {
@@ -321,9 +351,13 @@ export function buildVesselIdentityGraphPayload({
     const aliasNode = nodeFromRecord(row, isPilotRow(row) ? "pilot_sources_candidate" : isBerthRow(row) ? "berth_sources_candidate" : sourceRowKey(row));
     if (!aliasNode) continue;
     const keys = matchLookupKeyFromNode(aliasNode);
-    const targetKey = lookup.by_call_sign.get(keys.call_sign) ||
-      lookup.by_imo.get(keys.imo) ||
+    const targetKey = lookup.by_imo.get(keys.imo) ||
       lookup.by_mmsi.get(keys.mmsi) ||
+      lookup.by_call_sign_port_time_bucket.get(keys.call_sign_port_time_bucket) ||
+      lookup.by_call_sign_port.get(keys.call_sign_port) ||
+      lookup.by_name_call_sign.get(keys.vessel_name_call_sign) ||
+      lookup.by_call_sign.get(keys.call_sign) ||
+      lookup.by_name_port_time.get(keys.vessel_name_port_time_bucket) ||
       lookup.by_normalized_vessel_name.get(keys.vessel_name);
     if (targetKey && nodes.has(targetKey)) {
       aliasNode.vessel_key = targetKey;
@@ -334,7 +368,11 @@ export function buildVesselIdentityGraphPayload({
 
   const indexes = {
     by_call_sign: {},
+    by_call_sign_port: {},
+    by_call_sign_port_time_bucket: {},
     by_normalized_vessel_name: {},
+    by_name_call_sign: {},
+    by_name_port_time: {},
     by_name_prefix: {},
     by_name_tokens: {},
     by_port: {},
@@ -349,7 +387,11 @@ export function buildVesselIdentityGraphPayload({
     delete clean.time_epochs;
     const key = clean.vessel_key;
     addIndex(indexes, "by_call_sign", clean.call_sign, key);
+    addIndex(indexes, "by_call_sign_port", clean.call_sign && clean.normalized_current_port ? `${clean.call_sign}|${clean.normalized_current_port}` : "", key);
+    addIndex(indexes, "by_call_sign_port_time_bucket", clean.call_sign && clean.normalized_current_port && clean.time_bucket ? `${clean.call_sign}|${clean.normalized_current_port}|${clean.time_bucket}` : "", key);
     addIndex(indexes, "by_normalized_vessel_name", clean.normalized_vessel_name, key);
+    addIndex(indexes, "by_name_call_sign", clean.normalized_vessel_name && clean.call_sign ? `${clean.normalized_vessel_name}|${clean.call_sign}` : "", key);
+    addIndex(indexes, "by_name_port_time", clean.normalized_vessel_name && clean.normalized_current_port && clean.time_bucket ? `${clean.normalized_vessel_name}|${clean.normalized_current_port}|${clean.time_bucket}` : "", key);
     addIndex(indexes, "by_name_prefix", clean.normalized_vessel_name?.slice(0, 4), key);
     for (const token of nameTokens(clean.normalized_vessel_name)) addIndex(indexes, "by_name_tokens", token, key);
     addIndex(indexes, "by_port", clean.normalized_current_port, key);
@@ -394,13 +436,18 @@ function candidateKeysForRow(row = {}, graphPayload = {}) {
   const keys = buildVesselMatchKeys(row);
   const normalizedName = keys.vessel_name || normalizeVesselName(firstNonEmpty(row.vessel_name, row.normalized_vessel_name));
   const port = normalizedPortValue(row);
+  const timeBucket = normalizeTimeWindow(firstNonEmpty(row.ata, row.atb, row.eta, row.etb, row.atd, row.etd, row.pilot_time, row.movement_time, row.berth_time));
   const gt = gtValue(row);
   const vesselType = normalizeVesselType(firstNonEmpty(row.vessel_type, row.vsslKndNm));
   const out = new Set();
   const add = list => (Array.isArray(list) ? list : []).forEach(key => out.add(key));
   add(indexes.by_imo?.[keys.imo]);
   add(indexes.by_mmsi?.[keys.mmsi]);
+  add(indexes.by_call_sign_port_time_bucket?.[keys.call_sign && port && timeBucket ? `${keys.call_sign}|${port}|${timeBucket}` : ""]);
+  add(indexes.by_call_sign_port?.[keys.call_sign && port ? `${keys.call_sign}|${port}` : ""]);
+  add(indexes.by_name_call_sign?.[normalizedName && keys.call_sign ? `${normalizedName}|${keys.call_sign}` : ""]);
   add(indexes.by_call_sign?.[keys.call_sign]);
+  add(indexes.by_name_port_time?.[normalizedName && port && timeBucket ? `${normalizedName}|${port}|${timeBucket}` : ""]);
   add(indexes.by_normalized_vessel_name?.[normalizedName]);
   add(indexes.by_name_prefix?.[normalizedName.slice(0, 4)]);
   for (const token of nameTokens(normalizedName)) add(indexes.by_name_tokens?.[token]);
@@ -442,9 +489,21 @@ function scoreEvidence(row = {}, node = {}, mode = "pilot") {
   const nodeName = node.normalized_vessel_name || "";
   const nameSimilarity = diceSimilarity(rowName, nodeName);
 
+  if (rowKeys.imo && node.imo && rowKeys.imo === node.imo) {
+    score += 100;
+    evidence.push("imo_exact");
+  }
+  if (rowKeys.mmsi && node.mmsi && rowKeys.mmsi === node.mmsi) {
+    score += 98;
+    evidence.push("mmsi_exact");
+  }
   if (rowCall && node.call_sign && rowCall === node.call_sign) {
     score += 45;
     evidence.push("call_sign_exact");
+  }
+  if (rowCall && node.call_sign && rowCall === node.call_sign && rowPort && node.normalized_current_port === rowPort) {
+    score += 18;
+    evidence.push("canonical_call_sign_port");
   }
   if (rowName && nodeName && rowName === nodeName) {
     score += mode === "berth" ? 35 : 30;
@@ -541,6 +600,20 @@ function matchAction(score = 0, mode = "pilot") {
   return "REJECT";
 }
 
+function nameOnlyFuzzyReviewRequired(evidence = []) {
+  const values = new Set(evidence || []);
+  const hasStrongIdentifier = values.has("call_sign_exact") ||
+    values.has("canonical_call_sign_port") ||
+    values.has("mmsi_exact") ||
+    values.has("imo_exact");
+  const hasContext = values.has("same_normalized_port") ||
+    values.has("same_recent_port_booster") ||
+    values.has("same_berth_or_terminal") ||
+    [...values].some(item => /^time_window_/.test(item));
+  const hasNameFuzzy = [...values].some(item => /^vessel_name_similarity_/.test(item));
+  return hasNameFuzzy && !hasStrongIdentifier && !hasContext;
+}
+
 function sourceRowId(row = {}, index = 0) {
   return String(firstNonEmpty(row.raw_row_identity, row.source_row_id, `${sourceRowKey(row)}:${row.vessel_name || row.call_sign || "row"}:${index}`));
 }
@@ -550,9 +623,13 @@ function matchResultRow(row = {}, graphPayload = {}, mode = "pilot", index = 0) 
   const normalizedName = normalizeVesselName(firstNonEmpty(row.vessel_name, row.normalized_vessel_name));
   const normalizedCall = normalizeCallSign(firstNonEmpty(row.call_sign, row.callsign));
   const match = bestMatchForRow(row, graphPayload, mode);
-  const action = matchAction(match.score, mode);
+  const action = nameOnlyFuzzyReviewRequired(match.evidence)
+    ? "REVIEW"
+    : matchAction(match.score, mode);
   const blocker = action === "REJECT"
     ? (!normalizedName && !normalizedCall ? "missing_vessel_identity" : match.blocker_reason || "below_apply_or_review_threshold")
+    : action === "REVIEW" && nameOnlyFuzzyReviewRequired(match.evidence)
+      ? "fuzzy_vessel_name_only_review"
     : "";
   const base = {
     source_row_id: sourceRowId(row, index),

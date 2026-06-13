@@ -27,7 +27,7 @@
     "audit:classification-consistency": "node scripts/audit-classification-consistency.js",
     "audit:db": "node scripts/with-env.js scripts/audit-db.js",
     "audit:db-cleanup": "node scripts/with-env.js scripts/audit-db-cleanup.js",
-    "audit:normalize": "node scripts/with-env.js scripts/audit-normalize.js",
+    "audit:normalize": "node scripts/audit-normalize-canonical.js",
     "audit:normalize-output": "node scripts/audit-normalize-output.js",
     "audit:vessels": "node scripts/with-env.js scripts/audit-vessels.js",
     "audit:vessel-counts": "node scripts/audit-vessel-counts.js",

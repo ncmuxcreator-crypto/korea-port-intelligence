@@ -188,6 +188,10 @@ const PNC_FIELD_ALIASES = {
     "call_sign", "callSign", "callsign", "callSignNo", "clsgn", "vsslCallSgn",
     "CALL_SIGN", "호출부호", "콜사인"
   ],
+  terminal_vessel_code: [
+    "terminal_vessel_code", "vessel_code", "vesselCode", "vslCd", "VSL_CD",
+    "pnc_vessel_code", "mother_vessel_code", "모선코드"
+  ],
   terminal: [
     "terminal", "terminal_name", "terminalName", "terminalNm", "tmnlNm",
     "TERMINAL_NM", "터미널", "터미널명"
@@ -2131,7 +2135,11 @@ function normalizeRow(row, source, now) {
   const vesselName = String(firstValue(adapted, FIELD_ALIASES.vessel_name) || (pncSource ? pncValue(adapted, "vessel_name") : "")).trim();
   const imo = String(firstValue(adapted, FIELD_ALIASES.imo)).trim();
   const mmsi = String(firstValue(adapted, FIELD_ALIASES.mmsi)).trim();
-  const callSign = normalizeCallSign(firstValue(adapted, FIELD_ALIASES.call_sign) || (pncSource ? pncValue(adapted, "call_sign") : ""));
+  const rawCallSign = firstValue(adapted, FIELD_ALIASES.call_sign) || (pncSource ? pncValue(adapted, "call_sign") : "");
+  const callSign = normalizeCallSign(rawCallSign);
+  const terminalVesselCodeRaw = pncSource ? String(pncValue(adapted, "terminal_vessel_code")).trim() : "";
+  const terminalVesselCodeNormalized = normalizeCallSign(terminalVesselCodeRaw);
+  const terminalCodeMatchesCallSign = Boolean(callSign && terminalVesselCodeNormalized && callSign === terminalVesselCodeNormalized);
   const rawPortValue = firstValue(adapted, FIELD_ALIASES.port) || (pncSource ? pncValue(adapted, "port") : "") || source.portName || source.portCode || source.prtAgCd || "";
   const portIdentity = normalizePortIdentity(rawPortValue || source.portCode);
   const port = portIdentity.display_name || normalizePort(rawPortValue, source.portCode);
@@ -2144,7 +2152,7 @@ function normalizeRow(row, source, now) {
   const pncOperationStart = pncSource ? normalizeDate(pncValue(adapted, "operation_start")) : "";
   const pncOperationEnd = pncSource ? normalizeDate(pncValue(adapted, "operation_end")) : "";
   const pncOperation = pncSource ? String(pncValue(adapted, "operation")).trim() : "";
-  const pncHasUsefulContext = Boolean(pncBerth || pncTerminal || pncEta || pncEtb || pncAta || pncAtb || pncOperationStart || pncOperationEnd || pncOperation);
+  const pncHasUsefulContext = Boolean(terminalVesselCodeRaw || pncBerth || pncTerminal || pncEta || pncEtb || pncAta || pncAtb || pncOperationStart || pncOperationEnd || pncOperation);
   if (!vesselName && !imo && !mmsi && !callSign && !pncHasUsefulContext) return null;
   const rawPilotDate = firstValue(adapted, ALL_PILOT_DATE_ALIASES);
   const rawPilotTime = firstValue(adapted, ALL_PILOT_TIME_ALIASES);
@@ -2180,7 +2188,20 @@ function normalizeRow(row, source, now) {
     normalized_vessel_name: normalizeVesselName(vesselName || imo || mmsi || callSign),
     imo,
     mmsi,
+    raw_call_sign: rawCallSign || callSign,
+    canonical_call_sign: callSign,
     call_sign: callSign,
+    call_sign_source: callSign ? "port_operation" : "",
+    call_sign_confidence: callSign ? 100 : 0,
+    call_sign_valid: Boolean(callSign),
+    canonical_vessel_key: imo ? `IMO|${imo}` : mmsi ? `MMSI|${mmsi}` : callSign ? `CALL|${callSign}` : normalizeVesselName(vesselName || ""),
+    terminal_vessel_code: terminalVesselCodeRaw,
+    terminal_vessel_code_normalized: terminalVesselCodeNormalized,
+    possible_call_sign: terminalCodeMatchesCallSign ? terminalVesselCodeNormalized : "",
+    possible_call_sign_confidence: terminalCodeMatchesCallSign ? 70 : 0,
+    terminal_vessel_code_classification: terminalVesselCodeRaw
+      ? terminalCodeMatchesCallSign ? "matches_canonical_call_sign" : "terminal_vessel_code_not_call_sign"
+      : "",
     port,
     normalized_port: portIdentity.normalized_port,
     raw_port: portIdentity.raw_port || rawPortValue,

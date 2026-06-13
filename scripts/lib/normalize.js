@@ -188,6 +188,18 @@ export function normalizeCallSign(value = "") {
   return normalized;
 }
 
+export function normalizeImo(value = "") {
+  if (isNullishText(value)) return "";
+  const digits = String(value ?? "").normalize("NFKC").replace(/^IMO/i, "").replace(/\D+/g, "");
+  return /^\d{7}$/.test(digits) ? digits : "";
+}
+
+export function normalizeMmsi(value = "") {
+  if (isNullishText(value)) return "";
+  const digits = String(value ?? "").normalize("NFKC").replace(/\D+/g, "");
+  return /^\d{9}$/.test(digits) ? digits : "";
+}
+
 export function normalizePort(value = "") {
   const raw = typeof value === "object" && value !== null
     ? pickAlias(value, "port") || value.normalized_port || value.port_code || value.prtAgCd || ""
@@ -350,6 +362,11 @@ export function normalizeNumeric(value = "") {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export function normalizeGt(value = "") {
+  const gt = normalizeNumeric(value);
+  return gt !== null && gt >= 0 ? gt : null;
+}
+
 export function normalizeFlag(value = "") {
   if (isNullishText(value)) return "";
   return collapseSpaces(upper(value).replace(/[_/-]+/g, " "));
@@ -358,6 +375,13 @@ export function normalizeFlag(value = "") {
 export function normalizeVesselType(value = "") {
   if (isNullishText(value)) return "";
   return collapseSpaces(upper(value).replace(/[_/-]+/g, " ").replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, " "));
+}
+
+export function normalizeTimeWindow(value = "", { bucketHours = 6, fallback = "" } = {}) {
+  const normalized = normalizeDateTime(value);
+  if (!normalized.epoch_ms) return fallback || "";
+  const sizeMs = Math.max(1, Number(bucketHours) || 6) * 36e5;
+  return String(Math.floor(normalized.epoch_ms / sizeMs));
 }
 
 function firstNonEmpty(...values) {
@@ -369,19 +393,23 @@ function cleanIdentifier(value = "") {
 }
 
 export function buildVesselMatchKeys(row = {}) {
-  const callSign = normalizeCallSign(firstNonEmpty(pickAlias(row, "call_sign"), row.call_sign, row.callsign, row.clsgn));
+  const callSign = normalizeCallSign(firstNonEmpty(row.canonical_call_sign, pickAlias(row, "call_sign"), row.call_sign, row.callsign, row.clsgn));
   const vesselName = normalizeVesselName(firstNonEmpty(row.vessel_name, row.name, row.ship_name, pickAlias(row, "vessel_name"), row.normalized_vessel_name, row.normalized_name));
   const portIdentity = normalizePort(firstNonEmpty(row.normalized_port, row.port_code, row.prtAgCd, row.port_name, row.port, row.current_port, pickAlias(row, "port")));
   const port = portIdentity.normalized_port;
   const gt = normalizeNumeric(firstNonEmpty(row.gt, row.grtg, row.intrlGrtg, row.grossTonnage, row.tonnage, pickAlias(row, "gt")));
   const vesselType = normalizeVesselType(firstNonEmpty(row.vessel_type, row.ship_type, row.vesselType, row.vsslKndNm, row.vsslKndCd, pickAlias(row, "vessel_type")));
-  const imo = cleanIdentifier(firstNonEmpty(row.imo, row.imo_no, row.imoNo, pickAlias(row, "imo"))).replace(/^IMO/, "");
-  const mmsi = cleanIdentifier(firstNonEmpty(row.mmsi, row.mmsi_no, row.mmsiNo, pickAlias(row, "mmsi")));
+  const imo = normalizeImo(firstNonEmpty(row.imo, row.imo_no, row.imoNo, pickAlias(row, "imo")));
+  const mmsi = normalizeMmsi(firstNonEmpty(row.mmsi, row.mmsi_no, row.mmsiNo, pickAlias(row, "mmsi")));
+  const timeBucket = normalizeTimeWindow(firstNonEmpty(row.ata, row.atb, row.eta, row.etb, row.atd, row.etd, row.pilot_time, row.movement_time, row.berth_time));
   const keys = {};
   if (callSign) keys.call_sign = callSign;
   if (callSign && port) keys.call_sign_port = `${callSign}|${port}`;
+  if (callSign && port && timeBucket) keys.call_sign_port_time_bucket = `${callSign}|${port}|${timeBucket}`;
   if (vesselName) keys.vessel_name = vesselName;
+  if (vesselName && callSign) keys.vessel_name_call_sign = `${vesselName}|${callSign}`;
   if (vesselName && port) keys.vessel_name_port = `${vesselName}|${port}`;
+  if (vesselName && port && timeBucket) keys.vessel_name_port_time_bucket = `${vesselName}|${port}|${timeBucket}`;
   if (vesselName && gt !== null && vesselType) keys.vessel_name_gt_type = `${vesselName}|${gt}|${vesselType}`;
   if (imo) keys.imo = imo;
   if (mmsi) keys.mmsi = mmsi;

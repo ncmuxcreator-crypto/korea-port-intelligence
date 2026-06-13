@@ -4938,6 +4938,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["enrichment.sourceBottleneckReport", "dashboard/api/enrichment/source-bottleneck-report.json"],
   ["enrichment.vesselIdentityGraph", "dashboard/api/enrichment/vessel-identity-graph.json"],
   ["enrichment.normalizationDiagnostics", "dashboard/api/enrichment/normalization-diagnostics.json"],
+  ["normalization.report", "dashboard/api/normalization-report.json"],
   ["enrichment.latestIndex", "dashboard/api/enrichment/latest/index.json"],
   ["enrichment.latestSummary", "dashboard/api/enrichment/latest/summary.json"],
   ["enrichment.latestCandidates", "dashboard/api/enrichment/latest/candidates.json"],
@@ -5710,12 +5711,16 @@ function withRunOrigin(payload = {}, origin = {}) {
 function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   const normalized = String(filePath || "").replace(/\\/g, "/");
   const body = normalizeBusinessOutputPayload(normalized, dashboardRootObjectPayload(withRunOrigin(payload, origin)));
-  writeDashboardJson(normalized, body);
+  const target = routeApiOutputPath(normalized, body);
+  writeDashboardJson(target, body);
   if (normalized.startsWith("dashboard/api/")) {
     const debugPath = `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
-    writeDashboardJson(debugPath, body);
+    if (target !== debugPath) writeDashboardJson(debugPath, body);
+    if (target !== normalized && !fs.existsSync(normalized)) {
+      writeDashboardJson(normalized, body);
+    }
   }
-  return normalized;
+  return target;
 }
 
 function writeSourceHealthRuntimeJson(payload, origin = {}) {
@@ -9159,6 +9164,14 @@ function buildVesselDisplay(record = {}) {
     imo: vesselDisplayText(source, ["imo", "imo_no", "imoNo", "vessel_imo", "recovered_imo", "vessel_display.imo"]),
     mmsi: vesselDisplayText(source, ["mmsi", "mmsi_no", "mmsiNo", "vessel_mmsi", "recovered_mmsi", "vessel_display.mmsi"]),
     call_sign: vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn", "vsslCallSgn", "vessel_display.call_sign"]),
+    raw_call_sign: vesselDisplayText(source, ["raw_call_sign", "call_sign_raw", "vessel_display.raw_call_sign"]),
+    canonical_call_sign: vesselDisplayText(source, ["canonical_call_sign", "call_sign", "callsign", "callSign", "clsgn", "vessel_display.canonical_call_sign", "vessel_display.call_sign"]),
+    call_sign_source: vesselDisplayText(source, ["call_sign_source", "vessel_display.call_sign_source"], vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn"]) ? "port_operation" : "-"),
+    call_sign_confidence: nullableDisplayNumber(record.call_sign_confidence, record.vessel_display?.call_sign_confidence, vesselDisplayText(source, ["call_sign", "callsign", "callSign", "clsgn"]) ? 100 : null),
+    call_sign_valid: Boolean(vesselDisplayText(source, ["canonical_call_sign", "call_sign", "callsign", "callSign", "clsgn", "vessel_display.canonical_call_sign", "vessel_display.call_sign"])),
+    canonical_vessel_key: vesselDisplayText(source, ["canonical_vessel_key", "vessel_key", "hybrid_entity_key", "master_vessel_id", "vessel_display.canonical_vessel_key", "vessel_display.vessel_key"]),
+    terminal_vessel_code: vesselDisplayText(source, ["terminal_vessel_code", "pnc_vessel_code", "vessel_code", "vslCd", "vessel_display.terminal_vessel_code"]),
+    terminal_vessel_code_classification: vesselDisplayText(source, ["terminal_vessel_code_classification", "vessel_display.terminal_vessel_code_classification"]),
     flag: vesselDisplayText(source, ["flag", "vsslNltyNm", "vsslNltyCd", "nationality", "country", "vessel_display.flag"]),
     vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_type_group", "commercial_segment", "vessel_display.vessel_type"]),
     gt: tonnageSummary.gt,
@@ -22485,8 +22498,10 @@ try {
     writeRuntimeDiagnosticJson("dashboard/api/json-root-repairs.json", report.dashboard_json_root_repairs, finalRunOrigin);
   }
   writeEndpointManifest(completedAt, report);
-  writeDashboardJson("data/pipeline-report.json", report);
-  writeDashboardJson(`data/reports/${today}.json`, report);
+  const pipelineReportPath = lastSuccessfulDatasetLocked ? "data/debug/pipeline-report.json" : "data/pipeline-report.json";
+  const dailyReportPath = lastSuccessfulDatasetLocked ? `data/debug/reports/${today}.json` : `data/reports/${today}.json`;
+  writeDashboardJson(pipelineReportPath, report);
+  writeDashboardJson(dailyReportPath, report);
   fs.copyFileSync("dashboard/index.html", "public/index.html");
   const collectionSummary = {
     validation_mode: VALIDATION_MODE,

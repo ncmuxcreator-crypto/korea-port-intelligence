@@ -63,7 +63,7 @@ function inferBerth(row = {}) {
   return found ? String(found[1]).trim() : "";
 }
 
-function normalizeName(value = "") {
+function reviewNormalizeName(value = "") {
   return normalizeVesselName(value);
   return String(value || "")
     .normalize("NFKC")
@@ -73,7 +73,7 @@ function normalizeName(value = "") {
     .replace(/[^A-Z0-9가-힣]+/g, "");
 }
 
-function normalizeCallSign(value = "") {
+function reviewNormalizeCallSign(value = "") {
   return sharedNormalizeCallSign(value);
   return String(value || "")
     .normalize("NFKC")
@@ -82,7 +82,7 @@ function normalizeCallSign(value = "") {
     .replace(/[^A-Z0-9]/g, "");
 }
 
-function normalizePort(value = "") {
+function reviewNormalizePort(value = "") {
   return normalizePortIdentity(value).normalized_port;
   const text = String(value || "").normalize("NFKC").trim().toUpperCase();
   if (!text) return "";
@@ -180,9 +180,9 @@ function normalizeSourceRow(row = {}) {
     raw_port: rawPort || "-",
     raw_time: rawTime || "-",
     raw_berth: rawBerth || "-",
-    normalized_name: normalizeName(rawVesselName),
-    normalized_call_sign: normalizeCallSign(rawCallSign),
-    normalized_port: normalizePort(rawPort),
+    normalized_name: reviewNormalizeName(rawVesselName),
+    normalized_call_sign: reviewNormalizeCallSign(rawCallSign),
+    normalized_port: reviewNormalizePort(rawPort),
     parsed_time: parseDate(rawTime),
     source_key: row.source || row.source_name || row.source_origin || "",
     parse_status: row.pilot_time_parse_status || row.parse_status || ""
@@ -191,7 +191,7 @@ function normalizeSourceRow(row = {}) {
 
 function vesselPort(record = {}) {
   const d = display(record);
-  return normalizePort(d.current_port_korean || d.current_port || d.raw_current_port || record.current_port || record.port_name || record.port || record.port_code);
+  return reviewNormalizePort(d.current_port_korean || d.current_port || d.raw_current_port || record.current_port || record.port_name || record.port || record.port_code);
 }
 
 function vesselTimes(record = {}) {
@@ -203,11 +203,11 @@ function vesselTimes(record = {}) {
 
 function scoreCandidate(source, vessel) {
   const d = display(vessel);
-  const candidateName = normalizeName(d.vessel_name || vessel.vessel_name);
-  const candidateCallSign = normalizeCallSign(d.call_sign || vessel.call_sign);
+  const candidateName = reviewNormalizeName(d.vessel_name || vessel.vessel_name);
+  const candidateCallSign = reviewNormalizeCallSign(d.call_sign || vessel.call_sign);
   const candidatePort = vesselPort(vessel);
-  const candidateBerth = normalizeName(d.berth || vessel.berth || vessel.berth_name);
-  const sourceBerth = normalizeName(source.raw_berth);
+  const candidateBerth = reviewNormalizeName(d.berth || vessel.berth || vessel.berth_name);
+  const sourceBerth = reviewNormalizeName(source.raw_berth);
   let score = 0;
   const reasons = [];
   let matchType = "weak";

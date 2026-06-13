@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-13T05:25:49.563Z",
+  "source_layer": "diagnostic",
+  "startup_safe": false,
+  "load_strategy": "diagnostic_only",
+  "canonical_policy": {
+    "canonical_call_sign_source": "port_operation",
+    "hierarchy": [
+      "IMO exact",
+      "MMSI exact",
+      "canonical_call_sign exact",
+      "canonical_call_sign + port_code",
+      "canonical_call_sign + port_code + time window",
+      "normalized_vessel_name + canonical_call_sign",
+      "normalized_vessel_name + port_code + time window",
+      "fuzzy vessel name only -> review queue"
+    ]
+  },
+  "record_count": 1,
+  "item_count": 1,
+  "shared_normalize_module": "scripts/lib/normalize.js",
+  "duplicate_normalization_functions_removed_from_active_audit_path": true,
+  "sources_using_shared_normalize_module": [
+    {
+      "file": "scripts/collectors/korea.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/lib/matching.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/lib/evidence-matching-engine.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/lib/match-review.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/lib/source-csv-cache.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/build-source-csv-reference.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "direct"
+    },
+    {
+      "file": "scripts/daily-enrichment.js",
+      "uses_shared_normalize": true,
+      "normalize_usage": "via_matching_wrapper"
+    }
+  ],
+  "legacy_duplicate_normalization_functions_remaining": [
+    {
+      "file": "scripts/audit-identity-sources.js",
+      "duplicate_function_count": 2
+    },
+    {
+      "file": "scripts/audit-normalize.js",
+      "duplicate_function_count": 1
+    },
+    {
+      "file": "scripts/update.js",
+      "duplicate_function_count": 1
+    },
+    {
+      "file": "scripts/lib/db.js",
+      "duplicate_function_count": 1
+    },
+    {
+      "file": "scripts/lib/intelligence-foundation.js",
+      "duplicate_function_count": 1
+    },
+    {
+      "file": "scripts/lib/port-statistics.js",
+      "duplicate_function_count": 1
+    },
+    {
+      "file": "scripts/collectors/korea.js",
+      "duplicate_function_count": 2
+    }
+  ],
+  "core_vessels": {
+    "total": 992,
+    "with_canonical_call_sign": 992,
+    "invalid_call_sign_examples": [],
+    "duplicate_call_signs": []
+  },
+  "auxiliary_sources": {
+    "rows_checked": 0,
+    "rows_with_normalized_call_sign": 0,
+    "matches_by_canonical_call_sign": 0,
+    "unmatched_call_signs": []
+  },
+  "pnc": {
+    "terminal_vessel_code_detected": true,
+    "classification": "PNC vessel code is treated as terminal_vessel_code; it is not promoted to call_sign unless it equals canonical_call_sign.",
+    "policy": "do_not_assume_terminal_vessel_code_is_call_sign"
+  }
+}
