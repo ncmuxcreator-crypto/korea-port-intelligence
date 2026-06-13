@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-13T07:50:04.157Z",
+  "source_key": "port_facility",
+  "integration_rule": "CargHarborUse2 is called only as a child enrichment of PORT-MIS VsslEtrynd5 using prtAgCd + etryptYear + etryptCo + clsgn.",
+  "status": "NOT_CONFIGURED",
+  "child_enrichment_attempted": 0,
+  "child_enrichment_success": 0,
+  "raw_rows": 0,
+  "normalized_rows": 0,
+  "matched_vessels": 0,
+  "rows_with_facility_hint": 0,
+  "rows_with_operator_candidate": 0,
+  "rows_with_cargo_hint": 0,
+  "statuses": {},
+  "blocker_reason": "waiting_for_port_operation_child_enrichment",
+  "recommended_fix": "Keep CargHarborUse2 tied to port_operation parent keys: prtAgCd + etryptYear + etryptCo + clsgn."
+}

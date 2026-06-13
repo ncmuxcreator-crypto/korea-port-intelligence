@@ -22,7 +22,7 @@ const AUX_SOURCE_KEYS = new Set([
   "mof_ais_info",
   "mof_ais_dynamic",
   "mof_ais_stat",
-  "ulsan_core",
+  "ulsan_vessel_operation",
   "ulsan_berth_detail",
   "ulsan_cargo_plan",
   "ulsan_berth_operation",

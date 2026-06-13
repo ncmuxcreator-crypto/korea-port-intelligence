@@ -56,8 +56,8 @@ const SECRET_CATALOG = [
     use: "Arrival/departure, port operation, and vessel movement enrichment."
   },
   {
-    key: "ulsan_core",
-    label: "Ulsan Port Core API",
+    key: "ulsan_vessel_operation",
+    label: "Ulsan Vessel Operation API",
     type: "ulsan",
     requiredAny: ["ULSAN_API_KEY", "ULSAN_BERTH_DETAIL_API_KEY", "ULSAN_CARGO_PLAN_API_KEY", "ULSAN_BERTH_OPERATION_API_KEY", "ULSAN_TERMINAL_PROCESS_API_KEY"],
     optional: ["ULSAN_API_URL", "ULSAN_BERTH_DETAIL_API_URL", "ULSAN_CARGO_PLAN_API_URL", "ULSAN_BERTH_OPERATION_API_URL", "ULSAN_TERMINAL_PROCESS_API_URL"],

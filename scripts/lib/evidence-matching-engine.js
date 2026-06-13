@@ -250,7 +250,12 @@ function isPilotRow(row = {}) {
 
 function isBerthRow(row = {}) {
   const key = sourceRowKey(row);
-  return key.startsWith("pnc_source_") || key.includes("pnc") || key.includes("berth_source") || row.pnc_source_url || row.source_origin === "berth_schedule";
+  return key.startsWith("pnc_source_") ||
+    key.includes("pnc") ||
+    key.includes("berth_source") ||
+    key.includes("ulsan_vessel_operation") ||
+    row.pnc_source_url ||
+    row.source_origin === "berth_schedule";
 }
 
 function isAisInfoRow(row = {}) {
@@ -692,10 +697,13 @@ function pilotPatchHint(match = {}, row = {}, generatedAt = new Date().toISOStri
 }
 
 function berthPatchHint(match = {}, row = {}, generatedAt = new Date().toISOString()) {
+  const key = sourceRowKey(row);
+  const sourceKey = key.includes("ulsan_vessel_operation") ? "ulsan_vessel_operation" : key.includes("pnc") ? "berth_sources" : "berth_sources";
+  const sourceLabel = key.includes("ulsan_vessel_operation") ? "Ulsan vessel operation" : key.includes("pnc") ? "PNC" : "berth_sources";
   const fieldPatch = {
     has_berth_info: true,
     has_berth: true,
-    source: sourceRowKey(row).includes("pnc") ? "PNC" : "berth_sources",
+    source: sourceLabel,
     terminal: firstNonEmpty(row.terminal, row.terminal_name) || null,
     berth: firstNonEmpty(row.berth, row.berth_name) || null,
     berth_direction: firstNonEmpty(row.berth_direction, row.operation_type, row.status) || null,
@@ -707,14 +715,49 @@ function berthPatchHint(match = {}, row = {}, generatedAt = new Date().toISOStri
   };
   return {
     vessel_key: match.candidate_vessel_key,
-    source_key: "berth_sources",
+    source_key: sourceKey,
     signal_type: "berth_signal",
-    fields: { berth_signal: fieldPatch },
+    fields: {
+      berth_signal: fieldPatch,
+      ...(sourceKey === "ulsan_vessel_operation" ? { ulsan_signal: fieldPatch } : {})
+    },
     field_patch: fieldPatch,
     confidence: match.score,
     match_type: match.match_type,
     evidence: match.evidence,
     apply_policy: "APPLY",
+    source_generated_at: generatedAt
+  };
+}
+
+function vesselSpecPatchHint(match = {}, row = {}, generatedAt = new Date().toISOString()) {
+  const fields = {};
+  const set = (field, value) => {
+    if (hasValue(value)) fields[field] = value;
+  };
+  set("imo", firstNonEmpty(row.imo, row.imo_no, row.imoNo));
+  set("call_sign", normalizeCallSign(firstNonEmpty(row.call_sign, row.callsign, row.clsgn)));
+  set("vessel_type", firstNonEmpty(row.vessel_type, row.vsslKnd, row.vsslKndNm));
+  set("flag", normalizeFlag(firstNonEmpty(row.flag, row.vsslNlty, row.nationality)));
+  set("gt", gtValue(row));
+  set("international_gt", firstNonEmpty(row.international_gt, row.intrlGrtg));
+  set("loa", firstNonEmpty(row.loa, row.length, row.vsslTotLt, row.vsslLt));
+  set("beam", firstNonEmpty(row.beam, row.shdth));
+  set("draft", firstNonEmpty(row.draft, row.vsslDrft));
+  if (!Object.keys(fields).length) return null;
+  return {
+    vessel_key: match.candidate_vessel_key,
+    source_key: "vessel_spec",
+    signal_type: "vessel_spec_hint",
+    fields,
+    confidence: match.score,
+    match_type: match.match_type,
+    evidence: [
+      ...match.evidence,
+      "vessel_spec_reference_hint",
+      "verified_or_manual_fields_not_overwritten_by_core"
+    ],
+    apply_policy: match.score >= 85 ? "APPLY" : match.score >= 60 ? "REVIEW" : "REJECT",
     source_generated_at: generatedAt
   };
 }
@@ -1361,8 +1404,10 @@ export function buildAuxEvidenceMatchingPayloads({
 } = {}) {
   const pilotRows = (sourceRows || []).filter(isPilotRow);
   const berthRows = (sourceRows || []).filter(isBerthRow);
+  const vesselSpecRows = (sourceRows || []).filter(isVesselSpecRow);
   const pilotItems = pilotRows.map((row, index) => matchResultRow(row, graphPayload, "pilot", index));
   const berthItems = berthRows.map((row, index) => matchResultRow(row, graphPayload, "berth", index));
+  const vesselSpecItems = vesselSpecRows.map((row, index) => matchResultRow(row, graphPayload, "identity", index));
   const pilotageMatchResults = envelope({
     generatedAt,
     sourceKey: "pilot_sources",
@@ -1402,6 +1447,10 @@ export function buildAuxEvidenceMatchingPayloads({
       const row = berthRows.find((candidate, index) => sourceRowId(candidate, index) === item.source_row_id) || {};
       return berthPatchHint(item, row, generatedAt);
     }),
+    ...vesselSpecItems.filter(item => item.action === "APPLY").map(item => {
+      const row = vesselSpecRows.find((candidate, index) => sourceRowId(candidate, index) === item.source_row_id) || {};
+      return vesselSpecPatchHint(item, row, generatedAt);
+    }).filter(Boolean),
     ...(Array.isArray(aisPayloads.aisPatchHints?.items) ? aisPayloads.aisPatchHints.items : [])
   ].filter(item => item.vessel_key);
   const patchHints = patchHintsEnvelope({ generatedAt, items: patchItems, graphPayload, report });
@@ -1455,12 +1504,12 @@ export function buildAuxEvidenceMatchingPayloads({
       berth_sources: metricForPayload(berthMatchResults),
       vessel_spec: {
         rows: vesselSpecParserDiagnostic.rows_collected,
-        matched: vesselSpecParserDiagnostic.rows_normalized,
-        apply: 0,
-        review: 0,
-        reject: Math.max(0, vesselSpecParserDiagnostic.rows_collected - vesselSpecParserDiagnostic.rows_normalized),
-        match_rate: vesselSpecParserDiagnostic.rows_collected
-          ? Math.round((vesselSpecParserDiagnostic.rows_normalized / vesselSpecParserDiagnostic.rows_collected) * 1000) / 10
+        matched: vesselSpecItems.filter(item => item.action === "APPLY" || item.action === "REVIEW").length,
+        apply: vesselSpecItems.filter(item => item.action === "APPLY").length,
+        review: vesselSpecItems.filter(item => item.action === "REVIEW").length,
+        reject: vesselSpecItems.filter(item => item.action === "REJECT").length,
+        match_rate: vesselSpecItems.length
+          ? Math.round((vesselSpecItems.filter(item => item.action === "APPLY" || item.action === "REVIEW").length / vesselSpecItems.length) * 1000) / 10
           : 0,
         top_blockers: vesselSpecParserDiagnostic.blocker_reason ? [{ reason: vesselSpecParserDiagnostic.blocker_reason, count: 1 }] : []
       },

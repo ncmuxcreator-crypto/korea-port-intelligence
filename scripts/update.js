@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import { collectKoreaData, getCollectorDiagnostics } from "./collectors/korea.js";
 import { createRunId, enrichWithVesselMasterCache, getSupabase, recordRawArchiveIndex, resolveImoMmsiCandidates, saveToSupabase } from "./lib/db.js";
 import { archiveRawToGDrive, buildRawArchivePayload } from "./lib/gdrive.js";
@@ -100,10 +100,15 @@ const REFERENCE_ENRICHMENT_PATCH_FIELDS = [
   "manager",
   "vessel_type",
   "gt",
+  "international_gt",
   "dwt",
   "flag",
   "loa",
-  "beam"
+  "beam",
+  "draft",
+  "facility_name",
+  "operator_or_agent_candidate",
+  "cargo_operation_hint"
 ];
 const REFERENCE_ENRICHMENT_PATCH_SOURCES = [
   "manual_reference",
@@ -114,11 +119,12 @@ const REFERENCE_ENRICHMENT_PATCH_SOURCES = [
 const AUXILIARY_DIAGNOSTIC_SOURCE_KEYS = new Set([
   ...AUXILIARY_CACHE_SOURCE_KEYS,
   "mof_ais_stat",
-  "ulsan_core",
+  "ulsan_vessel_operation",
   "ulsan_berth_detail",
   "ulsan_cargo_plan",
   "ulsan_berth_operation",
-  "ulsan_terminal_process"
+  "ulsan_terminal_process",
+  "port_facility"
 ]);
 const AUXILIARY_QUALITY_PRESERVATION_NOTE = "Auxiliary source quality preserved from previous GitHub Actions run because local core mode cannot access secrets.";
 const RUNTIME_BUDGET_STARTED_AT = new Date();
@@ -3663,7 +3669,7 @@ function tierOwnershipForPath(filePath = "") {
   if (/dashboard\/api\/enrichment\/latest\//i.test(normalized)) {
     return { owner_tier: "reference_enrichment", core_may_update: false };
   }
-  if (/dashboard\/api\/aux\/(?:pilotage-summary|berth-summary|ais-info-summary|ais-dynamic-summary|ais-stat-summary|vessel-spec-summary|cache-status|source-schedule)\.json$/i.test(normalized)) {
+  if (/dashboard\/api\/aux\/(?:pilotage-summary|berth-summary|ulsan-summary|port-facility-summary|ais-info-summary|ais-dynamic-summary|ais-stat-summary|vessel-spec-summary|cache-status|source-schedule)\.json$/i.test(normalized)) {
     return { owner_tier: "fast_aux", core_may_update: false };
   }
   if (/dashboard\/api\/aux\/latest\//i.test(normalized)) {
@@ -4343,6 +4349,18 @@ function summarizeAuxDiagnostics(diagnostics = []) {
     rows_with_dwt: sumField("rows_with_dwt"),
     rows_with_flag: sumField("rows_with_flag"),
     rows_with_vessel_type: sumField("rows_with_vessel_type"),
+    rows_with_international_gt: sumField("rows_with_international_gt"),
+    rows_with_loa: sumField("rows_with_loa"),
+    rows_with_beam: sumField("rows_with_beam"),
+    rows_with_draft: sumField("rows_with_draft"),
+    rows_with_facility_hint: sumField("rows_with_facility_hint"),
+    rows_with_operator_candidate: sumField("rows_with_operator_candidate"),
+    rows_with_cargo_hint: sumField("rows_with_cargo_hint"),
+    ulsan_rows_with_vessel_name: sumField("ulsan_rows_with_vessel_name"),
+    ulsan_rows_with_call_sign: sumField("ulsan_rows_with_call_sign"),
+    ulsan_rows_with_port: sumField("ulsan_rows_with_port"),
+    ulsan_rows_with_berth: sumField("ulsan_rows_with_berth"),
+    ulsan_rows_with_time: sumField("ulsan_rows_with_time"),
     time_only_rows: sumField("time_only_rows"),
     invalid_time_rows: sumField("invalid_time_rows"),
     sample_sources: rows.slice(0, 5).map(item => ({
@@ -4510,13 +4528,14 @@ function buildAuxSummaryEnhancements({
       : "";
     const recommendedAliasMap = {
       imo: ["imo", "imo_no", "imoNo"],
-      mmsi: ["mmsi", "mmsi_no", "mmsiNo"],
       call_sign: ["call_sign", "callsign", "clsgn"],
-      vessel_name: ["vessel_name", "ship_name", "vsslNm"],
+      vessel_name: ["vessel_name", "ship_name", "vsslKorNm", "vsslEngNm", "vsslNm"],
       vessel_type: ["vessel_type", "ship_type", "vsslKndNm"],
-      gt: ["gt", "grt", "gross_tonnage"],
-      dwt: ["dwt", "deadweight"],
-      flag: ["flag", "nationality"]
+      gt: ["gt", "grtg", "gross_tonnage", "intrlGrtg"],
+      flag: ["flag", "nationality", "vsslNlty"],
+      loa: ["loa", "vsslTotLt", "vsslLt"],
+      beam: ["beam", "shdth"],
+      draft: ["draft", "vsslDrft"]
     };
     const rawKeyText = rawSampleKeys.join(" ").toLowerCase();
     const expectedAliasesMissing = Object.entries(recommendedAliasMap)
@@ -4531,9 +4550,61 @@ function buildAuxSummaryEnhancements({
       response_shape: rawSampleKeys.length ? "object_rows" : rowsCollected > 0 ? "metadata_only_or_unsupported_nested_shape" : "empty_or_not_attempted",
       expected_aliases_missing: expectedAliasesMissing,
       recommended_alias_map: recommendedAliasMap,
+      fields_contributed: ["imo", "call_sign", "vessel_name", "vessel_type", "gt", "international_gt", "flag", "loa", "beam", "draft"],
+      normalized_sample: sanitizedRawSamples[0] || null,
       utilization_note: rowsCollected > 0 && rowsNormalized === 0
         ? "HTTP 200 returned rows, but no rows matched vessel specification aliases yet."
         : base.utilization_note
+    };
+  }
+
+  if (summaryKey === "ulsan_vessel_operation") {
+    const matchedVessels = Number(matchingDiagnostics.ulsan_rows_matched || 0);
+    return {
+      ...base,
+      raw_rows: rowsCollected,
+      normalized_rows: rowsNormalized,
+      matched_vessels: matchedVessels,
+      ulsan_signal_count: matchedVessels,
+      rows_with_vessel_name: diagnostics.reduce((sum, item) => sum + Number(item.ulsan_rows_with_vessel_name || 0), 0),
+      rows_with_call_sign: diagnostics.reduce((sum, item) => sum + Number(item.ulsan_rows_with_call_sign || 0), 0),
+      rows_with_port: diagnostics.reduce((sum, item) => sum + Number(item.ulsan_rows_with_port || 0), 0),
+      rows_with_berth: diagnostics.reduce((sum, item) => sum + Number(item.ulsan_rows_with_berth || 0), 0),
+      rows_with_time: diagnostics.reduce((sum, item) => sum + Number(item.ulsan_rows_with_time || 0), 0),
+      matched_by_call_sign: Number(matchingDiagnostics.ulsan_matched_by_call_sign || 0),
+      matched_by_vessel_name: Number(matchingDiagnostics.ulsan_matched_by_name || 0),
+      unmatched_rows: Math.max(0, rowsNormalized - matchedVessels),
+      match_blockers: [
+        ...parserBlockers,
+        ...(rowsNormalized > 0 && matchedVessels === 0 ? ["normalized_ulsan_rows_not_matched_to_current_vessels"] : [])
+      ],
+      patch_hint_fields: ["ulsan_signal", "berth_signal", "terminal", "berth", "eta", "etb", "ata", "atb"]
+    };
+  }
+
+  if (summaryKey === "port_facility") {
+    const child = diagnostics.map(item => item.child_enrichment).filter(Boolean);
+    const attempted = child.reduce((sum, item) => sum + Number(item.attempted || 0), 0);
+    const success = child.reduce((sum, item) => sum + Number(item.success || 0), 0);
+    const childRows = child.reduce((sum, item) => sum + Number(item.rows || 0), 0);
+    const childNormalized = child.reduce((sum, item) => sum + Number(item.normalized || 0), 0);
+    return {
+      ...base,
+      raw_rows: childRows || rowsCollected,
+      normalized_rows: childNormalized || rowsNormalized,
+      child_enrichment_attempted: attempted,
+      child_enrichment_success: success,
+      matched_vessels: childNormalized || 0,
+      berth_signal_count: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0),
+      rows_with_facility_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0),
+      rows_with_operator_candidate: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_operator_candidate || 0), 0),
+      rows_with_cargo_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_cargo_hint || 0), 0),
+      statuses: child.reduce((acc, item) => {
+        for (const [key, value] of Object.entries(item.statuses || {})) acc[key] = (acc[key] || 0) + Number(value || 0);
+        return acc;
+      }, {}),
+      patch_hint_fields: ["port_facility_berth_signal", "facility_name", "operator_or_agent_candidate", "cargo_operation_hint"],
+      integration_rule: "CargHarborUse2 is called only as a child enrichment of PORT-MIS VsslEtrynd5 using prtAgCd + etryptYear + etryptCo + clsgn."
     };
   }
 
@@ -4558,6 +4629,8 @@ function buildAuxSummaryEnhancements({
 const AUX_SUMMARY_SOURCE_NAMES = {
   pilot_sources: "Pilotage Sources",
   berth_sources: "Berth / PNC Sources",
+  ulsan_vessel_operation: "Ulsan Vessel Operation",
+  port_facility: "Port Facility / CargHarborUse2",
   mof_ais_info: "MOF AIS Info",
   mof_ais_dynamic: "MOF AIS Dynamic",
   mof_ais_stat: "MOF AIS Statistics",
@@ -4567,6 +4640,8 @@ const AUX_SUMMARY_SOURCE_NAMES = {
 const AUX_SUMMARY_STALE_WARNING_HOURS = {
   pilot_sources: 12,
   berth_sources: 12,
+  ulsan_vessel_operation: 12,
+  port_facility: 12,
   mof_ais_info: 24,
   mof_ais_dynamic: 24,
   mof_ais_stat: 24,
@@ -4594,7 +4669,7 @@ function auxSummaryRowsMatchedToVessels({ summaryKey = "", rowsNormalized = 0, e
   if (summaryKey === "berth") {
     return Number(matchingDiagnostics.pnc_rows_matched || matchingDiagnostics.berth_rows_matched || enhancements.berth_signal_count || 0);
   }
-  if (["ais_info", "ais_dynamic", "ais_stat", "vessel_spec"].includes(summaryKey)) {
+  if (["ais_info", "ais_dynamic", "ais_stat", "vessel_spec", "ulsan_vessel_operation", "port_facility"].includes(summaryKey)) {
     return Number(enhancements.matched_vessels || rowsNormalized || 0);
   }
   return Number(enhancements.matched_vessels || 0);
@@ -4815,6 +4890,30 @@ function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toIS
       ["pilotage_signal", display.pilotage_signal || record.pilotage_signal, "pilot_sources"],
       ["berth_signal", display.berth_signal || record.berth_signal, "berth_sources"]
     ];
+    const portFacilityFields = {
+      facility_name: record.facility_name || display.facility_name || null,
+      operator_or_agent_candidate: record.operator_or_agent_candidate || display.operator_or_agent_candidate || record.port_facility_operator_candidate || null,
+      cargo_operation_hint: record.cargo_operation_hint || display.cargo_operation_hint || null,
+      berth_signal: display.berth_signal || record.berth_signal || null
+    };
+    if (record.port_facility_berth_signal || portFacilityFields.facility_name || portFacilityFields.operator_or_agent_candidate || portFacilityFields.cargo_operation_hint) {
+      const id = `${vesselKey}:port_facility_berth_signal`;
+      if (!seen.has(id)) {
+        seen.add(id);
+        items.push({
+          vessel_key: vesselKey,
+          candidate_vessel_key: vesselKey,
+          signal_type: "port_facility_berth_signal",
+          source_key: "port_facility",
+          fields: Object.fromEntries(Object.entries(portFacilityFields).filter(([, value]) => value !== null && value !== undefined && value !== "")),
+          confidence: Number(record.berth_match_confidence || record.enrichment_confidence || 85),
+          match_type: record.berth_match_method || "port_facility_child_enrichment",
+          evidence: ["port_facility_child_enrichment", "manual_verified_conflicts_not_overwritten_by_core"],
+          apply_policy: Number(record.berth_match_confidence || record.enrichment_confidence || 85) >= 85 ? "APPLY" : "REVIEW",
+          source_generated_at: generatedAt
+        });
+      }
+    }
     for (const [signalType, signal, sourceKey] of candidates) {
       if (!signal || typeof signal !== "object") continue;
       if (signalType === "pilotage_signal" && signal.has_pilotage !== true) continue;
@@ -4910,6 +5009,8 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["enrichment.sourceCsvDryRun", "dashboard/api/enrichment/source-csv-dry-run.json"],
   ["aux.pilotageSummary", "dashboard/api/aux/pilotage-summary.json"],
   ["aux.berthSummary", "dashboard/api/aux/berth-summary.json"],
+  ["aux.ulsanSummary", "dashboard/api/aux/ulsan-summary.json"],
+  ["aux.portFacilitySummary", "dashboard/api/aux/port-facility-summary.json"],
   ["aux.aisInfoSummary", "dashboard/api/aux/ais-info-summary.json"],
   ["aux.aisDynamicSummary", "dashboard/api/aux/ais-dynamic-summary.json"],
   ["aux.vesselSpecSummary", "dashboard/api/aux/vessel-spec-summary.json"],
@@ -4918,6 +5019,8 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.latestIndex", "dashboard/api/aux/latest/index.json"],
   ["aux.latestPilotage", "dashboard/api/aux/latest/pilotage-summary.json"],
   ["aux.latestBerth", "dashboard/api/aux/latest/berth-summary.json"],
+  ["aux.latestUlsan", "dashboard/api/aux/latest/ulsan-summary.json"],
+  ["aux.latestPortFacility", "dashboard/api/aux/latest/port-facility-summary.json"],
   ["aux.latestAisInfo", "dashboard/api/aux/latest/ais-info-summary.json"],
   ["aux.latestAisDynamic", "dashboard/api/aux/latest/ais-dynamic-summary.json"],
   ["aux.latestAisStat", "dashboard/api/aux/latest/ais-stat-summary.json"],
@@ -5010,6 +5113,8 @@ const WORKER_PUBLIC_ENDPOINTS = new Set([
   "dashboard/api/aux/latest/index.json",
   "dashboard/api/aux/latest/pilotage-summary.json",
   "dashboard/api/aux/latest/berth-summary.json",
+  "dashboard/api/aux/latest/ulsan-summary.json",
+  "dashboard/api/aux/latest/port-facility-summary.json",
   "dashboard/api/aux/latest/ais-info-summary.json",
   "dashboard/api/aux/latest/ais-dynamic-summary.json",
   "dashboard/api/aux/latest/ais-stat-summary.json",
@@ -5026,6 +5131,8 @@ const WORKER_PUBLIC_ENDPOINTS = new Set([
   "dashboard/api/aux/source-csv-summary.json",
   "dashboard/api/aux/pilotage-summary.json",
   "dashboard/api/aux/berth-summary.json",
+  "dashboard/api/aux/ulsan-summary.json",
+  "dashboard/api/aux/port-facility-summary.json",
   "dashboard/api/aux/ais-info-summary.json",
   "dashboard/api/aux/ais-dynamic-summary.json",
   "dashboard/api/aux/vessel-spec-summary.json",
@@ -18561,7 +18668,7 @@ function buildBiofoulingTimeline(records) {
 
 function buildDataStrategy(apiSources = []) {
   const enabled = new Set(apiSources.filter(s => s.enabled).map(s => s.key));
-  const publicGroups = ["source_csv", "vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
+  const publicGroups = ["source_csv", "vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_vessel_operation", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
   const paidGroups = ["marine_traffic", "vesselfinder", "aisstream"];
   const publicEnabled = publicGroups.filter(k => enabled.has(k));
   const paidEnabled = paidGroups.filter(k => enabled.has(k));
@@ -18694,7 +18801,7 @@ function buildCollectorReadiness(apiSources = []) {
     {
       phase: "Phase 3",
       name: "Movement / idle-time signals",
-      sources: ["mof_vts", "mof_ais_dynamic", "ulsan_core"],
+      sources: ["mof_vts", "mof_ais_dynamic", "ulsan_vessel_operation"],
       goal: "Detect anchorage, low speed, long stay, berth shifts, and port congestion signals."
     },
     {
@@ -18738,7 +18845,7 @@ function buildCollectorManifest(apiSources = []) {
     {
       collector: "berth-and-pilot-watch",
       priority: 2,
-      source_keys: ["berth_sources", "pilot_sources", "ulsan_core"],
+      source_keys: ["berth_sources", "pilot_sources", "ulsan_vessel_operation"],
       output: "berth_watch",
       weight: "light_to_medium",
       business_use: "Berth assignment, waiting status, terminal movement, and short-window outreach timing."
@@ -18798,7 +18905,7 @@ function buildCollectorManifest(apiSources = []) {
 function buildSourceRegistry(apiSources = []) {
   const enabled = apiSources.filter(s => s.enabled);
   const partial = apiSources.filter(s => s.partial);
-  const publicKeys = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
+  const publicKeys = ["vessel_spec", "pilot_sources", "berth_sources", "port_facility", "port_operation", "ulsan_vessel_operation", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "mof_ais_stat", "korea_public_data"];
   const storageKeys = ["supabase", "google_drive"];
   const paidKeys = ["marine_traffic", "vesselfinder", "aisstream"];
   const groupCount = keys => enabled.filter(s => keys.includes(s.key)).length;
@@ -18959,7 +19066,7 @@ function buildBackendHealth(records = [], apiSources = [], reportBase = {}) {
   if (!records.length) blockers.push("No vessel rows generated");
   if (records.length && sampleRows === records.length) warnings.push("All rows are blocked synthetic data");
   if (!enabled.some(s => s.key === "supabase")) warnings.push("Supabase master DB is not enabled");
-  if (!enabled.some(s => ["mof_ais_dynamic","mof_ais_info","mof_vts","port_operation","ulsan_core"].includes(s.key))) warnings.push("No primary public movement/port source enabled");
+  if (!enabled.some(s => ["mof_ais_dynamic","mof_ais_info","mof_vts","port_operation","ulsan_vessel_operation"].includes(s.key))) warnings.push("No primary public movement/port source enabled");
   const sourceScore = Math.min(100, Math.round((enabled.length / Math.max(apiSources.length, 1)) * 100));
   const liveScore = Math.max(0, Math.round(((records.length - sampleRows) / Math.max(records.length,1)) * 100));
   const dataQualityScore = reportBase?.data_quality?.score || 0;
@@ -19007,7 +19114,7 @@ function buildBackendStabilityBatch(records = [], apiSources = [], reportBase = 
   const sampleRows = records.filter(v => String(v.source_mode || "").includes("sample")).length;
   const candidateRows = records.filter(v => v.is_cleaning_candidate).length;
   const immediateRows = records.filter(v => v.is_immediate_candidate).length;
-  const publicReady = enabled.filter(k => ["port_operation", "berth_sources", "pilot_sources", "ulsan_core", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "vessel_spec"].includes(k));
+  const publicReady = enabled.filter(k => ["port_operation", "berth_sources", "pilot_sources", "ulsan_vessel_operation", "mof_vts", "mof_ais_dynamic", "mof_ais_info", "vessel_spec"].includes(k));
   const storageReady = enabled.filter(k => ["supabase", "google_drive"].includes(k));
   const paidReady = enabled.filter(k => ["marine_traffic", "vesselfinder", "aisstream"].includes(k));
   const stabilityScore = Math.round(
@@ -19765,12 +19872,12 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
       continue;
     }
     const fields = item.fields && typeof item.fields === "object" ? item.fields : {};
-    if (signalType === "ais_identity_hint") {
+    if (signalType === "ais_identity_hint" || signalType === "vessel_spec_hint") {
       if (confidence < 90) {
         skip("low_confidence");
         continue;
       }
-      const safeIdentityFields = ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt"];
+      const safeIdentityFields = ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt", "international_gt", "loa", "beam", "draft"];
       let identityFieldsApplied = 0;
       patchesEligible += 1;
       for (const field of safeIdentityFields) {
@@ -19796,7 +19903,7 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
         record.vessel_display[field] = candidateValue;
         record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
         record.data_lineage[field] = {
-          source: item.source_key || "mof_ais_info",
+          source: item.source_key || (signalType === "vessel_spec_hint" ? "vessel_spec" : "mof_ais_info"),
           confidence: confidence || null,
           updated_at: item.source_generated_at || payload.generated_at || generatedAt,
           aux_patch_hint: true
@@ -19816,6 +19923,55 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
         displayRecordsUpdated.add(key);
       } else {
         skip("no_empty_identity_fields");
+      }
+      continue;
+    }
+    if (signalType === "port_facility_berth_signal") {
+      const safeFacilityFields = ["facility_name", "operator_or_agent_candidate", "cargo_operation_hint", "berth_signal"];
+      patchesEligible += 1;
+      let facilityFieldsApplied = 0;
+      for (const field of safeFacilityFields) {
+        const candidateValue = fields[field];
+        if (!cachedPatchHasCandidateValue(candidateValue)) continue;
+        const currentValue = record[field] ?? record.vessel_display?.[field];
+        const currentTrusted = record[`${field}_verified`] === true ||
+          record[`${field}_manual`] === true ||
+          record.manual === true ||
+          record.verified === true ||
+          record.data_lineage?.[field]?.verified === true ||
+          record.vessel_display?.data_lineage?.[field]?.verified === true;
+        if (currentTrusted) {
+          skip("current_value_verified");
+          continue;
+        }
+        if (cachedPatchCurrentValueProtected(field, currentValue) && field !== "berth_signal") {
+          skip("current_value_present");
+          continue;
+        }
+        const nextValue = field === "berth_signal" ? mergeCachedSignalValue(field, currentValue, candidateValue) : candidateValue;
+        record[field] = nextValue;
+        if (!record.vessel_display || typeof record.vessel_display !== "object") record.vessel_display = {};
+        record.vessel_display[field] = nextValue;
+        record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
+        record.data_lineage[field] = {
+          source: item.source_key || "port_facility",
+          confidence: confidence || null,
+          updated_at: item.source_generated_at || payload.generated_at || generatedAt,
+          aux_patch_hint: true
+        };
+        record.vessel_display.data_lineage = record.vessel_display.data_lineage && typeof record.vessel_display.data_lineage === "object" ? record.vessel_display.data_lineage : {};
+        record.vessel_display.data_lineage[field] = record.data_lineage[field];
+        fieldsAppliedByName[field] = (fieldsAppliedByName[field] || 0) + 1;
+        facilityFieldsApplied += 1;
+        applied += 1;
+      }
+      if (facilityFieldsApplied > 0) {
+        record.aux_patch_hint_applied = true;
+        record.vessel_display.aux_patch_hint_applied = true;
+        recordsUpdated.add(key);
+        displayRecordsUpdated.add(key);
+      } else {
+        skip("no_empty_facility_fields");
       }
       continue;
     }
@@ -21355,6 +21511,20 @@ try {
       summaryKey: "berth",
       title: "선석 정보 요약"
     }),
+    "dashboard/api/aux/ulsan-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: ["ulsan_vessel_operation"],
+      summaryKey: "ulsan_vessel_operation",
+      title: "울산 선박운항 보조소스 요약"
+    }),
+    "dashboard/api/aux/port-facility-summary.json": buildAuxSourceSummaryPayload({
+      ...auxSummaryOptions,
+      sourceKeys: sourceCollectionStatusForAuxDiagnostics.items
+        ?.filter(item => String(item.source_key || "").startsWith("port_operation_"))
+        .map(item => item.source_key) || [],
+      summaryKey: "port_facility",
+      title: "항만시설 보조소스 요약"
+    }),
     "dashboard/api/aux/ais-info-summary.json": buildAuxSourceSummaryPayload({
       ...auxSummaryOptions,
       sourceKeys: ["mof_ais_info"],
@@ -21401,6 +21571,8 @@ try {
       source_csv: sourceCsvSummaryPayload,
       pilot_sources: auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
       berth_sources: auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
+      ulsan_vessel_operation: auxSourceSummaryPayloads["dashboard/api/aux/ulsan-summary.json"],
+      port_facility: auxSourceSummaryPayloads["dashboard/api/aux/port-facility-summary.json"],
       vessel_spec: auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
       mof_ais_info: auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
       mof_ais_dynamic: auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
@@ -22141,6 +22313,8 @@ try {
   const auxLatestFiles = [
     "pilotage-summary.json",
     "berth-summary.json",
+    "ulsan-summary.json",
+    "port-facility-summary.json",
     "ais-info-summary.json",
     "ais-dynamic-summary.json",
     "ais-stat-summary.json",
@@ -22158,6 +22332,8 @@ try {
   const auxLatestPayloads = {
     "dashboard/api/aux/latest/pilotage-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
     "dashboard/api/aux/latest/berth-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/berth-summary.json"],
+    "dashboard/api/aux/latest/ulsan-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ulsan-summary.json"],
+    "dashboard/api/aux/latest/port-facility-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/port-facility-summary.json"],
     "dashboard/api/aux/latest/ais-info-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-info-summary.json"],
     "dashboard/api/aux/latest/ais-dynamic-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
     "dashboard/api/aux/latest/ais-stat-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-stat-summary.json"],

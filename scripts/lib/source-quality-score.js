@@ -5,6 +5,8 @@ export const SOURCE_QUALITY_KEYS = [
   "pilot_sources",
   "berth_sources",
   "vessel_spec",
+  "ulsan_vessel_operation",
+  "port_facility",
   "mof_ais_info",
   "mof_ais_dynamic",
   "port_operation"
@@ -14,7 +16,9 @@ const DEFAULT_FIELDS_BY_SOURCE = {
   source_csv: ["imo", "mmsi", "call_sign", "operator", "owner", "manager", "vessel_type", "gt", "dwt", "flag"],
   pilot_sources: ["vessel_name", "call_sign", "port", "pilot_time", "pilot_direction"],
   berth_sources: ["vessel_name", "berth", "terminal", "etb", "atb"],
-  vessel_spec: ["imo", "mmsi", "call_sign", "vessel_type", "gt", "dwt", "flag"],
+  vessel_spec: ["imo", "call_sign", "vessel_type", "gt", "international_gt", "flag", "loa", "beam", "draft"],
+  ulsan_vessel_operation: ["vessel_name", "call_sign", "port", "berth", "terminal", "eta", "etb", "ata", "atb"],
+  port_facility: ["berth", "facility_name", "operator_or_agent_candidate", "cargo_operation_hint"],
   mof_ais_info: ["imo", "mmsi", "call_sign", "vessel_name", "vessel_type"],
   mof_ais_dynamic: ["mmsi", "lat", "lon", "speed", "course", "last_seen_at"],
   port_operation: ["vessel_name", "port", "eta", "ata", "etd", "atd", "berth"]
@@ -28,6 +32,18 @@ const FIELD_COUNT_MAP = [
   ["rows_with_dwt", "dwt"],
   ["rows_with_flag", "flag"],
   ["rows_with_vessel_type", "vessel_type"],
+  ["rows_with_international_gt", "international_gt"],
+  ["rows_with_loa", "loa"],
+  ["rows_with_beam", "beam"],
+  ["rows_with_draft", "draft"],
+  ["rows_with_facility_hint", "facility_name"],
+  ["rows_with_operator_candidate", "operator_or_agent_candidate"],
+  ["rows_with_cargo_hint", "cargo_operation_hint"],
+  ["ulsan_rows_with_vessel_name", "vessel_name"],
+  ["ulsan_rows_with_call_sign", "call_sign"],
+  ["ulsan_rows_with_port", "port"],
+  ["ulsan_rows_with_berth", "berth"],
+  ["ulsan_rows_with_time", "eta"],
   ["pilot_rows_with_vessel_name", "vessel_name"],
   ["pilot_rows_with_call_sign", "call_sign"],
   ["pilot_rows_with_port", "port"],
@@ -102,6 +118,14 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
       0
     );
   }
+  if (sourceKey === "ulsan_vessel_operation") {
+    return number(matchingDiagnostics.ulsan_rows_matched, 0);
+  }
+  if (sourceKey === "port_facility") {
+    return diagnosticCount(item, "child_facility_normalized") ||
+      diagnosticCount(item, "rows_with_facility_hint") ||
+      number(item.rows_normalized, 0);
+  }
   if (sourceKey === "port_operation") {
     const explicitMatch = number(report.source_rows_matched ?? matchingDiagnostics.source_rows_matched, 0);
     return explicitMatch > 0 ? explicitMatch : number(item.rows_normalized, 0);
@@ -114,6 +138,44 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
 
 function diagnosticCount(item = {}, key = "") {
   return (item.diagnostics || []).reduce((sum, diagnostic) => sum + number(diagnostic?.[key]), 0);
+}
+
+function buildPortFacilitySyntheticItem(items = []) {
+  const portOperationItems = (items || []).filter(item => String(item.source_key || "").startsWith("port_operation_"));
+  const childDiagnostics = portOperationItems.flatMap(item =>
+    (item.diagnostics || []).map(diagnostic => diagnostic?.child_enrichment).filter(Boolean)
+  );
+  const attempted = childDiagnostics.reduce((sum, item) => sum + number(item.attempted), 0);
+  const success = childDiagnostics.reduce((sum, item) => sum + number(item.success), 0);
+  const rows = childDiagnostics.reduce((sum, item) => sum + number(item.rows), 0);
+  const normalized = childDiagnostics.reduce((sum, item) => sum + number(item.normalized), 0);
+  const facilityHints = childDiagnostics.reduce((sum, item) => sum + number(item.rows_with_facility_hint), 0);
+  const operatorHints = childDiagnostics.reduce((sum, item) => sum + number(item.rows_with_operator_candidate), 0);
+  const cargoHints = childDiagnostics.reduce((sum, item) => sum + number(item.rows_with_cargo_hint), 0);
+  return {
+    source_key: "port_facility",
+    status: attempted > 0 ? success > 0 || normalized > 0 ? "ACTIVE" : "NO_ROWS" : "NOT_ATTEMPTED",
+    configured: portOperationItems.length > 0,
+    collector_attempted: attempted > 0,
+    rows_collected: rows,
+    rows_normalized: normalized,
+    rows_matched_to_vessels: normalized,
+    missing_env: [],
+    present_env: [],
+    diagnostics: [{
+      key: "port_facility",
+      status: attempted > 0 ? "success" : "not_attempted",
+      rows_collected: rows,
+      rows_normalized: normalized,
+      rows_with_facility_hint: facilityHints,
+      rows_with_operator_candidate: operatorHints,
+      rows_with_cargo_hint: cargoHints,
+      child_facility_normalized: normalized,
+      attempted,
+      success,
+      rule: "CargHarborUse2 child enrichment of port_operation only."
+    }]
+  };
 }
 
 function pilotSourceMatchBlockers({ item = {}, rowsNormalized = 0, rowsMatched = 0, matchingDiagnostics = {}, bootstrapKpis = {} } = {}) {
@@ -266,6 +328,10 @@ export function buildSourceQualityScorePayload({
 } = {}) {
   const normalizedStatus = normalizeSourceCollectionStatusPayload(sourceCollectionStatus?.items ? sourceCollectionStatus : { ...sourceCollectionStatus, items: [] });
   const byKey = new Map((normalizedStatus.items || []).map(item => [item.source_key, item]));
+  const portFacilityItem = byKey.get("port_facility");
+  if (!portFacilityItem || String(portFacilityItem.skip_reason || portFacilityItem.blocker_reason || "").includes("not_registered_collector")) {
+    byKey.set("port_facility", buildPortFacilitySyntheticItem(normalizedStatus.items || []));
+  }
   const items = SOURCE_QUALITY_KEYS.map(sourceKey => {
     const item = byKey.get(sourceKey) || {
       source_key: sourceKey,

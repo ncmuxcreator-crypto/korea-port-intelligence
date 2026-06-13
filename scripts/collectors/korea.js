@@ -32,6 +32,8 @@ const MAX_SOURCE_CSV_BYTES = Number(process.env.MAX_SOURCE_CSV_BYTES || 5000000)
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
 const SOURCE_MAX_RETRIES = Number(process.env.SOURCE_MAX_RETRIES || 2);
 const DEFAULT_CARGO_HARBOR_USE_API_URL = "http://apis.data.go.kr/1192000/CargHarborUse2/Info";
+const DEFAULT_VESSEL_SPEC_API_URL = "http://apis.data.go.kr/1192000/SicsVsslManp3/Info3";
+const DEFAULT_ULSAN_OPERATION = "getVtsBaseVslNvgtInfo";
 const PORTS_REGISTRY_PATH = path.join("data", "reference", "ports_registry.csv");
 const DEFAULT_PORT_REGISTRY = [
   { port_code: "020", prtAgCd: "020", port_name_ko: "부산항", port_name_en: "Busan", port_group: "Busan", sub_port: "부산항", tier: "1", commercial_focus: "container,cruise,repair,anchorage", has_port_operation: "true", has_pilot_source: "true", has_berth_source: "true", has_vts: "true", anchorage_relevance: "high", commercial_priority: "high", enabled: "true" },
@@ -223,6 +225,31 @@ const PNC_REQUIRED_FIELD_GROUPS = {
   timing: ["eta", "etb", "ata", "atb", "operation_start", "operation_end"]
 };
 
+function addFieldAliases(field, aliases = []) {
+  if (!FIELD_ALIASES[field]) FIELD_ALIASES[field] = [];
+  FIELD_ALIASES[field] = [...new Set([...FIELD_ALIASES[field], ...aliases].filter(Boolean))];
+}
+
+addFieldAliases("vessel_name", ["vsslKorNm", "vsslEngNm"]);
+addFieldAliases("imo", ["imoNo"]);
+addFieldAliases("call_sign", ["clsgn", "befClsgn"]);
+addFieldAliases("vessel_type", ["vsslKnd"]);
+addFieldAliases("flag", ["vsslNlty"]);
+addFieldAliases("gt", ["intrlGrtg", "grtg", "international_gt"]);
+addFieldAliases("grtg", ["grtg"]);
+addFieldAliases("intrlGrtg", ["intrlGrtg", "international_gt"]);
+addFieldAliases("loa", ["vsslTotLt", "vsslLt"]);
+addFieldAliases("beam", ["shdth"]);
+addFieldAliases("berth", ["laidupFcltyNm", "fcltyNm", "facilityNm", "facility_name"]);
+addFieldAliases("operator", ["entrpsCdNm", "operator_or_agent_candidate"]);
+addFieldAliases("status", ["movement_status", "nvgtSttus", "vslSts", "shipStatus"]);
+addFieldAliases("eta", ["eta", "ETA", "etrPlanDt", "arrPlanDt"]);
+addFieldAliases("etb", ["etb", "ETB", "berthPlanDt"]);
+addFieldAliases("ata", ["ata", "ATA", "etrDt", "arrivalDt"]);
+addFieldAliases("atb", ["atb", "ATB", "berthDt"]);
+addFieldAliases("etd", ["etd", "ETD", "tkoffPrrrnDt", "departurePlanDt"]);
+addFieldAliases("atd", ["atd", "ATD", "tkoffDt", "departureDt"]);
+
 function env(name) {
   return process.env[name] && String(process.env[name]).trim();
 }
@@ -329,6 +356,11 @@ function runtimeEnvDiagnostics() {
     PORT_FACILITY_API_URL: Boolean(process.env.PORT_FACILITY_API_URL),
     PORT_FACILITY_SERVICE_KEY: Boolean(process.env.PORT_FACILITY_SERVICE_KEY),
     PORT_FACILITY_API_KEY: Boolean(process.env.PORT_FACILITY_API_KEY),
+    VESSEL_SPEC_API_URL: Boolean(process.env.VESSEL_SPEC_API_URL),
+    VESSEL_SPEC_SERVICE_KEY: Boolean(process.env.VESSEL_SPEC_SERVICE_KEY),
+    ULSAN_API_URL: Boolean(process.env.ULSAN_API_URL),
+    ULSAN_API_OPERATION: Boolean(process.env.ULSAN_API_OPERATION),
+    ULSAN_API_KEY: Boolean(process.env.ULSAN_API_KEY),
     SERVICE_KEY: Boolean(process.env.SERVICE_KEY),
     SERVICEKEY: Boolean(process.env.SERVICEKEY),
     YGPA_SERVICE_KEY: Boolean(process.env.YGPA_SERVICE_KEY),
@@ -381,6 +413,19 @@ function sourceCsvEnabled() {
 
 function sourceCsvUrl() {
   return env("SOURCE_CSV_URL") || expectedSourceCsvRawUrl({ cwd: process.cwd() });
+}
+
+function vesselSpecUrl() {
+  return env("VESSEL_SPEC_API_URL") || (env("VESSEL_SPEC_SERVICE_KEY") ? DEFAULT_VESSEL_SPEC_API_URL : "");
+}
+
+function ulsanVesselOperationUrl() {
+  const base = env("ULSAN_API_URL");
+  if (!base) return "";
+  const operation = env("ULSAN_API_OPERATION") || DEFAULT_ULSAN_OPERATION;
+  const normalizedBase = base.replace(/\/+$/, "");
+  if (new RegExp(`${operation}\\/?$`, "i").test(normalizedBase)) return normalizedBase;
+  return `${normalizedBase}/${String(operation).replace(/^\/+/, "")}`;
 }
 
 function debugVerboseEnabled() {
@@ -702,25 +747,29 @@ function vesselSpecAliasDiagnostics(rawRows = [], normalizedRows = []) {
   const aliasGroups = {
     vessel_name: FIELD_ALIASES.vessel_name,
     imo: FIELD_ALIASES.imo,
-    mmsi: FIELD_ALIASES.mmsi,
     call_sign: FIELD_ALIASES.call_sign,
     vessel_type: FIELD_ALIASES.vessel_type,
     gt: FIELD_ALIASES.gt,
-    dwt: FIELD_ALIASES.dwt,
-    flag: FIELD_ALIASES.flag
+    international_gt: FIELD_ALIASES.intrlGrtg,
+    net_tonnage: ["net_tonnage", "ntng", "NTNG"],
+    flag: FIELD_ALIASES.flag,
+    loa: FIELD_ALIASES.loa,
+    beam: FIELD_ALIASES.beam,
+    draft: ["draft", "vsslDrft", "VSSL_DRFT"],
+    built_date: ["built_date", "vsslCnstrDt", "VSSL_CNSTR_DT"]
   };
   const aliasMatched = Object.fromEntries(Object.entries(aliasGroups).map(([field, aliases]) => [
     field,
     rawRows.some(row => Boolean(firstValue(row, aliases)))
   ]));
   const blockers = [];
-  if (!aliasMatched.vessel_name && !aliasMatched.imo && !aliasMatched.mmsi && !aliasMatched.call_sign) {
+  if (!aliasMatched.vessel_name && !aliasMatched.imo && !aliasMatched.call_sign) {
     blockers.push("missing_identity_alias");
   }
-  if (!aliasMatched.imo && !aliasMatched.mmsi && !aliasMatched.call_sign) {
+  if (!aliasMatched.imo && !aliasMatched.call_sign) {
     blockers.push("missing_identifier_alias");
   }
-  if (!aliasMatched.gt && !aliasMatched.dwt && !aliasMatched.vessel_type && !aliasMatched.flag) {
+  if (!aliasMatched.gt && !aliasMatched.international_gt && !aliasMatched.vessel_type && !aliasMatched.flag && !aliasMatched.loa && !aliasMatched.beam) {
     blockers.push("missing_specification_alias");
   }
   if (!rawRows.length) blockers.push("empty_response_rows");
@@ -728,9 +777,10 @@ function vesselSpecAliasDiagnostics(rawRows = [], normalizedRows = []) {
     raw_sample_keys: [...new Set(rawRows.slice(0, 5).flatMap(row => Object.keys(row || {})))].slice(0, 80),
     sanitized_raw_samples: rawRows.slice(0, 5).map(sanitizeSourceSample),
     expected_field_aliases_matched: aliasMatched,
+    parser_alias_coverage: aliasMatched,
     missing_required_fields: {
-      identity: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_name", "imo", "mmsi", "call_sign"].includes(field) && !matched).map(([field]) => field),
-      specification: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_type", "gt", "dwt", "flag"].includes(field) && !matched).map(([field]) => field)
+      identity: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_name", "imo", "call_sign"].includes(field) && !matched).map(([field]) => field),
+      specification: Object.entries(aliasMatched).filter(([field, matched]) => ["vessel_type", "gt", "international_gt", "flag", "loa", "beam", "draft"].includes(field) && !matched).map(([field]) => field)
     },
     parser_blockers: normalizedRows.length ? [] : blockers
   };
@@ -971,10 +1021,10 @@ function allSourceConfigs() {
 
   return [
     { key: "source_csv", label: "Lightweight verified vessel reference CSV", url: sourceCsvEnabled() ? sourceCsvUrl() : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
-    { key: "vessel_spec", label: "MOF vessel specification", url: env("VESSEL_SPEC_API_URL"), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
+    { key: "vessel_spec", label: "MOF vessel specification SicsVsslManp3 Info3", url: vesselSpecUrl(), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || 50), 50) },
     ...portOperationSources,
     ...pilotSources,
-    { key: "ulsan_core", label: "Ulsan core", url: env("ULSAN_API_URL"), serviceKey: env("ULSAN_API_KEY") },
+    { key: "ulsan_vessel_operation", label: "Ulsan vessel operation", url: ulsanVesselOperationUrl(), serviceKey: env("ULSAN_API_KEY"), defaultParams: { numOfRows: env("ULSAN_NUM_OF_ROWS") || "100" }, maxRows: Math.min(Number(env("ULSAN_MAX_ROWS") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     { key: "ulsan_berth_detail", label: "Ulsan berth detail", url: env("ULSAN_BERTH_DETAIL_API_URL"), serviceKey: envAny("ULSAN_BERTH_DETAIL_API_KEY", "ULSAN_API_KEY") },
     { key: "ulsan_cargo_plan", label: "Ulsan cargo plan", url: env("ULSAN_CARGO_PLAN_API_URL"), serviceKey: envAny("ULSAN_CARGO_PLAN_API_KEY", "ULSAN_API_KEY") },
     { key: "ulsan_berth_operation", label: "Ulsan berth operation", url: env("ULSAN_BERTH_OPERATION_API_URL"), serviceKey: envAny("ULSAN_BERTH_OPERATION_API_KEY", "ULSAN_API_KEY") },
@@ -2137,6 +2187,7 @@ function normalizeRow(row, source, now) {
   const mmsi = String(firstValue(adapted, FIELD_ALIASES.mmsi)).trim();
   const rawCallSign = firstValue(adapted, FIELD_ALIASES.call_sign) || (pncSource ? pncValue(adapted, "call_sign") : "");
   const callSign = normalizeCallSign(rawCallSign);
+  const portOperationSource = String(source.key || "").startsWith("port_operation_");
   const terminalVesselCodeRaw = pncSource ? String(pncValue(adapted, "terminal_vessel_code")).trim() : "";
   const terminalVesselCodeNormalized = normalizeCallSign(terminalVesselCodeRaw);
   const terminalCodeMatchesCallSign = Boolean(callSign && terminalVesselCodeNormalized && callSign === terminalVesselCodeNormalized);
@@ -2165,6 +2216,17 @@ function normalizeRow(row, source, now) {
   const berthIdentity = normalizeBerthIdentity([rawTerminalValue, rawBerthValue].filter(Boolean).join(" "));
   const normalizedTerminal = normalizeTerminalIdentity(rawTerminalValue || rawBerthValue) || berthIdentity.terminal || rawTerminalValue;
   const vesselType = normalizeVesselType(vsslKndNm || firstValue(adapted, FIELD_ALIASES.vessel_type) || vsslKndCd || "Unknown");
+  const facilityName = String(rawValue(adapted, ["facility_name", "laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "fcltyNm", "facilityNm"])).trim();
+  const operatorOrAgentCandidate = String(rawValue(adapted, ["operator_or_agent_candidate", "entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim();
+  const cargoOperationHint = String(rawValue(adapted, ["cargo_operation_hint", "lnlNm", "LNL_NM", "cargoNm", "cargoName", "cargoType", "operation_type"])).trim();
+  const internationalGt = toNumber(rawValue(adapted, ["international_gt", "intrlGrtg", "INTRL_GRTG"]));
+  const netTonnage = toNumber(rawValue(adapted, ["net_tonnage", "ntng", "NTNG"]));
+  const draft = toNumber(rawValue(adapted, ["draft", "vsslDrft", "VSSL_DRFT"]));
+  const length = toNumber(rawValue(adapted, ["length", "vsslLt", "VSSL_LT"]));
+  const depth = toNumber(rawValue(adapted, ["depth", "vsslDp", "VSSL_DP"]));
+  const previousCallSign = normalizeCallSign(rawValue(adapted, ["previous_call_sign", "befClsgn", "BEF_CLSGN"]));
+  const builtDate = String(rawValue(adapted, ["built_date", "vsslCnstrDt", "VSSL_CNSTR_DT"])).trim();
+  const newbuildFlag = String(rawValue(adapted, ["newbuild_flag", "nwshipAt", "NWSHIP_AT"])).trim();
   const rawEta = firstValue(adapted, FIELD_ALIASES.eta) || (pncSource ? pncValue(adapted, "eta") : "");
   const rawEtb = firstValue(adapted, FIELD_ALIASES.etb) || (pncSource ? pncValue(adapted, "etb") : "");
   const rawAta = firstValue(adapted, FIELD_ALIASES.ata) || (pncSource ? pncValue(adapted, "ata") : "");
@@ -2191,8 +2253,8 @@ function normalizeRow(row, source, now) {
     raw_call_sign: rawCallSign || callSign,
     canonical_call_sign: callSign,
     call_sign: callSign,
-    call_sign_source: callSign ? "port_operation" : "",
-    call_sign_confidence: callSign ? 100 : 0,
+    call_sign_source: callSign ? (portOperationSource ? "port_operation" : source.key) : "",
+    call_sign_confidence: callSign ? (portOperationSource ? 100 : 80) : 0,
     call_sign_valid: Boolean(callSign),
     canonical_vessel_key: imo ? `IMO|${imo}` : mmsi ? `MMSI|${mmsi}` : callSign ? `CALL|${callSign}` : normalizeVesselName(vesselName || ""),
     terminal_vessel_code: terminalVesselCodeRaw,
@@ -2216,12 +2278,14 @@ function normalizeRow(row, source, now) {
     anchorage_relevance: source.anchorageRelevance || "",
     berth: berthIdentity.berth || rawBerthValue,
     berth_name: berthIdentity.berth || rawBerthValue,
+    facility_name: facilityName || berthIdentity.berth || rawBerthValue,
     anchorage_zone: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
     anchorage_name: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
     laidupFcltyNm: String(rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"])).trim(),
     facility_code: String(rawValue(adapted, ["laidupFcltyCd", "laidup_fclty_cd", "LAYDUP_FCLTY_CD", "fcltyCd", "facilityCd", "시설코드"])).trim(),
     status: normalizeStatus(firstValue(adapted, FIELD_ALIASES.status)),
     operator: String(firstValue(adapted, FIELD_ALIASES.operator)).trim(),
+    operator_or_agent_candidate: operatorOrAgentCandidate,
     agent: String(firstValue(adapted, FIELD_ALIASES.agent)).trim(),
     agent_name: String(firstValue(adapted, FIELD_ALIASES.agent)).trim(),
     agent_source: firstValue(adapted, FIELD_ALIASES.agent) ? "port_operation" : "",
@@ -2236,9 +2300,17 @@ function normalizeRow(row, source, now) {
     gt: toNumber(firstValue(adapted, FIELD_ALIASES.gt)),
     grtg: toNumber(firstValue(adapted, FIELD_ALIASES.grtg)),
     intrlGrtg: toNumber(firstValue(adapted, FIELD_ALIASES.intrlGrtg)),
+    international_gt: internationalGt,
+    net_tonnage: netTonnage,
     dwt: toNumber(firstValue(adapted, FIELD_ALIASES.dwt)),
     loa: toNumber(firstValue(adapted, FIELD_ALIASES.loa)),
     beam: toNumber(firstValue(adapted, FIELD_ALIASES.beam)),
+    draft,
+    length,
+    depth,
+    built_date: builtDate,
+    previous_call_sign: previousCallSign,
+    newbuild_flag: newbuildFlag,
     flag: normalizeFlag(firstValue(adapted, FIELD_ALIASES.flag)),
     terminal_name: normalizedTerminal,
     raw_terminal_name: rawTerminalValue,
@@ -2251,6 +2323,7 @@ function normalizeRow(row, source, now) {
     ].filter(Boolean).join(" ")),
     berth_status: rawValue(adapted, BERTH_STATUS_ALIASES) || pncOperation,
     terminal_activity: rawValue(adapted, ["terminal_activity", "terminalActivity", "작업구분", "작업내용", "하역상태", ...BERTH_STATUS_ALIASES]) || pncOperation,
+    cargo_operation_hint: cargoOperationHint,
     cargo_workload_proxy: toNumber(firstValue(adapted, CARGO_WORKLOAD_ALIASES)),
     pilot_time: pilotTimeInfo.pilot_timestamp,
     movement_time: pilotTimeInfo.pilot_timestamp,
@@ -2413,6 +2486,11 @@ function mergePortCallRecord(existing, incoming) {
   merged.berth_match_method = existing.berth_match_method && existing.berth_match_method !== "none" ? existing.berth_match_method : incoming.berth_match_method;
   merged.berth_occupancy_proxy = Math.max(Number(existing.berth_occupancy_proxy || 0), Number(incoming.berth_occupancy_proxy || 0));
   merged.terminal_activity = existing.terminal_activity || incoming.terminal_activity || "";
+  merged.facility_name = existing.facility_name || incoming.facility_name || "";
+  merged.operator_or_agent_candidate = existing.operator_or_agent_candidate || incoming.operator_or_agent_candidate || "";
+  merged.cargo_operation_hint = existing.cargo_operation_hint || incoming.cargo_operation_hint || "";
+  merged.port_facility_berth_signal = Boolean(existing.port_facility_berth_signal || incoming.port_facility_berth_signal);
+  merged.port_facility_operator_candidate = existing.port_facility_operator_candidate || incoming.port_facility_operator_candidate || "";
   merged.berth_status = existing.berth_status || incoming.berth_status || "";
   merged.terminal_name = existing.terminal_name || incoming.terminal_name || "";
   merged.match_keys = buildVesselMatchKeys(merged);
@@ -2474,6 +2552,7 @@ function mergeCargoHarborUse(record, rows = []) {
   const enriched = {
     ...record,
     berth: record.berth || String(firstValue(detail, FIELD_ALIASES.berth)).trim(),
+    facility_name: record.facility_name || String(rawValue(detail, ["facility_name", "laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "fcltyNm", "facilityNm"])).trim(),
     status: record.status === "Observed" ? normalizeStatus(firstValue(detail, FIELD_ALIASES.status)) : record.status,
     eta: record.eta || normalizeDate(firstValue(detail, FIELD_ALIASES.eta)),
     etb: record.etb || normalizeDate(firstValue(detail, FIELD_ALIASES.etb)),
@@ -2482,6 +2561,7 @@ function mergeCargoHarborUse(record, rows = []) {
     etd: record.etd || normalizeDate(firstValue(detail, FIELD_ALIASES.etd)),
     atd: record.atd || normalizeDate(firstValue(detail, FIELD_ALIASES.atd)),
     operator: record.operator || String(firstValue(detail, FIELD_ALIASES.operator)).trim(),
+    operator_or_agent_candidate: record.operator_or_agent_candidate || String(rawValue(detail, ["operator_or_agent_candidate", "entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim(),
     agent: record.agent || String(firstValue(detail, FIELD_ALIASES.agent)).trim(),
     agent_name: record.agent_name || record.agent || String(firstValue(detail, FIELD_ALIASES.agent)).trim(),
     agent_source: record.agent_source || (firstValue(detail, FIELD_ALIASES.agent) ? "port_facility" : ""),
@@ -2492,6 +2572,9 @@ function mergeCargoHarborUse(record, rows = []) {
     beam: record.beam || toNumber(firstValue(detail, FIELD_ALIASES.beam)),
     flag: record.flag || normalizeFlag(firstValue(detail, FIELD_ALIASES.flag)),
     destination: record.destination || String(firstValue(detail, FIELD_ALIASES.destination)).trim(),
+    cargo_operation_hint: record.cargo_operation_hint || String(rawValue(detail, ["cargo_operation_hint", "lnlNm", "LNL_NM", "cargoNm", "cargoName", "cargoType", "operation_type"])).trim(),
+    port_facility_berth_signal: Boolean(String(firstValue(detail, FIELD_ALIASES.berth) || rawValue(detail, ["laidupFcltyNm", "fcltyNm", "facilityNm"])).trim()),
+    port_facility_operator_candidate: record.operator_or_agent_candidate || String(rawValue(detail, ["entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim(),
     source_children: [...(record.source_children || []), "carg_harbor_use"],
     cargo_harbor_use_count: rows.length,
     cargo_harbor_use_enriched: true,
@@ -2903,12 +2986,21 @@ async function collectRealRows() {
       if (source.key === "vessel_spec") {
         Object.assign(diag, vesselSpecAliasDiagnostics(rows, sourceRecords));
         diag.rows_with_imo = sourceRecords.filter(record => String(record.imo || "").trim()).length;
-        diag.rows_with_mmsi = sourceRecords.filter(record => String(record.mmsi || "").trim()).length;
         diag.rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;
-        diag.rows_with_dwt = sourceRecords.filter(record => Number(record.dwt || 0) > 0).length;
         diag.rows_with_flag = sourceRecords.filter(record => String(record.flag || "").trim()).length;
         diag.rows_with_gt = sourceRecords.filter(record => Number(record.gt || record.grtg || record.intrlGrtg || 0) > 0).length;
+        diag.rows_with_international_gt = sourceRecords.filter(record => Number(record.international_gt || record.intrlGrtg || 0) > 0).length;
+        diag.rows_with_loa = sourceRecords.filter(record => Number(record.loa || record.length || 0) > 0).length;
+        diag.rows_with_beam = sourceRecords.filter(record => Number(record.beam || 0) > 0).length;
+        diag.rows_with_draft = sourceRecords.filter(record => Number(record.draft || 0) > 0).length;
         diag.rows_with_vessel_type = sourceRecords.filter(record => String(record.vessel_type || record.vsslKndNm || "").trim()).length;
+      }
+      if (source.key === "ulsan_vessel_operation") {
+        diag.ulsan_rows_with_vessel_name = sourceRecords.filter(record => String(record.vessel_name || "").trim()).length;
+        diag.ulsan_rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;
+        diag.ulsan_rows_with_port = sourceRecords.filter(record => String(record.port || record.port_name || record.normalized_port || "").trim()).length;
+        diag.ulsan_rows_with_berth = sourceRecords.filter(record => String(record.berth || record.berth_name || record.terminal_name || "").trim()).length;
+        diag.ulsan_rows_with_time = sourceRecords.filter(record => record.eta || record.etb || record.ata || record.atb || record.etd || record.atd).length;
       }
       diag.actionable_count = sourceRecords.filter(record => record.actionable_source_row).length;
       diag.rows_matched = diag.actionable_count;
@@ -2928,6 +3020,9 @@ async function collectRealRows() {
           normalized: childNormalized,
           skipped_by_limit: childSkippedByLimit,
           max_total_attempts: MAX_CHILD_ENRICHMENT_ROWS,
+          rows_with_facility_hint: sourceRecords.filter(record => record.facility_name || record.port_facility_berth_signal).length,
+          rows_with_operator_candidate: sourceRecords.filter(record => record.operator_or_agent_candidate || record.port_facility_operator_candidate).length,
+          rows_with_cargo_hint: sourceRecords.filter(record => record.cargo_operation_hint).length,
           statuses: Object.fromEntries(childStatuses)
         };
       }

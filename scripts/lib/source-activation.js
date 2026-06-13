@@ -1,7 +1,7 @@
 import { SOURCE_CSV_URL_RECOMMENDED_FIX, diagnoseSourceCsvUrl } from "./source-csv-url.js";
 
 const ULSAN_AUXILIARY_SOURCE_KEYS = new Set([
-  "ulsan_core",
+  "ulsan_vessel_operation",
   "ulsan_berth_detail",
   "ulsan_cargo_plan",
   "ulsan_berth_operation",
@@ -34,11 +34,11 @@ const SOURCE_SPECS = [
     label: "Vessel specification",
     collectorKeys: ["vessel_spec"],
     expectedEnvNames: ["VESSEL_SPEC_SERVICE_KEY", "VESSEL_SPEC_API_URL"],
-    required: ["VESSEL_SPEC_SERVICE_KEY", "VESSEL_SPEC_API_URL"],
+    required: ["VESSEL_SPEC_SERVICE_KEY"],
     sourceLayer: "auxiliary",
     coreBlocking: false,
-    businessImpact: "Vessel particulars such as IMO, MMSI, GT, DWT, flag, and vessel type may remain incomplete.",
-    fixHint: "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL."
+    businessImpact: "Vessel particulars such as IMO, call sign, GT, flag, dimensions, and vessel type may remain incomplete.",
+    fixHint: "Set VESSEL_SPEC_SERVICE_KEY. VESSEL_SPEC_API_URL is optional and defaults to SicsVsslManp3 Info3."
   },
   {
     key: "pilot_sources",
@@ -57,6 +57,18 @@ const SOURCE_SPECS = [
     requiredAny: ["BERTH_SOURCE_URLS", "PNC_SOURCE_URLS"],
     businessImpact: "Berth assignment and terminal schedule enrichment may be unavailable.",
     fixHint: "Set BERTH_SOURCE_URLS or PNC_SOURCE_URLS. Current collector directly uses PNC_SOURCE_URLS for berth-like feeds."
+  },
+  {
+    key: "port_facility",
+    label: "Port facility child enrichment",
+    collectorKeys: [],
+    childEnrichment: true,
+    expectedEnvNames: ["PORT_FACILITY_API_URL", "PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY"],
+    requiredAny: ["PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY"],
+    sourceLayer: "auxiliary",
+    coreBlocking: false,
+    businessImpact: "Berth/facility, operator candidate, and cargo operation hints from CargHarborUse2 may be unavailable.",
+    fixHint: "Keep CargHarborUse2 as a child enrichment of port_operation using parent prtAgCd + etryptYear + etryptCo + clsgn."
   },
   {
     key: "mof_ais_dynamic",
@@ -86,11 +98,12 @@ const SOURCE_SPECS = [
     fixHint: "Set MOF_AIS_STAT_API_URL and MOF_AIS_STAT_SERVICE_KEY."
   },
   {
-    key: "ulsan_core",
-    label: "Ulsan core",
-    collectorKeys: ["ulsan_core"],
+    key: "ulsan_vessel_operation",
+    label: "Ulsan vessel operation",
+    collectorKeys: ["ulsan_vessel_operation"],
     expectedEnvNames: [
       "ULSAN_API_URL",
+      "ULSAN_API_OPERATION",
       "ULSAN_API_KEY",
       "ULSAN_BERTH_DETAIL_API_KEY",
       "ULSAN_CARGO_PLAN_API_KEY",
@@ -99,8 +112,8 @@ const SOURCE_SPECS = [
     ],
     required: ["ULSAN_API_URL"],
     requiredAny: ["ULSAN_API_KEY", "ULSAN_BERTH_DETAIL_API_KEY", "ULSAN_CARGO_PLAN_API_KEY", "ULSAN_BERTH_OPERATION_API_KEY", "ULSAN_TERMINAL_PROCESS_API_KEY"],
-    businessImpact: "Ulsan-specific berth, cargo, and terminal process enrichment may not run.",
-    fixHint: "Set ULSAN_API_URL and a matching ULSAN_* API key."
+    businessImpact: "Ulsan vessel operation, berth, and movement enrichment may not run.",
+    fixHint: "Set ULSAN_API_URL and ULSAN_API_KEY. ULSAN_API_OPERATION defaults to getVtsBaseVslNvgtInfo if omitted."
   },
   {
     key: "ulsan_berth_detail",
@@ -156,6 +169,25 @@ const SOURCE_SPECS = [
 
 function present(env, name) {
   return Boolean(env?.[name] && String(env[name]).trim());
+}
+
+function looksLikeHttpUrl(value) {
+  const text = String(value || "").trim();
+  if (!/^https?:\/\//i.test(text)) return false;
+  try {
+    const parsed = new URL(text);
+    return Boolean(parsed.protocol && parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function invalidUlsanApiUrl(spec, env) {
+  if (!String(spec.key || "").startsWith("ulsan")) return false;
+  const urlEnvName = spec.key === "ulsan_vessel_operation"
+    ? "ULSAN_API_URL"
+    : spec.expectedEnvNames.find(name => name.endsWith("_API_URL"));
+  return present(env, urlEnvName) && !looksLikeHttpUrl(env[urlEnvName]);
 }
 
 function envPresence(env, names = []) {
@@ -353,6 +385,9 @@ function exactFixInstruction(spec, env, missing = []) {
   if (spec.key.startsWith("ulsan") && missing.some(name => name.includes("_API_URL"))) {
     return "Set matching ULSAN_*_API_URL";
   }
+  if (invalidUlsanApiUrl(spec, env)) {
+    return "Set ULSAN_API_URL to the full HTTP API endpoint URL. Put the service key only in ULSAN_API_KEY.";
+  }
   if (spec.key === "pilot_sources" && missing.includes("PILOT_SOURCE_URLS")) {
     return "Set PILOT_SOURCE_URLS";
   }
@@ -400,6 +435,10 @@ function statusForSpec({ spec, env, sources }) {
     status = anyExpectedPresent ? "PARTIAL" : "NOT_CONFIGURED";
     skipReason = missing.some(name => name.includes("API_URL")) ? "missing_api_url" : "missing_env";
   }
+  if (invalidUlsanApiUrl(spec, env)) {
+    status = "PARTIAL";
+    skipReason = "invalid_api_url_value";
+  }
   if (spec.key === "source_csv" && present(env, "SOURCE_CSV_URL") && String(env.ENABLE_SOURCE_CSV || "").toLowerCase() !== "true") {
     status = "SKIPPED";
     skipReason = "disabled_by_default_enable_source_csv_true";
@@ -424,7 +463,10 @@ function statusForSpec({ spec, env, sources }) {
     status = "NO_ROWS";
     skipReason = skipReason || "no_rows";
   }
-  if (missing.length === 0 && matched.length === 0 && status === "NOT_CONFIGURED") {
+  if (missing.length === 0 && matched.length === 0 && spec.childEnrichment && status === "NOT_CONFIGURED") {
+    status = "NOT_ATTEMPTED";
+    skipReason = "child_enrichment_no_runtime_diagnostics";
+  } else if (missing.length === 0 && matched.length === 0 && status === "NOT_CONFIGURED") {
     status = "NOT_ATTEMPTED";
     skipReason = "not_registered_collector";
   }
@@ -432,7 +474,9 @@ function statusForSpec({ spec, env, sources }) {
     status = "ACTIVE";
     skipReason = null;
   }
-  const fixInstruction = skipReason === "not_registered_collector"
+  const fixInstruction = skipReason === "child_enrichment_no_runtime_diagnostics"
+    ? spec.fixHint
+    : skipReason === "not_registered_collector"
     ? `Register or enable the ${spec.key} collector.`
     : exactFixInstruction(spec, env, missing);
 

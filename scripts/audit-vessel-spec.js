@@ -44,8 +44,7 @@ const sourceStatus = normalizeSourceCollectionStatusPayload(selectedSourceStatus
 
 const item = (sourceStatus.items || []).find(row => row.source_key === "vessel_spec") || {};
 const diagnostics = Array.isArray(item.diagnostics) ? item.diagnostics : [];
-const configured = (item.present_env || []).includes("VESSEL_SPEC_SERVICE_KEY") &&
-  (item.present_env || []).includes("VESSEL_SPEC_API_URL");
+const configured = (item.present_env || []).includes("VESSEL_SPEC_SERVICE_KEY") || summary?.configured === true;
 const attempted = Boolean(item.collector_attempted);
 const parserErrors = diagnostics
   .filter(row => /parse|unsupported_response_format/i.test(String(row.error_message || row.skip_reason || row.failure_reason || row.status || "")))
@@ -53,9 +52,39 @@ const parserErrors = diagnostics
   .filter(Boolean);
 
 const rowsWithImo = number(summary?.rows_with_imo) || sumDiagnostics(diagnostics, "rows_with_imo");
-const rowsWithMmsi = number(summary?.rows_with_mmsi) || sumDiagnostics(diagnostics, "rows_with_mmsi");
-const rowsWithDwt = number(summary?.rows_with_dwt) || sumDiagnostics(diagnostics, "rows_with_dwt");
 const rowsWithFlag = number(summary?.rows_with_flag) || sumDiagnostics(diagnostics, "rows_with_flag");
+const rowsWithCallSign = number(summary?.rows_with_call_sign) || sumDiagnostics(diagnostics, "rows_with_call_sign");
+const rowsWithGt = number(summary?.rows_with_gt) || sumDiagnostics(diagnostics, "rows_with_gt");
+const rowsWithLoa = number(summary?.rows_with_loa) || sumDiagnostics(diagnostics, "rows_with_loa");
+const rowsWithBeam = number(summary?.rows_with_beam) || sumDiagnostics(diagnostics, "rows_with_beam");
+const skipReason = item.skip_reason || summary?.skip_reasons?.[0] || "";
+const recommendedFix = String(skipReason).startsWith("waiting_until_next_window")
+  ? "No setting change required; vessel_spec is scheduled for the next auxiliary window."
+  : item.exact_fix_instruction || item.fix_hint || summary?.fix_hint || summary?.recommended_fix || "";
+const report = {
+  schema_version: "1.0",
+  generated_at: new Date().toISOString(),
+  source_key: "vessel_spec",
+  configured,
+  attempted,
+  http_status: firstPresent(diagnostics, "http_status") ?? null,
+  status: item.status || summary?.status || "unknown",
+  rows_collected: number(item.rows_collected || summary?.rows_collected),
+  rows_normalized: number(item.rows_normalized || summary?.rows_normalized),
+  rows_matched_to_vessels: number(summary?.rows_matched_to_vessels),
+  rows_with_imo: rowsWithImo,
+  rows_with_call_sign: rowsWithCallSign,
+  rows_with_gt: rowsWithGt,
+  rows_with_flag: rowsWithFlag,
+  rows_with_loa: rowsWithLoa,
+  rows_with_beam: rowsWithBeam,
+  parser_alias_coverage: summary?.parser_alias_coverage || summary?.diagnostic_summary?.sample_sources?.[0]?.expected_field_aliases_matched || {},
+  parser_errors: parserErrors,
+  blocker_reason: summary?.blocker_reason || summary?.parser_blocker || skipReason || "",
+  recommended_fix: recommendedFix
+};
+fs.mkdirSync(path.join(ROOT, "dashboard/api/aux"), { recursive: true });
+fs.writeFileSync(path.join(ROOT, "dashboard/api/aux/vessel-spec-audit.json"), JSON.stringify(report, null, 2));
 
 console.log("Vessel Spec Source Audit");
 console.log("========================");
@@ -67,14 +96,17 @@ console.log(`http_status=${firstPresent(diagnostics, "http_status") ?? "-"}`);
 console.log(`rows_collected=${number(item.rows_collected || summary?.rows_collected)}`);
 console.log(`rows_normalized=${number(item.rows_normalized || summary?.rows_normalized)}`);
 console.log(`rows_with_imo=${rowsWithImo}`);
-console.log(`rows_with_mmsi=${rowsWithMmsi}`);
-console.log(`rows_with_dwt=${rowsWithDwt}`);
+console.log(`rows_with_call_sign=${rowsWithCallSign}`);
+console.log(`rows_with_gt=${rowsWithGt}`);
 console.log(`rows_with_flag=${rowsWithFlag}`);
+console.log(`rows_with_loa=${rowsWithLoa}`);
+console.log(`rows_with_beam=${rowsWithBeam}`);
 console.log(`parser_errors=${parserErrors.join("; ") || "-"}`);
-console.log(`skip_reason=${item.skip_reason || summary?.skip_reasons?.[0] || "-"}`);
+console.log(`skip_reason=${skipReason || "-"}`);
 console.log(`missing_env=${(item.missing_env || []).join(",") || "-"}`);
-console.log(`fix_hint=${item.exact_fix_instruction || item.fix_hint || summary?.fix_hint || "-"}`);
+console.log(`fix_hint=${recommendedFix || "-"}`);
 console.log(`summary_endpoint=dashboard/api/aux/vessel-spec-summary.json`);
+console.log(`audit_report=dashboard/api/aux/vessel-spec-audit.json`);
 
 if (configured && item.status === "NOT_CONFIGURED") {
   console.error("ERROR: vessel_spec has VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL but is classified as NOT_CONFIGURED.");

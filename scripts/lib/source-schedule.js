@@ -47,6 +47,24 @@ export const SOURCE_SCHEDULE_TIERS = [
     frequency_hours: 6
   },
   {
+    source_key: "ulsan_vessel_operation",
+    source_label: "Ulsan vessel operation",
+    tier: "TIER_1_HIGH_VALUE",
+    tier_label: "High value",
+    source_layer: "auxiliary",
+    update_frequency: "every_6h",
+    frequency_hours: 6
+  },
+  {
+    source_key: "port_facility",
+    source_label: "Port facility child enrichment",
+    tier: "TIER_1_HIGH_VALUE",
+    tier_label: "High value",
+    source_layer: "auxiliary",
+    update_frequency: "every_6h",
+    frequency_hours: 6
+  },
+  {
     source_key: "mof_ais_dynamic",
     source_label: "MOF AIS dynamic",
     tier: "TIER_2_MEDIUM",
@@ -102,6 +120,8 @@ export function sourceScheduleGroupKey(sourceKey = "") {
   if (key.startsWith("pnc_source_")) return "berth_sources";
   if (key === "source_csv") return "source_csv";
   if (key === "vessel_spec") return "vessel_spec";
+  if (key === "ulsan_vessel_operation") return "ulsan_vessel_operation";
+  if (key === "port_facility" || key === "port_facility_enrichment") return "port_facility";
   if (key === "mof_ais_info") return "mof_ais_info";
   if (key === "mof_ais_dynamic") return "mof_ais_dynamic";
   if (key.startsWith("port_operation_")) return "port_operation";
