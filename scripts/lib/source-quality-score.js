@@ -89,8 +89,6 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
   if (Number.isFinite(explicit)) return explicit;
   if (sourceKey === "pilot_sources") {
     return number(
-      bootstrapKpis.pilotage_detected_count ??
-      report.pilotage_detected_count ??
       report.pilotage_enrichment?.matched_vessels ??
       report.pilotage_enrichment?.applied_to_records ??
       matchingDiagnostics.pilot_rows_matched,
@@ -99,8 +97,6 @@ function sourceRowsMatchedToVessels({ sourceKey, item, matchingDiagnostics = {},
   }
   if (sourceKey === "berth_sources") {
     return number(
-      bootstrapKpis.aux_confirmed_berth_count ??
-      report.aux_confirmed_berth_count ??
       matchingDiagnostics.pnc_rows_matched ??
       matchingDiagnostics.berth_rows_matched,
       0

@@ -212,20 +212,6 @@ function blockedFields({ sourceKey, quality = {}, fieldCounts = {}, displayCount
 }
 
 function sourceMatchedCount({ sourceKey, quality = {}, bootstrapKpis = {}, records = [] }) {
-  if (sourceKey === "pilot_sources") {
-    return Math.max(
-      number(quality.rows_matched_to_vessels),
-      number(bootstrapKpis.pilotage_detected_count),
-      countPilotageSignals(records)
-    );
-  }
-  if (sourceKey === "berth_sources") {
-    return Math.max(
-      number(quality.rows_matched_to_vessels),
-      number(bootstrapKpis.aux_confirmed_berth_count),
-      countBerthSignals(records)
-    );
-  }
   if (sourceKey === "port_operation") {
     return Math.min(records.length, number(quality.rows_matched_to_vessels));
   }
@@ -263,22 +249,33 @@ export function buildEnrichmentUtilizationPayload({
     const quality = qualityMap.get(sourceKey) || {};
     const fields = unique([...(FIELD_GROUPS[sourceKey] || []), ...(quality.fields_contributed || [])]);
     const rawMatchedVessels = sourceMatchedCount({ sourceKey, quality, bootstrapKpis, records: dedupedRecords });
-    const samples = sourceSamples(dedupedRecords, sourceKey, fields);
+    const visibleSamples = sourceSamples(dedupedRecords, sourceKey, fields);
     const visibleSignalCount = sourceKey === "pilot_sources"
       ? countPilotageSignals(dedupedRecords)
       : sourceKey === "berth_sources"
         ? countBerthSignals(dedupedRecords)
         : 0;
-    const matchedVessels = Math.max(rawMatchedVessels, samples.length, visibleSignalCount);
-    const fieldCounts = fieldCountsForSource(dedupedRecords, sourceKey, fields, matchedVessels);
+    const matchedVessels = rawMatchedVessels;
+    const fieldCounts = matchedVessels > 0 || sourceKey === "port_operation"
+      ? fieldCountsForSource(dedupedRecords, sourceKey, fields, matchedVessels)
+      : {};
     const fieldsAdded = Object.entries(fieldCounts).map(([field, count]) => ({ field, count }));
     const fieldsUpdated = fieldsAdded.filter(item => item.count > 0);
     const fieldsBlocked = blockedFields({ sourceKey, quality, fieldCounts, displayCounts });
     const displayUpdatedCount = maxFieldCount(fieldCounts);
-    const countInconsistency = rawMatchedVessels === 0 && samples.length > 0;
+    const sampleEnrichedVessels = matchedVessels > 0 ? visibleSamples : [];
+    const candidateSamples = matchedVessels > 0
+      ? []
+      : visibleSamples.map(sample => ({
+        ...sample,
+        sample_basis: "visible_candidate_not_source_matched"
+      }));
+    const patchHintsCreated = number(quality.patch_hints_created || quality.patch_hint_count || 0);
+    const patchesAppliedToDisplay = number(quality.patches_applied_to_vessel_display || quality.patches_applied || 0);
+    const countInconsistency = matchedVessels <= 0 && sampleEnrichedVessels.some(sample => Array.isArray(sample.fields_added) && sample.fields_added.length > 0);
     const blockerParts = unique([
       quality.blocker_reason,
-      matchedVessels > 0 && samples.length === 0 ? "matched_source_rows_not_attributed_to_vessel_display_samples" : ""
+      matchedVessels > 0 && sampleEnrichedVessels.length === 0 ? "matched_source_rows_not_attributed_to_vessel_display_samples" : ""
     ]);
     return {
       source_key: sourceKey,
@@ -286,17 +283,27 @@ export function buildEnrichmentUtilizationPayload({
       source_rows_collected: number(quality.rows_collected),
       rows_normalized: number(quality.rows_normalized),
       rows_matched_to_vessels: matchedVessels,
+      patch_hints_created: patchHintsCreated,
       enrichment_patches_created: fieldsAdded.reduce((sum, item) => sum + number(item.count), 0),
+      patches_applied_to_vessel_display: patchesAppliedToDisplay,
       vessel_display_records_updated: displayUpdatedCount,
-      ui_visible_records: samples.length,
+      ui_visible_records: sampleEnrichedVessels.length,
+      display_signal_records_visible: visibleSignalCount,
       count_inconsistency: countInconsistency,
       count_inconsistency_note: countInconsistency
-        ? "Sample enriched vessels were visible even though source quality reported zero matched vessels; matched_vessels was reconciled from visible samples."
+        ? "Sample enriched vessels are reserved for applied examples; candidate-only rows must be moved to candidate_samples."
         : "",
       fields_added: fieldsAdded,
       fields_updated: fieldsUpdated,
       fields_blocked: fieldsBlocked,
-      sample_enriched_vessels: samples,
+      sample_enriched_vessels: sampleEnrichedVessels,
+      candidate_samples: candidateSamples,
+      sample_basis: sampleEnrichedVessels.length ? "matched_records" : candidateSamples.length ? "candidate_visible_fields" : "none",
+      identifier_fields_hidden_in_display: ["mof_ais_info", "mof_ais_dynamic"].includes(sourceKey) &&
+        matchedVessels > 0 &&
+        !fieldCounts.imo &&
+        !fieldCounts.mmsi,
+      coverage_label: quality.coverage_label || "",
       blocker_reason: blockerParts.join("; "),
       quality_label: quality.quality_label || "",
       utilization_score: quality.utilization_score ?? null
@@ -335,17 +342,23 @@ export function buildEnrichmentUtilizationPayload({
     report.source_data_enrichment?.enrichment_patches_applied ||
     report.source_data_enrichment?.auto_applied
   );
+  const patchHintsCreated = items.reduce((sum, item) => sum + number(item.patch_hints_created), 0);
+  const patchesAppliedToDisplay = items.reduce((sum, item) => sum + number(item.patches_applied_to_vessel_display), 0);
+  const vesselDisplayRecordsUpdated = items.reduce((sum, item) => sum + number(item.vessel_display_records_updated), 0);
+  const uiVisibleRecords = items.reduce((sum, item) => sum + number(item.ui_visible_records), 0);
   const countReconciliation = {
     source_rows_collected: sourceRowsCollected,
     rows_normalized: rowsNormalized,
     rows_matched_to_vessels: rowsMatchedToVessels,
+    patch_hints_created: patchHintsCreated,
+    enrichment_patches_created: enrichmentPatchesCreated,
+    patches_applied_to_vessel_display: patchesAppliedToDisplay || enrichmentPatchesApplied,
+    vessel_display_records_updated: vesselDisplayRecordsUpdated,
+    ui_visible_records: uiVisibleRecords,
     source_rows_normalized: rowsNormalized,
     source_rows_matched_to_vessels: rowsMatchedToVessels,
-    enrichment_patches_created: enrichmentPatchesCreated,
     enrichment_candidates_created: enrichmentPatchesCreated,
-    enrichment_patches_applied: enrichmentPatchesApplied,
-    vessel_display_records_updated: pilotageDisplayCount + berthDisplayCount,
-    ui_visible_records: dedupedRecords.length
+    enrichment_patches_applied: enrichmentPatchesApplied
   };
   const displayGapExplanations = [];
   if (pilotageMatchedCount > 0 && pilotageDisplayCount === 0) {

@@ -162,7 +162,19 @@
       "sample_enriched_vessels": [],
       "blocker_reason": "API response too large: 72478261 bytes",
       "quality_label": "FAILED",
-      "utilization_score": 28
+      "utilization_score": 28,
+      "bottleneck_stage": "FETCH_BLOCKED",
+      "bottleneck_evidence": [
+        "rows_collected=0",
+        "rows_normalized=0",
+        "rows_matched_to_vessels=0",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "source_csv cannot produce usable reference rows before fetch/body-size guard completes",
+        "blocker=API response too large: 72478261 bytes"
+      ],
+      "bottleneck_recommended_next_action": "Point SOURCE_CSV_URL to a lightweight verified reference CSV and run reference_enrichment only."
     },
     {
       "source_key": "pilot_sources",
@@ -190,7 +202,19 @@
       "sample_enriched_vessels": [],
       "blocker_reason": "no_vessel_match_or_signal",
       "quality_label": "HIGH",
-      "utilization_score": 83
+      "utilization_score": 83,
+      "bottleneck_stage": "MATCH_BLOCKED",
+      "bottleneck_evidence": [
+        "rows_collected=403",
+        "rows_normalized=72",
+        "rows_matched_to_vessels=0",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "normalized auxiliary rows exist but no current vessel match is confirmed",
+        "blocker=no_vessel_match_or_signal"
+      ],
+      "bottleneck_recommended_next_action": "Strengthen call_sign, vessel_name, normalized_port, and time-window matching before applying weak matches."
     },
     {
       "source_key": "berth_sources",
@@ -219,7 +243,23 @@
           "reason": "no_vessel_match_or_signal"
         }
       ],
-      "sample_enriched_vessels": [
+      "sample_enriched_vessels": [],
+      "blocker_reason": "no_vessel_match_or_signal",
+      "quality_label": "MEDIUM",
+      "utilization_score": 73,
+      "bottleneck_stage": "MATCH_BLOCKED",
+      "bottleneck_evidence": [
+        "rows_collected=30",
+        "rows_normalized=30",
+        "rows_matched_to_vessels=0",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "normalized auxiliary rows exist but no current vessel match is confirmed",
+        "blocker=no_vessel_match_or_signal"
+      ],
+      "bottleneck_recommended_next_action": "Strengthen PNC vessel name, vessel code, berth, terminal, and port matching before applying identity fields.",
+      "candidate_samples": [
         {
           "vessel_key": "ONKD",
           "vessel_name": "MINERAL HOPE",
@@ -243,7 +283,8 @@
           "port_code": "031",
           "port_name": "평택·당진",
           "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
+          "display_name": "평택·당진",
+          "sample_basis": "candidate_visible_fields_not_source_matched"
         },
         {
           "vessel_key": "V7B3347",
@@ -268,7 +309,8 @@
           "port_code": "020",
           "port_name": "부산",
           "port_display_name": "부산",
-          "display_name": "부산"
+          "display_name": "부산",
+          "sample_basis": "candidate_visible_fields_not_source_matched"
         },
         {
           "vessel_key": "HOYL",
@@ -293,7 +335,8 @@
           "port_code": "820",
           "port_name": "울산",
           "port_display_name": "울산",
-          "display_name": "울산"
+          "display_name": "울산",
+          "sample_basis": "candidate_visible_fields_not_source_matched"
         },
         {
           "vessel_key": "BOCT5",
@@ -318,7 +361,8 @@
           "port_code": "820",
           "port_name": "울산",
           "port_display_name": "울산",
-          "display_name": "울산"
+          "display_name": "울산",
+          "sample_basis": "candidate_visible_fields_not_source_matched"
         },
         {
           "vessel_key": "V7JH8",
@@ -343,12 +387,14 @@
           "port_code": "030",
           "port_name": "인천",
           "port_display_name": "인천",
-          "display_name": "인천"
+          "display_name": "인천",
+          "sample_basis": "candidate_visible_fields_not_source_matched"
         }
       ],
-      "blocker_reason": "no_vessel_match_or_signal",
-      "quality_label": "MEDIUM",
-      "utilization_score": 73
+      "count_inconsistency": false,
+      "count_inconsistency_resolved": true,
+      "count_inconsistency_note": "Moved visible candidate samples out of sample_enriched_vessels because source matched count is zero.",
+      "sample_basis": "candidate_visible_fields"
     },
     {
       "source_key": "vessel_spec",
@@ -388,7 +434,19 @@
       "sample_enriched_vessels": [],
       "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
       "quality_label": "LOW",
-      "utilization_score": 43
+      "utilization_score": 43,
+      "bottleneck_stage": "NORMALIZE_BLOCKED",
+      "bottleneck_evidence": [
+        "rows_collected=1",
+        "rows_normalized=0",
+        "rows_matched_to_vessels=0",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "vessel_spec fetch/HTTP can succeed but normalized parser output is empty",
+        "blocker=HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+      ],
+      "bottleneck_recommended_next_action": "Inspect raw_sample_keys and add parser aliases or nested response handling."
     },
     {
       "source_key": "mof_ais_info",
@@ -408,7 +466,19 @@
       "sample_enriched_vessels": [],
       "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
       "quality_label": "HIGH",
-      "utilization_score": 82
+      "utilization_score": 82,
+      "bottleneck_stage": "COVERAGE_LIMITED",
+      "bottleneck_evidence": [
+        "rows_collected=10",
+        "rows_normalized=10",
+        "rows_matched_to_vessels=10",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "MOF AIS rows are smoke-level compared with the vessel universe",
+        "blocker=matched_source_rows_not_attributed_to_vessel_display_samples"
+      ],
+      "bottleneck_recommended_next_action": "Expand target-based AIS enrichment for sales targets and contact-now vessels."
     },
     {
       "source_key": "mof_ais_dynamic",
@@ -419,7 +489,19 @@
       "sample_enriched_vessels": [],
       "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
       "quality_label": "HIGH",
-      "utilization_score": 82
+      "utilization_score": 82,
+      "bottleneck_stage": "COVERAGE_LIMITED",
+      "bottleneck_evidence": [
+        "rows_collected=10",
+        "rows_normalized=10",
+        "rows_matched_to_vessels=10",
+        "patches_created=0",
+        "vessel_display_records_updated=0",
+        "total_vessels=1016",
+        "MOF AIS rows are smoke-level compared with the vessel universe",
+        "blocker=matched_source_rows_not_attributed_to_vessel_display_samples"
+      ],
+      "bottleneck_recommended_next_action": "Expand target-based AIS enrichment for sales targets and contact-now vessels."
     },
     {
       "source_key": "port_operation",
@@ -691,5 +773,143 @@
   "cached_patch_applied_count": 0,
   "cached_patch_source_generated_at": "2026-06-12T14:22:44.751Z",
   "cached_patch_fields_applied_by_name": {},
-  "vessel_display_records_updated": 33
+  "vessel_display_records_updated": 33,
+  "source_bottleneck_summary": {
+    "generated_at": "2026-06-13T00:44:43.032Z",
+    "report_endpoint": "dashboard/api/enrichment/source-bottleneck-report.json",
+    "stage_counts": {
+      "FETCH_BLOCKED": 1,
+      "MATCH_BLOCKED": 2,
+      "NORMALIZE_BLOCKED": 1,
+      "COVERAGE_LIMITED": 2
+    },
+    "items": [
+      {
+        "source_key": "source_csv",
+        "bottleneck_stage": "FETCH_BLOCKED",
+        "evidence": [
+          "rows_collected=0",
+          "rows_normalized=0",
+          "rows_matched_to_vessels=0",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "source_csv cannot produce usable reference rows before fetch/body-size guard completes",
+          "blocker=API response too large: 72478261 bytes"
+        ],
+        "rows_collected": 0,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "API response too large: 72478261 bytes",
+        "recommended_next_action": "Point SOURCE_CSV_URL to a lightweight verified reference CSV and run reference_enrichment only."
+      },
+      {
+        "source_key": "pilot_sources",
+        "bottleneck_stage": "MATCH_BLOCKED",
+        "evidence": [
+          "rows_collected=403",
+          "rows_normalized=72",
+          "rows_matched_to_vessels=0",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "normalized auxiliary rows exist but no current vessel match is confirmed",
+          "blocker=no_vessel_match_or_signal"
+        ],
+        "rows_collected": 403,
+        "rows_normalized": 72,
+        "rows_matched_to_vessels": 0,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "no_vessel_match_or_signal",
+        "recommended_next_action": "Strengthen call_sign, vessel_name, normalized_port, and time-window matching before applying weak matches."
+      },
+      {
+        "source_key": "berth_sources",
+        "bottleneck_stage": "MATCH_BLOCKED",
+        "evidence": [
+          "rows_collected=30",
+          "rows_normalized=30",
+          "rows_matched_to_vessels=0",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "normalized auxiliary rows exist but no current vessel match is confirmed",
+          "blocker=no_vessel_match_or_signal"
+        ],
+        "rows_collected": 30,
+        "rows_normalized": 30,
+        "rows_matched_to_vessels": 0,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "no_vessel_match_or_signal",
+        "recommended_next_action": "Strengthen PNC vessel name, vessel code, berth, terminal, and port matching before applying identity fields."
+      },
+      {
+        "source_key": "vessel_spec",
+        "bottleneck_stage": "NORMALIZE_BLOCKED",
+        "evidence": [
+          "rows_collected=1",
+          "rows_normalized=0",
+          "rows_matched_to_vessels=0",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "vessel_spec fetch/HTTP can succeed but normalized parser output is empty",
+          "blocker=HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run."
+        ],
+        "rows_collected": 1,
+        "rows_normalized": 0,
+        "rows_matched_to_vessels": 0,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+        "recommended_next_action": "Inspect raw_sample_keys and add parser aliases or nested response handling."
+      },
+      {
+        "source_key": "mof_ais_info",
+        "bottleneck_stage": "COVERAGE_LIMITED",
+        "evidence": [
+          "rows_collected=10",
+          "rows_normalized=10",
+          "rows_matched_to_vessels=10",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "MOF AIS rows are smoke-level compared with the vessel universe",
+          "blocker=matched_source_rows_not_attributed_to_vessel_display_samples"
+        ],
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+        "recommended_next_action": "Expand target-based AIS enrichment for sales targets and contact-now vessels."
+      },
+      {
+        "source_key": "mof_ais_dynamic",
+        "bottleneck_stage": "COVERAGE_LIMITED",
+        "evidence": [
+          "rows_collected=10",
+          "rows_normalized=10",
+          "rows_matched_to_vessels=10",
+          "patches_created=0",
+          "vessel_display_records_updated=0",
+          "total_vessels=1016",
+          "MOF AIS rows are smoke-level compared with the vessel universe",
+          "blocker=matched_source_rows_not_attributed_to_vessel_display_samples"
+        ],
+        "rows_collected": 10,
+        "rows_normalized": 10,
+        "rows_matched_to_vessels": 10,
+        "patches_created": 0,
+        "vessel_display_records_updated": 0,
+        "blocker_reason": "matched_source_rows_not_attributed_to_vessel_display_samples",
+        "recommended_next_action": "Expand target-based AIS enrichment for sales targets and contact-now vessels."
+      }
+    ]
+  }
 }

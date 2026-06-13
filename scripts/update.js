@@ -18,6 +18,12 @@ import { latestSuccessfulFallbackState } from "./lib/dataset-state.js";
 import { buildSourceCollectionStatus, printSourceEnvDiagnostics } from "./lib/source-activation.js";
 import { buildSourceCsvEnrichmentDryRun, buildSourceCsvIndexPayload, buildSourceCsvReferencePayload, buildSourceCsvSummary, updateSourceCsvReferenceCache } from "./lib/source-csv-cache.js";
 import { buildEnrichmentUtilizationPayload } from "./lib/enrichment-utilization.js";
+import {
+  attachSourceBottleneckSummary,
+  buildSourceBottleneckMarkdown,
+  buildSourceBottleneckReport,
+  SOURCE_BOTTLENECK_REPORT_MD
+} from "./lib/source-bottlenecks.js";
 import { buildSourceDataEnrichmentPayloads } from "./lib/source-data-enrichment-engine.js";
 import { buildPilotageBerthMatchReviewPayload } from "./lib/match-review.js";
 import {
@@ -3124,6 +3130,11 @@ function ensureParentDir(filePath) {
   if (dir) fs.mkdirSync(dir, { recursive: true });
 }
 
+function writeTextFile(filePath, text) {
+  ensureParentDir(filePath);
+  fs.writeFileSync(filePath, text, "utf8");
+}
+
 function dashboardJsonRootType(value) {
   if (Array.isArray(value)) return "array";
   if (value === null) return "null";
@@ -4120,9 +4131,11 @@ function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sour
     ? { ...base.count_reconciliation }
     : {};
   if (shouldPreserveAuxDiagnosticsForCore() && cachedPatchResult?.available) {
+    countReconciliation.patch_hints_created = Math.max(Number(countReconciliation.patch_hints_created || 0), Number(cachedPatchResult.patch_hints_created || 0));
     countReconciliation.enrichment_patches_created = Math.max(Number(countReconciliation.enrichment_patches_created || 0), cachedPatchCount, cachedApplied);
     countReconciliation.enrichment_candidates_created = Math.max(Number(countReconciliation.enrichment_candidates_created || 0), Number(countReconciliation.enrichment_patches_created || 0));
     countReconciliation.enrichment_patches_applied = Math.max(Number(countReconciliation.enrichment_patches_applied || 0), cachedApplied);
+    countReconciliation.patches_applied_to_vessel_display = Math.max(Number(countReconciliation.patches_applied_to_vessel_display || 0), cachedApplied);
     countReconciliation.vessel_display_records_updated = Math.max(Number(countReconciliation.vessel_display_records_updated || 0), cachedDisplayUpdates, currentDisplayUpdates);
     countReconciliation.ui_visible_records = Math.max(Number(countReconciliation.ui_visible_records || 0), currentUiVisible);
   }
@@ -4144,6 +4157,8 @@ function protectEnrichmentUtilizationForCore({ payload = {}, previous = {}, sour
     cached_patch_applied_count: cachedApplied,
     cached_patch_source_generated_at: cachedPatchResult?.source_generated_at || base.cached_patch_source_generated_at || null,
     cached_patch_fields_applied_by_name: cachedPatchResult?.fields_applied_by_name || base.cached_patch_fields_applied_by_name || {},
+    patch_hints_created: Number(payload.patch_hints_created || base.patch_hints_created || 0),
+    patches_applied_to_vessel_display: Math.max(Number(payload.patches_applied_to_vessel_display || 0), cachedApplied),
     count_reconciled_at: generatedAt,
     count_reconciliation_basis: previousHasCountInconsistency
       ? "current_lightweight_output_scan_replaced_previous_count_inconsistency"
@@ -4394,6 +4409,16 @@ function buildAuxSummaryEnhancements({
       matched_by_vessel_name: Number(pilotage.matched_by_name || 0),
       matched_by_port_only: Number(pilotage.matched_by_port_only || 0),
       weak_matches: Number(pilotage.weak_matches || 0),
+      match_attempt_priority: [
+        "exact_call_sign_normalized_port",
+        "exact_call_sign_normalized_vessel_name",
+        "normalized_vessel_name_exact_normalized_port",
+        "normalized_vessel_name_similarity_0_92_normalized_port",
+        "vessel_name_time_window",
+        "weak_review_only"
+      ],
+      auto_apply_threshold: 85,
+      review_threshold: 60,
       unmatched_pilot_rows: Number(pilotage.unmatched_pilot_rows ?? Math.max(0, rowsNormalized - matchedVessels)),
       match_blockers: [
         ...parserBlockers,
@@ -4425,6 +4450,31 @@ function buildAuxSummaryEnhancements({
       baseline_berth_count: baselineCount,
       rows_with_terminal: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /terminal|터미널/i.test(key))).length,
       rows_with_berth: sampleRows.filter(sample => Object.keys(sample || {}).some(key => /berth|선석|부두/i.test(key))).length,
+      pnc_preserved_fields: [
+        "vessel_name",
+        "vessel_code",
+        "voyage_no",
+        "operator",
+        "route",
+        "berth_direction",
+        "berth",
+        "terminal",
+        "eta",
+        "etb",
+        "ata",
+        "atb"
+      ],
+      match_attempt_priority: [
+        "exact_call_sign_normalized_port",
+        "normalized_vessel_name_exact_normalized_port",
+        "normalized_vessel_name_similarity_0_92_normalized_port",
+        "pnc_vessel_code_vessel_name",
+        "vessel_name_terminal_berth_current_port",
+        "weak_review_only"
+      ],
+      auto_apply_threshold: 80,
+      identity_field_threshold: 90,
+      review_threshold: 60,
       matched_by_call_sign: Number(matchingDiagnostics.pnc_matched_by_call_sign || matchingDiagnostics.berth_matched_by_call_sign || 0),
       matched_by_vessel_name: Number(matchingDiagnostics.pnc_matched_by_name || matchingDiagnostics.berth_matched_by_name || 0),
       unmatched_rows: Math.max(0, rowsNormalized - matchedVessels),
@@ -4437,13 +4487,32 @@ function buildAuxSummaryEnhancements({
 
   if (summaryKey === "vessel_spec") {
     const httpStatus = (Array.isArray(diagnostics) ? diagnostics : []).find(item => item.http_status)?.http_status || null;
+    const parserBlockerClassification = rowsCollected > 0 && rowsNormalized === 0
+      ? (rawSampleKeys.length ? "alias_missing" : "metadata_only")
+      : "";
+    const recommendedAliasMap = {
+      imo: ["imo", "imo_no", "imoNo"],
+      mmsi: ["mmsi", "mmsi_no", "mmsiNo"],
+      call_sign: ["call_sign", "callsign", "clsgn"],
+      vessel_name: ["vessel_name", "ship_name", "vsslNm"],
+      vessel_type: ["vessel_type", "ship_type", "vsslKndNm"],
+      gt: ["gt", "grt", "gross_tonnage"],
+      dwt: ["dwt", "deadweight"],
+      flag: ["flag", "nationality"]
+    };
+    const rawKeyText = rawSampleKeys.join(" ").toLowerCase();
+    const expectedAliasesMissing = Object.entries(recommendedAliasMap)
+      .filter(([, aliases]) => !aliases.some(alias => rawKeyText.includes(String(alias).toLowerCase())))
+      .map(([field]) => field);
     return {
       ...base,
       http_status: httpStatus,
       utilization_status: rowsCollected > 0 && rowsNormalized === 0 ? "FETCHED_NOT_NORMALIZED" : rowsNormalized > 0 ? "NORMALIZED" : "NO_ROWS",
-      parser_blocker_classification: rowsCollected > 0 && rowsNormalized === 0
-        ? (rawSampleKeys.length ? "parser_alias_missing_or_wrong_schema" : "metadata_only_empty_item_or_wrong_schema")
-        : "",
+      parser_blocker: parserBlockerClassification,
+      parser_blocker_classification: parserBlockerClassification,
+      response_shape: rawSampleKeys.length ? "object_rows" : rowsCollected > 0 ? "metadata_only_or_unsupported_nested_shape" : "empty_or_not_attempted",
+      expected_aliases_missing: expectedAliasesMissing,
+      recommended_alias_map: recommendedAliasMap,
       utilization_note: rowsCollected > 0 && rowsNormalized === 0
         ? "HTTP 200 returned rows, but no rows matched vessel specification aliases yet."
         : base.utilization_note
@@ -4455,7 +4524,10 @@ function buildAuxSummaryEnhancements({
     return {
       ...base,
       smoke_level: smokeLevel,
+      coverage_label: smokeLevel ? "SMOKE_LEVEL" : rowsNormalized > 0 ? "ACTIVE" : "LOW_UTILIZATION",
       utilization_status: smokeLevel ? "SMOKE_LEVEL" : rowsNormalized > 0 ? "ACTIVE" : "LOW_UTILIZATION",
+      matched_vessel_samples: [],
+      identifier_fields_hidden_in_display: rowsNormalized > 0,
       recommended_next_step: smokeLevel
         ? "Enrich sales targets first, then detail eligible top 100; do not enrich all detected vessels in one run."
         : "Continue using this source as auxiliary enrichment."
@@ -4732,21 +4804,37 @@ function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toIS
       const fieldPatch = compactAuxSignalPatch(signal, signalType);
       if (!fieldPatch) continue;
       const confidence = Number(fieldPatch.confidence || signal.confidence || 90);
-      if (confidence < 85) continue;
+      const applyThreshold = signalType === "berth_signal" ? 80 : 85;
+      const reviewThreshold = 60;
+      const applyPolicy = confidence >= applyThreshold ? "APPLY" : confidence >= reviewThreshold ? "REVIEW" : "REJECT";
+      if (applyPolicy === "REJECT") continue;
       const id = `${vesselKey}:${signalType}`;
       if (seen.has(id)) continue;
       seen.add(id);
       items.push({
         vessel_key: vesselKey,
+        candidate_vessel_key: vesselKey,
         signal_type: signalType,
+        fields: {
+          [signalType]: fieldPatch
+        },
         field_patch: fieldPatch,
         confidence,
         match_type: fieldPatch.match_type || signal.match_type || "aux_patch_hint",
         source_key: sourceKey,
-        source_generated_at: fieldPatch.updated_at || auxIndex.generated_at || generatedAt
+        normalized_source_key: sourceKey,
+        source_generated_at: fieldPatch.updated_at || auxIndex.generated_at || generatedAt,
+        apply_policy: applyPolicy,
+        reason: applyPolicy === "APPLY"
+          ? `${signalType} confidence ${confidence} meets auto-apply threshold ${applyThreshold}.`
+          : `${signalType} confidence ${confidence} requires review before display application.`
       });
     }
   }
+  const applyPolicyCounts = items.reduce((acc, item) => {
+    acc[item.apply_policy] = (acc[item.apply_policy] || 0) + 1;
+    return acc;
+  }, {});
   return withRunOrigin({
     schema_version: PUBLIC_API_SCHEMA_VERSION,
     generated_at: generatedAt,
@@ -4760,6 +4848,9 @@ function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toIS
     startup_safe: false,
     record_count: items.length,
     item_count: items.length,
+    patch_hints_created: items.length,
+    apply_policy_counts: applyPolicyCounts,
+    review_count: Number(applyPolicyCounts.REVIEW || 0),
     signal_type_counts: items.reduce((acc, item) => {
       acc[item.signal_type] = (acc[item.signal_type] || 0) + 1;
       return acc;
@@ -4819,6 +4910,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
+  ["enrichment.sourceBottleneckReport", "dashboard/api/enrichment/source-bottleneck-report.json"],
   ["enrichment.latestIndex", "dashboard/api/enrichment/latest/index.json"],
   ["enrichment.latestSummary", "dashboard/api/enrichment/latest/summary.json"],
   ["enrichment.latestCandidates", "dashboard/api/enrichment/latest/candidates.json"],
@@ -19576,6 +19668,7 @@ function applyCachedEnrichmentPatches(records = [], { generatedAt = new Date().t
     applied,
     available: true,
     patch_count: items.length,
+    patch_hints_created: 0,
     patches_eligible: patchesEligible,
     records_updated: recordsUpdated.size,
     vessel_display_records_updated: displayRecordsUpdated.size,
@@ -19612,12 +19705,21 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
       skip("identity_or_unknown_hint_not_auto_applied");
       continue;
     }
+    const applyPolicy = String(item.apply_policy || "APPLY").toUpperCase();
+    if (applyPolicy !== "APPLY") {
+      skip(`apply_policy_${applyPolicy.toLowerCase()}`);
+      continue;
+    }
     const confidence = Number(item.confidence || item.match_confidence || 0);
-    const patch = item.field_patch && typeof item.field_patch === "object" ? item.field_patch : {};
+    const fields = item.fields && typeof item.fields === "object" ? item.fields : {};
+    const patch = fields[field] && typeof fields[field] === "object"
+      ? fields[field]
+      : item.field_patch && typeof item.field_patch === "object" ? item.field_patch : {};
     const clearOperationalSignal = field === "pilotage_signal"
       ? patch.has_pilotage === true
       : patch.has_berth_info === true || patch.has_berth === true;
-    if (confidence < 85 && !clearOperationalSignal) {
+    const applyThreshold = field === "berth_signal" ? 80 : 85;
+    if ((confidence < applyThreshold) || !clearOperationalSignal) {
       skip("low_confidence");
       continue;
     }
@@ -19668,6 +19770,7 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
     applied,
     available: true,
     patch_count: items.length,
+    patch_hints_created: items.length,
     patches_eligible: patchesEligible,
     records_updated: recordsUpdated.size,
     vessel_display_records_updated: displayRecordsUpdated.size,
@@ -19685,6 +19788,7 @@ function mergeCachedPatchResults(...results) {
     applied: 0,
     available: valid.some(result => result.available === true),
     patch_count: 0,
+    patch_hints_created: 0,
     patches_eligible: 0,
     records_updated: 0,
     vessel_display_records_updated: 0,
@@ -19697,6 +19801,7 @@ function mergeCachedPatchResults(...results) {
   for (const result of valid) {
     merged.applied += Number(result.applied || 0);
     merged.patch_count = Math.max(merged.patch_count, Number(result.patch_count || 0));
+    merged.patch_hints_created += Number(result.patch_hints_created || 0);
     merged.patches_eligible = Math.max(merged.patches_eligible, Number(result.patches_eligible || 0));
     merged.records_updated += Number(result.records_updated || 0);
     merged.vessel_display_records_updated += Number(result.vessel_display_records_updated || 0);
@@ -21758,6 +21863,15 @@ try {
     generatedAt: completedAt,
     origin: finalRunOrigin
   });
+  const sourceBottleneckReportPayload = withRunOrigin(buildSourceBottleneckReport({
+    sourceQualityScore: sourceQualityScorePayload,
+    enrichmentUtilization: enrichmentUtilizationPayload,
+    bootstrap: bootstrapPayload,
+    statusSummary: statusSummaryPayload,
+    generatedAt: completedAt
+  }), finalRunOrigin);
+  sourceQualityScorePayload = attachSourceBottleneckSummary(sourceQualityScorePayload, sourceBottleneckReportPayload);
+  enrichmentUtilizationPayload = attachSourceBottleneckSummary(enrichmentUtilizationPayload, sourceBottleneckReportPayload);
   const outputWriteStage = beginRuntimeStage("generate dashboard JSON");
   writeRuntimeDiagnosticJson("dashboard/api/status.json", report, finalRunOrigin);
   writeApiJson("dashboard/api/status-summary.json", statusSummaryPayload, report);
@@ -21781,6 +21895,8 @@ try {
   writeApiJson("dashboard/api/source-quality-score.json", sourceQualityScorePayload, report);
   writeApiJson("dashboard/api/enrichment/source-capability-matrix.json", sourceEnrichmentMatrixPayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
+  writeApiJson("dashboard/api/enrichment/source-bottleneck-report.json", sourceBottleneckReportPayload, report);
+  writeTextFile(SOURCE_BOTTLENECK_REPORT_MD, buildSourceBottleneckMarkdown(sourceBottleneckReportPayload));
   writeApiJson("dashboard/api/enrichment/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
   writeApiJson("dashboard/api/enrichment/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);
   writeApiJson("dashboard/api/enrichment/review-queue.json", sourceDataEnrichmentPayloads.reviewQueuePayload, report);
