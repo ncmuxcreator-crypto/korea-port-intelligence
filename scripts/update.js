@@ -33,6 +33,7 @@ import {
   writeAuxiliarySourceCacheStatus
 } from "./lib/auxiliary-source-cache.js";
 import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
+import { buildNormalizationDiagnosticsPayload } from "./lib/normalization-diagnostics.js";
 import { buildSourceEnrichmentMatrixPayload } from "./lib/source-enrichment-matrix.js";
 import { buildSourceSchedulePayload } from "./lib/source-schedule.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
@@ -4911,6 +4912,7 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
   ["enrichment.sourceBottleneckReport", "dashboard/api/enrichment/source-bottleneck-report.json"],
+  ["enrichment.normalizationDiagnostics", "dashboard/api/enrichment/normalization-diagnostics.json"],
   ["enrichment.latestIndex", "dashboard/api/enrichment/latest/index.json"],
   ["enrichment.latestSummary", "dashboard/api/enrichment/latest/summary.json"],
   ["enrichment.latestCandidates", "dashboard/api/enrichment/latest/candidates.json"],
@@ -20907,6 +20909,17 @@ try {
     load_strategy: "lazy",
     startup_safe: false
   }, finalRunOrigin);
+  const normalizationDiagnosticsPayload = withRunOrigin({
+    ...buildNormalizationDiagnosticsPayload({
+      records: collectedRows,
+      collectorDiagnostics: collectorDiagnosticsAfterCollection,
+      generatedAt: completedAt
+    }),
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    core_blocking: false
+  }, finalRunOrigin);
   sourceCsvSummaryPayload = protectAuxDiagnosticPayloadForCore({
     payload: sourceCsvSummaryPayload,
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
@@ -21896,6 +21909,7 @@ try {
   writeApiJson("dashboard/api/enrichment/source-capability-matrix.json", sourceEnrichmentMatrixPayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
   writeApiJson("dashboard/api/enrichment/source-bottleneck-report.json", sourceBottleneckReportPayload, report);
+  writeApiJson("dashboard/api/enrichment/normalization-diagnostics.json", normalizationDiagnosticsPayload, report);
   writeTextFile(SOURCE_BOTTLENECK_REPORT_MD, buildSourceBottleneckMarkdown(sourceBottleneckReportPayload));
   writeApiJson("dashboard/api/enrichment/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
   writeApiJson("dashboard/api/enrichment/applied.json", sourceDataEnrichmentPayloads.appliedPayload, report);

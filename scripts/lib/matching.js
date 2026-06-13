@@ -1,27 +1,21 @@
+import {
+  buildVesselMatchKeys,
+  normalizeBerth,
+  normalizeCallSign,
+  normalizeDateTime,
+  normalizePort,
+  normalizeTerminal,
+  normalizeVesselName,
+  normalizeVesselType
+} from "./normalize.js";
+
+export { buildVesselMatchKeys, normalizeCallSign, normalizeVesselName };
+
 const DEFAULT_TIME_WINDOW_HOURS = Number(process.env.MATCH_TIME_WINDOW_HOURS || 48);
 const STRONG_TIME_MATCH_HOURS = Number(process.env.STRONG_TIME_MATCH_HOURS || 6);
 
-const VESSEL_PREFIX_PATTERN = /\b(M\/V|M\.V\.|MV|M T|M\/T|MT|S\/S|SS|T\/S|TS)\b/g;
-
-export function normalizeVesselName(value = "") {
-  return String(value || "")
-    .normalize("NFKC")
-    .toUpperCase()
-    .replace(VESSEL_PREFIX_PATTERN, "")
-    .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "")
-    .trim();
-}
-
-export function normalizeCallSign(value = "") {
-  return String(value || "")
-    .normalize("NFKC")
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "")
-    .trim();
-}
-
 export function normalizePortName(value = "") {
-  return String(value || "")
+  return normalizePort(value).normalized_port || String(value || "")
     .normalize("NFKC")
     .toUpperCase()
     .replace(/\s+/g, " ")
@@ -29,44 +23,17 @@ export function normalizePortName(value = "") {
 }
 
 export function normalizeTerminalName(value = "") {
-  const normalized = String(value || "")
-    .normalize("NFKC")
-    .toUpperCase()
-    .replace(/[^A-Z0-9\uAC00-\uD7A3]+/g, "");
-
-  if (/PNIT|PNC|PUSANNEWPORT|BUSANNEWPORT|부산신항|부산항신항|신항/.test(normalized)) return "BUSANNEWPORT";
-  if (/HPNT|HYUNDAIBUSANNEWPORT|현대부산신항|현대신항/.test(normalized)) return "HPNT";
-  if (/HJNC|한진부산신항|한진신항/.test(normalized)) return "HJNC";
-  if (/BNCT|부산신항컨테이너|신항컨테이너/.test(normalized)) return "BNCT";
-  if (/PNIT|부산신항국제터미널/.test(normalized)) return "PNIT";
-  if (/GAMCHEON|감천|감천항/.test(normalized)) return "GAMCHEON";
-  if (/SINGAMMAN|신감만|감만/.test(normalized)) return "SINGAMMAN";
-  if (/ONSAN|온산/.test(normalized)) return "ONSAN";
-  if (/JANGSAENGPO|장생포/.test(normalized)) return "JANGSAENGPO";
-  if (/ULSANTERMINAL|UOTT|UTT|울산터미널|울산항/.test(normalized)) return "ULSANTERMINAL";
-  if (/GWANGYANG|광양|광양항/.test(normalized)) return "GWANGYANGTERMINAL";
-  if (/YEOSU|여수|여천/.test(normalized)) return "YEOSUTERMINAL";
-  if (/DAESAN|대산/.test(normalized)) return "DAESAN";
-  if (/INCHEON|인천/.test(normalized)) return "INCHEON";
-  if (/POHANG|포항/.test(normalized)) return "POHANG";
-
-  return normalized
-    .replace(/BERTH|BTH|TERMINAL|TMNL|NO|NUMBER/g, "")
-    .trim();
+  return normalizeTerminal(value);
 }
 
 export function normalizeBerthName(value = "") {
-  return normalizeTerminalName(value);
+  return normalizeBerth(value).normalized_berth || normalizeTerminalName(value);
 }
 
 function parseTime(value) {
   if (!value) return null;
-  const raw = String(value).trim();
-  const compact = /^\d{8}$/.test(raw) ? `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}` : raw;
-  const isoish = compact.replace(" ", "T");
-  const withZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(isoish) ? isoish : `${isoish}+09:00`;
-  const date = new Date(withZone);
-  return Number.isNaN(date.getTime()) ? null : date.getTime();
+  const normalized = normalizeDateTime(value);
+  return normalized.epoch_ms || null;
 }
 
 function recordTimes(record = {}) {
@@ -141,10 +108,12 @@ export function scoreMatch(left = {}, right = {}, options = {}) {
   let score = 0;
   const reasons = [];
   const matchedFields = {};
-  const leftCall = normalizeCallSign(left.call_sign || left.callsign);
-  const rightCall = normalizeCallSign(right.call_sign || right.callsign);
-  const leftName = normalizeVesselName(left.normalized_vessel_name || left.vessel_name || left.name);
-  const rightName = normalizeVesselName(right.normalized_vessel_name || right.vessel_name || right.name);
+  const leftKeys = buildVesselMatchKeys(left);
+  const rightKeys = buildVesselMatchKeys(right);
+  const leftCall = leftKeys.call_sign || normalizeCallSign(left.call_sign || left.callsign);
+  const rightCall = rightKeys.call_sign || normalizeCallSign(right.call_sign || right.callsign);
+  const leftName = leftKeys.vessel_name || normalizeVesselName(left.vessel_name || left.name || left.normalized_vessel_name);
+  const rightName = rightKeys.vessel_name || normalizeVesselName(right.vessel_name || right.name || right.normalized_vessel_name);
   const leftPort = String(left.port_code || left.prtAgCd || "").trim() || normalizePortName(left.port_name || left.port);
   const rightPort = String(right.port_code || right.prtAgCd || "").trim() || normalizePortName(right.port_name || right.port);
   const leftBerth = normalizeBerthName(left.berth_key || left.berth_name || left.berth || left.terminal_name || left.laidupFcltyNm || left.pilot_station);
@@ -154,6 +123,12 @@ export function scoreMatch(left = {}, right = {}, options = {}) {
     score += 50;
     reasons.push("call_sign_exact");
     matchedFields.call_sign = leftCall;
+  }
+
+  if (leftKeys.call_sign_port && rightKeys.call_sign_port && leftKeys.call_sign_port === rightKeys.call_sign_port) {
+    score += 8;
+    reasons.push("call_sign_port_exact");
+    matchedFields.call_sign_port = leftKeys.call_sign_port;
   }
 
   if (leftName && rightName && leftName === rightName) {
@@ -171,6 +146,18 @@ export function scoreMatch(left = {}, right = {}, options = {}) {
       reasons.push("vessel_name_partial");
       matchedFields.name_similarity = Math.round(similarity * 100);
     }
+  }
+
+  if (leftKeys.vessel_name_port && rightKeys.vessel_name_port && leftKeys.vessel_name_port === rightKeys.vessel_name_port) {
+    score += 8;
+    reasons.push("vessel_name_port_exact");
+    matchedFields.vessel_name_port = leftKeys.vessel_name_port;
+  }
+
+  if (leftKeys.vessel_name_gt_type && rightKeys.vessel_name_gt_type && leftKeys.vessel_name_gt_type === rightKeys.vessel_name_gt_type) {
+    score += 10;
+    reasons.push("vessel_name_gt_type_exact");
+    matchedFields.vessel_name_gt_type = leftKeys.vessel_name_gt_type;
   }
 
   const time = timeProximityScore(left, right, options);
@@ -192,8 +179,8 @@ export function scoreMatch(left = {}, right = {}, options = {}) {
     matchedFields.berth_terminal = leftBerth;
   }
 
-  const leftType = normalizePortName(left.vessel_type_group || left.vessel_type || left.vsslKndNm);
-  const rightType = normalizePortName(right.vessel_type_group || right.vessel_type || right.vsslKndNm);
+  const leftType = normalizeVesselType(left.vessel_type_group || left.vessel_type || left.vsslKndNm);
+  const rightType = normalizeVesselType(right.vessel_type_group || right.vessel_type || right.vsslKndNm);
   if (leftType && rightType && leftType === rightType) {
     score += 10;
     reasons.push("same_vessel_type");

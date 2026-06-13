@@ -31,6 +31,7 @@ const presets = {
     DISCOVERY_MODE: "off",
     DB_AUDIT_MODE: "off",
     SOURCE_CSV_MODE: "refresh",
+    ENABLE_SOURCE_CSV: "true",
     RUN_HEAVY_AUDITS: "true"
   },
   enrichment: {
@@ -39,6 +40,7 @@ const presets = {
     DISCOVERY_MODE: "off",
     DB_AUDIT_MODE: "off",
     SOURCE_CSV_MODE: "refresh",
+    ENABLE_SOURCE_CSV: "true",
     RUN_HEAVY_AUDITS: "true"
   },
   discovery_audit: {

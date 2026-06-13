@@ -1,3 +1,10 @@
+import {
+  normalizeCallSign as sharedNormalizeCallSign,
+  normalizeDateTime,
+  normalizePort as normalizePortIdentity,
+  normalizeVesselName
+} from "./normalize.js";
+
 const SOURCE_TYPES = {
   PILOTAGE: "PILOTAGE",
   BERTH: "BERTH",
@@ -57,6 +64,7 @@ function inferBerth(row = {}) {
 }
 
 function normalizeName(value = "") {
+  return normalizeVesselName(value);
   return String(value || "")
     .normalize("NFKC")
     .trim()
@@ -66,6 +74,7 @@ function normalizeName(value = "") {
 }
 
 function normalizeCallSign(value = "") {
+  return sharedNormalizeCallSign(value);
   return String(value || "")
     .normalize("NFKC")
     .trim()
@@ -74,6 +83,7 @@ function normalizeCallSign(value = "") {
 }
 
 function normalizePort(value = "") {
+  return normalizePortIdentity(value).normalized_port;
   const text = String(value || "").normalize("NFKC").trim().toUpperCase();
   if (!text) return "";
   if (/BUSAN|PUSAN|부산|020|PNC|PNIT|NEWPORT|신항/.test(text)) return "BUSAN";
@@ -90,6 +100,9 @@ function normalizePort(value = "") {
 
 function parseDate(value) {
   if (!hasText(value)) return null;
+  const normalized = normalizeDateTime(String(value).replace(/\./g, "-").replace(/\s+KST$/i, "+09:00"));
+  if (normalized.epoch_ms) return new Date(normalized.epoch_ms);
+  if (normalized.time_only_missing_date) return null;
   const text = String(value).trim();
   if (/^\d{1,2}:\d{2}$/.test(text)) return null;
   const parsed = Date.parse(text.replace(/\./g, "-").replace(/\s+KST$/i, "+09:00"));

@@ -53,7 +53,7 @@ function unique(values = []) {
 }
 
 function statusIsFetchSuccess(item = {}) {
-  if (["FETCH_FAILED", "PARSE_FAILED", "SOURCE_TOO_LARGE", "NOT_CONFIGURED", "SKIPPED"].includes(String(item.status || ""))) {
+  if (["FETCH_FAILED", "PARSE_FAILED", "SOURCE_TOO_LARGE", "WRONG_SOURCE_CSV_URL", "NOT_CONFIGURED", "SKIPPED"].includes(String(item.status || ""))) {
     return false;
   }
   if (number(item.rows_collected) > 0) return true;
@@ -155,6 +155,7 @@ function freshnessScore(minutes) {
 
 function blockerReason({ item, sourceKey, rowsCollected, rowsNormalized, rowsMatched, fieldsContributed, minutes, matchingDiagnostics = {}, bootstrapKpis = {} }) {
   if (item.status === "SOURCE_TOO_LARGE") return item.skip_reason || item.exact_fix_instruction || "source_response_too_large";
+  if (item.status === "WRONG_SOURCE_CSV_URL") return item.skip_reason || item.exact_fix_instruction || "wrong_source_csv_url";
   if (["FETCH_FAILED", "PARSE_FAILED", "NOT_CONFIGURED", "SKIPPED"].includes(String(item.status || ""))) {
     return item.skip_reason || item.exact_fix_instruction || item.status;
   }
@@ -176,6 +177,9 @@ function recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched 
   if (sourceKey === "source_csv" && item.status === "SOURCE_TOO_LARGE") {
     return "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV.";
   }
+  if (sourceKey === "source_csv" && item.status === "WRONG_SOURCE_CSV_URL") {
+    return "Update SOURCE_CSV_URL to the current repo lightweight verified_vessel_reference.csv raw URL.";
+  }
   if (sourceKey === "vessel_spec" && number(item.rows_collected) > 0 && rowsNormalized === 0) {
     return "Add/adjust vessel_spec parser aliases using sanitized raw sample keys.";
   }
@@ -189,7 +193,7 @@ function recommendedFix({ item, sourceKey, blocker, rowsNormalized, rowsMatched 
 }
 
 function qualityLabel(score, item = {}) {
-  if (["FETCH_FAILED", "PARSE_FAILED", "SOURCE_TOO_LARGE", "NOT_CONFIGURED"].includes(String(item.status || "")) && score < 35) return "FAILED";
+  if (["FETCH_FAILED", "PARSE_FAILED", "SOURCE_TOO_LARGE", "WRONG_SOURCE_CSV_URL", "NOT_CONFIGURED"].includes(String(item.status || "")) && score < 35) return "FAILED";
   if (score >= 75) return "HIGH";
   if (score >= 50) return "MEDIUM";
   if (score >= 25) return "LOW";

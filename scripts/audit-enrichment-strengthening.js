@@ -86,7 +86,13 @@ const problems = [];
 
 if (contradictions.length) problems.push(`sample contradictions: ${contradictions.join(",")}`);
 if (malformedHints.length) problems.push(`malformed patch hints: ${malformedHints.length}`);
-if (sourceCsvBottleneck.bottleneck_stage && sourceCsvBottleneck.bottleneck_stage !== "FETCH_BLOCKED") problems.push("source_csv bottleneck should be FETCH_BLOCKED");
+if (
+  sourceCsvBottleneck.bottleneck_stage &&
+  sourceCsvBottleneck.bottleneck_stage !== "FETCH_BLOCKED" &&
+  !["ACTIVE", "CACHE_AVAILABLE", "CACHE_ONLY_PREVIOUS_CACHE"].includes(String(sourceCsv.status || "").toUpperCase())
+) {
+  problems.push("source_csv bottleneck should be FETCH_BLOCKED unless the lightweight reference cache is active");
+}
 if (vesselSpecBottleneck.bottleneck_stage && vesselSpecBottleneck.bottleneck_stage !== "NORMALIZE_BLOCKED") problems.push("vessel_spec bottleneck should be NORMALIZE_BLOCKED");
 if (aisInfoBottleneck.bottleneck_stage && aisInfoBottleneck.bottleneck_stage !== "COVERAGE_LIMITED") problems.push("mof_ais_info bottleneck should be COVERAGE_LIMITED");
 if (aisDynamicBottleneck.bottleneck_stage && aisDynamicBottleneck.bottleneck_stage !== "COVERAGE_LIMITED") problems.push("mof_ais_dynamic bottleneck should be COVERAGE_LIMITED");
