@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 20
 
     permissions:
-      contents: write
+      contents: read
 
     env:
       CI: true
@@ -101,21 +101,6 @@ jobs:
             docs/DB_CLEANUP_EXECUTION_REPORT.md
             data/db-cleanup-backups/
 
-      - name: Commit cleanup reports
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            dashboard/api/storage-efficiency-report.json \
-            dashboard/api/db-cleanup-plan.json \
-            dashboard/api/db-cleanup-execution-report.json \
-            docs/DB_CLEANUP_AUDIT.md \
-            docs/DB_CLEANUP_PLAN.md \
-            docs/DB_CLEANUP_EXECUTION_REPORT.md
-          if git diff --cached --quiet; then
-            echo "No cleanup report changes to commit"
-          else
-            git commit -m "chore: update db cleanup reports [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

@@ -21,7 +21,7 @@ import {
 } from "../lib/normalize.js";
 import { DEFAULT_PORT_OPERATION_API_URL } from "../lib/runtime-config-audit.js";
 import { SOURCE_SCHEDULE_PATH, sourceScheduleDecisionForKey } from "../lib/source-schedule.js";
-import { VERIFIED_SOURCE_CSV_PATH, diagnoseSourceCsvUrl, expectedSourceCsvRawUrl } from "../lib/source-csv-url.js";
+import { VERIFIED_SOURCE_CSV_PATH, diagnoseSourceCsvUrl } from "../lib/source-csv-url.js";
 
 const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
@@ -30,13 +30,22 @@ const MAX_PORTS_PER_RUN = Number(process.env.MAX_PORTS_PER_RUN || 50);
 const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.PORT_FACILITY_MAX_REQUESTS || process.env.MAX_CHILD_ENRICHMENT_ROWS || 150);
 const VESSEL_SPEC_MAX_REQUESTS = Number(process.env.VESSEL_SPEC_MAX_REQUESTS || 150);
 const MAX_API_RESPONSE_BYTES = Number(process.env.MAX_API_RESPONSE_BYTES || 25000000);
-const MAX_SOURCE_CSV_BYTES = Number(process.env.MAX_SOURCE_CSV_BYTES || 5000000);
+const MAX_SOURCE_CSV_BYTES = Number(process.env.SOURCE_CSV_MAX_BYTES || process.env.MAX_SOURCE_CSV_BYTES || 5242880);
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
 const SOURCE_MAX_RETRIES = Number(process.env.SOURCE_MAX_RETRIES || 2);
 const DEFAULT_CARGO_HARBOR_USE_API_URL = "http://apis.data.go.kr/1192000/CargHarborUse2/Info";
 const DEFAULT_VESSEL_SPEC_API_URL = "http://apis.data.go.kr/1192000/SicsVsslManp3/Info3";
 const DEFAULT_ULSAN_OPERATION = "getVtsBaseVslNvgtInfo";
 const PORTS_REGISTRY_PATH = path.join("data", "reference", "ports_registry.csv");
+const LIGHTWEIGHT_CSV_DEFAULT_PATHS = [
+  "data/source/lightweight.csv",
+  "data/source/source_lightweight.csv",
+  "data/source_csv_lightweight.csv",
+  "public/data/source_lightweight.csv",
+  "dashboard/api/cache/source-csv-reference.json",
+  "dashboard/api/cache/source-csv-index.json",
+  "data/cache/source-csv-reference-cache.json"
+];
 const DEFAULT_PORT_REGISTRY = [
   { port_code: "020", prtAgCd: "020", port_name_ko: "부산항", port_name_en: "Busan", port_group: "Busan", sub_port: "부산항", tier: "1", commercial_focus: "container,cruise,repair,anchorage", has_port_operation: "true", has_pilot_source: "true", has_berth_source: "true", has_vts: "true", anchorage_relevance: "high", commercial_priority: "high", enabled: "true" },
   { port_code: "030", prtAgCd: "030", port_name_ko: "인천항", port_name_en: "Incheon", port_group: "Incheon", sub_port: "인천항", tier: "1", commercial_focus: "container,bulk,passenger", has_port_operation: "true", has_pilot_source: "true", has_berth_source: "true", has_vts: "true", anchorage_relevance: "medium", commercial_priority: "high", enabled: "true" },
@@ -74,15 +83,55 @@ let diagnostics = {
 };
 let portsRegistryCache = null;
 let sourceScheduleCache = undefined;
-const COLLECTOR_UPDATE_MODE = String(process.env.UPDATE_MODE || "").toLowerCase();
+const COLLECTOR_UPDATE_MODE = String(process.env.UPDATE_MODE || "core").toLowerCase();
 const CORE_COLLECTOR_MODES = new Set(["core", "core_update"]);
 const FAST_AUX_COLLECTOR_MODES = new Set(["fast_aux"]);
 const REFERENCE_ENRICHMENT_COLLECTOR_MODES = new Set(["reference_enrichment"]);
 
+function sourceCsvMode() {
+  return String(process.env.SOURCE_CSV_MODE || "").trim().toLowerCase();
+}
+
+function sourceCsvCoreCandidate() {
+  const mode = sourceCsvMode();
+  return ["lightweight", "raw", "full", "off"].includes(mode);
+}
+
+function fileUrlFromPath(filePath) {
+  return `file:///${path.resolve(filePath).replace(/\\/g, "/").replace(/^\/+/, "")}`;
+}
+
+function resolveLightweightCsvSource() {
+  const explicitUrl = env("SOURCE_LIGHTWEIGHT_CSV_URL");
+  if (explicitUrl) return { status: "found", type: "url", url: explicitUrl, path_or_url: explicitUrl };
+  const explicitPath = env("SOURCE_LIGHTWEIGHT_CSV_PATH");
+  if (explicitPath) {
+    const absolute = path.isAbsolute(explicitPath) ? explicitPath : path.join(process.cwd(), explicitPath);
+    if (fs.existsSync(absolute)) return { status: "found", type: path.extname(absolute).toLowerCase() === ".json" ? "cache" : "path", localPath: absolute, url: fileUrlFromPath(absolute), path_or_url: path.relative(process.cwd(), absolute).replace(/\\/g, "/") || absolute, bytes: fs.statSync(absolute).size };
+    return { status: "missing", reason: "LIGHTWEIGHT_CSV_NOT_FOUND", path_or_url: explicitPath };
+  }
+  for (const relativePath of LIGHTWEIGHT_CSV_DEFAULT_PATHS) {
+    const absolute = path.join(process.cwd(), relativePath);
+    if (fs.existsSync(absolute)) return { status: "found", type: path.extname(absolute).toLowerCase() === ".json" ? "cache" : "path", localPath: absolute, url: fileUrlFromPath(absolute), path_or_url: relativePath, bytes: fs.statSync(absolute).size };
+  }
+  return { status: "missing", reason: "LIGHTWEIGHT_CSV_NOT_FOUND", searched_paths: LIGHTWEIGHT_CSV_DEFAULT_PATHS };
+}
+
+function lightweightCacheRowCount(localPath) {
+  try {
+    const payload = JSON.parse(fs.readFileSync(localPath, "utf8"));
+    if (Array.isArray(payload.items)) return payload.items.length;
+    if (Array.isArray(payload.rows)) return payload.rows.length;
+    return Number(payload.item_count || payload.record_count || 0) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 function collectorSourceTier(source = {}) {
   const key = String(source.key || source.source_name || "");
   if (key.startsWith("port_operation_") || key === "port_operation") return "core";
-  if (key === "source_csv") return "reference_enrichment";
+  if (key === "source_csv") return sourceCsvCoreCandidate() ? "core" : "reference_enrichment";
   if (key === "vessel_spec") return "fast_aux";
   if (
     key.startsWith("pilot_source_") ||
@@ -128,8 +177,10 @@ function sourceScheduleSkipDecision(source = {}) {
   }
   if (
     String(source.key || "") === "source_csv" &&
-    String(process.env.SOURCE_CSV_MODE || "").toLowerCase() === "refresh" &&
-    REFERENCE_ENRICHMENT_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)
+    (["off", "raw", "full", "lightweight"].includes(sourceCsvMode()) || (
+      sourceCsvMode() === "refresh" &&
+      REFERENCE_ENRICHMENT_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)
+    ))
   ) {
     return null;
   }
@@ -188,6 +239,12 @@ const ALL_PILOT_TIME_ALIASES = [...new Set([...PILOT_TIME_ALIASES, "도선시간
 const ALL_PILOT_DIRECTION_ALIASES = [...new Set([...PILOT_DIRECTION_ALIASES, "입출항", "구분", "도선구분", "movement_type"])];
 const ALL_PILOT_STATION_ALIASES = [...new Set([...PILOT_STATION_ALIASES, "도선점", "도선구", "승선지", "하선지"])];
 const ALL_PILOT_DATE_ALIASES = [...new Set(PILOT_DATE_ALIASES)];
+
+const LIGHTWEIGHT_CSV_SCHEMA_ALIASES = {
+  vessel_identity: ["vessel_name", "ship_name", "name", "\uC120\uBA85", "imo", "imo_no", "IMO", "mmsi", "MMSI", "call_sign", "callsign", "\uD638\uCD9C\uBD80\uD638"],
+  vessel_spec: ["gt", "gross_tonnage", "\uCD1D\uD1A4\uC218", "dwt", "\uC7AC\uD654\uC911\uB7C9\uD1A4"],
+  port_status: ["port", "port_name", "\uD56D\uB9CC", "berth", "berth_name", "\uC120\uC11D", "anchorage", "\uC815\uBC15\uC9C0", "eta", "etb", "ata", "atd", "status", "\uC0C1\uD0DC", "last_seen", "observed_at", "updated_at"]
+};
 
 const PNC_FIELD_ALIASES = {
   vessel_name: [
@@ -257,6 +314,15 @@ addFieldAliases("ata", ["ata", "ATA", "etrDt", "arrivalDt"]);
 addFieldAliases("atb", ["atb", "ATB", "berthDt"]);
 addFieldAliases("etd", ["etd", "ETD", "tkoffPrrrnDt", "departurePlanDt"]);
 addFieldAliases("atd", ["atd", "ATD", "tkoffDt", "departureDt"]);
+addFieldAliases("vessel_name", ["name", "\uC120\uBA85"]);
+addFieldAliases("call_sign", ["callsign", "\uD638\uCD9C\uBD80\uD638"]);
+addFieldAliases("gt", ["gross_tonnage", "\uCD1D\uD1A4\uC218"]);
+addFieldAliases("dwt", ["\uC7AC\uD654\uC911\uB7C9\uD1A4"]);
+addFieldAliases("port", ["\uD56D\uB9CC"]);
+addFieldAliases("berth", ["\uC120\uC11D"]);
+addFieldAliases("anchorage_zone", ["anchorage", "\uC815\uBC15\uC9C0"]);
+addFieldAliases("status", ["\uC0C1\uD0DC"]);
+addFieldAliases("received_at", ["last_seen", "observed_at", "updated_at"]);
 
 function env(name) {
   return process.env[name] && String(process.env[name]).trim();
@@ -414,13 +480,18 @@ function portOperationPreflightFailureReason(failures = [], { validationMode = "
 }
 
 function sourceCsvEnabled() {
-  const mode = String(process.env.SOURCE_CSV_MODE || "").toLowerCase();
-  if (mode === "cache_only" || mode === "off") return false;
+  const mode = sourceCsvMode();
+  if (mode === "off" || mode === "raw" || mode === "full") return false;
+  if (mode && !["lightweight", "refresh", "cache_only"].includes(mode)) return false;
+  if (mode === "cache_only") return false;
   return String(process.env.ENABLE_SOURCE_CSV || "").toLowerCase() === "true";
 }
 
 function sourceCsvUrl() {
-  return env("SOURCE_CSV_URL") || expectedSourceCsvRawUrl({ cwd: process.cwd() });
+  const mode = sourceCsvMode();
+  if (mode === "lightweight") return resolveLightweightCsvSource().url || "";
+  if (mode === "refresh") return env("SOURCE_LIGHTWEIGHT_CSV_URL") || env("SOURCE_CSV_URL") || "";
+  return env("SOURCE_LIGHTWEIGHT_CSV_URL") || env("SOURCE_CSV_URL") || "";
 }
 
 function vesselSpecUrl() {
@@ -708,6 +779,21 @@ function rawValue(row, keys) {
   return String(firstValue(row, keys) || "").trim();
 }
 
+function lightweightCsvSchemaStatus(headers = []) {
+  const normalizedHeaders = new Set(headers.map(header => String(header || "").trim().toLowerCase()).filter(Boolean));
+  const hasAny = aliases => aliases.some(alias => normalizedHeaders.has(String(alias || "").trim().toLowerCase()));
+  const groups = {
+    vessel_identity: hasAny(LIGHTWEIGHT_CSV_SCHEMA_ALIASES.vessel_identity),
+    vessel_spec: hasAny(LIGHTWEIGHT_CSV_SCHEMA_ALIASES.vessel_spec),
+    port_status: hasAny(LIGHTWEIGHT_CSV_SCHEMA_ALIASES.port_status)
+  };
+  return {
+    ok: groups.vessel_identity && (groups.port_status || groups.vessel_spec),
+    groups,
+    header_fields: headers
+  };
+}
+
 function isPncSourceConfig(source = {}) {
   return String(source.key || "").startsWith("pnc_source_");
 }
@@ -877,6 +963,7 @@ function toNumber(value) {
 }
 
 function sourceType(source = {}) {
+  if (source.key === "source_csv") return "lightweight_reference";
   if (String(source.key || "").startsWith("pilot_source_")) return "pilot_schedule";
   if (source.key === "vessel_spec") return "identity";
   if (isPncSourceConfig(source)) return "schedule_or_berth";
@@ -1027,8 +1114,22 @@ function allSourceConfigs() {
     } : null)
     .filter(Boolean);
 
+  const lightweightCsv = resolveLightweightCsvSource();
   return [
-    { key: "source_csv", label: "Lightweight verified vessel reference CSV", url: sourceCsvEnabled() ? sourceCsvUrl() : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
+    {
+      key: "source_csv",
+      label: "Lightweight verified vessel reference CSV",
+      url: sourceCsvEnabled() ? sourceCsvUrl() : "",
+      localPath: sourceCsvMode() === "lightweight" ? lightweightCsv.localPath : null,
+      path_or_url: sourceCsvMode() === "lightweight" ? lightweightCsv.path_or_url : null,
+      lightweight_resolve_status: sourceCsvMode() === "lightweight" ? lightweightCsv.status : null,
+      lightweight_source_type: sourceCsvMode() === "lightweight" ? lightweightCsv.type : null,
+      lightweight_bytes: sourceCsvMode() === "lightweight" ? lightweightCsv.bytes : null,
+      serviceKey: null,
+      noKeyRequired: true,
+      disabledReason: "disabled_by_default_enable_source_csv_true",
+      maxRows: MAX_SOURCE_ROWS
+    },
     { key: "vessel_spec", label: "MOF vessel specification SicsVsslManp3 Info3", url: vesselSpecUrl(), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || 50), 50) },
     {
       key: "port_facility_child_enrichment",
@@ -1188,6 +1289,34 @@ async function fetchTextOnce(source, extraParams = {}) {
     const url = buildUrl(source, extraParams);
     const started = Date.now();
     const maxResponseBytes = source?.key === "source_csv" ? MAX_SOURCE_CSV_BYTES : MAX_API_RESPONSE_BYTES;
+    if (source?.key === "source_csv" && source.localPath) {
+      const stats = fs.statSync(source.localPath);
+      if (maxResponseBytes > 0 && stats.size > maxResponseBytes) {
+        const error = new Error(`Lightweight CSV too large: ${stats.size} bytes`);
+        error.failure_reason = "LIGHTWEIGHT_CSV_TOO_LARGE";
+        error.response_size_bytes = stats.size;
+        error.max_allowed_bytes = maxResponseBytes;
+        error.response_content_type = "text/csv; source=local-checkout";
+        error.file_name_hint = path.basename(source.localPath);
+        throw error;
+      }
+      const text = fs.readFileSync(source.localPath, "utf8");
+      const responseSizeBytes = Buffer.byteLength(text, "utf8");
+      return {
+        text,
+        url,
+        http_status: 200,
+        response_content_type: "text/csv; source=local-checkout",
+        file_name_hint: path.basename(source.localPath),
+        response_size_bytes: responseSizeBytes,
+        max_allowed_bytes: maxResponseBytes,
+        head_checked: false,
+        head_http_status: null,
+        head_latency_ms: null,
+        latency_ms: Date.now() - started,
+        result_meta: resultMeta(text)
+      };
+    }
     if (source?.key === "source_csv") {
       const urlDiagnostic = diagnoseSourceCsvUrl({ sourceCsvUrl: String(url), cwd: process.cwd() });
       if (
@@ -1835,8 +1964,8 @@ function parseDateMs(value) {
 }
 
 function isTier2EnrichmentRecord(record = {}) {
-  const key = String(record.source || "");
-  return key.startsWith("ulsan_") || key.startsWith("pnc_source_");
+  const key = String(record.source_key || record.source || "");
+  return key === "source_csv" || key === "source_csv_lightweight" || key.startsWith("ulsan_") || key.startsWith("pnc_source_");
 }
 
 function isPortOperationRecord(record = {}) {
@@ -1849,6 +1978,10 @@ function isPilotScheduleRecord(record = {}) {
 
 function isPncRecord(record = {}) {
   return String(record.source || "").startsWith("pnc_source_");
+}
+
+function isSourceCsvLightweightRecord(record = {}) {
+  return ["source_csv", "source_csv_lightweight"].includes(String(record.source_key || record.source || ""));
 }
 
 function isUlsanEnrichmentRecord(record = {}) {
@@ -2106,6 +2239,21 @@ function enrichmentMatchScore(ledger = {}, enrichment = {}) {
     score += 12;
     methods.push("port_group_ulsan");
   }
+  if (isSourceCsvLightweightRecord(enrichment)) {
+    if (ledger.imo && enrichment.imo && String(ledger.imo) === String(enrichment.imo)) {
+      score += 35;
+      methods.push("source_csv_imo");
+    } else if (ledger.mmsi && enrichment.mmsi && String(ledger.mmsi) === String(enrichment.mmsi)) {
+      score += 30;
+      methods.push("source_csv_mmsi");
+    } else if (normalizeCallSign(ledger.call_sign) && normalizeCallSign(enrichment.call_sign) && normalizeCallSign(ledger.call_sign) === normalizeCallSign(enrichment.call_sign)) {
+      score += shared.matched_fields?.vessel_name ? 25 : 15;
+      methods.push(shared.matched_fields?.vessel_name ? "source_csv_call_sign_name" : "source_csv_call_sign");
+    } else if (shared.matched_fields?.vessel_name && shared.matched_fields?.port) {
+      score += 12;
+      methods.push("source_csv_name_port");
+    }
+  }
   const timeScore = timeWindowScore(ledger, enrichment);
   if (timeScore >= 18) methods.push("time_window_24h");
   else if (timeScore > 0) methods.push("time_window_48h");
@@ -2134,8 +2282,19 @@ function mergeSecondaryEnrichment(record = {}, matches = []) {
   const sourceLabels = [...new Set(matches.map(match => match.record.source_label || match.record.source).filter(Boolean))];
   const terminalActivityText = [enrichment.terminal_activity, enrichment.berth_status, enrichment.status].filter(Boolean).join(" ");
   const terminalActive = /active|working|cargo|loading|discharging|작업|하역|운영|진행/i.test(terminalActivityText);
+  const csvMatch = matches.find(match => isSourceCsvLightweightRecord(match.record));
+  const csv = csvMatch?.record || {};
   return {
     ...record,
+    imo: record.imo || csv.imo || "",
+    mmsi: record.mmsi || csv.mmsi || "",
+    call_sign: record.call_sign || csv.call_sign || "",
+    gt: record.gt || csv.gt || 0,
+    grtg: record.grtg || csv.grtg || csv.gt || 0,
+    intrlGrtg: record.intrlGrtg || csv.intrlGrtg || csv.gt || 0,
+    dwt: record.dwt || csv.dwt || 0,
+    vessel_type: record.vessel_type && record.vessel_type !== "UNKNOWN" ? record.vessel_type : (csv.vessel_type || record.vessel_type),
+    flag: record.flag || csv.flag || "",
     berth: record.berth || enrichment.berth,
     berth_name: record.berth_name || enrichment.berth_name || enrichment.berth,
     terminal_name: record.terminal_name || enrichment.terminal_name,
@@ -2150,6 +2309,7 @@ function mergeSecondaryEnrichment(record = {}, matches = []) {
     cargo_workload_proxy: Math.max(Number(record.cargo_workload_proxy || 0), Number(enrichment.cargo_workload_proxy || 0)),
     terminal_activity: record.terminal_activity || enrichment.terminal_activity || (terminalActive ? "active" : ""),
     secondary_enrichment_matched: true,
+    source_csv_lightweight_enriched: Boolean(csvMatch),
     enrichment_source: sourceNames.join(","),
     enrichment_sources: sourceNames,
     enrichment_confidence: Math.max(Number(record.enrichment_confidence || 0), best.score),
@@ -2459,7 +2619,9 @@ function normalizeRow(row, source, now) {
     course: toNumber(firstValue(adapted, FIELD_ALIASES.course)),
     heading: toNumber(firstValue(adapted, FIELD_ALIASES.heading)),
     risk_score: 45,
-    source: source.key,
+    source: source.key === "source_csv" ? "source_csv_lightweight" : source.key,
+    source_key: source.key,
+    source_priority: source.key === "source_csv" ? 40 : 100,
     source_label: source.label,
     source_profile: sourceProfile,
     detail_rows_flattened: Boolean(adapted._detail_rows_flattened),
@@ -2507,6 +2669,24 @@ function normalizeRow(row, source, now) {
       : record.call_sign
         ? `CALL-${record.call_sign}`
         : [record.vessel_name, record.gt || record.grtg || record.intrlGrtg || "", record.vessel_type || ""].map(value => String(value || "").trim().toUpperCase()).join("|");
+  if (source.key === "source_csv") {
+    const csvDedupeKey = record.imo
+      ? `IMO|${record.imo}`
+      : record.mmsi
+        ? `MMSI|${record.mmsi}`
+        : record.call_sign && record.normalized_vessel_name
+          ? `CALL_NAME|${record.call_sign}|${record.normalized_vessel_name}`
+          : `NAME_PORT|${record.normalized_vessel_name || record.vessel_name}|${record.normalized_port || record.port}`;
+    record.source = "source_csv_lightweight";
+    record.source_key = "source_csv";
+    record.source_priority = 40;
+    record.source_mode = "lightweight_csv_optional";
+    record.reference_source = "source_csv_lightweight";
+    record.identity_source = "source_csv_lightweight";
+    record.port_call_identity = csvDedupeKey;
+    record.raw_row_identity = `source_csv_lightweight|${csvDedupeKey}`;
+    record.vessel_identity = csvDedupeKey;
+  }
   record.gt = record.gt || record.grtg || record.intrlGrtg || 0;
   record.match_keys = buildVesselMatchKeys(record);
   if (sourceProfile === "pilot_schedule") {
@@ -2548,6 +2728,10 @@ function mergeValue(current, next) {
 }
 
 function mergePortCallRecord(existing, incoming) {
+  const priorityOf = record => Number(record.source_priority || (String(record.source || record.source_key || "").includes("source_csv") ? 40 : 100));
+  if (priorityOf(incoming) > priorityOf(existing)) {
+    return mergePortCallRecord(incoming, existing);
+  }
   const merged = { ...existing };
   for (const [key, value] of Object.entries(incoming)) {
     if (["source", "source_label", "source_profile", "de_gb", "raw_row_identity", "raw_source_references", "source_children"].includes(key)) continue;
@@ -3192,6 +3376,7 @@ async function collectRealRows() {
       diag.rows_collected = Number(diag.rows_collected || diag.row_count || 0);
       diag.rows_normalized = Number(diag.rows_normalized || diag.normalized_count || 0);
       diag.rows_matched = Number(diag.rows_matched || diag.actionable_count || 0);
+      diag.rows_skipped = Math.max(0, diag.rows_collected - diag.rows_normalized);
       return diag;
     };
     if (Date.now() > deadline) {
@@ -3222,6 +3407,69 @@ async function collectRealRows() {
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
+    if (source.key === "source_csv") {
+      diag.mode = sourceCsvMode() || "refresh";
+      diag.max_bytes = MAX_SOURCE_CSV_BYTES;
+      diag.path_or_url = source.path_or_url || source.url || null;
+      diag.optional_source = true;
+      diag.core_blocking = false;
+      if (["raw", "full"].includes(sourceCsvMode())) {
+        diag.skipped = true;
+        diag.reason = "RAW_CSV_DISABLED_IN_CORE";
+        diag.skip_reason = "RAW_CSV_DISABLED_IN_CORE";
+        diag.raw_skip_reason = "RAW_CSV_DISABLED_IN_CORE";
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("skipped"));
+        continue;
+      }
+      if (sourceCsvMode() === "off") {
+        diag.skipped = true;
+        diag.reason = "SOURCE_CSV_DISABLED";
+        diag.skip_reason = "SOURCE_CSV_DISABLED";
+        diag.raw_skip_reason = "SOURCE_CSV_DISABLED";
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("skipped"));
+        continue;
+      }
+      if (sourceCsvMode() === "lightweight" && source.lightweight_resolve_status !== "found") {
+        diag.skipped = true;
+        diag.reason = "LIGHTWEIGHT_CSV_NOT_FOUND";
+        diag.skip_reason = "LIGHTWEIGHT_CSV_NOT_FOUND";
+        diag.raw_skip_reason = "LIGHTWEIGHT_CSV_NOT_FOUND";
+        diag.searched_paths = LIGHTWEIGHT_CSV_DEFAULT_PATHS;
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("skipped"));
+        continue;
+      }
+      if (sourceCsvMode() === "lightweight" && source.lightweight_source_type === "cache" && CORE_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)) {
+        diag.path_or_url = source.path_or_url || null;
+        diag.bytes = Number(source.lightweight_bytes || 0) || null;
+        diag.max_bytes = MAX_SOURCE_CSV_BYTES;
+        if (MAX_SOURCE_CSV_BYTES > 0 && Number(source.lightweight_bytes || 0) > MAX_SOURCE_CSV_BYTES) {
+          diag.skipped = true;
+          diag.reason = "LIGHTWEIGHT_CSV_TOO_LARGE";
+          diag.skip_reason = "LIGHTWEIGHT_CSV_TOO_LARGE";
+          diag.raw_skip_reason = "LIGHTWEIGHT_CSV_TOO_LARGE";
+          diagnostics.skipped_count += 1;
+          diagnostics.sources.push(finishDiag("skipped"));
+          continue;
+        }
+        const cacheRows = lightweightCacheRowCount(source.localPath);
+        diag.skipped = true;
+        diag.reason = "LIGHTWEIGHT_CSV_REFERENCE_CACHE_REUSED";
+        diag.skip_reason = "LIGHTWEIGHT_CSV_REFERENCE_CACHE_REUSED";
+        diag.raw_skip_reason = "LIGHTWEIGHT_CSV_REFERENCE_CACHE_REUSED";
+        diag.rows_collected = cacheRows;
+        diag.row_count = cacheRows;
+        diag.rows_normalized = cacheRows;
+        diag.normalized_count = cacheRows;
+        diag.optional_source = true;
+        diag.core_blocking = false;
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("warning"));
+        continue;
+      }
+    }
     if (!source.url) {
       diag.skipped = true;
       diag.reason = collectorSkipReason(source.disabledReason || "missing_url");
@@ -3231,7 +3479,7 @@ async function collectRealRows() {
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
-    if (source.key === "source_csv") {
+    if (source.key === "source_csv" && sourceCsvMode() !== "lightweight") {
       const urlDiagnostic = diagnoseSourceCsvUrl({ sourceCsvUrl: source.url, cwd: process.cwd() });
       diag.source_csv_url_status = urlDiagnostic.status;
       diag.expected_raw_url = urlDiagnostic.expected_raw_url;
@@ -3344,6 +3592,24 @@ async function collectRealRows() {
       diag.cap_value = rows.length >= rowLimit ? rowLimit : null;
       diag.url_host = url.host;
       diag.sample_keys = rows[0] && typeof rows[0] === "object" ? Object.keys(rows[0]).slice(0, 30) : [];
+      if (source.key === "source_csv") {
+        diag.mode = sourceCsvMode() || "lightweight";
+        diag.path_or_url = source.path_or_url || source.url || null;
+        diag.bytes = Number(response_size_bytes || 0) || null;
+        diag.max_bytes = Number(max_allowed_bytes || MAX_SOURCE_CSV_BYTES);
+        const schema = lightweightCsvSchemaStatus(diag.sample_keys.length ? diag.sample_keys : (result_meta?.header_fields || []));
+        diag.lightweight_schema = schema;
+        if (!schema.ok) {
+          diag.skipped = true;
+          diag.success = false;
+          diag.reason = "LIGHTWEIGHT_CSV_SCHEMA_INSUFFICIENT";
+          diag.skip_reason = "LIGHTWEIGHT_CSV_SCHEMA_INSUFFICIENT";
+          diag.raw_skip_reason = "LIGHTWEIGHT_CSV_SCHEMA_INSUFFICIENT";
+          diagnostics.skipped_count += 1;
+          diagnostics.sources.push(finishDiag("skipped"));
+          continue;
+        }
+      }
       let childAttempted = 0;
       let childSuccess = 0;
       let childRows = 0;
@@ -3370,7 +3636,7 @@ async function collectRealRows() {
         }
         if (normalized) records.push(normalized);
       }
-      const sourceRecords = records.filter(record => record.source === source.key);
+      const sourceRecords = records.filter(record => (record.source_key || record.source) === source.key);
       diag.normalized_count = sourceRecords.length;
       diag.rows_normalized = sourceRecords.length;
       diag.rows_with_vessel_name = sourceRecords.filter(record => String(record.vessel_name || "").trim()).length;
@@ -3463,6 +3729,14 @@ async function collectRealRows() {
       if (diag.row_count > 0 && diag.normalized_count === 0) {
         diag.warning = "source_returned_rows_but_no_vessel_identity_fields_matched";
       }
+      if (source.key === "source_csv" && diag.normalized_count === 0) {
+        diag.success = false;
+        diag.warning = "LIGHTWEIGHT_CSV_NORMALIZED_ROWS_ZERO";
+        diag.reason = "LIGHTWEIGHT_CSV_NORMALIZED_ROWS_ZERO";
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("warning"));
+        continue;
+      }
       diagnostics.success_count += 1;
       finishDiag("success");
     } catch (error) {
@@ -3471,6 +3745,8 @@ async function collectRealRows() {
       diag.failure_reason = error?.failure_reason || null;
       diag.response_size_bytes = Number(error?.response_size_bytes || 0) || null;
       diag.max_allowed_bytes = Number(error?.max_allowed_bytes || 0) || null;
+      diag.bytes = Number(error?.response_size_bytes || 0) || null;
+      diag.max_bytes = Number(error?.max_allowed_bytes || MAX_SOURCE_CSV_BYTES) || null;
       diag.response_content_type = error?.response_content_type || null;
       diag.content_type = error?.response_content_type || null;
       diag.file_name_hint = error?.file_name_hint || null;
@@ -3479,6 +3755,19 @@ async function collectRealRows() {
       diag.head_latency_ms = error?.head_latency_ms || null;
       diag.http_status = error?.http_status || null;
       diag.retry_count = error?.retry_count || 0;
+      if (source.key === "source_csv") {
+        diag.optional_source = true;
+        diag.core_blocking = false;
+        diag.skipped = true;
+        diag.reason = error?.failure_reason === "LIGHTWEIGHT_CSV_TOO_LARGE" || error?.failure_reason === "api_response_too_large"
+          ? "LIGHTWEIGHT_CSV_TOO_LARGE"
+          : "LIGHTWEIGHT_CSV_PARSE_FAILED";
+        diag.skip_reason = diag.reason;
+        diag.raw_skip_reason = diag.error_message;
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag(error?.failure_reason === "LIGHTWEIGHT_CSV_TOO_LARGE" || error?.failure_reason === "api_response_too_large" ? "skipped" : "failed_optional"));
+        continue;
+      }
       diagnostics.failed_count += 1;
       finishDiag("failed");
     }

@@ -64,12 +64,12 @@ const STATIC_OUTPUTS = [
 
 const REQUIRED_SCHEMA_CHECKS = [
   {
-    key: "vessel_events_event_uid_unique",
+    key: "vessel_events_event_key_unique",
     severity: "CRITICAL",
-    description: "vessel_events has unique constraint matching ON CONFLICT (event_uid)",
+    description: "vessel_events has unique constraint matching ON CONFLICT (event_key)",
     table: "vessel_events",
-    test: schema => schema.hasUniqueIndex("vessel_events", ["event_uid"], { requireNonPartial: true }),
-    sql: "create unique index if not exists ux_vessel_events_event_uid on vessel_events(event_uid);"
+    test: schema => schema.hasUniqueIndex("vessel_events", ["event_key"], { requireNonPartial: true }),
+    sql: "create unique index if not exists ux_vessel_events_event_key on vessel_events(event_key);"
   },
   {
     key: "vessel_master_identity",
@@ -569,7 +569,7 @@ async function detectDuplicates(schema) {
   for (const [table, rules] of Object.entries(DUPLICATE_RULES)) {
     const availableColumns = schema.columnsFor(table);
     const neededColumns = requiredColumnsForRules(rules).filter(column => availableColumns.includes(column));
-    const identityColumns = ["id", "snapshot_id", "master_vessel_id", "port_call_id", "opportunity_id", "event_uid", "current_id", "run_id"]
+    const identityColumns = ["id", "snapshot_id", "master_vessel_id", "port_call_id", "opportunity_id", "event_key", "event_uid", "current_id", "run_id"]
       .filter(column => availableColumns.includes(column));
     const result = await fetchRows(table, [...new Set([...neededColumns, ...identityColumns])], { maxRows: MAX_ROWS });
     if (!result.ok) {
@@ -618,7 +618,7 @@ function duplicateRuleResult(rule, rows) {
 
 function exampleIdentity(row) {
   return {
-    id: firstValue(row, ["id", "snapshot_id", "master_vessel_id", "port_call_id", "opportunity_id", "event_uid", "current_id"]),
+    id: firstValue(row, ["id", "snapshot_id", "master_vessel_id", "port_call_id", "opportunity_id", "event_key", "event_uid", "current_id"]),
     run_id: row.run_id || null,
     vessel: firstValue(row, ["vessel_name", "canonical_name", "normalized_name", "master_vessel_id", "vessel_id"]),
     port: firstValue(row, ["port_code", "port_name", "port"])

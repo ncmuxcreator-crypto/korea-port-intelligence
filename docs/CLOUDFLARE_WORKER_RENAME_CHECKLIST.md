@@ -5,7 +5,7 @@
 - Service name: `Korea Port Intelligence`
 - Worker slug: `korea-port-intelligence`
 - Target URL: `https://korea-port-intelligence.giwon48.workers.dev/`
-- Existing URL to keep during transition: `https://hwk-port-intelligence.giwon48.workers.dev/`
+- Retired worker routes should not be shown as current production endpoints.
 
 ## Deployment Path
 
@@ -25,8 +25,8 @@ Both workflows call `npx wrangler deploy`, so they use the Worker name from `wra
 Changing the Worker name in `wrangler.jsonc` makes the next deploy publish to
 the Worker named `korea-port-intelligence`.
 
-This should not delete the old Worker. The old URL normally remains available
-until it is manually deleted or its route is changed in Cloudflare.
+This should not delete any retired Worker automatically. Retired routes should be
+removed or redirected in Cloudflare only after the current Worker is verified.
 
 ## Post-Deploy Checks
 
@@ -34,10 +34,6 @@ until it is manually deleted or its route is changed in Cloudflare.
 - `https://korea-port-intelligence.giwon48.workers.dev/api/bootstrap.json`
 - `https://korea-port-intelligence.giwon48.workers.dev/api/status-summary.json`
 - `https://korea-port-intelligence.giwon48.workers.dev/api/vessels/index.json`
-
-Keep checking the old URL during the transition:
-
-- `https://hwk-port-intelligence.giwon48.workers.dev/`
 
 ## Do Not Change Automatically
 

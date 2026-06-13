@@ -103,8 +103,7 @@ function loadEnvFile(filePath) {
 
 for (const filePath of [
   path.join(ROOT, ".env.local"),
-  path.join(ROOT, ".env"),
-  path.join(ROOT, "..", "hwkport-push", ".env.local")
+  path.join(ROOT, ".env")
 ]) {
   loadEnvFile(filePath);
 }

@@ -13,7 +13,7 @@ import { SOURCE_CSV_URL_RECOMMENDED_FIX, diagnoseSourceCsvUrl } from "./source-c
 export const SOURCE_CSV_REFERENCE_CACHE_PATH = "data/cache/source-csv-reference-cache.json";
 export const SOURCE_CSV_PUBLIC_REFERENCE_PATH = "dashboard/api/cache/source-csv-reference.json";
 export const SOURCE_CSV_SUMMARY_PATH = "dashboard/api/aux/source-csv-summary.json";
-export const DEFAULT_MAX_SOURCE_CSV_BYTES = 5_000_000;
+export const DEFAULT_MAX_SOURCE_CSV_BYTES = 5_242_880;
 
 const REFERENCE_FIELDS = [
   "vessel_name",
@@ -462,19 +462,33 @@ export function buildSourceCsvEnrichmentDryRun({ records = [], cache = null, gen
 }
 
 export function readSourceCsvReferenceCache(filePath = SOURCE_CSV_REFERENCE_CACHE_PATH) {
-  try {
-    if (!fs.existsSync(filePath)) return { status: "missing", items: [], last_success_at: null };
-    const payload = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    const items = uniqueReferenceRows(payload.items || payload.rows || []);
-    return {
-      status: items.length ? "available" : "empty",
-      items,
-      last_success_at: payload.last_success_at || payload.generated_at || null,
-      generated_at: payload.generated_at || null
-    };
-  } catch (error) {
-    return { status: "invalid", items: [], last_success_at: null, error: error.message };
+  const candidates = [...new Set([
+    filePath,
+    SOURCE_CSV_PUBLIC_REFERENCE_PATH,
+    "dashboard/api/cache/source-csv-index.json"
+  ].filter(Boolean))];
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      if (!fs.existsSync(candidate)) continue;
+      const payload = JSON.parse(fs.readFileSync(candidate, "utf8"));
+      const items = uniqueReferenceRows(payload.items || payload.rows || []);
+      if (!items.length) {
+        lastError = `${candidate}: empty`;
+        continue;
+      }
+      return {
+        status: "available",
+        items,
+        last_success_at: payload.last_success_at || payload.generated_at || null,
+        generated_at: payload.generated_at || null,
+        path_or_url: candidate
+      };
+    } catch (error) {
+      lastError = error.message;
+    }
   }
+  return { status: lastError ? "invalid" : "missing", items: [], last_success_at: null, error: lastError };
 }
 
 export function buildSourceCsvReferencePayload({ cache = null, generatedAt = new Date().toISOString() } = {}) {
@@ -546,7 +560,7 @@ function responseSizeFromText(...values) {
 
 function flattenedDiagnostics(item = {}, diagnostic = {}) {
   const nested = Array.isArray(item.diagnostics) ? item.diagnostics[0] || {} : {};
-  return { ...nested, ...diagnostic, ...item };
+  return { ...item, ...nested, ...diagnostic };
 }
 
 function likelyRawCsv({ responseSizeBytes = 0, headerFields = [], sourceTooLarge = false } = {}) {
@@ -573,14 +587,16 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const currentCache = cache || readSourceCsvReferenceCache();
   const rows = currentCache.items || [];
   const summary = summarizeSourceCsvReferenceRows(rows);
-  const maxAllowedBytes = Number(process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || DEFAULT_MAX_SOURCE_CSV_BYTES);
+  const maxAllowedBytes = Number(process.env.SOURCE_CSV_MAX_BYTES || process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || DEFAULT_MAX_SOURCE_CSV_BYTES);
   const responseSizeBytes = Number(diag.response_size_bytes || 0)
     || responseSizeFromText(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
   const urlDiagnostic = diagnoseSourceCsvUrl({
-    sourceCsvUrl: diag.configured_url_sanitized || process.env.SOURCE_CSV_URL,
+    sourceCsvUrl: diag.configured_url_sanitized || process.env.SOURCE_LIGHTWEIGHT_CSV_URL || process.env.SOURCE_CSV_URL,
     cwd: process.cwd()
   });
   const sourceTooLarge = item.status === "SOURCE_TOO_LARGE"
+    || item.reason === "LIGHTWEIGHT_CSV_TOO_LARGE"
+    || item.skip_reason === "LIGHTWEIGHT_CSV_TOO_LARGE"
     || diag.failure_reason === "api_response_too_large"
     || Boolean(item.source_too_large)
     || isSourceTooLargeSignal(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
@@ -592,7 +608,10 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const isProbablyRaw = likelyRawCsv({ responseSizeBytes, headerFields, sourceTooLarge });
   const isProbablyLightweight = likelyLightweightCsv({ headerFields, rows });
   const wrongSourceCsvUrl = urlDiagnostic.status === "WRONG_SOURCE_CSV_URL" || item.status === "WRONG_SOURCE_CSV_URL" || diag.source_csv_url_status === "WRONG_SOURCE_CSV_URL";
-  const status = wrongSourceCsvUrl && !cacheOnlyMode && !offMode
+  const lightweightSkipReason = String(diag.reason || diag.skip_reason || item.reason || item.skip_reason || "").toUpperCase();
+  const status = ["RAW_CSV_DISABLED_IN_CORE", "LIGHTWEIGHT_CSV_NOT_FOUND", "LIGHTWEIGHT_CSV_TOO_LARGE", "LIGHTWEIGHT_CSV_SCHEMA_INSUFFICIENT"].includes(lightweightSkipReason)
+    ? "skipped"
+    : wrongSourceCsvUrl && !cacheOnlyMode && !offMode
     ? "WRONG_SOURCE_CSV_URL"
     : offMode
     ? (previousCacheAvailable ? "OFF_PREVIOUS_CACHE" : "OFF_NO_CACHE")
@@ -614,10 +633,10 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     : wrongSourceCsvUrl
     ? SOURCE_CSV_URL_RECOMMENDED_FIX
     : sourceTooLarge
-    ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
+    ? "Configured source_csv URL still points to a large raw CSV. Point SOURCE_LIGHTWEIGHT_CSV_URL to the lightweight verified vessel reference CSV."
     : previousCacheAvailable
       ? "Keep source_csv as a lightweight verified vessel reference cache."
-      : "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file.";
+      : "Create a smaller verified vessel reference CSV and set SOURCE_LIGHTWEIGHT_CSV_URL or SOURCE_LIGHTWEIGHT_CSV_PATH to that file.";
   return {
     schema_version: "1.0",
     generated_at: generatedAt,
@@ -637,9 +656,14 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     points_to_lightweight_verified_reference_csv: urlDiagnostic.points_to_lightweight_verified_reference_csv,
     points_to_expected_url: urlDiagnostic.points_to_expected_url,
     source_csv_mode: sourceCsvMode || "refresh",
+    mode: sourceCsvMode || "refresh",
+    reason: lightweightSkipReason || null,
+    bytes: Number(item.bytes || item.response_size_bytes || 0) || null,
+    max_bytes: Number(item.max_bytes || maxAllowedBytes) || maxAllowedBytes,
+    path_or_url: item.path_or_url || item.configured_url_sanitized || diag.configured_url_sanitized || null,
     source_layer: item.source_layer || "auxiliary",
     core_blocking: false,
-    configured: (item.present_env || []).includes("SOURCE_CSV_URL") || Boolean(urlDiagnostic.configured_url_sanitized || diag.configured_url_sanitized),
+    configured: (item.present_env || []).includes("SOURCE_LIGHTWEIGHT_CSV_URL") || (item.present_env || []).includes("SOURCE_LIGHTWEIGHT_CSV_PATH") || (item.present_env || []).includes("SOURCE_CSV_URL") || Boolean(urlDiagnostic.configured_url_sanitized || diag.configured_url_sanitized),
     collector_enabled: Boolean(item.collector_enabled),
     collector_attempted: Boolean(item.collector_attempted),
     source_too_large: sourceTooLarge,
@@ -657,6 +681,12 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     row_count_estimate: Number(diag.row_count_estimate || 0) || null,
     rows_collected: Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0),
     rows_normalized: sourceTooLarge ? 0 : Number(item.rows_normalized || diagnostic.normalized_count || diagnostic.rows_normalized || 0),
+    rows_read: Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0),
+    rows_merged: Number(item.rows_matched || item.actionable_count || diagnostic.rows_matched || diagnostic.actionable_count || 0),
+    rows_skipped: Math.max(0,
+      Number(item.rows_collected || diagnostic.rows_collected || diagnostic.row_count || 0) -
+      Number(item.rows_normalized || diagnostic.normalized_count || diagnostic.rows_normalized || 0)
+    ),
     usable_reference_rows: summary.usable_reference_rows,
     rows_with_imo: summary.rows_with_imo,
     rows_with_mmsi: summary.rows_with_mmsi,

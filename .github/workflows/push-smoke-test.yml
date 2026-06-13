@@ -17,6 +17,9 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Print push diagnostics
         run: |
           echo "workflow=${{ github.workflow }}"
@@ -26,3 +29,7 @@ jobs:
           echo "sha=${{ github.sha }}"
           echo "runner_os=${{ runner.os }}"
           echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

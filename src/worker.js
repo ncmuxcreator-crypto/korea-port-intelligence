@@ -307,6 +307,31 @@ function corsHeaders() {
   };
 }
 
+function cacheControlForApiPath(pathname = "") {
+  if (pathname.endsWith("/status.json") || pathname.endsWith("/config-status.json") || pathname.endsWith("/health/pipeline.json")) {
+    return "no-store";
+  }
+  if (pathname.endsWith("/vessels.json") || pathname === "/api/vessels" || pathname.endsWith("/hot-vessels.json")) {
+    return "public, max-age=600, stale-while-revalidate=900";
+  }
+  return `public, max-age=${API_CACHE_SECONDS}, stale-while-revalidate=900`;
+}
+
+function structuredWorkerError(error, pathname = "") {
+  return {
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    status: "degraded",
+    error: "worker_api_error",
+    message: error?.message || String(error || "unknown_error"),
+    path: pathname,
+    generated_at: new Date().toISOString(),
+    data_source_used: "worker_error_structured_response",
+    fallback_used: false,
+    record_count: 0,
+    items: []
+  };
+}
+
 function scoreLevel(score = 0) {
   if (score >= CRITICAL_TARGET_THRESHOLD) return "Critical";
   if (score >= IMMEDIATE_TARGET_THRESHOLD) return "Immediate";
@@ -2299,8 +2324,21 @@ function latestPerVesselPort(records) {
 }
 
 function buildHot(records) {
+  const seen = new Set();
   return sortCommercialPriority(records)
     .filter(v => v.actionable_source_row !== false && isMainCommercialVessel(v) && (isSalesCandidate(v) || v.is_cleaning_candidate || ["arrived_staying", "berthed", "anchorage_waiting", "arriving_soon"].includes(v.status_bucket) || (v.biofouling_score || 0) >= 65 || (v.operational_risk_score || 0) >= 60))
+    .filter(v => {
+      const key = [
+        v.imo ? `imo:${v.imo}` : "",
+        v.mmsi ? `mmsi:${v.mmsi}` : "",
+        v.call_sign && v.normalized_vessel_name ? `call:${v.call_sign}|${v.normalized_vessel_name}` : "",
+        v.vessel_id || v.hybrid_entity_key || v.port_call_id || v.vessel_name || ""
+      ].find(Boolean);
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .slice(0, 40);
 }
 
@@ -3599,7 +3637,7 @@ function pageRows(records = [], searchParams = new URLSearchParams()) {
 
 function compactVesselRow(row = {}) {
   const payload = row.payload && typeof row.payload === "object" && !Array.isArray(row.payload) ? row.payload : {};
-  const merged = { ...payload, ...row };
+  const merged = { ...row, ...payload };
   const keys = [
     "vessel_id",
     "master_vessel_id",
@@ -4521,6 +4559,18 @@ function buildStatusFromSummarySnapshot(snapshot = {}, source = {}, reason = "la
     version: "worker-live-api-v1",
     status: "success",
     data_mode: "latest_successful_summary_snapshot",
+    records: Number(snapshot.record_count || 0),
+    warning_count: [reason, freshness.is_stale ? "stale_data" : null].filter(Boolean).length,
+    source_status: {
+      status: "success",
+      data_source_used: "latest_successful_summary_snapshot",
+      fallback_used: true,
+      fallback_reason: reason,
+      supabase_error: source.error || null,
+      pointer_source: source.pointer?.pointer_source || "none",
+      active_run_id: source.pointer?.active_run_id || snapshot.run_id || null,
+      row_count: Number(snapshot.record_count || 0)
+    },
     commercial_use_status: "review_required",
     live_data_available: Number(snapshot.record_count || snapshot.all_vessels_count || 0) > 0,
     displayable_vessel_count: Number(snapshot.record_count || 0),
@@ -5667,6 +5717,18 @@ function buildStatus(records, source) {
       dataset_promotion_status: source.pointer?.fallback_pointer ? "fallback" : "promoted"
     },
     data_mode: dataMode,
+    records: records.length,
+    warning_count: [source.error, fallbackUsed ? fallbackReason : null, dataIsStale ? "stale_data" : null].filter(Boolean).length,
+    source_status: {
+      status: source.error && !records.length ? "degraded" : "success",
+      data_source_used: dataSourceUsed,
+      fallback_used: fallbackUsed,
+      fallback_reason: fallbackReason,
+      supabase_error: source.error || null,
+      pointer_source: source.pointer?.pointer_source || "none",
+      active_run_id: activeRunId,
+      row_count: records.length
+    },
     commercial_use_status: displayableRows ? "review_required" : "not_ready",
     live_data_available: Boolean(displayableRows),
     displayable_vessel_count: displayableRows,
@@ -8518,7 +8580,6 @@ async function apiResponse(url, env) {
 function isWorkerCacheableApi(pathname = "") {
   return pathname.endsWith("/bootstrap.json") ||
     pathname.endsWith("/dashboard-summary.json") ||
-    pathname.endsWith("/status.json") ||
     pathname.endsWith("/changes.json") ||
     pathname.endsWith("/candidates/top.json") ||
     pathname.endsWith("/ports.json");
@@ -8529,20 +8590,30 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders() });
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
-      if (request.method === "GET" && isWorkerCacheableApi(url.pathname) && typeof caches !== "undefined") {
-        const cache = caches.default;
-        const cacheKey = new Request(url.toString(), request);
-        const cached = await cache.match(cacheKey);
-        if (cached) return cached;
+      try {
+        if (request.method === "GET" && isWorkerCacheableApi(url.pathname) && typeof caches !== "undefined") {
+          const cache = caches.default;
+          const cacheKey = new Request(url.toString(), request);
+          const cached = await cache.match(cacheKey);
+          if (cached) return cached;
+          const response = await apiResponse(url, env);
+          if (response) {
+            response.headers.set("cache-control", cacheControlForApiPath(url.pathname));
+            await cache.put(cacheKey, response.clone());
+            return response;
+          }
+        }
         const response = await apiResponse(url, env);
         if (response) {
-          response.headers.set("cache-control", `public, max-age=${API_CACHE_SECONDS}, stale-while-revalidate=900`);
-          await cache.put(cacheKey, response.clone());
+          response.headers.set("cache-control", cacheControlForApiPath(url.pathname));
           return response;
         }
+      } catch (error) {
+        return json(structuredWorkerError(error, url.pathname), {
+          status: 200,
+          headers: { ...corsHeaders(), "cache-control": "no-store" }
+        });
       }
-      const response = await apiResponse(url, env);
-      if (response) return response;
     }
     return env.ASSETS.fetch(request);
   }

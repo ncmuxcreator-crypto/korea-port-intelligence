@@ -10,7 +10,9 @@ const presets = {
     ENRICHMENT_MODE: "lightweight_apply_cache",
     DISCOVERY_MODE: "off",
     DB_AUDIT_MODE: "off",
-    SOURCE_CSV_MODE: "cache_only",
+    ENABLE_SOURCE_CSV: "true",
+    SOURCE_CSV_MODE: "lightweight",
+    SOURCE_CSV_MAX_BYTES: "5242880",
     RUN_HEAVY_AUDITS: "false",
     RUN_DISCOVERY: "false",
     RUN_DB_CLEANUP_AUDIT: "false",
@@ -32,6 +34,7 @@ const presets = {
     DB_AUDIT_MODE: "off",
     SOURCE_CSV_MODE: "refresh",
     ENABLE_SOURCE_CSV: "true",
+    SOURCE_CSV_MAX_BYTES: "5242880",
     RUN_HEAVY_AUDITS: "true"
   },
   enrichment: {
@@ -41,6 +44,7 @@ const presets = {
     DB_AUDIT_MODE: "off",
     SOURCE_CSV_MODE: "refresh",
     ENABLE_SOURCE_CSV: "true",
+    SOURCE_CSV_MAX_BYTES: "5242880",
     RUN_HEAVY_AUDITS: "true"
   },
   discovery_audit: {

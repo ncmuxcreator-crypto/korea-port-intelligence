@@ -557,6 +557,17 @@ const requiredVesselDisplayFields = [
   "data_sources"
 ];
 const pageOne = readJson("dashboard/api/vessels/page-1.json");
+for (const [name, payload] of [
+  ["vessels.json", readJson("dashboard/api/vessels.json")],
+  ["all-collected-vessels.json", readJson("dashboard/api/all-collected-vessels.json")],
+  ["target-vessels.json", readJson("dashboard/api/target-vessels.json")]
+]) {
+  assert(!Array.isArray(payload), `${name} must use an API envelope, not an array root.`);
+  for (const field of ["serving_mode", "data_source_used", "fallback_used", "fallback_reason", "record_count"]) {
+    assert(field in payload, `${name} missing API envelope field: ${field}`);
+  }
+  assert(["static_json", "worker_supabase", "local_diagnostics"].includes(payload.serving_mode), `${name} has invalid serving_mode: ${payload.serving_mode}`);
+}
 const displayRows = [
   ...rows(topPayload).slice(0, 10),
   ...rows(pageOne).slice(0, 10)

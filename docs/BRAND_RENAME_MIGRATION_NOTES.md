@@ -10,28 +10,21 @@ User-facing copy should use `Korea Port Intelligence` or short `Port Intelligenc
 - Package metadata uses `korea-port-intelligence`.
 - Cloudflare Worker config now targets `korea-port-intelligence`.
 
-## Manual External Settings To Rename Later
+## Manual External Settings To Verify
 
-- Existing Cloudflare Worker URL:
-  - Keep `https://hwk-port-intelligence.giwon48.workers.dev` live until the new URL is verified.
+- Retired Cloudflare Worker routes:
+  - Do not present retired worker routes as current production endpoints.
 - Supabase historical/source keys:
-  - `hwk-port-raw:${runId}` remains unchanged for compatibility.
+  - Legacy run keys may exist in historical data and should be treated as archived metadata.
 - Supabase helper objects:
-  - `hwk_try_timestamptz`, `hwk_normalize_pilot_schedule_time`,
-    `trg_hwk_normalize_pilot_schedule_time`, and `hwk_storage_table_sizes`
-    need a dedicated database migration if renamed.
+  - Legacy helper objects need a dedicated database migration if renamed.
 - Environment variable keys:
-  - `HWK_HEALTH_PARENT` remains unchanged for backward compatibility.
+  - Retired compatibility env names should not be used for new runtime configuration.
 - Local workspace fallback paths:
-  - Any `hwkport-*` local folder references should be changed only after local folders are renamed.
-
-## Known Benign Matches
-
-- `package-lock.json` can contain `HWK` inside npm integrity hashes. Do not edit hashes manually.
+  - Retired local folder fallback paths should not be used for new runs.
 
 ## Deployment URL Follow-Up
 
 1. Deploy the Worker named `korea-port-intelligence`.
 2. Verify `https://korea-port-intelligence.giwon48.workers.dev/`.
-3. Keep the old Worker URL as a fallback during transition.
-4. Move any external DNS/custom route only after the new Worker is verified.
+3. Move any external DNS/custom route only after the new Worker is verified.

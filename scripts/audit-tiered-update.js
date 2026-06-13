@@ -122,6 +122,7 @@ const enrichmentLatest = readJson(FILES.enrichmentLatest);
 const coreRunId = updateTiers.core_run_id || updateTiers.run_id || runtimeBudget.run_id || statusSummary.run_id || null;
 const activeUpdateMode = String(updateTiers.update_mode || runtimeBudget.update_mode || statusSummary.update_mode || "").toLowerCase();
 const activeRunIsCore = ["core", "core_update"].includes(activeUpdateMode);
+const activeRunIsAuxiliary = ["fast_aux", "reference_enrichment", "discovery_audit"].includes(activeUpdateMode);
 const rows = [
   ["core", coreRunId, updateTiers.core_generated_at || updateTiers.generated_at, updateTiers.core_generated_by || updateTiers.generated_by],
   ["status-summary", fileRunId(statusSummary, ["run_id"]), statusSummary.generated_at, statusSummary.generated_by],
@@ -143,22 +144,25 @@ const activeAux = sourceCollectionActiveAux(sourceCollection);
 const missingAuxQuality = sourceQualityMissingAux(sourceQuality);
 const missingAuxIndex = auxIndexMissingEnv(auxLatest);
 const missingUtilization = enrichmentUtilizationMissingAux(enrichmentUtilization);
-const sourceQualityOverwrite = sourceQuality.generated_by === "local" &&
+const sourceQualityOverwrite = activeRunIsCore &&
+  sourceQuality.generated_by === "local" &&
   missingAuxQuality.length > 0 &&
   activeAux.length > 0 &&
   sourceQuality.reused_from_cache !== true;
-const auxIndexOverwrite = auxLatest.generated_by === "local" &&
+const auxIndexOverwrite = activeRunIsCore &&
+  auxLatest.generated_by === "local" &&
   String(auxLatest.update_mode || "").toLowerCase() === "core" &&
   missingAuxIndex.length > 0 &&
   auxLatest.reused_from_cache !== true;
-const utilizationOverwrite = enrichmentUtilization.generated_by === "local" &&
+const utilizationOverwrite = activeRunIsCore &&
+  enrichmentUtilization.generated_by === "local" &&
   missingUtilization.length > 0 &&
   enrichmentUtilization.reused_from_cache !== true;
 
 const ownershipIssues = [
   ownershipIssue("status-summary", statusSummary, { owners: ["core"], coreMayUpdate: true }),
   ownershipIssue("runtime/update-tiers", updateTiers, { owners: ["core"], coreMayUpdate: true }),
-  ownershipIssue("source-quality-score", sourceQuality, { owners: ["fast_aux", "reference_enrichment"], allowPolicy: true }),
+  ownershipIssue("source-quality-score", sourceQuality, { owners: ["mixed", "fast_aux", "reference_enrichment"], allowPolicy: true }),
   ownershipIssue("enrichment-utilization", enrichmentUtilization, { owners: ["reference_enrichment"], allowPolicy: true }),
   ownershipIssue("aux/latest/index", auxLatest, { owners: ["fast_aux"], coreMayUpdate: false }),
   ownershipIssue("enrichment/latest/index", enrichmentLatest, { owners: ["reference_enrichment"], coreMayUpdate: false })
@@ -200,6 +204,7 @@ for (const [label, id, generatedAt, generatedBy] of rows) {
 }
 console.log("");
 console.log(`mixed_tier_status=${Boolean(updateTiers.mixed_tier_status)} note=${updateTiers.mixed_tier_note || "-"}`);
+console.log(`auxiliary_update_mode=${activeRunIsAuxiliary}`);
 console.log(`status_summary_current=${statusSummaryFresh}`);
 console.log(`source_collection_status_stale=${stale.source_collection_status} allowed_mixed_tier=${stale.source_collection_status && updateTiers.mixed_tier_status !== false}`);
 console.log(`source_quality_score_stale=${stale.source_quality_score}`);

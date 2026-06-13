@@ -74,6 +74,24 @@ function stableHashId(prefix, value) {
   return `${prefix}-${hash}`;
 }
 
+function cleanDbText(value) {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) return Number.isFinite(value.getTime()) ? value.toISOString() : null;
+  const text = String(value).trim();
+  if (!text || ["-", "null", "undefined", "n/a", "na"].includes(text.toLowerCase())) return null;
+  return text;
+}
+
+function dbTimestamp(value) {
+  const text = cleanDbText(value);
+  if (!text) return null;
+  const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (compact) return `${compact[1]}-${compact[2]}-${compact[3]}T00:00:00+09:00`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${text}T00:00:00+09:00`;
+  if (!/^\d{4}-\d{2}-\d{2}[ T]\d{1,2}:\d{2}/.test(text)) return null;
+  return text.replace(" ", "T");
+}
+
 function fallbackMasterId(record = {}) {
   return record.master_vessel_id || record.hybrid_entity_key || record.vessel_id;
 }
@@ -474,9 +492,9 @@ function buildImoRecoveryRows(records = [], runId, now) {
         priority: imoRecoveryPriority(record),
         status: "pending",
         attempt_count: Number(record.imo_recovery_attempt_count || 0),
-        last_attempt_at: record.imo_recovery_last_attempt_at || null,
+        last_attempt_at: dbTimestamp(record.imo_recovery_last_attempt_at),
         updated_at: now,
-        created_at: record.imo_recovery_created_at || now,
+        created_at: dbTimestamp(record.imo_recovery_created_at) || now,
         recovery_source: record.imo_recovery_source || null,
         recovery_confidence: Number(record.imo_recovery_confidence || 0),
         payload: {
@@ -526,7 +544,7 @@ function buildResolvedImoRecoveryRows(records = [], runId, now) {
         attempt_count: Number(record.imo_recovery_attempt_count || 0) + 1,
         last_attempt_at: now,
         updated_at: now,
-        created_at: record.imo_recovery_created_at || now,
+        created_at: dbTimestamp(record.imo_recovery_created_at) || now,
         recovery_source: record.recovery_source || record.imo_recovery_source || record.identity_source || null,
         recovery_confidence: Number(record.recovery_confidence || record.imo_recovery_confidence || record.identity_confidence || 0),
         recovered_imo: record.imo || null,
@@ -1817,7 +1835,7 @@ function opportunityTimestampFields(state, record = {}, now) {
   return {
     qualified_at: ["qualified", "contact_ready", "contacted", "quoted", "scheduled", "won", "lost", "closed"].includes(state) ? now : null,
     contact_ready_at: ["contact_ready", "contacted", "quoted", "scheduled", "won", "lost", "closed"].includes(state) ? now : null,
-    contacted_at: ["contacted", "quoted", "scheduled", "won", "lost", "closed"].includes(state) ? (record.last_contacted_at || now) : null,
+    contacted_at: ["contacted", "quoted", "scheduled", "won", "lost", "closed"].includes(state) ? (dbTimestamp(record.last_contacted_at) || now) : null,
     quoted_at: ["quoted", "scheduled", "won", "lost", "closed"].includes(state) ? now : null,
     scheduled_at: ["scheduled", "won"].includes(state) ? now : null,
     closed_at: ["won", "lost", "closed"].includes(state) ? now : null
@@ -3039,8 +3057,10 @@ async function fetchPreviousSnapshotMap(supabase) {
 function eventRow(record, runId, now, type, eventTime, confidence, reason, previous = null) {
   const bucket = eventTimeBucket(eventTime, now);
   const portCallId = buildPortCallId(record);
+  const eventKey = stableEntityId("EVT", `${portCallId}-${type}-${bucket}`);
   return {
-    event_uid: stableEntityId("EVT", `${portCallId}-${type}-${bucket}`),
+    event_key: eventKey,
+    event_uid: eventKey,
     hybrid_entity_key: record.hybrid_entity_key || record.vessel_id,
     master_vessel_id: fallbackMasterId(record),
     run_id: runId,
@@ -3265,7 +3285,7 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
     const portCallId = buildPortCallId(record);
     const state = opportunityState(record);
     const type = opportunityType(record);
-    const closedAt = ["won", "lost", "closed"].includes(state) ? (record.closed_at || now) : null;
+    const closedAt = ["won", "lost", "closed"].includes(state) ? (dbTimestamp(record.closed_at) || now) : null;
     return {
       snapshot_date: snapshotDate,
       run_id: runId,
@@ -3286,7 +3306,7 @@ function buildHistoricalWarehouseRows(records = [], runId, now) {
       why_now: record.why_now || record.candidate_summary_ko || null,
       recommended_action: record.recommended_action || record.recommended_next_action || null,
       lead_status: record.lead_status || "new_lead",
-      first_detected_at: record.first_detected_at || record.identified_at || now,
+      first_detected_at: dbTimestamp(record.first_detected_at) || dbTimestamp(record.identified_at) || now,
       last_seen_at: now,
       closed_at: closedAt,
       close_reason: record.close_reason || null,
@@ -3493,8 +3513,8 @@ export async function saveToSupabase(records, options = {}) {
     snapshot_uid: stableEntityId("SNAP", `${runId}-${buildPortCallId(r)}-${r.hybrid_entity_key || r.vessel_id || r.call_sign || r.vessel_name || ""}-${r.source || r.source_name || ""}`),
     run_id: runId,
     snapshot_date: now.slice(0, 10),
-    master_vessel_id: fallbackMasterId(r),
-    vessel_id: r.vessel_id,
+    master_vessel_id: fallbackMasterId(r) || stableEntityId("VES", `${r.imo || r.mmsi || r.call_sign || r.vessel_name || "UNKNOWN"}-${r.port_code || r.port || ""}`),
+    vessel_id: r.vessel_id || fallbackMasterId(r) || stableEntityId("VES", `${r.imo || r.mmsi || r.call_sign || r.vessel_name || "UNKNOWN"}-${r.port_code || r.port || ""}`),
     vessel_name: r.vessel_name,
     port: r.port,
     port_code: r.port_code || null,
@@ -3511,12 +3531,12 @@ export async function saveToSupabase(records, options = {}) {
     eta_source: r.eta_source || (r.eta_candidate ? "pilot_schedule" : r.eta ? "source_eta" : "unknown"),
     congestion_source: r.congestion_source || (r.anchorage_hours || r.stay_hours ? "port_call_duration" : r.port_congestion_score ? "port_summary" : "scoring_engine"),
     score_source: r.score_source || "commercial_scoring_engine",
-    eta: r.eta || null,
-    ata: r.ata || null,
-    etb: r.etb || null,
-    atb: r.atb || null,
-    etd: r.etd || null,
-    atd: r.atd || null,
+    eta: dbTimestamp(r.eta),
+    ata: dbTimestamp(r.ata),
+    etb: dbTimestamp(r.etb),
+    atb: dbTimestamp(r.atb),
+    etd: dbTimestamp(r.etd),
+    atd: dbTimestamp(r.atd),
     stay_hours: r.stay_hours || 0,
     berth_hours: r.berth_hours || 0,
     anchorage_hours: r.anchorage_hours || 0,
@@ -3549,7 +3569,7 @@ export async function saveToSupabase(records, options = {}) {
     next_port: r.next_port || null,
     route_region: r.route_region || null,
     route_pattern_confidence: Number(r.route_pattern_confidence || 0),
-    predicted_arrival_time: r.predicted_arrival_time || null,
+    predicted_arrival_time: dbTimestamp(r.predicted_arrival_time),
     arrival_prediction_confidence: Number(r.arrival_prediction_confidence || 0),
     predicted_congestion: Number(r.predicted_congestion || 0),
     predicted_cleaning_window: Number(r.predicted_cleaning_window || 0),
@@ -3592,13 +3612,13 @@ export async function saveToSupabase(records, options = {}) {
     recommended_contact_path: r.recommended_contact_path || null,
     recommended_department: r.recommended_department || null,
     recommended_email_draft: r.recommended_email_draft || null,
-    recommended_followup_date: r.recommended_followup_date || null,
+    recommended_followup_date: dbTimestamp(r.recommended_followup_date),
     lead_timeline: r.lead_timeline || [],
-    last_contacted_at: r.last_contacted_at || null,
-    follow_up_due: r.follow_up_due || null,
+    last_contacted_at: dbTimestamp(r.last_contacted_at),
+    follow_up_due: dbTimestamp(r.follow_up_due),
     quote_status: r.quote_status || null,
     notes: r.notes || null,
-    actual_arrival_time: r.actual_arrival_time || null,
+    actual_arrival_time: dbTimestamp(r.actual_arrival_time),
     prediction_error_hours: r.prediction_error_hours ?? null,
     alert_candidate: Boolean(r.alert_candidate),
     information_enrichment_needed: Boolean(r.information_enrichment_needed),
@@ -3623,7 +3643,7 @@ export async function saveToSupabase(records, options = {}) {
     reason_codes: r.reason_codes || [],
     hybrid_entity_key: r.hybrid_entity_key || r.vessel_id,
     payload: storagePayload(r),
-    updated_at: r.updated_at || now,
+    updated_at: dbTimestamp(r.updated_at) || now,
     collected_at: now,
     source: r.source || r.source_mode || "korea-port-intelligence",
     source_name: r.source || r.source_label || r.source_mode || "korea-port-intelligence"
@@ -3676,16 +3696,16 @@ export async function saveToSupabase(records, options = {}) {
       port_code: r.port_code || r.port || null,
       port_name: r.port_name || r.port || null,
       sub_port: r.sub_port || null,
-      arrival: r.ata || r.eta || null,
-      departure: r.atd || r.etd || null,
-      eta: r.eta || null,
-      etb: r.etb || r.etb_candidate || null,
-      ata: r.ata || null,
-      atb: r.atb || null,
-      etd: r.etd || null,
-      atd: r.atd || null,
-      arrival_time: r.ata || r.eta || null,
-      departure_time: r.atd || r.etd || null,
+      arrival: dbTimestamp(r.ata) || dbTimestamp(r.eta),
+      departure: dbTimestamp(r.atd) || dbTimestamp(r.etd),
+      eta: dbTimestamp(r.eta),
+      etb: dbTimestamp(r.etb) || dbTimestamp(r.etb_candidate),
+      ata: dbTimestamp(r.ata),
+      atb: dbTimestamp(r.atb),
+      etd: dbTimestamp(r.etd),
+      atd: dbTimestamp(r.atd),
+      arrival_time: dbTimestamp(r.ata) || dbTimestamp(r.eta),
+      departure_time: dbTimestamp(r.atd) || dbTimestamp(r.etd),
       pilot_inbound: r.pilot_inbound || (isInboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
       pilot_outbound: r.pilot_outbound || (isOutboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
       pilot_inbound_time: r.pilot_inbound_time || r.pilot_inbound || (isInboundPilot(r) ? (r.pilot_time || r.movement_time || null) : null),
@@ -3716,8 +3736,8 @@ export async function saveToSupabase(records, options = {}) {
       data_confidence_score: scoreNumber(r.data_confidence_score),
       contact_readiness_score: Number(r.contact_readiness_score || 0),
       last_seen: now,
-      created_at: r.created_at || now,
-      updated_at: r.updated_at || now,
+      created_at: dbTimestamp(r.created_at) || now,
+      updated_at: dbTimestamp(r.updated_at) || now,
       payload: storagePayload({
         ...r,
         port_call_master_role: "unique_port_visit_commercial_opportunity"
@@ -4107,13 +4127,13 @@ export async function saveToSupabase(records, options = {}) {
       vessel_name: r.vessel_name || null,
       previous_port: r.previous_port || null,
       destination_port: r.destination_port || r.destination || r.next_port || null,
-      arrival: r.ata || r.eta || r.predicted_arrival_time || null,
-      departure: r.atd || r.etd || null,
+      arrival: dbTimestamp(r.ata) || dbTimestamp(r.eta) || dbTimestamp(r.predicted_arrival_time),
+      departure: dbTimestamp(r.atd) || dbTimestamp(r.etd),
       vessel_type_group: r.vessel_type_group || null,
       route_region: r.route_region || null,
       arrival_opportunity_score: Number(r.arrival_opportunity_score || 0),
-      predicted_arrival_time: r.predicted_arrival_time || null,
-      actual_arrival_time: r.actual_arrival_time || r.ata || null,
+      predicted_arrival_time: dbTimestamp(r.predicted_arrival_time),
+      actual_arrival_time: dbTimestamp(r.actual_arrival_time) || dbTimestamp(r.ata),
       prediction_error_hours: r.prediction_error_hours ?? null,
       prediction_confidence: Number(r.arrival_prediction_confidence || r.prediction_confidence || 0),
       route_pattern_id: stableHashId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}|${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}|${r.vessel_type_group || "unknown"}`),
@@ -4139,8 +4159,8 @@ export async function saveToSupabase(records, options = {}) {
       destination_port: r.destination_port || r.destination || r.next_port || null,
       port_code: r.port_code || null,
       port_name: r.port_name || r.port || null,
-      predicted_arrival_time: r.predicted_arrival_time || r.eta || null,
-      actual_arrival_time: r.actual_arrival_time || r.ata || null,
+      predicted_arrival_time: dbTimestamp(r.predicted_arrival_time) || dbTimestamp(r.eta),
+      actual_arrival_time: dbTimestamp(r.actual_arrival_time) || dbTimestamp(r.ata),
       prediction_error_hours: r.prediction_error_hours ?? null,
       prediction_confidence: Number(r.arrival_prediction_confidence || r.prediction_confidence || 0),
       route_pattern_id: stableHashId("ROUTE", `${normalizeCompanyName(r.route_from_port || r.previous_port || "")}|${normalizeCompanyName(r.route_to_port || r.destination_port || r.destination || r.next_port || r.port_name || r.port || "")}|${r.vessel_type_group || "unknown"}`),
@@ -4214,13 +4234,13 @@ export async function saveToSupabase(records, options = {}) {
       recommended_contact_path: r.recommended_contact_path || null,
       recommended_department: r.recommended_department || null,
       recommended_email_draft: r.recommended_email_draft || null,
-      recommended_followup_date: r.recommended_followup_date || null,
+      recommended_followup_date: dbTimestamp(r.recommended_followup_date),
       lead_timeline: r.lead_timeline || [],
-      last_contacted_at: r.last_contacted_at || null,
-      follow_up_due: r.follow_up_due || null,
+      last_contacted_at: dbTimestamp(r.last_contacted_at),
+      follow_up_due: dbTimestamp(r.follow_up_due),
       quote_status: r.quote_status || null,
       notes: r.notes || null,
-      actual_arrival_time: r.actual_arrival_time || null,
+      actual_arrival_time: dbTimestamp(r.actual_arrival_time),
       prediction_error_hours: r.prediction_error_hours ?? null,
       alert_candidate: Boolean(r.alert_candidate),
       information_enrichment_needed: Boolean(r.information_enrichment_needed),
@@ -4247,7 +4267,7 @@ export async function saveToSupabase(records, options = {}) {
       const state = opportunityState(r);
       const portCallId = buildPortCallId(r);
       const type = opportunityType(r);
-      const closedAt = ["won", "lost", "closed"].includes(state) ? (r.closed_at || now) : null;
+      const closedAt = ["won", "lost", "closed"].includes(state) ? (dbTimestamp(r.closed_at) || now) : null;
       return {
         opportunity_id: buildOpportunityId(r),
         run_id: runId,
@@ -4275,12 +4295,12 @@ export async function saveToSupabase(records, options = {}) {
         recommended_action: buildRecommendedActionKo(r),
         recommended_contact_path: r.recommended_contact_path || r.contact_path_label_ko || null,
         ...opportunityTimestampFields(state, r, now),
-        first_detected_at: r.first_detected_at || r.identified_at || now,
+        first_detected_at: dbTimestamp(r.first_detected_at) || dbTimestamp(r.identified_at) || now,
         last_seen_at: now,
         last_seen: now,
         closed_at: closedAt,
         close_reason: r.close_reason || (state === "closed" ? "closed_by_status" : state === "won" ? "won" : state === "lost" ? "lost" : null),
-        created_at: r.created_at || now,
+        created_at: dbTimestamp(r.created_at) || now,
         updated_at: now,
         payload: storagePayload({
           ...r,
@@ -4458,13 +4478,17 @@ export async function saveToSupabase(records, options = {}) {
 
   const rawEvents = buildLifecycleEvents(records, previousSnapshotMap, runId, now)
     .filter(r => r.hybrid_entity_key);
-  const events = uniqueBy(rawEvents, row => row.event_uid);
+  const events = uniqueBy(rawEvents.filter(row => row.event_key), row => row.event_key);
   const eventDuplicatesSkipped = Math.max(0, rawEvents.length - events.length);
+  let eventRowsWritten = 0;
 
   for (let index = 0; index < events.length; index += batchSize) {
     const batch = events.slice(index, index + batchSize);
-    const { error } = await supabase.from("vessel_events").upsert(batch, { onConflict: "event_uid" });
+    const optionalFailuresBefore = (upsertDedupeAudit.optional_db_write_failures?.vessel_events || []).length;
+    const { error } = await supabase.from("vessel_events").upsert(batch, { onConflict: "event_key" });
     if (error) throw error;
+    const optionalFailuresAfter = (upsertDedupeAudit.optional_db_write_failures?.vessel_events || []).length;
+    if (optionalFailuresAfter === optionalFailuresBefore) eventRowsWritten += batch.length;
   }
 
   function firstPilotValue(...values) {
@@ -4483,10 +4507,21 @@ export async function saveToSupabase(records, options = {}) {
     return Number.isFinite(parsed.getTime());
   }
 
+  function pilotDatePart(value) {
+    const text = String(value || "").trim();
+    const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (compact) return `${compact[1]}-${compact[2]}-${compact[3]}`;
+    const iso = text.match(/^(\d{4}-\d{2}-\d{2})/);
+    return iso ? iso[1] : "";
+  }
+
   function pilotStorageTime(record = {}) {
     const raw = firstPilotValue(record.raw_pilot_time, record.pilot_time_text, record.pilot_time_local, record.pilot_time, record.movement_time, record.eta_candidate, record.etb_candidate);
+    const datePart = pilotDatePart(firstPilotValue(record.pilot_date, record.schedule_date, record.movement_date, record.eta, record.etb, record.ata));
+    const combinedTimeOnly = raw && isPilotTimeOnly(raw) && datePart ? `${datePart}T${raw}+09:00` : "";
     const timestamp = firstPilotValue(
       record.pilot_timestamp,
+      isPilotFullTimestamp(combinedTimeOnly) ? combinedTimeOnly : "",
       isPilotFullTimestamp(record.pilot_time) ? record.pilot_time : "",
       isPilotFullTimestamp(record.movement_time) ? record.movement_time : "",
       isPilotFullTimestamp(record.eta_candidate) ? record.eta_candidate : "",
@@ -4524,9 +4559,9 @@ export async function saveToSupabase(records, options = {}) {
       vessel_name: r.vessel_name || null,
       normalized_vessel_name: r.normalized_vessel_name || normalizeVesselName(r.vessel_name),
       call_sign: r.call_sign || null,
-      pilot_time: time.timestamp || time.raw || null,
+      pilot_time: time.timestamp || null,
       pilot_time_raw: time.raw,
-      pilot_time_at: time.timestamp,
+      pilot_time_at: time.timestamp || null,
       pilot_direction: r.pilot_direction || r.movement_type || null,
       pilot_station: r.pilot_station || null,
       berth_name: r.berth_name || r.berth || null,
@@ -5023,7 +5058,7 @@ export async function saveToSupabase(records, options = {}) {
     raw_payloads_archived_to_gdrive: String(process.env.ARCHIVE_TO_DRIVE || "true").toLowerCase() !== "false" ? records.length : 0,
     raw_payloads_db_insert_blocked: records.length,
     ais_raw_rows_skipped: records.filter(record => /ais|vts/i.test(String(record.source || record.source_name || record.source_profile || ""))).length,
-    event_rows_written: events.length,
+    event_rows_written: eventRowsWritten,
     event_duplicates_skipped: eventDuplicatesSkipped,
     estimated_db_growth_per_day: historicalWarehouse.vesselRows.length + historicalWarehouse.portRows.length + historicalWarehouse.operatorRows.length + historicalWarehouse.routeRows.length + historicalWarehouse.opportunityRows.length,
     estimated_db_growth_per_year: (historicalWarehouse.vesselRows.length + historicalWarehouse.portRows.length + historicalWarehouse.operatorRows.length + historicalWarehouse.routeRows.length + historicalWarehouse.opportunityRows.length) * 365,
@@ -5077,7 +5112,7 @@ export async function saveToSupabase(records, options = {}) {
     port_call_master_count: portCallMasterRows.length,
     opportunity_created_count: opportunityRows.length,
     feature_snapshots_written: featureSnapshotRows.length,
-    event_rows_written: events.length,
+    event_rows_written: eventRowsWritten,
     explainability_generated_count: explainabilityRows.length,
     high_score_without_explanation_count: records.filter(r =>
       commercialScore(r) >= 75 &&
@@ -5249,7 +5284,7 @@ export async function saveToSupabase(records, options = {}) {
     port_call_master: portCallMasterRows.length,
     opportunity_master: opportunityRows.length,
     risk_history: riskRows.length,
-    vessel_events: events.length,
+    vessel_events: eventRowsWritten,
     pilot_schedule_events: pilotInsertDiagnostics.inserted,
     port_congestion_snapshots: congestionRows.length,
     enrichment_match_candidates: enrichmentMatchRows.length,
@@ -5309,7 +5344,7 @@ export async function saveToSupabase(records, options = {}) {
         port_call_master_count: intelligencePopulationDiagnostics.port_call_master_count,
         opportunity_created_count: intelligencePopulationDiagnostics.opportunity_created_count,
         feature_snapshots_written: intelligencePopulationDiagnostics.feature_snapshots_written,
-        event_rows_written: intelligencePopulationDiagnostics.event_rows_written,
+        event_rows_written: eventRowsWritten,
         explainability_generated_count: intelligencePopulationDiagnostics.explainability_generated_count,
         high_score_without_explanation_count: intelligencePopulationDiagnostics.high_score_without_explanation_count
       }
@@ -5366,7 +5401,7 @@ export async function saveToSupabase(records, options = {}) {
     imoRecoveryQueueRowsSaved,
     imoRecoveryResolvedRowsSaved,
     riskRowsSaved: riskRows.length,
-    eventsSaved: events.length,
+    eventsSaved: eventRowsWritten,
     pilotScheduleEventsSaved: pilotInsertDiagnostics.inserted,
     pilotScheduleEventsInsertAttempted: pilotInsertDiagnostics.attempted,
     pilotScheduleEventsInsertFailed: pilotInsertDiagnostics.failed,

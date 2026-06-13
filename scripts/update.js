@@ -78,14 +78,18 @@ const MAX_TARGET_VESSELS = Number(process.env.MAX_TARGET_VESSELS || 5000);
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || 1000);
 const DEFAULT_CLEANING_REVENUE_USD = Number(process.env.DEFAULT_CLEANING_REVENUE_USD || 15000);
 const VALIDATION_MODE = String(process.env.VALIDATION_MODE || (process.env.CI === "true" ? "production" : "local")).toLowerCase();
-const DEFAULT_UPDATE_MODE = process.env.GITHUB_ACTIONS === "true" ? "core" : "scheduled";
+const DEFAULT_UPDATE_MODE = "core";
 const UPDATE_MODE = String(process.env.UPDATE_MODE || DEFAULT_UPDATE_MODE).toLowerCase();
 const ENRICHMENT_MODE = String(process.env.ENRICHMENT_MODE || (UPDATE_MODE === "core" ? "lightweight" : "full")).toLowerCase();
 const DISCOVERY_MODE = String(process.env.DISCOVERY_MODE || (UPDATE_MODE === "core" ? "off" : "available")).toLowerCase();
 const DB_AUDIT_MODE = String(process.env.DB_AUDIT_MODE || (UPDATE_MODE === "core" ? "off" : "available")).toLowerCase();
-const SOURCE_CSV_MODE = String(process.env.SOURCE_CSV_MODE || (UPDATE_MODE === "core" ? "cache_only" : "refresh")).toLowerCase();
+const SOURCE_CSV_MODE = String(process.env.SOURCE_CSV_MODE || (UPDATE_MODE === "core" ? "lightweight" : "refresh")).toLowerCase();
+process.env.SOURCE_CSV_MODE = SOURCE_CSV_MODE;
+if (!process.env.SOURCE_CSV_MAX_BYTES) process.env.SOURCE_CSV_MAX_BYTES = "5242880";
+if (!process.env.ENABLE_SOURCE_CSV && SOURCE_CSV_MODE === "lightweight") process.env.ENABLE_SOURCE_CSV = "true";
 const RUN_HEAVY_AUDITS = String(process.env.RUN_HEAVY_AUDITS || (UPDATE_MODE === "core" ? "false" : "true")).toLowerCase() === "true";
 const IS_CORE_UPDATE = ["core", "core_update"].includes(UPDATE_MODE);
+const IS_AUXILIARY_UPDATE = ["fast_aux", "reference_enrichment", "discovery_audit"].includes(UPDATE_MODE);
 const RUN_FULL_ENRICHMENT = !IS_CORE_UPDATE && ENRICHMENT_MODE === "full";
 const IS_GITHUB_ACTIONS_RUNTIME = process.env.GITHUB_ACTIONS === "true" || Boolean(process.env.GITHUB_RUN_ID || process.env.GITHUB_WORKFLOW);
 const GENERATED_BY = IS_GITHUB_ACTIONS_RUNTIME ? "github_actions" : "local";
@@ -3638,6 +3642,44 @@ function readJsonSafe(filePath, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function readTextSafe(filePath, fallback = "") {
+  try {
+    return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function parseJsoncSafe(filePath, fallback = null) {
+  const text = readTextSafe(filePath, "");
+  if (!text) return fallback;
+  try {
+    return JSON.parse(text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|\s)\/\/.*$/gm, "$1"));
+  } catch {
+    return fallback;
+  }
+}
+
+function gitRemoteOriginFromConfig() {
+  const config = readTextSafe(".git/config", "");
+  const match = config.match(/\[remote "origin"\][\s\S]*?url\s*=\s*(.+)/);
+  return match ? match[1].trim() : null;
+}
+
+function buildRuntimeProjectContext() {
+  const pkg = readJsonSafe("package.json", {}) || {};
+  const wrangler = parseJsoncSafe("wrangler.jsonc", {}) || parseJsoncSafe("wrangler.json", {}) || {};
+  return {
+    github_repository: process.env.GITHUB_REPOSITORY || null,
+    github_workflow: process.env.GITHUB_WORKFLOW || null,
+    github_run_id: process.env.GITHUB_RUN_ID || null,
+    git_remote_origin: gitRemoteOriginFromConfig(),
+    worker_name: wrangler.name || null,
+    app_name: pkg.name || null,
+    runtime_project_name: "korea-port-intelligence"
+  };
 }
 
 const INITIAL_STATUS_SUMMARY = readJsonSafe("dashboard/api/status-summary.json", null) || {};
@@ -7555,6 +7597,55 @@ function refreshTargetCategoryActionabilityCounts(summary = {}) {
   return summary;
 }
 
+function mergeVerificationQueueIntoTargetCategories(summary = {}, verificationQueue = []) {
+  const queueItems = Array.isArray(verificationQueue) ? verificationQueue : [];
+  if (!queueItems.length) return summary;
+  const verificationDefinition = TARGET_CATEGORY_DEFINITIONS.find(definition => definition.code === "VERIFY_CONTACT");
+  const label = businessLabelForCode("VERIFY_CONTACT") || verificationDefinition?.label || "연락처 확인 필요";
+  summary.categories = Array.isArray(summary.categories) ? summary.categories : [];
+  let category = summary.categories.find(item => item.code === "VERIFY_CONTACT");
+  if (!category) {
+    category = {
+      code: "VERIFY_CONTACT",
+      label,
+      korean_label: label,
+      category_label: label,
+      short_label: verificationDefinition?.short_label || "연락처 확인",
+      count: 0,
+      items: []
+    };
+    summary.categories.push(category);
+  }
+  const byKey = new Map((category.items || []).map(item => [candidateDedupeKey(item), item]));
+  for (const item of queueItems) {
+    const key = candidateDedupeKey(item);
+    if (!key || byKey.has(key)) continue;
+    const verificationCategory = targetCategoryItem(
+      "VERIFY_CONTACT",
+      firstFiniteNumber(item.confidence_score, item.actionability_score, 50) || 50,
+      item.reason_summary || "영업 후보이나 선사/대리점 연락 경로 확인이 필요합니다.",
+      item.recommended_action || "선사/에이전트 확인 후 영업 연락 준비"
+    );
+    byKey.set(key, withVesselDisplay({
+      ...item,
+      actionability_category: "VERIFY_CONTACT",
+      primary_category: verificationCategory,
+      primary_category_code: "VERIFY_CONTACT",
+      primary_category_label: label,
+      target_categories: [
+        verificationCategory,
+        ...(Array.isArray(item.target_categories) ? item.target_categories.filter(category => category.code !== "VERIFY_CONTACT") : [])
+      ]
+    }));
+  }
+  category.items = [...byKey.values()];
+  category.count = category.items.length;
+  summary.counts = { ...(summary.counts || {}), VERIFY_CONTACT: category.count };
+  summary.actionability_counts = { ...(summary.actionability_counts || {}), VERIFY_CONTACT: category.count };
+  summary.kpis = { ...(summary.kpis || {}), verify_contact_count: category.count };
+  return summary;
+}
+
 function buildTargetCategoriesPayload({ summary = {}, generatedAt = new Date().toISOString(), dataMode = "live", report = {} } = {}) {
   const itemLimit = 50;
   return {
@@ -8119,6 +8210,11 @@ function roundedDisplayNumber(value, digits = 1) {
   if (number === null) return null;
   const scale = 10 ** digits;
   return Math.round(number * scale) / scale;
+}
+
+function displayRoundedNumber(value, digits = 1) {
+  const rounded = roundedDisplayNumber(value, digits);
+  return rounded === null ? "-" : rounded;
 }
 
 function vesselDisplayNumber(record = {}, aliases = [], reasonFallback = null) {
@@ -9332,8 +9428,8 @@ function buildVesselDisplay(record = {}) {
     terminal_vessel_code_classification: vesselDisplayText(source, ["terminal_vessel_code_classification", "vessel_display.terminal_vessel_code_classification"]),
     flag: vesselDisplayText(source, ["flag", "vsslNltyNm", "vsslNltyCd", "nationality", "country", "vessel_display.flag"]),
     vessel_type: vesselDisplayText(source, ["vessel_type", "ship_type", "vsslKndNm", "vessel_type_group", "commercial_segment", "vessel_display.vessel_type"]),
-    gt: tonnageSummary.gt,
-    dwt: tonnageSummary.dwt,
+    gt: displayRoundedNumber(tonnageSummary.gt, 0),
+    dwt: displayRoundedNumber(tonnageSummary.dwt, 0),
     tonnage_summary: tonnageSummary,
     target_size_qualified: record.target_size_qualified ?? null,
     target_size_reason: record.target_size_reason || "",
@@ -9367,7 +9463,7 @@ function buildVesselDisplay(record = {}) {
     berth_source: vesselDisplayText(source, ["berth_source", "berth_data_source", "vessel_display.berth_source"]),
     arrival_window: record.arrival_window || pilotageSignal.arrival_window || null,
     arrival_window_source: vesselDisplayText(source, ["arrival_window_source", "eta_source", "etb_source", "vessel_display.arrival_window_source"], pilotageSignal.arrival_window?.source || "-"),
-    stay_days: roundedDisplayNumber(stayDays),
+    stay_days: displayRoundedNumber(stayDays),
     stay_hours: roundedDisplayNumber(stayHours),
     waiting_hours: roundedDisplayNumber(waitingHours),
     port_stay_hours: roundedDisplayNumber(portStayHours),
@@ -20243,7 +20339,7 @@ try {
   collectorDiagnosticsAfterCollection = getCollectorDiagnostics();
   const sourceCsvCacheStage = beginRuntimeStage("source_csv cache reuse");
   sourceCsvReferenceCache = updateSourceCsvReferenceCache({
-    sourceRows: collectedRows.filter(row => String(row.source || row.source_name || "").toLowerCase() === "source_csv"),
+    sourceRows: collectedRows.filter(row => ["source_csv", "source_csv_lightweight"].includes(String(row.source_key || row.source || row.source_name || "").toLowerCase())),
     generatedAt: new Date().toISOString()
   });
   endRuntimeStage(sourceCsvCacheStage);
@@ -20631,7 +20727,21 @@ try {
   salesCandidates = targetCategorySummary.items;
   const targetSplitCounts = buildTargetSplitCounts(allCollectedVessels);
 
-  if (!isGithubActionsRuntime && IS_CORE_UPDATE) {
+  if (IS_AUXILIARY_UPDATE) {
+    supabaseWrite = {
+      status: "skipped_auxiliary",
+      promoted: false,
+      optional_source_write: true,
+      post_write_verification: {
+        status: "skipped_auxiliary",
+        promotion_status: "not_required",
+        errors: []
+      },
+      promotion_status: "not_required",
+      note: `${UPDATE_MODE} updates auxiliary cache/artifacts only and do not promote the core Supabase dataset.`
+    };
+    supabaseStatus = "skipped_auxiliary";
+  } else if (!isGithubActionsRuntime && IS_CORE_UPDATE) {
     supabaseWrite = {
       status: "skipped_local",
       promoted: false,
@@ -20706,8 +20816,53 @@ try {
     collectorDiagnostics: collectorDiagnosticsAfterCollection,
     supabaseWrite
   });
+  const sourceCsvDiagnosticItem = (collectorDiagnosticsAfterCollection.sources || [])
+    .find(item => String(item.key || item.source_name || "") === "source_csv") || null;
+  const optionalSourceWarnings = [];
+  if (sourceCsvDiagnosticItem && ["skipped", "warning", "failed_optional"].includes(String(sourceCsvDiagnosticItem.status || "").toLowerCase())) {
+    optionalSourceWarnings.push({
+      source_key: "source_csv",
+      mode: sourceCsvDiagnosticItem.mode || SOURCE_CSV_MODE,
+      status: sourceCsvDiagnosticItem.status,
+      reason: sourceCsvDiagnosticItem.reason || sourceCsvDiagnosticItem.skip_reason || sourceCsvDiagnosticItem.failure_reason || null,
+      rows_read: Number(sourceCsvDiagnosticItem.rows_collected || sourceCsvDiagnosticItem.row_count || 0),
+      rows_normalized: Number(sourceCsvDiagnosticItem.rows_normalized || sourceCsvDiagnosticItem.normalized_count || 0),
+      rows_merged: Number(sourceCsvDiagnosticItem.rows_matched || sourceCsvDiagnosticItem.actionable_count || 0),
+      rows_skipped: Number(sourceCsvDiagnosticItem.rows_skipped || 0),
+      bytes: Number(sourceCsvDiagnosticItem.bytes || sourceCsvDiagnosticItem.response_size_bytes || 0) || null,
+      max_bytes: Number(sourceCsvDiagnosticItem.max_bytes || sourceCsvDiagnosticItem.max_allowed_bytes || 0) || null,
+      path_or_url: sourceCsvDiagnosticItem.path_or_url || sourceCsvDiagnosticItem.configured_url_sanitized || null,
+      promotion_blocker: false
+    });
+  }
+  if (!optionalSourceWarnings.some(item => item.source_key === "source_csv") && ["off", "raw", "full"].includes(SOURCE_CSV_MODE)) {
+    optionalSourceWarnings.push({
+      source_key: "source_csv",
+      mode: SOURCE_CSV_MODE,
+      status: "skipped",
+      reason: SOURCE_CSV_MODE === "off" ? "SOURCE_CSV_DISABLED" : "RAW_CSV_DISABLED_IN_CORE",
+      rows_read: 0,
+      rows_normalized: 0,
+      rows_merged: 0,
+      rows_skipped: 0,
+      bytes: null,
+      max_bytes: Number(process.env.SOURCE_CSV_MAX_BYTES || 0) || null,
+      path_or_url: null,
+      promotion_blocker: false
+    });
+  }
+  const sourceCsvCurrentOptionalDiagnostic = optionalSourceWarnings.find(item => item.source_key === "source_csv") || null;
+  const runtimeProjectContext = buildRuntimeProjectContext();
   const report = {
     ...baseReport,
+    runtime_project_context: runtimeProjectContext,
+    runtime_project_name: runtimeProjectContext.runtime_project_name,
+    app_name: runtimeProjectContext.app_name,
+    worker_name: runtimeProjectContext.worker_name,
+    git_remote_origin: runtimeProjectContext.git_remote_origin,
+    github_repository: runtimeProjectContext.github_repository,
+    github_workflow: runtimeProjectContext.github_workflow,
+    github_run_id: runtimeProjectContext.github_run_id,
     visibility_goal: "commercially_relevant_vessels_not_raw_count",
     target_definition: {
       commercial_gt_threshold: COMMERCIAL_GT_THRESHOLD,
@@ -20744,6 +20899,7 @@ try {
     pilotage_enrichment: pilotageEnrichmentDiagnostics,
     data_quality_layer: dataQualityLayer,
     data_health_validation: dataHealthValidation,
+    optional_source_warnings: optionalSourceWarnings,
     dataset_generation_audit: datasetGenerationAudit,
     count_funnel: countFunnel,
     basic_info_coverage: buildBasicInfoCoverage(vessels),
@@ -20859,13 +21015,13 @@ try {
   report.promotion_blockers = supabaseWrite?.promotion_blockers || supabaseWrite?.promotion?.promotion_blockers || supabaseWrite?.post_write_verification?.promotion_blockers || [];
   report.post_write_verification_errors = supabaseWrite?.post_write_verification?.errors || [];
   report.post_write_verification_all_errors = supabaseWrite?.post_write_verification?.all_errors || report.post_write_verification_errors;
-  report.supabase_write_failure_type = classifySupabasePersistenceIssue(supabaseWrite);
+  report.supabase_write_failure_type = IS_AUXILIARY_UPDATE ? null : classifySupabasePersistenceIssue(supabaseWrite);
   const currentRunDbWriteCompleted = isSupabaseWriteCompleted(supabaseWrite?.status) &&
     supabaseWrite?.post_write_verification?.status === "completed";
   const currentRunStoredSuccessfully = currentRunDbWriteCompleted &&
     (!promotionRequiredInProduction() || supabaseWrite?.promoted === true);
   const latestSuccessfulFallback = latestSuccessfulFallbackState();
-  if (VALIDATION_MODE === "production" && !currentRunStoredSuccessfully) {
+  if (VALIDATION_MODE === "production" && !IS_AUXILIARY_UPDATE && !currentRunStoredSuccessfully) {
     report.status = "failed";
     report.data_status = currentRunDbWriteCompleted ? "promotion_blocked" : "storage_failed";
     report.data_source_used = "last_successful_snapshot_fallback";
@@ -21340,16 +21496,51 @@ try {
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     previousStatusSummary
   });
-  sourceCsvSummaryPayload = protectCachedTierPayloadForCore({
-    payload: sourceCsvSummaryPayload,
-    previous: previousSourceCsvSummary,
-    ownerTier: "reference_enrichment",
-    runIdField: "enrichment_run_id",
-    runIdValue: previousSourceCsvSummary.enrichment_run_id || previousEnrichmentLatestIndex.enrichment_run_id || sourceCsvSummaryPayload.enrichment_run_id,
-    generatedAt: completedAt,
-    origin: finalRunOrigin,
-    preservationReason: "Reference source_csv summary preserved until the reference_enrichment tier refreshes successfully."
-  });
+  if (SOURCE_CSV_MODE !== "lightweight") {
+    sourceCsvSummaryPayload = protectCachedTierPayloadForCore({
+      payload: sourceCsvSummaryPayload,
+      previous: previousSourceCsvSummary,
+      ownerTier: "reference_enrichment",
+      runIdField: "enrichment_run_id",
+      runIdValue: previousSourceCsvSummary.enrichment_run_id || previousEnrichmentLatestIndex.enrichment_run_id || sourceCsvSummaryPayload.enrichment_run_id,
+      generatedAt: completedAt,
+      origin: finalRunOrigin,
+      preservationReason: "Reference source_csv summary preserved until the reference_enrichment tier refreshes successfully."
+    });
+  }
+  if (sourceCsvCurrentOptionalDiagnostic) {
+    const currentRunId = finalRunOrigin.run_id || runId;
+    const sourceCsvCurrentlySkipped = String(sourceCsvCurrentOptionalDiagnostic.status || "").toLowerCase() === "skipped";
+    const currentRowsMerged = sourceCsvCurrentlySkipped
+      ? 0
+      : Number(sourceCsvDryRunPayload?.matched_vessels || sourceCsvCurrentOptionalDiagnostic.rows_merged || 0);
+    sourceCsvSummaryPayload = {
+      ...sourceCsvSummaryPayload,
+      generated_at: completedAt,
+      generated_by: GENERATED_BY,
+      is_github_actions: IS_GITHUB_ACTIONS_RUNTIME,
+      run_id: currentRunId,
+      active_run_id: currentRunId,
+      source_run_id: currentRunId,
+      status_run_id: currentRunId,
+      mode: sourceCsvCurrentOptionalDiagnostic.mode || SOURCE_CSV_MODE,
+      source_csv_mode: sourceCsvCurrentOptionalDiagnostic.mode || SOURCE_CSV_MODE,
+      status: sourceCsvCurrentOptionalDiagnostic.status || sourceCsvSummaryPayload.status,
+      reason: sourceCsvCurrentOptionalDiagnostic.reason || sourceCsvSummaryPayload.reason || null,
+      skip_reason: sourceCsvCurrentOptionalDiagnostic.reason || sourceCsvSummaryPayload.skip_reason || null,
+      rows_read: Number(sourceCsvCurrentOptionalDiagnostic.rows_read || 0),
+      rows_normalized: Number(sourceCsvCurrentOptionalDiagnostic.rows_normalized || 0),
+      rows_merged: currentRowsMerged,
+      rows_skipped: Number(sourceCsvCurrentOptionalDiagnostic.rows_skipped || 0),
+      bytes: sourceCsvCurrentOptionalDiagnostic.bytes ?? sourceCsvSummaryPayload.bytes ?? null,
+      max_bytes: sourceCsvCurrentOptionalDiagnostic.max_bytes ?? sourceCsvSummaryPayload.max_bytes ?? null,
+      path_or_url: sourceCsvCurrentOptionalDiagnostic.path_or_url || sourceCsvSummaryPayload.path_or_url || null,
+      source_layer: "auxiliary",
+      core_blocking: false,
+      promotion_blocker: false,
+      current_optional_diagnostic: true
+    };
+  }
   let sourceQualityScorePayload = withRunOrigin(buildSourceQualityScorePayload({
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
     matchingDiagnostics,
@@ -21829,6 +22020,7 @@ try {
       ...(verificationQueue.length ? {} : { status: "empty", reason: "연락처 확인이 필요한 영업 후보가 없습니다." })
     }
   });
+  mergeVerificationQueueIntoTargetCategories(targetCategorySummary, verificationQueue);
   const targetCategoriesPayload = buildTargetCategoriesPayload({
     summary: targetCategorySummary,
     generatedAt: completedAt,
@@ -22740,9 +22932,24 @@ try {
     enabled_ports_count: report.dataset_generation_audit?.enabled_ports_count || collectorDiagnosticsAfterCollection.port_operation_collection_plan?.enabled_ports_count || 0,
     ports_attempted_count: report.dataset_generation_audit?.ports_attempted_count || collectorDiagnosticsAfterCollection.coverage?.ports_attempted_count || 0,
     source_rows_collected: report.dataset_generation_audit?.source_rows_collected || 0,
+    real_rows: collectorDiagnosticsAfterCollection.real_row_count || report.dataset_generation_audit?.real_rows || 0,
     normalized_rows: report.dataset_generation_audit?.normalized_rows || 0,
     all_vessels_count: report.all_collected_vessel_count || report.dataset_generation_audit?.all_vessels_generated || 0,
     target_vessels_count: report.target_vessel_count || report.dataset_generation_audit?.target_vessels_generated || 0,
+    source_attempted_count: collectorDiagnosticsAfterCollection.attempted_count || 0,
+    source_success_count: collectorDiagnosticsAfterCollection.success_count || 0,
+    source_failed_count: collectorDiagnosticsAfterCollection.failed_count || 0,
+    source_skipped_count: collectorDiagnosticsAfterCollection.skipped_count || 0,
+    source_csv_mode: sourceCsvDiagnosticItem?.mode || SOURCE_CSV_MODE,
+    source_csv_status: sourceCsvCurrentOptionalDiagnostic?.status || sourceCsvSummaryPayload?.status || sourceCsvDiagnosticItem?.status || null,
+    source_csv_reason: sourceCsvCurrentOptionalDiagnostic?.reason || sourceCsvSummaryPayload?.reason || sourceCsvDiagnosticItem?.reason || sourceCsvDiagnosticItem?.skip_reason || sourceCsvDiagnosticItem?.failure_reason || null,
+    source_csv_rows_read: Number(sourceCsvCurrentOptionalDiagnostic?.rows_read ?? sourceCsvSummaryPayload?.rows_read ?? sourceCsvSummaryPayload?.usable_reference_rows ?? sourceCsvDiagnosticItem?.rows_collected ?? sourceCsvDiagnosticItem?.row_count ?? 0),
+    source_csv_rows_merged: String(sourceCsvCurrentOptionalDiagnostic?.status || "").toLowerCase() === "skipped"
+      ? 0
+      : Number(sourceCsvDryRunPayload?.matched_vessels || sourceCsvCurrentOptionalDiagnostic?.rows_merged || sourceCsvSummaryPayload?.rows_merged || sourceCsvDiagnosticItem?.rows_matched || sourceCsvDiagnosticItem?.actionable_count || 0),
+    optional_source_warnings_count: optionalSourceWarnings.length,
+    optional_db_warnings_count: Object.values(report.supabase_write?.diagnostics?.optional_db_write_failures || report.supabase_write?.optional_db_write_failures || {})
+      .reduce((sum, rows) => sum + (Array.isArray(rows) ? rows.length : Number(Boolean(rows))), 0),
     supabase_write_status: report.supabase_write?.status || report.storage_status?.supabase?.status || "unknown",
     supabase_promoted: report.supabase_write?.promoted ?? report.storage_status?.supabase?.promoted ?? null,
     supabase_promotion_blockers: report.promotion_blockers || report.supabase_write?.promotion_blockers || report.supabase_write?.promotion?.promotion_blockers || report.storage_status?.supabase?.promotion?.promotion_blockers || [],
@@ -22750,6 +22957,13 @@ try {
     db_rows_written_by_table: JSON.stringify(report.rows_written_by_table || report.supabase_write?.db_rows_written_by_table || {}),
     active_run_id: report.active_run_id || null,
     latest_successful_run_id: report.latest_successful_run_id || null,
+    GITHUB_REPOSITORY: report.runtime_project_context?.github_repository || null,
+    GITHUB_WORKFLOW: report.runtime_project_context?.github_workflow || null,
+    GITHUB_RUN_ID: report.runtime_project_context?.github_run_id || null,
+    git_remote_origin: report.runtime_project_context?.git_remote_origin || null,
+    worker_name: report.runtime_project_context?.worker_name || null,
+    app_name: report.runtime_project_context?.app_name || null,
+    runtime_project_name: report.runtime_project_context?.runtime_project_name || null,
     promotion_status: report.promotion_status || null,
     promotion_blockers: report.promotion_blockers || [],
     post_write_verification_errors: report.post_write_verification_all_errors || report.post_write_verification_errors || [],
@@ -22781,19 +22995,19 @@ try {
     console.error(`[Korea Port Intelligence] Production update failed: ${report.supabase_write_failure_type || report.error || "unknown_error"}`);
     if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
-  if (VALIDATION_MODE === "production" && !isSupabaseWriteFinal(report.supabase_write?.status)) {
+  if (VALIDATION_MODE === "production" && !IS_AUXILIARY_UPDATE && !isSupabaseWriteFinal(report.supabase_write?.status)) {
     console.error("[Korea Port Intelligence] Supabase write did not finalize.");
     if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
-  if (VALIDATION_MODE === "production" && report.supabase_write?.status !== "completed") {
+  if (VALIDATION_MODE === "production" && !IS_AUXILIARY_UPDATE && report.supabase_write?.status !== "completed") {
     console.error(`[Korea Port Intelligence] Production Supabase write did not complete: ${report.supabase_write?.status || "unknown"} (${report.supabase_write_failure_type || "db_write_failed"})`);
     if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
-  if (VALIDATION_MODE === "production" && report.supabase_write?.post_write_verification?.status !== "completed") {
+  if (VALIDATION_MODE === "production" && !IS_AUXILIARY_UPDATE && report.supabase_write?.post_write_verification?.status !== "completed") {
     console.error(`[Korea Port Intelligence] Production post-write verification failed: ${(report.supabase_write?.post_write_verification?.errors || []).join(",") || "unknown"}`);
     if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
-  if (VALIDATION_MODE === "production" && promotionRequiredInProduction() && report.supabase_write?.status === "completed" && report.supabase_write?.promoted !== true) {
+  if (VALIDATION_MODE === "production" && !IS_AUXILIARY_UPDATE && promotionRequiredInProduction() && report.supabase_write?.status === "completed" && report.supabase_write?.promoted !== true) {
     console.error(`[Korea Port Intelligence] Production promotion blocked: ${(report.promotion_blockers || []).join(",") || report.supabase_write_failure_type || "active_dataset_pointer_not_updated"}`);
     if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
@@ -22801,9 +23015,9 @@ try {
 
 console.log(`[Korea Port Intelligence] v${VERSION} ${BUILD_NAME} dashboard data generated`);
 
-// Supabase's realtime/websocket transport can keep the Node event loop open in CI
-// even after all synchronous snapshot writes are complete. End the scheduled run
-// explicitly so GitHub Actions does not cancel a successful refresh at timeout.
-if (process.env.CI === "true") {
+// Supabase's realtime/websocket transport can keep the Node event loop open even
+// after all snapshot writes are complete. End CLI runs explicitly unless a
+// caller asks to keep the process alive for debugging.
+if (process.env.KEEP_UPDATE_PROCESS_ALIVE !== "true") {
   process.exit(process.exitCode || 0);
 }

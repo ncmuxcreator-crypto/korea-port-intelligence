@@ -30,7 +30,9 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
       MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
-      SOURCE_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
+      SOURCE_LIGHTWEIGHT_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
+      SOURCE_CSV_MODE: lightweight
+      SOURCE_CSV_MAX_BYTES: "5242880"
       MOF_AIS_DYNAMIC_API_URL: ${{ secrets.MOF_AIS_DYNAMIC_API_URL }}
       MOF_AIS_DYNAMIC_SERVICE_KEY: ${{ secrets.MOF_AIS_DYNAMIC_SERVICE_KEY }}
       MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}
@@ -109,3 +111,7 @@ jobs:
           path: |
             dashboard/data/ports/**
             dashboard/ports/**
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

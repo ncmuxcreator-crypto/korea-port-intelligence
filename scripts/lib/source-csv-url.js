@@ -5,12 +5,6 @@ import path from "node:path";
 export const VERIFIED_SOURCE_CSV_PATH = "data/reference/verified_vessel_reference.csv";
 export const SOURCE_CSV_URL_RECOMMENDED_FIX = "Update SOURCE_CSV_URL to the current repo lightweight verified_vessel_reference.csv raw URL.";
 
-const OLD_REPO_PATTERNS = [
-  /hwkport/i,
-  /hwk-port/i,
-  /hwk-port-intelligence/i
-];
-
 function clean(value = "") {
   return String(value || "").trim();
 }
@@ -91,16 +85,14 @@ export function diagnoseSourceCsvUrl({
   const currentRepository = clean(repository) || resolveGithubRepository({ env, cwd });
   const expectedUrl = expectedSourceCsvRawUrl({ env, cwd, repository: currentRepository });
   const rawInfo = parseRawGithubUrl(configuredUrl);
-  const configuredLower = configuredUrl.toLowerCase();
   const configuredRepo = rawInfo?.repository || "";
   const filePath = rawInfo?.file_path || "";
-  const pointsToOldRepo = OLD_REPO_PATTERNS.some(pattern => pattern.test(configuredUrl));
   const pointsToDifferentRepo = Boolean(rawInfo && currentRepository && configuredRepo && configuredRepo.toLowerCase() !== currentRepository.toLowerCase());
   const pointsToOldArrivalsCsv = /(^|\/)source_arrivals\.csv(?:$|[?#])/i.test(configuredUrl) || /source_arrivals\.csv$/i.test(filePath);
   const pointsToLightweightReferenceCsv = filePath.replace(/\\/g, "/").toLowerCase() === VERIFIED_SOURCE_CSV_PATH.toLowerCase();
   const pointsToExpectedUrl = configuredUrl === expectedUrl;
   const localReferenceExists = fs.existsSync(path.join(cwd, VERIFIED_SOURCE_CSV_PATH));
-  const isWrong = Boolean(pointsToOldRepo || pointsToOldArrivalsCsv || pointsToDifferentRepo);
+  const isWrong = Boolean(pointsToOldArrivalsCsv || pointsToDifferentRepo);
   const status = !configuredUrl
     ? "NOT_CONFIGURED"
     : isWrong
@@ -109,7 +101,6 @@ export function diagnoseSourceCsvUrl({
         ? "LIGHTWEIGHT_REFERENCE_CSV"
         : "UNKNOWN_SOURCE_CSV_URL";
   const reasons = [
-    pointsToOldRepo ? "raw URL points to old hwkport repository naming" : "",
     pointsToDifferentRepo ? "raw URL repository does not match current GITHUB_REPOSITORY" : "",
     pointsToOldArrivalsCsv ? "raw URL points to old 72MB source_arrivals.csv" : "",
     pointsToLightweightReferenceCsv ? "raw URL points to lightweight verified_vessel_reference.csv" : ""
@@ -125,9 +116,9 @@ export function diagnoseSourceCsvUrl({
     configured_file_path: filePath || null,
     local_reference_path: VERIFIED_SOURCE_CSV_PATH,
     local_reference_exists: localReferenceExists,
-    points_to_old_repo: pointsToOldRepo,
+    points_to_legacy_repo: pointsToDifferentRepo,
+    points_to_old_repo: pointsToDifferentRepo,
     points_to_different_repo: pointsToDifferentRepo,
-    points_to_old_hwkport_repo: pointsToOldRepo,
     points_to_old_source_arrivals_csv: pointsToOldArrivalsCsv,
     points_to_lightweight_verified_reference_csv: pointsToLightweightReferenceCsv,
     points_to_expected_url: pointsToExpectedUrl,

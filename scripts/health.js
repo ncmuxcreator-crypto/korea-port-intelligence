@@ -36,7 +36,7 @@ function runNpmScript(name) {
     shell: false,
     env: {
       ...process.env,
-      HWK_HEALTH_PARENT: "1"
+      KPI_HEALTH_PARENT: "1"
     }
   }).status || 0;
 }

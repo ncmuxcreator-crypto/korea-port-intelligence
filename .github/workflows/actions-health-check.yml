@@ -16,6 +16,9 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Runner diagnostics
         run: |
           echo "workflow=${{ github.workflow }}"
@@ -26,3 +29,7 @@ jobs:
           uname -a
           node --version
           npm --version
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

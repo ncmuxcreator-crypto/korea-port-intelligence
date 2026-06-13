@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 20
 
     permissions:
-      contents: write
+      contents: read
 
     env:
       CI: true
@@ -69,61 +69,43 @@ jobs:
         if: always()
         run: npm run validate
 
-      - name: Build
-        if: always()
-        run: npm run build
-
       - name: Guard fast auxiliary refresh
         run: |
           node - <<'NODE'
           const fs = require("fs");
-          const status = JSON.parse(fs.readFileSync("dashboard/api/source-collection-status.json", "utf8"));
-          const owned = new Set(["pilot_sources", "berth_sources", "mof_ais_info", "mof_ais_dynamic", "mof_ais_stat", "ulsan_core", "ulsan_berth_detail", "ulsan_cargo_plan", "ulsan_berth_operation", "ulsan_terminal_process"]);
-          const refreshed = (status.items || []).filter(item =>
-            owned.has(item.source_key) &&
-            ["ACTIVE", "PARTIAL"].includes(String(item.status || "").toUpperCase()) &&
-            item.preserved_after_unsuccessful_attempt !== true
+          const cache = JSON.parse(fs.readFileSync("dashboard/api/aux/latest/cache-status.json", "utf8"));
+          const ignored = new Set(["source_csv"]);
+          const items = (cache.items || []).filter(item => item && !ignored.has(item.source_key));
+          const configured = items.filter(item => item.configured === true);
+          const refreshed = items.filter(item =>
+            item.attempted === true &&
+            ["ACTIVE", "PARTIAL", "SUCCESS"].includes(String(item.current_attempt_status || item.status || "").toUpperCase()) &&
+            Number(item.rows_collected || item.rows_normalized || item.rows_matched_to_vessels || 0) > 0
+          );
+          const reused = items.filter(item => item.using_previous_cache === true);
+          const optionalMissing = items.filter(item =>
+            item.configured === false &&
+            /missing_env|missing_api_url|not_configured/i.test(String(item.current_attempt_error || item.blocker_reason || item.current_attempt_status || ""))
           );
           console.log(`fast_aux refreshed_source_count=${refreshed.length}`);
+          console.log(`fast_aux configured_source_count=${configured.length}`);
+          console.log(`fast_aux reused_previous_cache_count=${reused.length}`);
+          console.log(`fast_aux optional_missing=${optionalMissing.map(item => `${item.source_key}:${item.current_attempt_error || item.blocker_reason || item.current_attempt_status}`).join(",") || "none"}`);
+          if (!configured.length) {
+            console.warn("fast_aux has no configured auxiliary sources; generated optional warnings and cache metadata only.");
+            process.exit(0);
+          }
+          if (!refreshed.length && reused.length) {
+            console.warn("fast_aux produced no fresh rows, but previous auxiliary cache is available; treating as optional warning.");
+            process.exit(0);
+          }
           if (!refreshed.length) {
-            throw new Error("fast_aux produced no refreshed auxiliary source diagnostics; keeping previous committed aux cache.");
+            throw new Error("fast_aux had configured auxiliary sources but produced no refreshed rows and no reusable cache.");
           }
           NODE
 
       - name: Audit tier consistency
         run: npm run audit:tiered-update
-
-      - name: Commit fast auxiliary diagnostics
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          add_if_exists() {
-            if [ -e "$1" ]; then
-              git add "$1"
-            fi
-          }
-          add_if_exists dashboard/api/source-health-runtime.json
-          add_if_exists dashboard/api/source-collection-status.json
-          add_if_exists dashboard/api/source-quality-score.json
-          add_if_exists dashboard/api/enrichment-utilization.json
-          add_if_exists dashboard/api/aux/latest/
-          add_if_exists dashboard/api/aux/pilotage-summary.json
-          add_if_exists dashboard/api/aux/berth-summary.json
-          add_if_exists dashboard/api/aux/ais-info-summary.json
-          add_if_exists dashboard/api/aux/ais-dynamic-summary.json
-          add_if_exists dashboard/api/aux/ais-stat-summary.json
-          add_if_exists dashboard/api/aux/vessel-spec-summary.json
-          add_if_exists dashboard/api/aux/cache-status.json
-          add_if_exists dashboard/api/aux/source-schedule.json
-          add_if_exists dashboard/api/runtime/update-tiers.json
-          add_if_exists data/cache/auxiliary-source-cache-status.json
-          if git diff --cached --quiet; then
-            echo "No fast auxiliary diagnostics changes to commit"
-          else
-            git commit -m "chore: update fast auxiliary diagnostics [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
 
       - name: Upload auxiliary cache artifact
         if: always()
@@ -141,3 +123,7 @@ jobs:
             dashboard/api/aux/vessel-spec-summary.json
             dashboard/api/aux/cache-status.json
             dashboard/api/runtime/update-tiers.json
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

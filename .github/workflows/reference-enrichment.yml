@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 45
 
     permissions:
-      contents: write
+      contents: read
 
     env:
       CI: true
@@ -31,7 +31,8 @@ jobs:
       NPM_CONFIG_PROGRESS: "false"
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      SOURCE_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
+      SOURCE_LIGHTWEIGHT_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
+      SOURCE_CSV_MAX_BYTES: "5242880"
       ENABLE_SOURCE_CSV: ${{ vars.ENABLE_SOURCE_CSV || 'true' }}
       PORT_OPERATION_SERVICE_KEY: ${{ secrets.PORT_OPERATION_SERVICE_KEY || secrets.PORT_OPERATION_API_KEY || secrets.DATA_GO_KR_API_KEY || secrets.SERVICE_KEY || secrets.SERVICEKEY || secrets.YGPA_SERVICE_KEY }}
       PORT_OPERATION_API_URL: ${{ vars.PORT_OPERATION_API_URL || secrets.PORT_OPERATION_API_URL || 'http://apis.data.go.kr/1192000/VsslEtrynd5/Info5' }}
@@ -90,39 +91,6 @@ jobs:
       - name: Audit tier consistency
         run: npm run audit:tiered-update
 
-      - name: Commit reference enrichment diagnostics
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          add_if_exists() {
-            if [ -e "$1" ]; then
-              git add "$1"
-            fi
-          }
-          add_if_exists dashboard/api/source-collection-status.json
-          add_if_exists dashboard/api/source-quality-score.json
-          add_if_exists dashboard/api/enrichment-utilization.json
-          add_if_exists dashboard/api/enrichment/latest/
-          add_if_exists dashboard/api/enrichment/summary.json
-          add_if_exists dashboard/api/enrichment/candidates.json
-          add_if_exists dashboard/api/enrichment/applied.json
-          add_if_exists dashboard/api/enrichment/review-queue.json
-          add_if_exists dashboard/api/enrichment/source-capability-matrix.json
-          add_if_exists dashboard/api/enrichment/source-csv-dry-run.json
-          add_if_exists dashboard/api/cache/source-csv-reference.json
-          add_if_exists dashboard/api/cache/source-csv-index.json
-          add_if_exists dashboard/api/aux/source-csv-summary.json
-          add_if_exists dashboard/api/aux/vessel-spec-summary.json
-          add_if_exists dashboard/api/runtime/update-tiers.json
-          add_if_exists data/cache/source-csv-reference-cache.json
-          if git diff --cached --quiet; then
-            echo "No reference enrichment diagnostics changes to commit"
-          else
-            git commit -m "chore: update reference enrichment diagnostics [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
       - name: Upload reference enrichment artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -140,6 +108,6 @@ jobs:
             dashboard/api/aux/source-csv-summary.json
             dashboard/api/runtime/update-tiers.json
 
-      - name: Build
+      - name: Print runtime context
         if: always()
-        run: npm run build
+        run: node scripts/print-runtime-context.js

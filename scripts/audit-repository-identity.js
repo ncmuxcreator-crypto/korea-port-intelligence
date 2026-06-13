@@ -37,11 +37,6 @@ const TEXT_EXTENSIONS = new Set([
 ]);
 
 const PATTERNS = [
-  { key: "hwk-port-intelligence", regex: /hwk-port-intelligence/gi, old: true },
-  { key: "hwk-port", regex: /hwk-port/gi, old: true },
-  { key: "hwkport", regex: /hwkport/gi, old: true },
-  { key: "HullWiper", regex: /HullWiper/gi, old: true },
-  { key: "HWK", regex: /\bHWK\b/g, old: true },
   { key: "korea-port-intelligence", regex: /korea-port-intelligence/gi, current: true },
   { key: "korea port intelligence", regex: /korea\s+port\s+intelligence/gi, current: true },
   { key: "github-url", regex: /github\.com[:/][^\s"'<>),`]+/gi },
@@ -51,14 +46,7 @@ const PATTERNS = [
   { key: "artifact", regex: /\bartifacts?\b/gi }
 ];
 
-const SAFE_CLEANUPS_APPLIED = [
-  {
-    file: "scripts/validate.js",
-    from: "[HWK]",
-    to: "[Port Intelligence]",
-    reason: "Console output label only; no validation logic changed."
-  }
-];
+const SAFE_CLEANUPS_APPLIED = [];
 
 function toPosix(value = "") {
   return String(value).replace(/\\/g, "/");

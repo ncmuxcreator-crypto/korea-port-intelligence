@@ -1,11 +1,11 @@
 const SECRET_CATALOG = [
   {
     key: "source_csv",
-    label: "Core External Snapshot CSV",
+    label: "Optional Lightweight Source CSV",
     type: "external_snapshot",
-    requiredAny: ["SOURCE_CSV_URL"],
-    optional: [],
-    use: "Optional external CSV snapshot for manual corrections or interim source consolidation before full API normalization."
+    requiredAny: ["SOURCE_LIGHTWEIGHT_CSV_URL", "SOURCE_LIGHTWEIGHT_CSV_PATH"],
+    optional: ["ENABLE_SOURCE_CSV", "SOURCE_CSV_MODE", "SOURCE_CSV_MAX_BYTES", "SOURCE_CSV_URL"],
+    use: "Optional lightweight CSV used only as non-blocking enrichment in core updates; raw/full CSV is disabled in core."
   },
   {
     key: "supabase",

@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 35
 
     permissions:
-      contents: write
+      contents: read
 
     env:
       CI: true
@@ -63,28 +63,6 @@ jobs:
           npm run validate
           npm run audit:tiered-update
 
-      - name: Commit discovery audit reports
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          add_if_exists() {
-            if [ -e "$1" ]; then
-              git add "$1"
-            fi
-          }
-          add_if_exists docs/
-          add_if_exists dashboard/api/discovery/
-          add_if_exists dashboard/api/storage-efficiency-report.json
-          add_if_exists dashboard/api/db-cleanup-plan.json
-          add_if_exists dashboard/api/runtime/update-tiers.json
-          if git diff --cached --quiet; then
-            echo "No discovery audit changes to commit"
-          else
-            git commit -m "chore: update discovery audit reports [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
       - name: Upload discovery artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,3 +74,7 @@ jobs:
             dashboard/api/discovery/
             dashboard/api/storage-efficiency-report.json
             dashboard/api/db-cleanup-plan.json
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 30
 
     permissions:
-      contents: write
+      contents: read
 
     env:
       CI: true
@@ -36,7 +36,9 @@ jobs:
       ENRICHMENT_MODE: lightweight_apply_cache
       DISCOVERY_MODE: off
       DB_AUDIT_MODE: off
-      SOURCE_CSV_MODE: cache_only
+      ENABLE_SOURCE_CSV: "true"
+      SOURCE_CSV_MODE: lightweight
+      SOURCE_CSV_MAX_BYTES: "5242880"
       RUN_HEAVY_AUDITS: "false"
       RUN_DISCOVERY: "false"
       RUN_DB_CLEANUP_AUDIT: "false"
@@ -56,7 +58,6 @@ jobs:
       PORT_OPERATION_MAX_PAGES: 20
       PORT_OPERATION_DEGB_VALUES: "I,O"
       COLLECTOR_RUNTIME_BUDGET_MS: 720000
-      ENABLE_SOURCE_CSV: "true"
       COLLECTOR_DEBUG_VERBOSE: "false"
       DB_STORAGE_MODE: lean
       DB_ANALYTICS_SCOPE: candidate
@@ -88,7 +89,6 @@ jobs:
       EVENT_PREVIOUS_SNAPSHOT_LIMIT: 1500
       SUPABASE_BATCH_SIZE: 200
       ARCHIVE_TO_DRIVE: "true"
-      SOURCE_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -154,7 +154,10 @@ jobs:
             PORT_FACILITY_API_KEY: !!process.env.PORT_FACILITY_API_KEY,
             SUPABASE_URL: !!process.env.SUPABASE_URL,
             SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-            SOURCE_CSV_URL: !!process.env.SOURCE_CSV_URL,
+            SOURCE_LIGHTWEIGHT_CSV_URL: !!process.env.SOURCE_LIGHTWEIGHT_CSV_URL,
+            SOURCE_LIGHTWEIGHT_CSV_PATH: !!process.env.SOURCE_LIGHTWEIGHT_CSV_PATH,
+            SOURCE_CSV_MODE: process.env.SOURCE_CSV_MODE,
+            SOURCE_CSV_MAX_BYTES: process.env.SOURCE_CSV_MAX_BYTES,
             ENABLE_SOURCE_CSV: process.env.ENABLE_SOURCE_CSV,
             VESSEL_SPEC_SERVICE_KEY: !!process.env.VESSEL_SPEC_SERVICE_KEY,
             VESSEL_SPEC_API_URL: !!process.env.VESSEL_SPEC_API_URL,
@@ -250,7 +253,19 @@ jobs:
           }
           const status = JSON.parse(fs.readFileSync(path, "utf8"));
           const diag = status.collector_diagnostics || {};
+          const readJson = file => fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|\s)\/\/.*$/gm, "$1")) : {};
+          const gitConfig = fs.existsSync(".git/config") ? fs.readFileSync(".git/config", "utf8") : "";
+          const remote = (gitConfig.match(/\[remote "origin"\][\s\S]*?url\s*=\s*(.+)/) || [])[1] || "";
+          const pkg = readJson("package.json");
+          const wrangler = readJson("wrangler.jsonc");
           console.log("=== Korea Port Intelligence Collector Diagnostics ===");
+          console.log(`GITHUB_REPOSITORY=${process.env.GITHUB_REPOSITORY || status.runtime_project_context?.github_repository || ""}`);
+          console.log(`GITHUB_WORKFLOW=${process.env.GITHUB_WORKFLOW || status.runtime_project_context?.github_workflow || ""}`);
+          console.log(`GITHUB_RUN_ID=${process.env.GITHUB_RUN_ID || status.runtime_project_context?.github_run_id || ""}`);
+          console.log(`git_remote_origin=${(status.runtime_project_context?.git_remote_origin || remote || "").trim()}`);
+          console.log(`worker_name=${status.runtime_project_context?.worker_name || wrangler.name || ""}`);
+          console.log(`app_name=${status.runtime_project_context?.app_name || pkg.name || ""}`);
+          console.log(`runtime_project_name=${status.runtime_project_context?.runtime_project_name || status.runtime_project_name || "korea-port-intelligence"}`);
           console.log(`status=${status.status || "unknown"}`);
           if (status.error) console.log(`error=${status.error}`);
           console.log(`data_mode=${status.data_mode}`);
@@ -322,28 +337,6 @@ jobs:
             }
           }
           NODE
-
-      - name: Commit generated dashboard snapshots
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            dashboard/api/source-health-runtime.json \
-            dashboard/api/source-collection-status.json \
-            dashboard/api/source-quality-score.json \
-            dashboard/api/enrichment-utilization.json \
-            dashboard/api/runtime-budget-report.json \
-            dashboard/api/runtime/update-tiers.json \
-            dashboard/api/status-summary.json \
-            dashboard/api/endpoint-manifest.json \
-            dashboard/api/bootstrap.json
-          if git diff --cached --quiet; then
-            echo "No generated dashboard snapshot changes to commit"
-          else
-            git commit -m "chore: update generated dashboard snapshots [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
 
       - name: Deploy Cloudflare Worker
         timeout-minutes: 5
@@ -494,3 +487,7 @@ jobs:
             data/history/
             dashboard/api/
             public/
+
+      - name: Print runtime context
+        if: always()
+        run: node scripts/print-runtime-context.js

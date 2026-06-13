@@ -25,7 +25,11 @@ const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI ===
 function outputPath(path) {
   if (validationMode === "production") return path;
   const debugPath = path.startsWith("dashboard/api/") ? `dashboard/api/debug/${path.slice("dashboard/api/".length)}` : path;
-  return fs.existsSync(debugPath) ? debugPath : path;
+  if (!fs.existsSync(debugPath)) return path;
+  if (!fs.existsSync(path)) return debugPath;
+  const mainRows = countRows(readJson(path, []));
+  const debugRows = countRows(readJson(debugPath, []));
+  return mainRows > 0 || debugRows === 0 ? path : debugPath;
 }
 
 function countRows(value) {

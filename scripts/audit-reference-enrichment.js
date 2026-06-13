@@ -133,11 +133,11 @@ const updateScript = readText(FILES.updateScript);
 const runModeScript = readText(FILES.runModeScript);
 const collectorScript = readText(FILES.collectorScript);
 
-const coreCacheOnly = /core:\s*{[\s\S]*?SOURCE_CSV_MODE:\s*"cache_only"/.test(runModeScript);
+const coreLightweightCsv = /core:\s*{[\s\S]*?SOURCE_CSV_MODE:\s*"lightweight"/.test(runModeScript);
 const coreLightweightApply = /core:\s*{[\s\S]*?ENRICHMENT_MODE:\s*"lightweight_apply_cache"/.test(runModeScript);
 const coreSkipsFullMatching = /IS_CORE_UPDATE \|\| ENRICHMENT_MODE === "lightweight"/.test(updateScript);
 const coreAppliesCachedPatches = /applyCachedEnrichmentPatches/.test(updateScript) && /cachedPatchItemsFromPayload/.test(updateScript);
-const sourceCsvReferenceTier = /if \(key === "source_csv"\) return "reference_enrichment"/.test(collectorScript);
+const sourceCsvLightweightCoreTier = /if \(key === "source_csv"\) return sourceCsvCoreCandidate\(\) \? "core" : "reference_enrichment"/.test(collectorScript);
 
 const latestFiles = [
   ["index", latestIndex],
@@ -207,11 +207,11 @@ if (patches(latestPatches).length) {
   if (missingFieldLineage) problems.push(`patches.json has ${missingFieldLineage} field patch(es) missing source/match lineage`);
 }
 
-if (!coreCacheOnly) problems.push("core preset must use SOURCE_CSV_MODE=cache_only");
+if (!coreLightweightCsv) problems.push("core preset must use SOURCE_CSV_MODE=lightweight");
 if (!coreLightweightApply) problems.push("core preset must use ENRICHMENT_MODE=lightweight_apply_cache");
 if (!coreSkipsFullMatching) problems.push("core update may recompute full enrichment matching");
 if (!coreAppliesCachedPatches) problems.push("core update does not clearly apply cached enrichment patches");
-if (!sourceCsvReferenceTier) problems.push("source_csv collector is not owned by reference_enrichment tier");
+if (!sourceCsvLightweightCoreTier) problems.push("source_csv collector must be core-owned only for lightweight/raw/off mode diagnostics");
 
 const rejected = latestSummary.rejected ?? items(latestCandidates).filter(item => item.action === "REJECT").length;
 const reviewRows = items(latestReview);

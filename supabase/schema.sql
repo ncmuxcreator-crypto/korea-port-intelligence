@@ -1108,7 +1108,11 @@ create index if not exists idx_port_snapshot_daily_top_opportunity on port_snaps
 
 create table if not exists port_daily_summary (
   id bigserial primary key,
+  summary_key text,
   summary_date date not null,
+  period_start date,
+  period_end date,
+  snapshot_date date,
   port_key text not null,
   port_code text,
   port_name text not null default '미확인 항만',
@@ -1119,13 +1123,18 @@ create table if not exists port_daily_summary (
   first_seen_at timestamptz,
   last_seen_at timestamptz,
   generated_at timestamptz default now(),
+  updated_at timestamptz default now(),
   payload jsonb default '{}'::jsonb,
   unique(summary_date, port_key)
 );
 
 create table if not exists port_weekly_summary (
   id bigserial primary key,
+  summary_key text,
   week_start date not null,
+  period_start date,
+  period_end date,
+  snapshot_date date,
   port_key text not null,
   port_code text,
   port_name text not null default '미확인 항만',
@@ -1136,13 +1145,18 @@ create table if not exists port_weekly_summary (
   first_seen_at timestamptz,
   last_seen_at timestamptz,
   generated_at timestamptz default now(),
+  updated_at timestamptz default now(),
   payload jsonb default '{}'::jsonb,
   unique(week_start, port_key)
 );
 
 create table if not exists port_monthly_summary (
   id bigserial primary key,
+  summary_key text,
   month_start date not null,
+  period_start date,
+  period_end date,
+  snapshot_date date,
   port_key text not null,
   port_code text,
   port_name text not null default '미확인 항만',
@@ -1153,16 +1167,20 @@ create table if not exists port_monthly_summary (
   first_seen_at timestamptz,
   last_seen_at timestamptz,
   generated_at timestamptz default now(),
+  updated_at timestamptz default now(),
   payload jsonb default '{}'::jsonb,
   unique(month_start, port_key)
 );
 
 create index if not exists idx_port_daily_summary_date on port_daily_summary(summary_date desc);
 create index if not exists idx_port_daily_summary_port on port_daily_summary(port_key, summary_date desc);
+create unique index if not exists port_daily_summary_summary_key_uidx on port_daily_summary(summary_key) where summary_key is not null;
 create index if not exists idx_port_weekly_summary_week on port_weekly_summary(week_start desc);
 create index if not exists idx_port_weekly_summary_port on port_weekly_summary(port_key, week_start desc);
+create unique index if not exists port_weekly_summary_summary_key_uidx on port_weekly_summary(summary_key) where summary_key is not null;
 create index if not exists idx_port_monthly_summary_month on port_monthly_summary(month_start desc);
 create index if not exists idx_port_monthly_summary_port on port_monthly_summary(port_key, month_start desc);
+create unique index if not exists port_monthly_summary_summary_key_uidx on port_monthly_summary(summary_key) where summary_key is not null;
 
 create index if not exists idx_operator_snapshot_daily_operator on operator_snapshot_daily(operator_normalized, snapshot_date desc);
 create index if not exists idx_operator_snapshot_daily_date on operator_snapshot_daily(snapshot_date desc);
@@ -1268,6 +1286,7 @@ create table if not exists vessel_identity_candidates (
 create table if not exists vessel_events (
   id bigserial primary key,
   event_id bigserial,
+  event_key text,
   event_uid text,
   hybrid_entity_key text,
   master_vessel_id text,
@@ -1399,7 +1418,7 @@ create index if not exists idx_pilot_schedule_events_run_id on pilot_schedule_ev
 create index if not exists idx_pilot_schedule_events_pilot_time on pilot_schedule_events(pilot_time_at desc);
 create index if not exists idx_pilot_schedule_events_pilot_time_raw on pilot_schedule_events(pilot_time);
 
-create or replace function hwk_try_timestamptz(value text)
+create or replace function kpi_try_timestamptz(value text)
 returns timestamptz
 language plpgsql
 stable
@@ -1419,7 +1438,7 @@ exception when others then
 end;
 $$;
 
-create or replace function hwk_normalize_pilot_schedule_time()
+create or replace function kpi_normalize_pilot_schedule_time()
 returns trigger
 language plpgsql
 as $$
@@ -1427,7 +1446,7 @@ begin
   new.pilot_time_raw := coalesce(new.pilot_time_raw, new.pilot_time);
 
   if new.pilot_time_at is null and new.pilot_time is not null then
-    new.pilot_time_at := hwk_try_timestamptz(new.pilot_time);
+    new.pilot_time_at := kpi_try_timestamptz(new.pilot_time);
   end if;
 
   return new;
@@ -1435,11 +1454,13 @@ end;
 $$;
 
 drop trigger if exists trg_hwk_normalize_pilot_schedule_time on pilot_schedule_events;
-create trigger trg_hwk_normalize_pilot_schedule_time
+drop trigger if exists trg_kpi_normalize_pilot_schedule_time on pilot_schedule_events;
+create trigger trg_kpi_normalize_pilot_schedule_time
 before insert or update on pilot_schedule_events
 for each row
-execute function hwk_normalize_pilot_schedule_time();
+execute function kpi_normalize_pilot_schedule_time();
 
+alter table vessel_events add column if not exists event_key text;
 alter table vessel_events add column if not exists event_uid text;
 alter table vessel_events add column if not exists port_call_id text;
 alter table vessel_events add column if not exists source text;
@@ -1449,6 +1470,9 @@ alter table vessel_events add column if not exists created_at timestamptz defaul
 alter table vessel_events add column if not exists previous_snapshot jsonb default '{}'::jsonb;
 create unique index if not exists idx_vessel_events_event_uid on vessel_events(event_uid) where event_uid is not null;
 create unique index if not exists ux_vessel_events_event_uid on vessel_events(event_uid);
+update vessel_events set event_key = coalesce(event_key, event_uid) where event_key is null and event_uid is not null;
+create unique index if not exists ux_vessel_events_event_key on vessel_events(event_key);
+create unique index if not exists vessel_events_event_key_uidx on vessel_events(event_key) where event_key is not null;
 create unique index if not exists ux_vessel_events_port_call_type_bucket on vessel_events(port_call_id, event_type, event_time_bucket) where port_call_id is not null and event_time_bucket is not null;
 create index if not exists idx_vessel_events_run_id on vessel_events(run_id);
 create index if not exists idx_vessel_events_type_time on vessel_events(event_type, event_time desc);
@@ -1876,7 +1900,7 @@ alter table enrichment_match_candidates add column if not exists confidence text
 alter table enrichment_match_candidates add column if not exists matched_fields jsonb default '{}'::jsonb;
 alter table enrichment_match_candidates add column if not exists raw_source_payload jsonb default '{}'::jsonb;
 alter table enrichment_match_candidates add column if not exists created_at timestamptz default now();
-create or replace view hwk_storage_table_sizes as
+create or replace view kpi_storage_table_sizes as
 select
   schemaname,
   relname as table_name,
@@ -1889,7 +1913,7 @@ select
 from pg_stat_user_tables
 order by pg_total_relation_size(relid) desc;
 
-comment on view hwk_storage_table_sizes is 'Korea Port Intelligence Supabase storage triage view. Shows estimated rows and table/index/toast size by table.';
+comment on view kpi_storage_table_sizes is 'Korea Port Intelligence Supabase storage triage view. Shows estimated rows and table/index/toast size by table.';
 
 create index if not exists idx_pipeline_runs_started_at on pipeline_runs(run_started_at desc);
 create index if not exists idx_data_collection_runs_started_at on data_collection_runs(started_at desc);

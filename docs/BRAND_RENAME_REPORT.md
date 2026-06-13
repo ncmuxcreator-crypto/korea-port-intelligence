@@ -6,17 +6,13 @@
 - HTML page titles and meta descriptions now use `Korea Port Intelligence`.
 - Package metadata now uses `korea-port-intelligence`.
 - Cloudflare Worker config and local preview API fallback now target `korea-port-intelligence`.
-- Supabase object names and environment variable keys were not renamed.
+- Retired Supabase object names and environment variable aliases should be migrated separately if they still exist in a live database.
 
-## Remaining Legacy String Status
+## Retired Naming Status
 
-Remaining `HWK/hwk/HullWiper/hwk-port-intelligence` matches are intentional when they are:
+Retired project/company labels should not appear in runtime logs, workflow names, package metadata, worker config, or current documentation.
 
-- Old Cloudflare URL references in migration notes.
-- Supabase schema object names requiring an explicit DB migration.
-- Environment variable keys requiring backward compatibility.
-- Local workspace fallback paths.
-- Package lock integrity hash false positives.
+Acceptable remnants are limited to external systems that have not yet had their schema or route names migrated.
 
 ## Validation
 

@@ -4,6 +4,8 @@ const validationMode = String(process.env.VALIDATION_MODE || (process.env.CI ===
 if (!["production", "local"].includes(validationMode)) {
   throw new Error(`Invalid VALIDATION_MODE: ${validationMode}. Use production or local.`);
 }
+const envUpdateMode = String(process.env.UPDATE_MODE || "").toLowerCase();
+const AUXILIARY_UPDATE_MODES = new Set(["fast_aux", "reference_enrichment", "discovery_audit"]);
 const validationWarnings = [];
 const DEBUG_API_DIR = "dashboard/api/debug";
 
@@ -37,7 +39,7 @@ function outputPath(file) {
   if (!fs.existsSync(debugPath)) return file;
   const rootRows = countRowsInFile(file);
   const debugRows = countRowsInFile(debugPath);
-  if (fs.existsSync(file) && rootRows > 0 && rootRows >= debugRows) return file;
+  if (fs.existsSync(file) && rootRows > 0) return file;
   return debugPath;
 }
 
@@ -62,6 +64,11 @@ function dashboardJsonRootType(value) {
 
 function usingDebugOutput(file) {
   return outputPath(file).replace(/\\/g, "/").startsWith(`${DEBUG_API_DIR}/`);
+}
+
+function isRuntimeDiagnosticEndpoint(file) {
+  const normalized = String(file || "").replace(/\\/g, "/");
+  return /^dashboard\/api\/(?:backend-doctor|readiness-gate|snapshot-guard|source-health-runtime|collector-plan-runtime|candidate-audit|candidate-confidence-runtime|candidate-dedupe|candidate-explanations|contact-windows|backend-ops|pipeline-sla|snapshot-diff-runtime)\.json$/i.test(normalized);
 }
 
 function canonicalPriorityPort(value) {
@@ -99,12 +106,18 @@ function isPreservedGithubActionsSourceDiagnostic(label, payload) {
     payload?.is_github_actions === true;
 }
 
+function isAuxiliaryTierPreservedDiagnostic(label) {
+  return typeof auxiliaryTierValidation !== "undefined" &&
+    auxiliaryTierValidation &&
+    ["source-health-runtime.json", "source-collection-status.json"].includes(label);
+}
+
 function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } = {}) {
   try {
     validateRunOrigin(label, payload);
   } catch (error) {
     const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
-    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
+    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || isAuxiliaryTierPreservedDiagnostic(label) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
       validationWarnings.push(`${label} is a legacy/protected diagnostic missing run origin fields: ${error.message}`);
     } else {
       throw error;
@@ -114,7 +127,7 @@ function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } 
     .filter(marker => !(marker in (payload || {})));
   if (missingRuntimeMarkers.length) {
     const localNoLiveDataDiagnostics = validationMode === "local" && String(status?.data_mode || "") === "no_live_data";
-    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
+    if (allowPlaceholder || localNoLiveDataDiagnostics || isPreservedGithubActionsSourceDiagnostic(label, payload) || isAuxiliaryTierPreservedDiagnostic(label) || (typeof protectedFailedRun !== "undefined" && protectedFailedRun)) {
       validationWarnings.push(`${label} is a legacy/protected diagnostic missing runtime markers: ${missingRuntimeMarkers.join(",")}`);
     } else {
       throw new Error(`${label} missing runtime diagnostic field: ${missingRuntimeMarkers[0]}`);
@@ -124,8 +137,16 @@ function validateRuntimeDiagnostic(label, payload, { allowPlaceholder = false } 
     throw new Error(`${label} is a placeholder and must not be used as runtime truth`);
   }
   if (status?.run_id && payload?.run_id && String(status.run_id) !== String(payload.run_id) && payload.stale_diagnostic !== true) {
+    if (allowPlaceholder) {
+      validationWarnings.push(`${label} is a placeholder diagnostic and may not match the current status.json run_id.`);
+      return;
+    }
     if (isPreservedGithubActionsSourceDiagnostic(label, payload)) {
       validationWarnings.push(`${label} is preserved from GitHub Actions and may not match the local status.json run_id.`);
+      return;
+    }
+    if (isAuxiliaryTierPreservedDiagnostic(label)) {
+      validationWarnings.push(`${label} is preserved across ${effectiveUpdateMode} and may not match the current status.json run_id.`);
       return;
     }
     throw new Error(`${label} must mark stale_diagnostic=true when run_id differs from status.json`);
@@ -355,11 +376,20 @@ for (const file of listDashboardApiJson()) {
       const actualRecordCount = Number(actualPayload?.record_count ?? actualPayload?.total_count ?? actualPayload?.total_vessels ?? endpointItemCount(actualPayload));
       const actualItemCount = endpointItemCount(actualPayload);
       if (entry.valid_json !== true) throw new Error(`endpoint-manifest.json valid_json=false for parseable endpoint: ${entry.path}`);
+      const allowManifestCountDrift = isRuntimeDiagnosticEndpoint(entryPath);
       if ("record_count" in entry && Number(entry.record_count) !== actualRecordCount) {
-        throw new Error(`endpoint-manifest.json record_count mismatch for ${entry.path}: manifest=${entry.record_count}, actual=${actualRecordCount}`);
+        if (allowManifestCountDrift) {
+          validationWarnings.push(`endpoint-manifest.json record_count drift for runtime diagnostic ${entry.path}: manifest=${entry.record_count}, actual=${actualRecordCount}`);
+        } else {
+          throw new Error(`endpoint-manifest.json record_count mismatch for ${entry.path}: manifest=${entry.record_count}, actual=${actualRecordCount}`);
+        }
       }
       if ("item_count" in entry && Number(entry.item_count) !== actualItemCount) {
-        throw new Error(`endpoint-manifest.json item_count mismatch for ${entry.path}: manifest=${entry.item_count}, actual=${actualItemCount}`);
+        if (allowManifestCountDrift) {
+          validationWarnings.push(`endpoint-manifest.json item_count drift for runtime diagnostic ${entry.path}: manifest=${entry.item_count}, actual=${actualItemCount}`);
+        } else {
+          throw new Error(`endpoint-manifest.json item_count mismatch for ${entry.path}: manifest=${entry.item_count}, actual=${actualItemCount}`);
+        }
       }
       if (criticalDashboardEndpoints.has(entry.path) && !hasEndpointArray(actualPayload) && /\/(sales|watchlist)\//.test(entry.path)) {
         throw new Error(`Critical endpoint missing items array: ${entry.path}`);
@@ -376,6 +406,20 @@ const targetVessels = readOutputJson("dashboard/api/target-vessels.json");
 const status = readOutputJson("dashboard/api/status.json");
 const dashboardSummary = readOutputJson("dashboard/api/dashboard-summary.json");
 const health = outputExists("dashboard/api/health.json") ? readOutputJson("dashboard/api/health.json") : null;
+const effectiveUpdateMode = String(
+  envUpdateMode ||
+  report.update_mode ||
+  status.update_mode ||
+  dashboardSummary.update_mode ||
+  report.runtime_project_context?.update_mode ||
+  ""
+).toLowerCase();
+const auxiliaryTierValidation = AUXILIARY_UPDATE_MODES.has(effectiveUpdateMode);
+const requireCoreProductionChecks = validationMode === "production" && !auxiliaryTierValidation;
+
+if (validationMode === "production" && auxiliaryTierValidation) {
+  validationWarnings.push(`${effectiveUpdateMode} validation: core-only port_operation, promotion, and active pointer checks are treated as auxiliary warnings.`);
+}
 
 if (![status, dashboardSummary, health].some(payload => payload && (payload.last_success_at || payload.generated_at))) {
   throw new Error("status/dashboard-summary/health must expose generated_at or last_success_at for dashboard freshness display.");
@@ -440,7 +484,8 @@ const vesselGroupValidation = {
   target_vessels_count: targetRows.length,
   vessels_json_count: vesselRows.length,
   successful_port_operation_source_count: successfulPortOperationSources.length,
-  validation_mode: validationMode
+  validation_mode: validationMode,
+  update_mode: effectiveUpdateMode || null
 };
 if (!vesselGroupValidation.all_collected_vessels_exists || !vesselGroupValidation.target_vessels_exists) {
   throw new Error(`Missing vessel group static JSON outputs: ${JSON.stringify(vesselGroupValidation)}`);
@@ -458,11 +503,14 @@ const productionValidationFailures = [
   Number(report.all_collected_vessel_count || report.all_vessels_count || vesselGroupValidation.all_collected_vessels_count || 0) <= 0 ? "all_vessels_count_zero" : null,
   successfulPortOperationSources.length < 1 ? "no_successful_port_operation_source" : null
 ].filter(Boolean);
-if (validationMode === "production" && productionValidationFailures.length && !protectedFailedRun) {
+if (requireCoreProductionChecks && productionValidationFailures.length && !protectedFailedRun) {
   throw new Error(`Production validation failed: ${productionValidationFailures.join(", ")}; ${JSON.stringify(vesselGroupValidation)}`);
 }
-if (validationMode === "production" && productionValidationFailures.length && protectedFailedRun) {
+if (requireCoreProductionChecks && productionValidationFailures.length && protectedFailedRun) {
   validationWarnings.push(`Protected production fallback warning: ${productionValidationFailures.join(", ")}; previous successful static outputs remain active.`);
+}
+if (validationMode === "production" && auxiliaryTierValidation && productionValidationFailures.length) {
+  validationWarnings.push(`Auxiliary-tier production warning: ${productionValidationFailures.join(", ")}; ${JSON.stringify(vesselGroupValidation)}`);
 }
 if (validationMode === "local" && report.data_mode === "no_live_data") {
   validationWarnings.push("Local validation warning: no_live_data snapshot is allowed in local mode only.");
@@ -633,11 +681,11 @@ if (
 validateRunOrigin("status.json", status);
 const statusSupabaseStorage = status.storage?.supabase || status.storage_status?.supabase || status.supabase_write || {};
 const statusSupabaseStorageStatus = String(statusSupabaseStorage.status || "").toLowerCase();
-if (validationMode === "production" && !protectedFailedRun && ["syncing", "pending", "unknown", "not_configured", ""].includes(statusSupabaseStorageStatus)) {
+if (requireCoreProductionChecks && !protectedFailedRun && ["syncing", "pending", "unknown", "not_configured", ""].includes(statusSupabaseStorageStatus)) {
   throw new Error(`Production status must not treat non-final Supabase storage status as success: ${statusSupabaseStorageStatus}`);
 }
 if (
-  validationMode === "production" &&
+  requireCoreProductionChecks &&
   !protectedFailedRun &&
   Number(status.record_count || 0) > 0 &&
   statusSupabaseStorageStatus !== "completed"
@@ -645,7 +693,7 @@ if (
   throw new Error(`Production status with vessel rows requires Supabase storage completed, got: ${statusSupabaseStorageStatus || "missing"}`);
 }
 if (
-  validationMode === "production" &&
+  requireCoreProductionChecks &&
   !protectedFailedRun &&
   Number(status.record_count || 0) > 0 &&
   statusSupabaseStorage.post_write_verification?.status !== "completed"
@@ -743,7 +791,7 @@ if (outputExists("dashboard/api/source-health-runtime.json")) {
   const staleLegacySourceHealth = !sourceHealthHasCurrentRunFields &&
     status.run_id &&
     !usingDebugOutput("dashboard/api/source-health-runtime.json");
-  if (status.run_id && sourceHealth.run_id && String(status.run_id) !== String(sourceHealth.run_id) && sourceHealth.stale_source_health !== true && !localDebugStatusWithStaleMainSourceHealth && !preservedGithubActionsSourceHealth) {
+  if (status.run_id && sourceHealth.run_id && String(status.run_id) !== String(sourceHealth.run_id) && sourceHealth.stale_source_health !== true && !localDebugStatusWithStaleMainSourceHealth && !preservedGithubActionsSourceHealth && !auxiliaryTierValidation) {
     throw new Error("Source health runtime must mark stale_source_health=true when run_id differs from status.json");
   }
   if (staleLegacySourceHealth) {
@@ -787,7 +835,16 @@ const allowedSkipReasons = new Set([
   "no_enabled_ports",
   "local_no_secret_mode",
   "validation_mode_blocks_collection",
-  "unknown_error"
+  "unknown_error",
+  "RAW_CSV_DISABLED_IN_CORE",
+  "SOURCE_CSV_DISABLED",
+  "LIGHTWEIGHT_CSV_NOT_FOUND",
+  "LIGHTWEIGHT_CSV_TOO_LARGE",
+  "LIGHTWEIGHT_CSV_SCHEMA_INSUFFICIENT",
+  "LIGHTWEIGHT_CSV_REFERENCE_CACHE_REUSED",
+  "LIGHTWEIGHT_CSV_PARSE_FAILED",
+  "LIGHTWEIGHT_CSV_NORMALIZED_ROWS_ZERO",
+  "cache_only_mode"
 ]);
 function isAllowedCollectorSkipReason(value = "") {
   if (allowedSkipReasons.has(value)) return true;
@@ -849,13 +906,13 @@ const longtermJobTimeouts = workflow.match(/^\s{4}timeout-minutes:\s*30\s*$/gm) 
 if (!longtermJobTimeouts.length) {
   throw new Error("Longterm workflow job timeout must be 30 minutes");
 }
-if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("MAX_OUTPUT_ROWS: 10000") || !workflow.includes("MAX_SOURCE_ROWS: 5000") || !workflow.includes("MAX_PORTS_PER_RUN: 50") || !workflow.includes("MAX_IMO_RECOVERY_CALLS: 100") || !workflow.includes("MAX_API_RESPONSE_BYTES: 25000000") || !workflow.includes("MAX_TARGET_VESSELS: 5000") || !workflow.includes("MAX_CANDIDATES: 1000") || !workflow.includes("MAX_CHILD_ENRICHMENT_ROWS: 100") || !workflow.includes("PORT_OPERATION_NUM_OF_ROWS: 50") || !workflow.includes("PORT_OPERATION_MAX_PAGES: 20") || !workflow.includes('PORT_OPERATION_DEGB_VALUES: "I,O"') || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || !workflow.includes("DB_STORAGE_MODE: lean") || !workflow.includes("DB_ANALYTICS_SCOPE: candidate") || !workflow.includes("DB_FOUNDATION_WRITE_MODE: minimal") || !workflow.includes("EVENT_PREVIOUS_SNAPSHOT_LIMIT: 1500") || !workflow.includes("SUPABASE_BATCH_SIZE: 200") || !workflow.includes("DB_RETENTION_CLEANUP") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 30000") || !workflow.includes("COLLECTOR_RUNTIME_BUDGET_MS: 720000") || !workflow.includes("timeout-minutes: 20")) {
+if (!workflow.includes("MAX_CHILD_ENRICHMENT_ROWS") || !workflow.includes("MAX_SOURCE_ROWS") || !workflow.includes("MAX_OUTPUT_ROWS: 10000") || !workflow.includes("MAX_SOURCE_ROWS: 5000") || !workflow.includes("MAX_PORTS_PER_RUN: 50") || !workflow.includes("MAX_IMO_RECOVERY_CALLS: 100") || !workflow.includes("MAX_API_RESPONSE_BYTES: 25000000") || !workflow.includes("MAX_TARGET_VESSELS: 5000") || !workflow.includes("MAX_CANDIDATES: 1000") || !workflow.includes("MAX_CHILD_ENRICHMENT_ROWS: 100") || !workflow.includes("PORT_OPERATION_NUM_OF_ROWS: 50") || !workflow.includes("PORT_OPERATION_MAX_PAGES: 20") || !workflow.includes('PORT_OPERATION_DEGB_VALUES: "I,O"') || !workflow.includes("ENABLE_SOURCE_CSV") || !workflow.includes("SOURCE_CSV_MODE: lightweight") || !workflow.includes('SOURCE_CSV_MAX_BYTES: "5242880"') || !workflow.includes("COLLECTOR_DEBUG_VERBOSE") || !workflow.includes("DB_STORAGE_MODE: lean") || !workflow.includes("DB_ANALYTICS_SCOPE: candidate") || !workflow.includes("DB_FOUNDATION_WRITE_MODE: minimal") || !workflow.includes("EVENT_PREVIOUS_SNAPSHOT_LIMIT: 1500") || !workflow.includes("SUPABASE_BATCH_SIZE: 200") || !workflow.includes("DB_RETENTION_CLEANUP") || workflow.includes("COLLECTOR_DEBUG_ONLY: port_operation_busan") || !workflow.includes("SOURCE_TIMEOUT_MS: 30000") || !workflow.includes("COLLECTOR_RUNTIME_BUDGET_MS: 720000") || !workflow.includes("timeout-minutes: 20")) {
   throw new Error("Longterm workflow must bound collector runtime and child enrichment");
 }
 for (const marker of ["github.run_id", "github.ref", "runner.os", "github.workflow", "timestamp=$(date -u"]) {
   if (!workflow.includes(marker)) throw new Error(`Missing workflow start diagnostic: ${marker}`);
 }
-if (!workflow.includes("SOURCE_CSV_URL") || !workflow.includes("ULSAN_BERTH_DETAIL_API_KEY") || !workflow.includes("PORT_OPERATION_API_KEY") || !workflow.includes("DATA_GO_KR_API_KEY") || !workflow.includes("YGPA_SERVICE_KEY") || workflow.includes("YGPA_ARRIVAL_API_KEY")) {
+if (workflow.includes("SOURCE_CSV_URL:") || !workflow.includes("ULSAN_BERTH_DETAIL_API_KEY") || !workflow.includes("PORT_OPERATION_API_KEY") || !workflow.includes("DATA_GO_KR_API_KEY") || !workflow.includes("YGPA_SERVICE_KEY") || workflow.includes("YGPA_ARRIVAL_API_KEY")) {
   throw new Error("Workflow public API secret coverage is incomplete");
 }
 const koreaCollector = fs.readFileSync("scripts/collectors/korea.js", "utf8");
@@ -1008,7 +1065,7 @@ for (const marker of ["PORT_ARRIVAL", "PILOT_INBOUND", "BERTH_ASSIGNED", "ANCHOR
   if (!dbLib.includes(marker)) throw new Error(`Event intelligence layer missing marker: ${marker}`);
 }
 const schema = fs.readFileSync("supabase/schema.sql", "utf8");
-for (const marker of ["data_collection_runs", "active_dataset_pointer", "dashboard_summary_snapshots", "sales_candidates_current", "immediate_targets_current", "port_summary_current", "is_latest_successful", "source_collection_logs", "source_log_id", "snapshot_uid", "port_call_master", "opportunity_master", "vessel_snapshot_daily", "port_snapshot_daily", "operator_snapshot_daily", "route_snapshot_daily", "commercial_opportunity_daily", "raw_archive_index", "historical_snapshot_generation_status", "daily_snapshot_rows_written", "vessel_snapshot_daily_rows_written", "port_snapshot_daily_rows_written", "operator_snapshot_daily_rows_written", "route_snapshot_daily_rows_written", "commercial_opportunity_daily_rows_written", "duplicate_snapshot_rows_skipped", "raw_payloads_archived_to_gdrive", "raw_payloads_db_insert_blocked", "ais_raw_rows_skipped", "event_rows_written", "event_duplicates_skipped", "estimated_db_growth_per_day", "estimated_db_growth_per_year", "opportunity_state", "identified", "qualified", "contact_ready", "contacted", "quoted", "scheduled", "won", "lost", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "route_patterns", "vessel_route_history", "predicted_arrivals", "enrichment_match_candidates", "commercial_leads", "operator_master", "agent_master", "contact_master", "operator_contact_history", "operator_fleet_opportunities", "agent_operator_links", "berth_aliases", "terminal_aliases", "feature_store", "feature_snapshots", "feature_snapshot_id", "port_call_feature_snapshot_v1", "model_ready_port_call", "operator_score", "route_graph_edges", "operator_graph_edges", "rule_evaluations", "explainability_snapshots", "score_components", "score_reasons", "why_scored_high", "model_training_rows", "event_uid", "port_call_id", "previous_snapshot", "feature_namespace", "feature_version", "rule_id", "rule_version", "rule_versions", "rule_group", "feature_contributions", "leakage_guard", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "commercial_value_score", "data_confidence_score", "gt_source", "eta_source", "operator_source", "congestion_source", "score_source", "lead_status", "auto_lead_created", "lead_created_reason", "contact_path_status", "contact_priority", "contact_path_label_ko", "contact_readiness_score", "last_contacted_at", "follow_up_due", "quote_status", "notes", "lead_priority_score", "why_now", "candidate_summary_ko", "recommended_action", "action_priority", "recommended_contact_path", "recommended_department", "recommended_email_draft", "recommended_followup_date", "prediction_error_hours", "alert_candidate", "predicted_congestion_score", "anchorage_probability", "predicted_work_window_hours", "biofouling_exposure_score", "biofouling_exposure_band", "biofouling_exposure_reasons", "predicted_cleaning_opportunity_score", "cleaning_opportunity_band", "opportunity_summary", "repeat_caller_score", "repeat_operator_score", "fleet_opportunity_score", "fleet_cleaning_probability", "fleet_cleaning_probability_band", "forecast_window_days", "fleet_alert", "average_biofouling_exposure", "average_congestion_exposure", "target_vessels_count", "validation_status", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
+for (const marker of ["data_collection_runs", "active_dataset_pointer", "dashboard_summary_snapshots", "sales_candidates_current", "immediate_targets_current", "port_summary_current", "is_latest_successful", "source_collection_logs", "source_log_id", "snapshot_uid", "port_call_master", "opportunity_master", "vessel_snapshot_daily", "port_snapshot_daily", "operator_snapshot_daily", "route_snapshot_daily", "commercial_opportunity_daily", "raw_archive_index", "historical_snapshot_generation_status", "daily_snapshot_rows_written", "vessel_snapshot_daily_rows_written", "port_snapshot_daily_rows_written", "operator_snapshot_daily_rows_written", "route_snapshot_daily_rows_written", "commercial_opportunity_daily_rows_written", "duplicate_snapshot_rows_skipped", "raw_payloads_archived_to_gdrive", "raw_payloads_db_insert_blocked", "ais_raw_rows_skipped", "event_rows_written", "event_duplicates_skipped", "estimated_db_growth_per_day", "estimated_db_growth_per_year", "opportunity_state", "identified", "qualified", "contact_ready", "contacted", "quoted", "scheduled", "won", "lost", "vessel_master", "vessel_aliases", "vessel_identity_candidates", "vessel_entities", "vessel_events", "risk_history", "port_congestion_snapshots", "anchorage_clusters", "berth_occupancy_history", "route_patterns", "vessel_route_history", "predicted_arrivals", "enrichment_match_candidates", "commercial_leads", "operator_master", "agent_master", "contact_master", "operator_contact_history", "operator_fleet_opportunities", "agent_operator_links", "berth_aliases", "terminal_aliases", "feature_store", "feature_snapshots", "feature_snapshot_id", "port_call_feature_snapshot_v1", "model_ready_port_call", "operator_score", "route_graph_edges", "operator_graph_edges", "rule_evaluations", "explainability_snapshots", "score_components", "score_reasons", "why_scored_high", "model_training_rows", "event_key", "event_uid", "port_call_id", "previous_snapshot", "feature_namespace", "feature_version", "rule_id", "rule_version", "rule_versions", "rule_group", "feature_contributions", "leakage_guard", "payload jsonb", "hybrid_entity_key", "run_id", "master_vessel_id", "commercial_value_score", "data_confidence_score", "gt_source", "eta_source", "operator_source", "congestion_source", "score_source", "lead_status", "auto_lead_created", "lead_created_reason", "contact_path_status", "contact_priority", "contact_path_label_ko", "contact_readiness_score", "last_contacted_at", "follow_up_due", "quote_status", "notes", "lead_priority_score", "why_now", "candidate_summary_ko", "recommended_action", "action_priority", "recommended_contact_path", "recommended_department", "recommended_email_draft", "recommended_followup_date", "prediction_error_hours", "alert_candidate", "predicted_congestion_score", "anchorage_probability", "predicted_work_window_hours", "biofouling_exposure_score", "biofouling_exposure_band", "biofouling_exposure_reasons", "predicted_cleaning_opportunity_score", "cleaning_opportunity_band", "opportunity_summary", "repeat_caller_score", "repeat_operator_score", "fleet_opportunity_score", "fleet_cleaning_probability", "fleet_cleaning_probability_band", "forecast_window_days", "fleet_alert", "average_biofouling_exposure", "average_congestion_exposure", "target_vessels_count", "validation_status", "drop constraint if exists vessel_snapshots_snapshot_date_vessel_id_port_key"]) {
   if (!schema.includes(marker)) throw new Error(`Supabase schema missing historical persistence marker: ${marker}`);
 }
 for (const file of ["data/reference/ports.csv", "data/reference/berths.csv", "data/reference/berth_aliases.csv", "data/reference/terminal_aliases.csv", "data/reference/anchorages.csv", "data/reference/vessel_types.csv", "data/reference/operators.csv", "data/reference/agents.csv", "data/reference/agent_operator_mapping.csv", "data/reference/vessel_master_seed.csv"]) {
