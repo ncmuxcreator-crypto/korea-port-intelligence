@@ -6,33 +6,33 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260613021547468_218a5829",
-  "active_run_id": "run_20260613021547468_218a5829",
+  "run_id": "run_20260613033359476_4972d654",
+  "active_run_id": "run_20260613033359476_4972d654",
   "latest_successful_run_id": null,
   "latest_successful_summary_run_id": null,
-  "source_run_id": "run_20260613021547468_218a5829",
-  "generated_at": "2026-06-13T02:19:29.930Z",
+  "source_run_id": "run_20260613033359476_4972d654",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "source_key": "source_csv",
   "cache_status": "available",
   "usable_reference_rows": 1015,
-  "candidate_vessels_checked": 2143,
-  "matched_vessels": 979,
+  "candidate_vessels_checked": 2158,
+  "matched_vessels": 966,
   "matches_by_imo": 0,
   "matches_by_mmsi": 0,
-  "matches_by_call_sign": 2113,
+  "matches_by_call_sign": 2087,
   "matches_by_name_call_sign": 0,
   "matches_by_name_gt_type": 0,
   "operator_candidates": 0,
   "imo_candidates": 0,
   "mmsi_candidates": 0,
-  "conflicts": 1743,
+  "conflicts": 1715,
   "weak_matches": 0,
   "auto_apply_count": 0,
-  "review_count": 3876,
-  "reject_count": 2463,
+  "review_count": 3822,
+  "reject_count": 2439,
   "applied_fields": 0,
-  "review_items": 3876,
-  "rejected_items": 2463,
+  "review_items": 3822,
+  "rejected_items": 2439,
   "sample_limit": 100,
   "items": [],
   "applied": [],
@@ -1732,100 +1732,6 @@
     {
       "source_key": "source_csv",
       "field_name": "vessel_type",
-      "target_vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-      "target_vessel": {
-        "vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-        "vessel_name": "GENCO STARS AND STRIPES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7B2724",
-        "current_port": "여수",
-        "operator_display": "(유)조영해운",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "Bulk Carrier",
-      "candidate_value": "BULK CARRIER",
-      "raw_value": "BULK CARRIER",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "vessel_type",
-        "source_row_id": "V7B2724",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REVIEW",
-      "conflict_type": "OPERATOR_CONFLICT",
-      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
-      "reason": "source_csv candidate conflicts with an existing or trusted field."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "gt",
-      "target_vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-      "target_vessel": {
-        "vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-        "vessel_name": "GENCO STARS AND STRIPES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7B2724",
-        "current_port": "여수",
-        "operator_display": "(유)조영해운",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": 107879,
-      "candidate_value": 107879,
-      "raw_value": 107879,
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "gt",
-        "source_row_id": "V7B2724",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REVIEW",
-      "conflict_type": "TRUSTED_CURRENT_VALUE",
-      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
-      "reason": "source_csv candidate conflicts with an existing or trusted field."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "vessel_type",
       "target_vessel_key": "CALL-3FES7",
       "target_vessel": {
         "vessel_key": "CALL-3FES7",
@@ -2378,6 +2284,100 @@
         "raw_source": "source_csv",
         "normalized_field": "gt",
         "source_row_id": "3E3945",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REVIEW",
+      "conflict_type": "TRUSTED_CURRENT_VALUE",
+      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
+      "reason": "source_csv candidate conflicts with an existing or trusted field."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "vessel_type",
+      "target_vessel_key": "CALL-V7B2724",
+      "target_vessel": {
+        "vessel_key": "CALL-V7B2724",
+        "vessel_name": "GENCO STARS AND STRIPES",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7B2724",
+        "current_port": "여수",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "port_display_name": "여수",
+        "display_name": "여수"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "Bulk Carrier",
+      "candidate_value": "BULK CARRIER",
+      "raw_value": "BULK CARRIER",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "vessel_type",
+        "source_row_id": "V7B2724",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REVIEW",
+      "conflict_type": "OPERATOR_CONFLICT",
+      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
+      "reason": "source_csv candidate conflicts with an existing or trusted field."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "gt",
+      "target_vessel_key": "CALL-V7B2724",
+      "target_vessel": {
+        "vessel_key": "CALL-V7B2724",
+        "vessel_name": "GENCO STARS AND STRIPES",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7B2724",
+        "current_port": "여수",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "port_display_name": "여수",
+        "display_name": "여수"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": 107879,
+      "candidate_value": 107879,
+      "raw_value": 107879,
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "gt",
+        "source_row_id": "V7B2724",
         "matched_on": [
           "call_sign"
         ]
@@ -4082,6 +4082,100 @@
     {
       "source_key": "source_csv",
       "field_name": "vessel_type",
+      "target_vessel_key": "CALL-3E8356",
+      "target_vessel": {
+        "vessel_key": "CALL-3E8356",
+        "vessel_name": "ROMANCE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8356",
+        "current_port": "울산",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "820",
+          "port_name": "울산",
+          "display_name": "울산",
+          "raw_port": "울산",
+          "raw_aliases": [
+            "울산"
+          ]
+        },
+        "port_code": "820",
+        "port_name": "울산",
+        "port_display_name": "울산",
+        "display_name": "울산"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "Tanker",
+      "candidate_value": "TANKER",
+      "raw_value": "TANKER",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "vessel_type",
+        "source_row_id": "3E8356",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REVIEW",
+      "conflict_type": "OPERATOR_CONFLICT",
+      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
+      "reason": "source_csv candidate conflicts with an existing or trusted field."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "gt",
+      "target_vessel_key": "CALL-3E8356",
+      "target_vessel": {
+        "vessel_key": "CALL-3E8356",
+        "vessel_name": "ROMANCE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8356",
+        "current_port": "울산",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "820",
+          "port_name": "울산",
+          "display_name": "울산",
+          "raw_port": "울산",
+          "raw_aliases": [
+            "울산"
+          ]
+        },
+        "port_code": "820",
+        "port_name": "울산",
+        "port_display_name": "울산",
+        "display_name": "울산"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": 30964,
+      "candidate_value": 30964,
+      "raw_value": 30964,
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "gt",
+        "source_row_id": "3E8356",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REVIEW",
+      "conflict_type": "TRUSTED_CURRENT_VALUE",
+      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
+      "reason": "source_csv candidate conflicts with an existing or trusted field."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "vessel_type",
       "target_vessel_key": "CALL-SVCM6",
       "target_vessel": {
         "vessel_key": "CALL-SVCM6",
@@ -4634,100 +4728,6 @@
         "raw_source": "source_csv",
         "normalized_field": "gt",
         "source_row_id": "VROQ3",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REVIEW",
-      "conflict_type": "TRUSTED_CURRENT_VALUE",
-      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
-      "reason": "source_csv candidate conflicts with an existing or trusted field."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "vessel_type",
-      "target_vessel_key": "CALL-5LCP6",
-      "target_vessel": {
-        "vessel_key": "CALL-5LCP6",
-        "vessel_name": "ANDES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LCP6",
-        "current_port": "대산",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "대산",
-          "raw_aliases": [
-            "대산"
-          ]
-        },
-        "port_code": "621",
-        "port_name": "대산",
-        "port_display_name": "대산",
-        "display_name": "대산"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "Tanker",
-      "candidate_value": "TANKER",
-      "raw_value": "TANKER",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "vessel_type",
-        "source_row_id": "5LCP6",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REVIEW",
-      "conflict_type": "OPERATOR_CONFLICT",
-      "recommended_action": "검증된 현재 값은 자동 덮어쓰지 말고 수동 확인",
-      "reason": "source_csv candidate conflicts with an existing or trusted field."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "gt",
-      "target_vessel_key": "CALL-5LCP6",
-      "target_vessel": {
-        "vessel_key": "CALL-5LCP6",
-        "vessel_name": "ANDES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LCP6",
-        "current_port": "대산",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "621",
-          "port_name": "대산",
-          "display_name": "대산",
-          "raw_port": "대산",
-          "raw_aliases": [
-            "대산"
-          ]
-        },
-        "port_code": "621",
-        "port_name": "대산",
-        "port_display_name": "대산",
-        "display_name": "대산"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": 39085,
-      "candidate_value": 39085,
-      "raw_value": 39085,
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "gt",
-        "source_row_id": "5LCP6",
         "matched_on": [
           "call_sign"
         ]
@@ -5552,51 +5552,6 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
-      "target_vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-      "target_vessel": {
-        "vessel_key": "HYBRID-V7B2724-GENCOSTARSANDSTRIPES-107879",
-        "vessel_name": "GENCO STARS AND STRIPES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "V7B2724",
-        "current_port": "여수",
-        "operator_display": "(유)조영해운",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "V7B2724",
-      "candidate_value": "V7B2724",
-      "raw_value": "V7B2724",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "V7B2724",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
       "target_vessel_key": "CALL-3FES7",
       "target_vessel": {
         "vessel_key": "CALL-3FES7",
@@ -5857,6 +5812,51 @@
         "raw_source": "source_csv",
         "normalized_field": "call_sign",
         "source_row_id": "3E3945",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
+      "target_vessel_key": "CALL-V7B2724",
+      "target_vessel": {
+        "vessel_key": "CALL-V7B2724",
+        "vessel_name": "GENCO STARS AND STRIPES",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "V7B2724",
+        "current_port": "여수",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "port_display_name": "여수",
+        "display_name": "여수"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "V7B2724",
+      "candidate_value": "V7B2724",
+      "raw_value": "V7B2724",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "V7B2724",
         "matched_on": [
           "call_sign"
         ]
@@ -6677,6 +6677,51 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
+      "target_vessel_key": "CALL-3E8356",
+      "target_vessel": {
+        "vessel_key": "CALL-3E8356",
+        "vessel_name": "ROMANCE",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "3E8356",
+        "current_port": "울산",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "820",
+          "port_name": "울산",
+          "display_name": "울산",
+          "raw_port": "울산",
+          "raw_aliases": [
+            "울산"
+          ]
+        },
+        "port_code": "820",
+        "port_name": "울산",
+        "port_display_name": "울산",
+        "display_name": "울산"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "3E8356",
+      "candidate_value": "3E8356",
+      "raw_value": "3E8356",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "3E8356",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
       "target_vessel_key": "CALL-SVCM6",
       "target_vessel": {
         "vessel_key": "CALL-SVCM6",
@@ -7082,96 +7127,6 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
-      "target_vessel_key": "CALL-DSMB",
-      "target_vessel": {
-        "vessel_key": "CALL-DSMB",
-        "vessel_name": "우혁",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "DSMB",
-        "current_port": "울산",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "820",
-          "port_name": "울산",
-          "display_name": "울산",
-          "raw_port": "울산",
-          "raw_aliases": [
-            "울산"
-          ]
-        },
-        "port_code": "820",
-        "port_name": "울산",
-        "port_display_name": "울산",
-        "display_name": "울산"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "DSMB",
-      "candidate_value": "DSMB",
-      "raw_value": "DSMB",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "DSMB",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
-      "target_vessel_key": "CALL-3E8356",
-      "target_vessel": {
-        "vessel_key": "CALL-3E8356",
-        "vessel_name": "ROMANCE",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "3E8356",
-        "current_port": "울산",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "820",
-          "port_name": "울산",
-          "display_name": "울산",
-          "raw_port": "울산",
-          "raw_aliases": [
-            "울산"
-          ]
-        },
-        "port_code": "820",
-        "port_name": "울산",
-        "port_display_name": "울산",
-        "display_name": "울산"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "3E8356",
-      "candidate_value": "3E8356",
-      "raw_value": "3E8356",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "3E8356",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
       "target_vessel_key": "CALL-D8ML",
       "target_vessel": {
         "vessel_key": "CALL-D8ML",
@@ -7487,51 +7442,6 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
-      "target_vessel_key": "CALL-5LLW3",
-      "target_vessel": {
-        "vessel_key": "CALL-5LLW3",
-        "vessel_name": "MSC VALENTINA",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LLW3",
-        "current_port": "부산",
-        "operator_display": "MSC",
-        "normalized_port": {
-          "port_code": "020",
-          "port_name": "부산",
-          "display_name": "부산",
-          "raw_port": "부산",
-          "raw_aliases": [
-            "부산"
-          ]
-        },
-        "port_code": "020",
-        "port_name": "부산",
-        "port_display_name": "부산",
-        "display_name": "부산"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "5LLW3",
-      "candidate_value": "5LLW3",
-      "raw_value": "5LLW3",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "5LLW3",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
       "target_vessel_key": "CALL-5LTT5",
       "target_vessel": {
         "vessel_key": "CALL-5LTT5",
@@ -7747,6 +7657,51 @@
         "raw_source": "source_csv",
         "normalized_field": "call_sign",
         "source_row_id": "V7QJ9",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
+      "target_vessel_key": "CALL-DSMB",
+      "target_vessel": {
+        "vessel_key": "CALL-DSMB",
+        "vessel_name": "우혁",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "DSMB",
+        "current_port": "울산",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "820",
+          "port_name": "울산",
+          "display_name": "울산",
+          "raw_port": "울산",
+          "raw_aliases": [
+            "울산"
+          ]
+        },
+        "port_code": "820",
+        "port_name": "울산",
+        "port_display_name": "울산",
+        "display_name": "울산"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "DSMB",
+      "candidate_value": "DSMB",
+      "raw_value": "DSMB",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "DSMB",
         "matched_on": [
           "call_sign"
         ]
@@ -8252,6 +8207,51 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
+      "target_vessel_key": "CALL-C6CN3",
+      "target_vessel": {
+        "vessel_key": "CALL-C6CN3",
+        "vessel_name": "DANAE R",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "C6CN3",
+        "current_port": "인천",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "030",
+          "port_name": "인천",
+          "display_name": "인천",
+          "raw_port": "인천",
+          "raw_aliases": [
+            "인천"
+          ]
+        },
+        "port_code": "030",
+        "port_name": "인천",
+        "port_display_name": "인천",
+        "display_name": "인천"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "C6CN3",
+      "candidate_value": "C6CN3",
+      "raw_value": "C6CN3",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "C6CN3",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
       "target_vessel_key": "CALL-V7HQ3",
       "target_vessel": {
         "vessel_key": "CALL-V7HQ3",
@@ -8602,6 +8602,96 @@
         "raw_source": "source_csv",
         "normalized_field": "call_sign",
         "source_row_id": "206808",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
+      "target_vessel_key": "CALL-230010",
+      "target_vessel": {
+        "vessel_key": "CALL-230010",
+        "vessel_name": "스카이마스",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "230010",
+        "current_port": "포항",
+        "operator_display": "-",
+        "normalized_port": {
+          "port_code": "810",
+          "port_name": "포항",
+          "display_name": "포항",
+          "raw_port": "포항",
+          "raw_aliases": [
+            "포항"
+          ]
+        },
+        "port_code": "810",
+        "port_name": "포항",
+        "port_display_name": "포항",
+        "display_name": "포항"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "230010",
+      "candidate_value": "230010",
+      "raw_value": "230010",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "230010",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
+      "target_vessel_key": "CALL-5LLW3",
+      "target_vessel": {
+        "vessel_key": "CALL-5LLW3",
+        "vessel_name": "MSC VALENTINA",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "5LLW3",
+        "current_port": "부산",
+        "operator_display": "MSC",
+        "normalized_port": {
+          "port_code": "020",
+          "port_name": "부산",
+          "display_name": "부산",
+          "raw_port": "부산",
+          "raw_aliases": [
+            "부산"
+          ]
+        },
+        "port_code": "020",
+        "port_name": "부산",
+        "port_display_name": "부산",
+        "display_name": "부산"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "5LLW3",
+      "candidate_value": "5LLW3",
+      "raw_value": "5LLW3",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "5LLW3",
         "matched_on": [
           "call_sign"
         ]
@@ -9017,6 +9107,51 @@
     {
       "source_key": "source_csv",
       "field_name": "call_sign",
+      "target_vessel_key": "CALL-9VVD3",
+      "target_vessel": {
+        "vessel_key": "CALL-9VVD3",
+        "vessel_name": "BW TOKYO",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "9VVD3",
+        "current_port": "여수",
+        "operator_display": "남해해상(주)",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "port_display_name": "여수",
+        "display_name": "여수"
+      },
+      "match_type": "CALL_SIGN",
+      "match_confidence": 90,
+      "confidence": 90,
+      "current_value": "9VVD3",
+      "candidate_value": "9VVD3",
+      "raw_value": "9VVD3",
+      "source_timestamp": "2026-06-13T01:28:04.948Z",
+      "lineage": {
+        "source": "source_csv",
+        "raw_source": "source_csv",
+        "normalized_field": "call_sign",
+        "source_row_id": "9VVD3",
+        "matched_on": [
+          "call_sign"
+        ]
+      },
+      "action": "REJECT",
+      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
+    },
+    {
+      "source_key": "source_csv",
+      "field_name": "call_sign",
       "target_vessel_key": "CALL-2ICI4",
       "target_vessel": {
         "vessel_key": "CALL-2ICI4",
@@ -9052,51 +9187,6 @@
         "raw_source": "source_csv",
         "normalized_field": "call_sign",
         "source_row_id": "2ICI4",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
-      "target_vessel_key": "CALL-9HTD9",
-      "target_vessel": {
-        "vessel_key": "CALL-9HTD9",
-        "vessel_name": "MILAGRO",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "9HTD9",
-        "current_port": "여수",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "9HTD9",
-      "candidate_value": "9HTD9",
-      "raw_value": "9HTD9",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "9HTD9",
         "matched_on": [
           "call_sign"
         ]
@@ -9148,96 +9238,6 @@
       },
       "action": "REJECT",
       "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
-      "target_vessel_key": "CALL-5LQW3",
-      "target_vessel": {
-        "vessel_key": "CALL-5LQW3",
-        "vessel_name": "SAPPHIRE ETERNITY",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "5LQW3",
-        "current_port": "여수",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "5LQW3",
-      "candidate_value": "5LQW3",
-      "raw_value": "5LQW3",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "5LQW3",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
-    },
-    {
-      "source_key": "source_csv",
-      "field_name": "call_sign",
-      "target_vessel_key": "CALL-3FRS4",
-      "target_vessel": {
-        "vessel_key": "CALL-3FRS4",
-        "vessel_name": "FEDERAL ILLINOIS",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "3FRS4",
-        "current_port": "여수",
-        "operator_display": "-",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "port_display_name": "여수",
-        "display_name": "여수"
-      },
-      "match_type": "CALL_SIGN",
-      "match_confidence": 90,
-      "confidence": 90,
-      "current_value": "3FRS4",
-      "candidate_value": "3FRS4",
-      "raw_value": "3FRS4",
-      "source_timestamp": "2026-06-13T01:28:04.948Z",
-      "lineage": {
-        "source": "source_csv",
-        "raw_source": "source_csv",
-        "normalized_field": "call_sign",
-        "source_row_id": "3FRS4",
-        "matched_on": [
-          "call_sign"
-        ]
-      },
-      "action": "REJECT",
-      "reason": "source_csv match confidence or target field state is not safe for automatic apply."
     }
   ],
   "data_mode": "static_snapshot",
@@ -9246,7 +9246,7 @@
   "source_layer": "auxiliary",
   "load_strategy": "lazy",
   "startup_safe": false,
-  "status_run_id": "run_20260613021547468_218a5829",
+  "status_run_id": "run_20260613033359476_4972d654",
   "stale_diagnostic": false,
   "stale_reason": "",
   "placeholder": false

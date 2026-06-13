@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T23:18:38.032Z",
+  "generated_at": "2026-06-13T03:39:33.505Z",
   "status": "WARNING",
   "tier_pointer_status": {
     "status_summary_run_id": "run_20260612215215093_9a4e8bcc",
     "update_tiers_core_run_id": "run_20260612215215093_9a4e8bcc",
     "production_core_run_id": "run_20260612215215093_9a4e8bcc",
-    "local_preview_run_id": "run_20260612231727371_584cf3d7",
+    "local_preview_run_id": "run_20260613033359476_4972d654",
     "core_pointer_source": "production_status_summary_preserved",
     "core_pointer_matches_status_summary": true,
     "generated_by_mismatch": false,
@@ -14,10 +14,10 @@
   },
   "source_quality_counts_by_source": {
     "source_csv": {
-      "rows_collected": 0,
-      "rows_normalized": 0,
-      "rows_matched_to_vessels": 0,
-      "blocker_reason": "API response too large: 72478261 bytes",
+      "rows_collected": 1015,
+      "rows_normalized": 1015,
+      "rows_matched_to_vessels": 1015,
+      "blocker_reason": "",
       "match_blockers": []
     },
     "pilot_sources": {
@@ -65,9 +65,9 @@
       "match_blockers": []
     },
     "port_operation": {
-      "rows_collected": 7937,
-      "rows_normalized": 7937,
-      "rows_matched_to_vessels": 7937,
+      "rows_collected": 6885,
+      "rows_normalized": 6885,
+      "rows_matched_to_vessels": 9,
       "blocker_reason": "",
       "match_blockers": []
     }
@@ -98,7 +98,7 @@
       "vessel_display_records_updated": 0,
       "ui_visible_records": 0,
       "count_inconsistency": false,
-      "sample_basis": "unmatched_records"
+      "sample_basis": "candidate_visible_fields"
     },
     "vessel_spec": {
       "matched_vessels": 0,
@@ -128,34 +128,223 @@
       "sample_basis": "matched_records"
     },
     "port_operation": {
-      "matched_vessels": 0,
-      "rows_matched_to_vessels": 0,
+      "matched_vessels": 1016,
+      "rows_matched_to_vessels": 1016,
       "enrichment_patches_created": 0,
       "vessel_display_records_updated": 0,
       "ui_visible_records": 0,
       "count_inconsistency": false,
-      "sample_basis": "unmatched_records"
+      "sample_basis": "matched_records"
     }
   },
   "output_scan_counts": {
     "files_checked": 26,
-    "records_scanned": 796,
-    "pilotage_signal_display_count": 0,
-    "pilotage_placeholders": 796,
+    "records_scanned": 785,
+    "pilotage_signal_display_count": 9,
+    "pilotage_placeholders": 655,
     "aux_confirmed_berth_count": 0,
-    "baseline_berth_count": 783,
-    "berth_placeholders": 0,
+    "baseline_berth_count": 651,
+    "berth_placeholders": 8,
     "samples": {
-      "pilotage_confirmed": [],
+      "pilotage_confirmed": [
+        {
+          "endpoint": "dashboard/api/sales/actions.json",
+          "vessel_name": "CMA CGM MONACO",
+          "signal": {
+            "has_pilotage": true,
+            "status": "TIME_ONLY",
+            "pilotage_status": "TIME_ONLY",
+            "pilotage_time": null,
+            "pilotage_time_text": "11:00",
+            "direction": "UNKNOWN",
+            "pilotage_direction": "UNKNOWN",
+            "pilot_station": null,
+            "berth_name": "동부두 4번선석",
+            "port": "평택·당진",
+            "pilotage_port": "평택·당진",
+            "source": "pilot_sources",
+            "pilotage_source": "pilot_sources",
+            "confidence": 90,
+            "pilotage_confidence": 90,
+            "match_type": "vessel_id",
+            "placeholder": false,
+            "arrival_window": null,
+            "reason_ko": "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다.",
+            "reason": "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다.",
+            "normalized_port": {
+              "port_code": "031",
+              "port_name": "평택·당진",
+              "display_name": "평택·당진",
+              "raw_port": "평택·당진",
+              "raw_aliases": [
+                "평택·당진"
+              ]
+            },
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "port_display_name": "평택·당진",
+            "display_name": "평택·당진"
+          }
+        },
+        {
+          "endpoint": "dashboard/api/vessels/page-3.json",
+          "vessel_name": "ELEKTRA",
+          "signal": {
+            "has_pilotage": true,
+            "status": "TIME_ONLY",
+            "pilotage_status": "TIME_ONLY",
+            "pilotage_time": null,
+            "pilotage_time_text": "04:00",
+            "direction": "UNKNOWN",
+            "pilotage_direction": "UNKNOWN",
+            "pilot_station": null,
+            "berth_name": "동부두 2번선석",
+            "port": "평택·당진",
+            "pilotage_port": "평택·당진",
+            "source": "pilot_sources",
+            "pilotage_source": "pilot_sources",
+            "confidence": 90,
+            "pilotage_confidence": 90,
+            "match_type": "vessel_id",
+            "placeholder": false,
+            "arrival_window": null,
+            "reason_ko": "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다.",
+            "reason": "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다.",
+            "normalized_port": {
+              "port_code": "031",
+              "port_name": "평택·당진",
+              "display_name": "평택·당진",
+              "raw_port": "평택·당진",
+              "raw_aliases": [
+                "평택·당진"
+              ]
+            },
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "port_display_name": "평택·당진",
+            "display_name": "평택·당진"
+          }
+        },
+        {
+          "endpoint": "dashboard/api/vessels/page-6.json",
+          "vessel_name": "TOSCANA",
+          "signal": {
+            "has_pilotage": true,
+            "status": "TIME_ONLY",
+            "pilotage_status": "TIME_ONLY",
+            "pilotage_time": null,
+            "pilotage_time_text": "10:00",
+            "direction": "UNKNOWN",
+            "pilotage_direction": "UNKNOWN",
+            "pilot_station": null,
+            "berth_name": "동부두 3번선석",
+            "port": "평택·당진",
+            "pilotage_port": "평택·당진",
+            "source": "pilot_sources",
+            "pilotage_source": "pilot_sources",
+            "confidence": 90,
+            "pilotage_confidence": 90,
+            "match_type": "vessel_id",
+            "placeholder": false,
+            "arrival_window": null,
+            "reason_ko": "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다.",
+            "reason": "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다.",
+            "normalized_port": {
+              "port_code": "031",
+              "port_name": "평택·당진",
+              "display_name": "평택·당진",
+              "raw_port": "평택·당진",
+              "raw_aliases": [
+                "평택·당진"
+              ]
+            },
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "port_display_name": "평택·당진",
+            "display_name": "평택·당진"
+          }
+        },
+        {
+          "endpoint": "dashboard/api/vessels/page-6.json",
+          "vessel_name": "AGIA SOFIA I",
+          "signal": {
+            "has_pilotage": true,
+            "status": "TIME_ONLY",
+            "pilotage_status": "TIME_ONLY",
+            "pilotage_time": null,
+            "pilotage_time_text": "10:30",
+            "direction": "UNKNOWN",
+            "pilotage_direction": "UNKNOWN",
+            "pilot_station": null,
+            "berth_name": "서부두 8번선석",
+            "port": "평택·당진",
+            "pilotage_port": "평택·당진",
+            "source": "pilot_sources",
+            "pilotage_source": "pilot_sources",
+            "confidence": 90,
+            "pilotage_confidence": 90,
+            "match_type": "vessel_id",
+            "placeholder": false,
+            "arrival_window": null,
+            "reason_ko": "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다.",
+            "reason": "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다.",
+            "normalized_port": {
+              "port_code": "031",
+              "port_name": "평택·당진",
+              "display_name": "평택·당진",
+              "raw_port": "평택·당진",
+              "raw_aliases": [
+                "평택·당진"
+              ]
+            },
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "port_display_name": "평택·당진",
+            "display_name": "평택·당진"
+          }
+        },
+        {
+          "endpoint": "dashboard/api/vessels/page-6.json",
+          "vessel_name": "MORNING PRIDE",
+          "signal": {
+            "has_pilotage": true,
+            "status": "TIME_ONLY",
+            "pilotage_status": "TIME_ONLY",
+            "pilotage_time": null,
+            "pilotage_time_text": "04:00",
+            "direction": "UNKNOWN",
+            "pilotage_direction": "UNKNOWN",
+            "pilot_station": null,
+            "berth_name": "자동차부두 02",
+            "port": "울산",
+            "pilotage_port": "울산",
+            "source": "pilot_sources",
+            "pilotage_source": "pilot_sources",
+            "confidence": 90,
+            "pilotage_confidence": 90,
+            "match_type": "vessel_id",
+            "placeholder": false,
+            "arrival_window": null,
+            "reason_ko": "도선 정보가 확인되어 입항/접안 또는 출항 타이밍 신호가 있습니다.",
+            "reason": "도선 정보가 확인되어 입항/접안 타이밍 신호가 강합니다.",
+            "normalized_port": {
+              "port_code": "820",
+              "port_name": "울산",
+              "display_name": "울산",
+              "raw_port": "울산",
+              "raw_aliases": [
+                "울산"
+              ]
+            },
+            "port_code": "820",
+            "port_name": "울산",
+            "port_display_name": "울산",
+            "display_name": "울산"
+          }
+        }
+      ],
       "aux_berth_confirmed": [],
       "baseline_berth": [
-        {
-          "endpoint": "dashboard/api/bootstrap.json",
-          "vessel_name": "MINERAL HOPE",
-          "berth": "송악부두 5번선석",
-          "terminal": null,
-          "signal": null
-        },
         {
           "endpoint": "dashboard/api/bootstrap.json",
           "vessel_name": "MINERAL HOPE",
@@ -179,39 +368,65 @@
         },
         {
           "endpoint": "dashboard/api/bootstrap.json",
-          "vessel_name": "VITUS BERING",
+          "vessel_name": "BERGE DOI INTHANON",
+          "berth": "정박지-E3",
+          "terminal": null,
+          "signal": null
+        },
+        {
+          "endpoint": "dashboard/api/bootstrap.json",
+          "vessel_name": "CHANG HANG HU PO",
           "berth": "D-1정박지",
           "terminal": null,
           "signal": null
         }
       ]
     },
-    "berth_info_detected_count": 783
+    "berth_info_detected_count": 651
   },
   "bootstrap_counts": {
-    "pilotage_detected_count": 0,
+    "pilotage_detected_count": 9,
     "aux_confirmed_berth_count": 0,
-    "baseline_berth_count": 0,
-    "berth_info_detected_count": 990
+    "baseline_berth_count": 982,
+    "berth_info_detected_count": 982
   },
+  "match_rate_by_source": {},
+  "apply_rate_by_source": {},
+  "review_rate_by_source": {},
+  "top_blockers": {},
+  "matching_booster_available": true,
+  "identity_graph_stats": {
+    "nodes": 1015,
+    "current_vessels": 1015,
+    "source_csv_reference_rows": 1015,
+    "indexes_built": [
+      "by_call_sign",
+      "by_normalized_vessel_name",
+      "by_name_prefix",
+      "by_name_tokens",
+      "by_port",
+      "by_recent_port",
+      "by_gt_bucket",
+      "by_vessel_type",
+      "by_imo",
+      "by_mmsi"
+    ]
+  },
+  "patch_hints_applied": 0,
+  "patches_applied": 0,
   "berth_signal_semantics_breakdown": {
     "aux_confirmed": 0,
-    "baseline_core_field": 783,
-    "placeholders": 0
+    "baseline_core_field": 651,
+    "placeholders": 8
   },
   "pilotage_signal_semantics_breakdown": {
-    "matched_confirmed": 0,
-    "placeholders": 796,
-    "unmatched": 72
+    "matched_confirmed": 9,
+    "placeholders": 655,
+    "unmatched": 63
   },
   "count_inconsistencies_found": [],
   "count_inconsistencies_fixed": true,
   "remaining_blockers": [
-    {
-      "source_key": "source_csv",
-      "blocker_reason": "API response too large: 72478261 bytes",
-      "match_blockers": []
-    },
     {
       "source_key": "pilot_sources",
       "blocker_reason": "missing_call_sign; missing_vessel_name; missing_port; time_only_without_date; no_current_vessel_same_port; confidence_below_threshold; vessel_key_mismatch; compact_mapper_dropped_signal",
@@ -239,8 +454,8 @@
   ],
   "critical_issues": [],
   "warnings": [
-    "bootstrap baseline_berth_count=0 differs from output scan=783",
-    "bootstrap berth_info_detected_count=990 differs from output scan=783",
+    "bootstrap baseline_berth_count=982 differs from output scan=651",
+    "bootstrap berth_info_detected_count=982 differs from output scan=651",
     "mixed tiers are documented"
   ],
   "recommended_fix": "none"

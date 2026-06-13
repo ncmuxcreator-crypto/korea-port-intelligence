@@ -6,17 +6,17 @@
   "serving_mode": "static_json",
   "GITHUB_RUN_ID": null,
   "GITHUB_WORKFLOW": null,
-  "run_id": "run_20260612202729227_62b5c664",
-  "active_run_id": "run_20260612202729227_62b5c664",
+  "run_id": "run_20260613033359476_4972d654",
+  "active_run_id": "run_20260613033359476_4972d654",
   "latest_successful_run_id": null,
   "latest_successful_summary_run_id": null,
-  "source_run_id": "run_20260612202729227_62b5c664",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "source_run_id": "run_20260613033359476_4972d654",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "static_snapshot",
   "record_count": 11,
   "item_count": 11,
   "summary": {
-    "active_sources": 6,
+    "active_sources": 7,
     "blocked_sources": 9,
     "high_trust_sources": 8,
     "sources_with_match_keys": 11,
@@ -40,8 +40,7 @@
         "atd",
         "berth",
         "vessel_type",
-        "gt",
-        "port"
+        "gt"
       ],
       "enrichable_fields": [
         "vessel_name",
@@ -77,20 +76,14 @@
         "attempted": true,
         "collector_enabled": true,
         "collector_attempted": true,
-        "rows_collected": 7932,
-        "rows_normalized": 7932,
-        "rows_matched_to_vessels": 7932,
+        "rows_collected": 6885,
+        "rows_normalized": 6885,
+        "rows_matched_to_vessels": 9,
         "fields_contributed": [
-          "vessel_name",
-          "port",
-          "eta",
-          "ata",
-          "etd",
-          "atd",
-          "berth"
+          "call_sign"
         ],
-        "freshness_minutes": 263,
-        "utilization_score": 100,
+        "freshness_minutes": 689,
+        "utilization_score": 82,
         "quality_label": "HIGH",
         "source_layer": "core",
         "core_blocking": true,
@@ -149,20 +142,24 @@
         "attempted": true,
         "collector_enabled": false,
         "collector_attempted": false,
-        "rows_collected": 0,
-        "rows_normalized": 0,
-        "rows_matched_to_vessels": 0,
-        "fields_contributed": [],
-        "freshness_minutes": 419,
-        "utilization_score": 28,
-        "quality_label": "FAILED",
+        "rows_collected": 1015,
+        "rows_normalized": 1015,
+        "rows_matched_to_vessels": 1015,
+        "fields_contributed": [
+          "call_sign",
+          "vessel_type",
+          "gt"
+        ],
+        "freshness_minutes": 0,
+        "utilization_score": 91,
+        "quality_label": "HIGH",
         "source_layer": "auxiliary",
         "core_blocking": false,
         "missing_env": [],
         "present_env_count": 2,
-        "recommended_fix": "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
+        "recommended_fix": "Keep source_csv as a lightweight verified vessel reference cache."
       },
-      "blocker_reason": "API response too large: 72478261 bytes"
+      "blocker_reason": "cache_only_mode"
     },
     {
       "source_key": "pilot_sources",
@@ -219,7 +216,7 @@
         "present_env_count": 1,
         "recommended_fix": "Improve exact call sign/name plus normalized port matching before applying weak matches."
       },
-      "blocker_reason": "no_vessel_match_or_signal"
+      "blocker_reason": "missing_call_sign; missing_vessel_name; missing_port; time_only_without_date; no_current_vessel_same_port; confidence_below_threshold; vessel_key_mismatch; compact_mapper_dropped_signal"
     },
     {
       "source_key": "berth_sources",
@@ -660,7 +657,7 @@
       "blocker_reason": "not_configured_or_not_collected"
     }
   ],
-  "status_run_id": "run_20260612202729227_62b5c664",
+  "status_run_id": "run_20260613033359476_4972d654",
   "stale_diagnostic": false,
   "stale_reason": "",
   "placeholder": false

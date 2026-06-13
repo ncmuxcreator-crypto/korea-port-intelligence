@@ -771,36 +771,437 @@ function buildVesselSpecParserDiagnostic({ sourceRows = [], sourceCollectionStat
   };
 }
 
-function buildAisTargetEnrichment({ sourceRows = [], targetRecords = [], graphPayload = {}, generatedAt = new Date().toISOString(), previous = {} }) {
-  const maxTargets = number(process.env.AIS_TARGET_BATCH_SIZE || process.env.MAX_AIS_TARGET_BATCH_SIZE, 50) || 50;
-  const targets = [];
-  const seen = new Set();
-  for (const row of targetRecords || []) {
-    const key = vesselKey(row);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    targets.push(row);
-    if (targets.length >= maxTargets) break;
+function boundedBatchSize() {
+  const configured = number(process.env.AIS_TARGET_BATCH_SIZE || process.env.MAX_AIS_TARGET_BATCH_SIZE, 50) || 50;
+  return Math.max(1, Math.min(250, Math.round(configured)));
+}
+
+function aisMaxRuntimeMs() {
+  return Math.max(1000, number(process.env.AIS_MAX_RUNTIME_MS, 120000) || 120000);
+}
+
+function aisCursorFile() {
+  return String(process.env.AIS_CURSOR_FILE || "dashboard/api/aux/latest/ais-cursor.json").replace(/\\/g, "/");
+}
+
+function recordIdentityFields(row = {}) {
+  const d = display(row);
+  return {
+    vessel_key: vesselKey(d),
+    vessel_name: firstNonEmpty(d.vessel_name, d.display_name, d.name),
+    normalized_vessel_name: normalizeVesselName(firstNonEmpty(d.normalized_vessel_name, d.vessel_name, d.display_name, d.name)),
+    call_sign: normalizeCallSign(firstNonEmpty(d.call_sign, d.callsign, d.clsgn)),
+    imo: String(firstNonEmpty(d.imo, d.imo_no, d.imoNo, d.IMO_NO)).replace(/^IMO/i, "").trim(),
+    mmsi: String(firstNonEmpty(d.mmsi, d.MMSI, d.mmsi_no, d.MMSI_NO)).trim(),
+    current_port: firstNonEmpty(d.current_port, d.port, d.port_name, d.port_display_name),
+    normalized_port: normalizedPortValue(d),
+    vessel_type: normalizeVesselType(firstNonEmpty(d.vessel_type, d.ship_type, d.vsslKndNm)),
+    flag: normalizeFlag(firstNonEmpty(d.flag, d.nationality)),
+    gt: gtValue(d)
+  };
+}
+
+function cacheItemsByVessel(payload = {}) {
+  const map = new Map();
+  for (const item of Array.isArray(payload.items) ? payload.items : []) {
+    const key = String(item.vessel_key || "").trim().toUpperCase();
+    if (key && !map.has(key)) map.set(key, item);
   }
+  return map;
+}
+
+function pushTarget(queue, seen, row, priorityGroup, reason, previousCacheByKey) {
+  const identity = recordIdentityFields(row);
+  if (!identity.vessel_key || seen.has(identity.vessel_key)) return;
+  seen.add(identity.vessel_key);
+  const previous = previousCacheByKey.get(identity.vessel_key) || {};
+  queue.push({
+    vessel_key: identity.vessel_key,
+    vessel_name: identity.vessel_name,
+    normalized_vessel_name: identity.normalized_vessel_name,
+    call_sign: identity.call_sign,
+    imo: identity.imo,
+    mmsi: identity.mmsi,
+    current_port: identity.current_port,
+    normalized_current_port: identity.normalized_port,
+    priority_group: priorityGroup,
+    reason,
+    last_ais_checked_at: previous.last_ais_checked_at || null,
+    ais_check_status: previous.ais_check_status || "PENDING"
+  });
+}
+
+function buildAisTargetQueue({ targetGroups = {}, universeRecords = [], previousAisCache = {}, generatedAt = new Date().toISOString() } = {}) {
+  const previousCacheByKey = cacheItemsByVessel(previousAisCache);
+  const queue = [];
+  const seen = new Set();
+  const addMany = (rows = [], priorityGroup, reason, limit = Infinity) => {
+    let count = 0;
+    for (const row of rows || []) {
+      if (count >= limit) break;
+      const before = queue.length;
+      pushTarget(queue, seen, row, priorityGroup, reason, previousCacheByKey);
+      if (queue.length > before) count += 1;
+    }
+  };
+  addMany(targetGroups.sales_candidates_current || [], "P1", "sales_candidates_current");
+  addMany(targetGroups.sales_actions || [], "P1", "sales_actions");
+  addMany(targetGroups.contact_now || [], "P1", "contact_now");
+  addMany(targetGroups.top_opportunity_vessels || [], "P2", "top_opportunity_vessels");
+  addMany(targetGroups.targets_current || [], "P2", "targets_current");
+  addMany(targetGroups.detail_eligible_top_100 || [], "P3", "detail_eligible_top_100", 100);
+  addMany(universeRecords || [], "P4", "remaining_vessel_universe");
+  return {
+    schema_version: PUBLIC_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    source_key: "mof_ais_target_queue",
+    source_layer: "auxiliary",
+    load_strategy: "lazy",
+    startup_safe: false,
+    priority_order: ["P1", "P2", "P3", "P4"],
+    record_count: queue.length,
+    item_count: queue.length,
+    items: queue
+  };
+}
+
+function rotatedBatch(items = [], cursor = 0, batchSize = 50) {
+  if (!items.length) return [];
+  const start = Math.max(0, number(cursor, 0)) % items.length;
+  const out = [];
+  for (let offset = 0; offset < Math.min(batchSize, items.length); offset += 1) {
+    out.push(items[(start + offset) % items.length]);
+  }
+  return out;
+}
+
+function aisRowIdentity(row = {}) {
+  const identity = recordIdentityFields(row);
+  return {
+    ...identity,
+    lat: normalizeNumeric(firstNonEmpty(row.lat, row.latitude, row.y)),
+    lon: normalizeNumeric(firstNonEmpty(row.lon, row.lng, row.longitude, row.x)),
+    speed: normalizeNumeric(firstNonEmpty(row.speed, row.sog, row.knots)),
+    course: normalizeNumeric(firstNonEmpty(row.course, row.cog, row.heading)),
+    nav_status: firstNonEmpty(row.nav_status, row.navigation_status, row.status),
+    last_seen_at: normalizeDateTime(firstNonEmpty(row.last_seen_at, row.received_at, row.base_datetime, row.timestamp, row.updated_at)).timestamp
+  };
+}
+
+function scoreAisRowForTarget(target = {}, row = {}, graphPayload = {}) {
+  const rowIdentity = aisRowIdentity(row);
+  const evidence = [];
+  let score = 0;
+  let matchType = "NO_MATCH";
+  if (target.mmsi && rowIdentity.mmsi && target.mmsi === rowIdentity.mmsi) {
+    score = 100;
+    matchType = "MMSI";
+    evidence.push("mmsi_exact");
+  } else if (target.imo && rowIdentity.imo && target.imo === rowIdentity.imo) {
+    score = 98;
+    matchType = "IMO";
+    evidence.push("imo_exact");
+  } else if (target.call_sign && rowIdentity.call_sign && target.call_sign === rowIdentity.call_sign) {
+    const nameScore = diceSimilarity(target.normalized_vessel_name, rowIdentity.normalized_vessel_name);
+    score = nameScore >= 0.92 ? 94 : 78;
+    matchType = nameScore >= 0.92 ? "CALL_SIGN" : "CALL_SIGN_REVIEW";
+    evidence.push("call_sign_exact");
+    if (nameScore >= 0.92) evidence.push("vessel_name_similarity>=0.92");
+  } else if (target.normalized_vessel_name && rowIdentity.normalized_vessel_name) {
+    const nameScore = diceSimilarity(target.normalized_vessel_name, rowIdentity.normalized_vessel_name);
+    if (nameScore >= 0.92 && target.normalized_current_port && target.normalized_current_port === rowIdentity.normalized_port) {
+      score = 76;
+      matchType = "NAME_PORT_REVIEW";
+      evidence.push("vessel_name_similarity>=0.92", "same_normalized_port");
+    } else if (nameScore >= 0.92) {
+      score = 62;
+      matchType = "NAME_REVIEW";
+      evidence.push("vessel_name_similarity>=0.92");
+    }
+  }
+  if (score < 60) {
+    const graphMatch = bestMatchForRow(row, graphPayload, "pilot");
+    if (graphMatch.candidate?.vessel_key === target.vessel_key && graphMatch.score >= 60) {
+      score = Math.max(score, graphMatch.score);
+      matchType = graphMatch.evidence.includes("mmsi_exact") ? "MMSI" : graphMatch.evidence.includes("imo_exact") ? "IMO" : "GRAPH_REVIEW";
+      evidence.push(...graphMatch.evidence.map(item => `graph_${item}`));
+    }
+  }
+  const action = score >= 90 ? "APPLY" : score >= 60 ? "REVIEW" : "REJECT";
+  return {
+    score,
+    confidence: score,
+    match_type: matchType,
+    action,
+    evidence: unique(evidence),
+    row_identity: rowIdentity
+  };
+}
+
+function bestAisRowForTarget(target = {}, rows = [], graphPayload = {}) {
+  return rows
+    .map((row, index) => ({ row, index, match: scoreAisRowForTarget(target, row, graphPayload) }))
+    .sort((a, b) => b.match.score - a.match.score)[0] || null;
+}
+
+function emptyTargetField(target = {}, field = "") {
+  return !hasValue(target[field]);
+}
+
+function aisIdentityFieldsForPatch(target = {}, rowIdentity = {}) {
+  const fields = {};
+  for (const field of ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt"]) {
+    if (emptyTargetField(target, field) && hasValue(rowIdentity[field])) fields[field] = rowIdentity[field];
+  }
+  return fields;
+}
+
+function aisIdentityPatchHint(target = {}, match = {}, generatedAt = new Date().toISOString()) {
+  const fields = aisIdentityFieldsForPatch(target, match.row_identity || {});
+  if (!Object.keys(fields).length) return null;
+  const exactMatch = ["MMSI", "IMO", "CALL_SIGN"].includes(match.match_type);
+  const applyPolicy = exactMatch && match.confidence >= 90 ? "APPLY" : match.confidence >= 60 ? "REVIEW" : "REJECT";
+  return {
+    vessel_key: target.vessel_key,
+    source_key: "mof_ais_info",
+    signal_type: "ais_identity_hint",
+    fields,
+    confidence: match.confidence,
+    match_type: match.match_type,
+    apply_policy: applyPolicy,
+    evidence: [
+      ...match.evidence,
+      "target_field_empty",
+      "manual_verified_conflicts_not_overwritten_by_core"
+    ],
+    source_generated_at: generatedAt
+  };
+}
+
+function aisRecencyLabel(lastSeenAt, generatedAt = new Date().toISOString()) {
+  const seen = normalizeDateTime(lastSeenAt).epoch_ms;
+  if (!seen) return "UNKNOWN";
+  const ageHours = (Date.parse(generatedAt) - seen) / 3600000;
+  if (!Number.isFinite(ageHours)) return "UNKNOWN";
+  if (ageHours <= 2) return "LIVE_RECENT";
+  if (ageHours <= 24) return "RECENT";
+  return "STALE";
+}
+
+function aisDynamicSignal(match = {}, generatedAt = new Date().toISOString()) {
+  const row = match.row_identity || {};
+  if (row.lat === null || row.lon === null) return null;
+  const recencyLabel = aisRecencyLabel(row.last_seen_at, generatedAt);
+  return {
+    has_ais_position: true,
+    mmsi: row.mmsi || null,
+    lat: row.lat,
+    lon: row.lon,
+    speed: row.speed,
+    course: row.course,
+    nav_status: row.nav_status || null,
+    last_seen_at: row.last_seen_at || null,
+    recency_label: recencyLabel,
+    live_position: recencyLabel === "LIVE_RECENT",
+    source: "mof_ais_dynamic",
+    confidence: match.confidence,
+    match_type: match.match_type
+  };
+}
+
+function aisDynamicPatchHint(target = {}, match = {}, generatedAt = new Date().toISOString()) {
+  const signal = aisDynamicSignal(match, generatedAt);
+  if (!signal) return null;
+  const applyPolicy = match.confidence >= 90 ? "APPLY" : match.confidence >= 60 ? "REVIEW" : "REJECT";
+  return {
+    vessel_key: target.vessel_key,
+    source_key: "mof_ais_dynamic",
+    signal_type: "ais_dynamic_signal",
+    fields: { ais_dynamic_signal: signal },
+    field_patch: signal,
+    confidence: match.confidence,
+    match_type: match.match_type,
+    apply_policy: applyPolicy,
+    evidence: match.evidence,
+    source_generated_at: generatedAt
+  };
+}
+
+function mergeAisCacheItems(previous = {}, updates = []) {
+  const byKey = cacheItemsByVessel(previous);
+  for (const update of updates) {
+    const key = String(update.vessel_key || "").trim().toUpperCase();
+    if (!key) continue;
+    byKey.set(key, {
+      ...(byKey.get(key) || {}),
+      ...update,
+      vessel_key: key
+    });
+  }
+  return [...byKey.values()].sort((a, b) => String(a.vessel_key).localeCompare(String(b.vessel_key)));
+}
+
+function aisCoverageLabel({ matchedCount = 0, queueSize = 0 }) {
+  if (queueSize > 0 && matchedCount >= Math.max(500, Math.round(queueSize * 0.6))) return "BROAD";
+  if (matchedCount > 100) return "BROAD_PARTIAL";
+  if (matchedCount > 10 && queueSize > 0) return "TARGETED_PARTIAL";
+  return "SMOKE_LEVEL";
+}
+
+function buildAisTargetEnrichment({
+  sourceRows = [],
+  targetGroups = {},
+  universeRecords = [],
+  graphPayload = {},
+  generatedAt = new Date().toISOString(),
+  previousTarget = {},
+  previousQueue = {},
+  previousCursor = {},
+  previousAisCache = {}
+} = {}) {
+  const startedAt = Date.now();
+  const batchSize = boundedBatchSize();
+  const runtimeLimitMs = aisMaxRuntimeMs();
+  const queuePayload = buildAisTargetQueue({ targetGroups, universeRecords, previousAisCache, generatedAt });
+  const queue = Array.isArray(queuePayload.items) ? queuePayload.items : [];
+  const cursorPosition = queue.length ? number(previousCursor.next_cursor ?? previousCursor.cursor_position, 0) % queue.length : 0;
+  const batch = rotatedBatch(queue, cursorPosition, batchSize);
   const aisInfoRows = sourceRows.filter(isAisInfoRow);
   const aisDynamicRows = sourceRows.filter(isAisDynamicRow);
-  const aisRows = [...aisInfoRows, ...aisDynamicRows];
-  const matches = aisRows
-    .map((row, index) => ({ row, match: bestMatchForRow(row, graphPayload, "pilot"), index }))
-    .filter(item => item.match.score >= 60);
-  const infoMatches = matches.filter(item => isAisInfoRow(item.row));
-  const dynamicMatches = matches.filter(item => isAisDynamicRow(item.row));
-  const positionHints = dynamicMatches.slice(0, 50).map(item => ({
-    vessel_key: item.match.candidate?.vessel_key || null,
-    lat: normalizeNumeric(firstNonEmpty(item.row.lat, item.row.latitude)),
-    lon: normalizeNumeric(firstNonEmpty(item.row.lon, item.row.lng, item.row.longitude)),
-    speed: normalizeNumeric(firstNonEmpty(item.row.speed, item.row.sog)),
-    course: normalizeNumeric(firstNonEmpty(item.row.course, item.row.cog)),
-    source_key: "mof_ais_dynamic"
-  })).filter(item => item.vessel_key && item.lat !== null && item.lon !== null);
-  const matchedCount = matches.length;
-  const coverageLabel = matchedCount > 100 ? "BROAD_PARTIAL" : targets.length > 10 ? "TARGETED_PARTIAL" : "SMOKE_LEVEL";
-  return {
+  const updates = [];
+  const hints = [];
+  const positionHints = [];
+  const checkedStatusByKey = new Map();
+  let infoMatches = 0;
+  let dynamicMatches = 0;
+  let identityHintsCreated = 0;
+  let dynamicSignalsCreated = 0;
+  let autoApplyCount = 0;
+  let reviewCount = 0;
+  let rejectedCount = 0;
+  let timedOut = false;
+
+  for (const target of batch) {
+    if (Date.now() - startedAt > runtimeLimitMs) {
+      timedOut = true;
+      break;
+    }
+    const cacheUpdate = {
+      ...target,
+      last_ais_checked_at: generatedAt,
+      ais_check_status: "CHECKED_NO_MATCH"
+    };
+    const info = bestAisRowForTarget(target, aisInfoRows, graphPayload);
+    if (info?.match?.score >= 60) {
+      infoMatches += 1;
+      cacheUpdate.ais_info_match = {
+        confidence: info.match.confidence,
+        match_type: info.match.match_type,
+        evidence: info.match.evidence
+      };
+      cacheUpdate.ais_identity = info.match.row_identity;
+      const hint = aisIdentityPatchHint(target, info.match, generatedAt);
+      if (hint) {
+        hints.push(hint);
+        identityHintsCreated += 1;
+        if (hint.apply_policy === "APPLY") autoApplyCount += 1;
+        else if (hint.apply_policy === "REVIEW") reviewCount += 1;
+        else rejectedCount += 1;
+      } else {
+        reviewCount += info.match.action === "REVIEW" ? 1 : 0;
+      }
+      cacheUpdate.ais_check_status = info.match.action === "APPLY" ? "INFO_MATCH_APPLY" : "INFO_MATCH_REVIEW";
+    }
+    const dynamic = bestAisRowForTarget(target, aisDynamicRows, graphPayload);
+    if (dynamic?.match?.score >= 60) {
+      dynamicMatches += 1;
+      const signal = aisDynamicSignal(dynamic.match, generatedAt);
+      cacheUpdate.ais_dynamic_match = {
+        confidence: dynamic.match.confidence,
+        match_type: dynamic.match.match_type,
+        evidence: dynamic.match.evidence
+      };
+      cacheUpdate.ais_dynamic_signal = signal;
+      if (signal) {
+        positionHints.push({
+          vessel_key: target.vessel_key,
+          lat: signal.lat,
+          lon: signal.lon,
+          speed: signal.speed,
+          course: signal.course,
+          last_seen_at: signal.last_seen_at,
+          recency_label: signal.recency_label,
+          source_key: "mof_ais_dynamic"
+        });
+      }
+      const hint = aisDynamicPatchHint(target, dynamic.match, generatedAt);
+      if (hint) {
+        hints.push(hint);
+        dynamicSignalsCreated += 1;
+        if (hint.apply_policy === "APPLY") autoApplyCount += 1;
+        else if (hint.apply_policy === "REVIEW") reviewCount += 1;
+        else rejectedCount += 1;
+      }
+      cacheUpdate.ais_check_status = dynamic.match.action === "APPLY" ? "DYNAMIC_MATCH_APPLY" : "DYNAMIC_MATCH_REVIEW";
+    }
+    if (!cacheUpdate.ais_info_match && !cacheUpdate.ais_dynamic_match) rejectedCount += 1;
+    updates.push(cacheUpdate);
+    checkedStatusByKey.set(target.vessel_key, cacheUpdate.ais_check_status);
+  }
+
+  const cacheItems = mergeAisCacheItems(previousAisCache, updates);
+  const matchedCacheItems = cacheItems.filter(item => item.ais_info_match || item.ais_dynamic_match);
+  const nextCursor = queue.length ? (cursorPosition + updates.length) % queue.length : 0;
+  const coverageLabel = aisCoverageLabel({ matchedCount: matchedCacheItems.length, queueSize: queue.length });
+  const updatedQueueItems = queue.map(item => ({
+    ...item,
+    ais_check_status: checkedStatusByKey.get(item.vessel_key) || item.ais_check_status,
+    last_ais_checked_at: checkedStatusByKey.has(item.vessel_key) ? generatedAt : item.last_ais_checked_at
+  }));
+  const aisTargetQueue = {
+    ...queuePayload,
+    items: updatedQueueItems
+  };
+  const aisCursor = {
+    schema_version: PUBLIC_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    source_key: "mof_ais_cursor",
+    cursor_file: aisCursorFile(),
+    cursor_position: cursorPosition,
+    next_cursor: nextCursor,
+    queue_size: queue.length,
+    batch_size: batchSize,
+    processed_count: updates.length,
+    runtime_limit_ms: runtimeLimitMs,
+    timed_out: timedOut,
+    stopped_reason: timedOut ? "runtime_budget_exhausted" : "batch_complete",
+    record_count: 1,
+    item_count: 0
+  };
+  const aisCache = {
+    schema_version: PUBLIC_SCHEMA_VERSION,
+    generated_at: generatedAt,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    source_key: "mof_ais_cache",
+    cache_reused: Boolean(previousAisCache?.generated_at),
+    batch_updates: updates.length,
+    matched_vessels: matchedCacheItems.length,
+    record_count: cacheItems.length,
+    item_count: cacheItems.length,
+    items: cacheItems
+  };
+  const aisPatchHints = patchHintsEnvelope({
+    generatedAt,
+    items: hints.filter(item => item && item.apply_policy !== "REJECT"),
+    graphPayload,
+    report: { run_id: previousTarget.aux_run_id || previousTarget.run_id || null }
+  });
+  const aisTargetEnrichment = {
     schema_version: PUBLIC_SCHEMA_VERSION,
     generated_at: generatedAt,
     owner_tier: "fast_aux",
@@ -809,17 +1210,44 @@ function buildAisTargetEnrichment({ sourceRows = [], targetRecords = [], graphPa
     source_layer: "auxiliary",
     load_strategy: "lazy",
     startup_safe: false,
-    target_vessels_checked: targets.length,
-    ais_info_matches: infoMatches.length,
-    ais_dynamic_matches: dynamicMatches.length,
-    imo_candidates: unique(matches.map(item => item.row.imo)).slice(0, 100),
-    mmsi_candidates: unique(matches.map(item => item.row.mmsi)).slice(0, 100),
-    position_hints: positionHints,
-    cache_reused: Boolean(previous?.generated_at && !aisRows.length),
-    next_cursor: targets.length >= maxTargets ? maxTargets : 0,
+    batch_size: batchSize,
+    target_queue_size: queue.length,
+    targets_checked: updates.length,
+    target_vessels_checked: updates.length,
+    ais_info_matches: infoMatches,
+    ais_dynamic_matches: dynamicMatches,
+    info_matches: infoMatches,
+    dynamic_matches: dynamicMatches,
+    identity_hints_created: identityHintsCreated,
+    dynamic_signals_created: dynamicSignalsCreated,
+    auto_apply_count: autoApplyCount,
+    review_count: reviewCount,
+    rejected_count: rejectedCount,
+    patches_appended: aisPatchHints.item_count || 0,
+    imo_candidates: unique(updates.map(item => item.ais_identity?.imo)).slice(0, 100),
+    mmsi_candidates: unique(updates.map(item => item.ais_identity?.mmsi || item.ais_dynamic_signal?.mmsi)).slice(0, 100),
+    position_hints: positionHints.slice(0, 100),
+    cache_reused: Boolean(previousAisCache?.generated_at),
+    previous_cache_items: Array.isArray(previousAisCache.items) ? previousAisCache.items.length : 0,
+    next_cursor: nextCursor,
+    cursor_file: aisCursorFile(),
+    runtime_limit_ms: runtimeLimitMs,
+    timed_out: timedOut,
+    timeout_warnings: timedOut ? ["AIS target batch stopped before full batch due to runtime budget."] : [],
+    rate_limit_warnings: [],
     coverage_label: coverageLabel,
+    coverage_note: coverageLabel === "SMOKE_LEVEL"
+      ? "AIS remains smoke-level until cumulative target matches exceed 10."
+      : "AIS coverage is target-batch based and not full-universe coverage.",
     record_count: 1,
     item_count: 0
+  };
+  return {
+    aisTargetQueue,
+    aisCursor,
+    aisCache,
+    aisTargetEnrichment,
+    aisPatchHints
   };
 }
 
@@ -845,9 +1273,14 @@ export function buildAuxEvidenceMatchingPayloads({
   sourceCollectionStatus = {},
   sourceCsvReferenceCache = {},
   targetRecords = [],
+  targetGroups = {},
+  universeRecords = [],
   generatedAt = new Date().toISOString(),
   report = {},
-  previousAisTarget = {}
+  previousAisTarget = {},
+  previousAisQueue = {},
+  previousAisCursor = {},
+  previousAisCache = {}
 } = {}) {
   const pilotRows = (sourceRows || []).filter(isPilotRow);
   const berthRows = (sourceRows || []).filter(isBerthRow);
@@ -871,6 +1304,18 @@ export function buildAuxEvidenceMatchingPayloads({
       top_blockers: topBlockers(berthItems)
     }
   });
+  const vesselSpecParserDiagnostic = buildVesselSpecParserDiagnostic({ sourceRows, sourceCollectionStatus, generatedAt });
+  const aisPayloads = buildAisTargetEnrichment({
+    sourceRows,
+    targetGroups: Object.keys(targetGroups || {}).length ? targetGroups : { sales_candidates_current: targetRecords },
+    universeRecords,
+    graphPayload,
+    generatedAt,
+    previousTarget: previousAisTarget,
+    previousQueue: previousAisQueue,
+    previousCursor: previousAisCursor,
+    previousAisCache
+  });
   const patchItems = [
     ...pilotItems.filter(item => item.action === "APPLY").map(item => {
       const row = pilotRows.find((candidate, index) => sourceRowId(candidate, index) === item.source_row_id) || {};
@@ -879,31 +1324,54 @@ export function buildAuxEvidenceMatchingPayloads({
     ...berthItems.filter(item => item.action === "APPLY").map(item => {
       const row = berthRows.find((candidate, index) => sourceRowId(candidate, index) === item.source_row_id) || {};
       return berthPatchHint(item, row, generatedAt);
-    })
+    }),
+    ...(Array.isArray(aisPayloads.aisPatchHints?.items) ? aisPayloads.aisPatchHints.items : [])
   ].filter(item => item.vessel_key);
   const patchHints = patchHintsEnvelope({ generatedAt, items: patchItems, graphPayload, report });
-  const vesselSpecParserDiagnostic = buildVesselSpecParserDiagnostic({ sourceRows, sourceCollectionStatus, generatedAt });
-  const aisTargetEnrichment = buildAisTargetEnrichment({ sourceRows, targetRecords, graphPayload, generatedAt, previous: previousAisTarget });
+  const aisTargetEnrichment = aisPayloads.aisTargetEnrichment;
   const metrics = {
     matching_booster_available: sourceCsvReferenceRows(sourceCsvReferenceCache).length > 0,
     identity_graph_stats: graphPayload.identity_graph_stats || {},
     match_rate_by_source: {
       pilot_sources: pilotageMatchResults.match_rate,
-      berth_sources: berthMatchResults.match_rate
+      berth_sources: berthMatchResults.match_rate,
+      mof_ais_info: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.ais_info_matches / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0,
+      mof_ais_dynamic: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.ais_dynamic_matches / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0
     },
     apply_rate_by_source: {
       pilot_sources: pilotageMatchResults.apply_rate,
-      berth_sources: berthMatchResults.apply_rate
+      berth_sources: berthMatchResults.apply_rate,
+      mof_ais_info: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.auto_apply_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0,
+      mof_ais_dynamic: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.auto_apply_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0
     },
     review_rate_by_source: {
       pilot_sources: pilotageMatchResults.review_rate,
-      berth_sources: berthMatchResults.review_rate
+      berth_sources: berthMatchResults.review_rate,
+      mof_ais_info: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.review_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0,
+      mof_ais_dynamic: aisTargetEnrichment.targets_checked
+        ? Math.round((aisTargetEnrichment.review_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+        : 0
     },
     top_blockers: {
       pilot_sources: pilotageMatchResults.top_blockers,
       berth_sources: berthMatchResults.top_blockers,
       vessel_spec: vesselSpecParserDiagnostic.blocker_reason ? [{ reason: vesselSpecParserDiagnostic.blocker_reason, count: 1 }] : [],
-      mof_ais_info: aisTargetEnrichment.coverage_label === "SMOKE_LEVEL" ? [{ reason: "smoke_level_coverage", count: 1 }] : []
+      mof_ais_info: aisTargetEnrichment.coverage_label === "SMOKE_LEVEL"
+        ? [{ reason: "smoke_level_coverage", count: 1 }]
+        : [{ reason: "target_batch_not_full_universe", count: 1 }],
+      mof_ais_dynamic: aisTargetEnrichment.coverage_label === "SMOKE_LEVEL"
+        ? [{ reason: "smoke_level_coverage", count: 1 }]
+        : [{ reason: "target_batch_not_full_universe", count: 1 }]
     },
     source_metrics: {
       pilot_sources: metricForPayload(pilotageMatchResults),
@@ -920,35 +1388,52 @@ export function buildAuxEvidenceMatchingPayloads({
         top_blockers: vesselSpecParserDiagnostic.blocker_reason ? [{ reason: vesselSpecParserDiagnostic.blocker_reason, count: 1 }] : []
       },
       mof_ais_info: {
-        rows: aisTargetEnrichment.target_vessels_checked,
+        rows: aisTargetEnrichment.targets_checked,
         matched: aisTargetEnrichment.ais_info_matches,
-        apply: 0,
-        review: aisTargetEnrichment.ais_info_matches,
-        reject: 0,
-        match_rate: aisTargetEnrichment.target_vessels_checked
-          ? Math.round((aisTargetEnrichment.ais_info_matches / aisTargetEnrichment.target_vessels_checked) * 1000) / 10
+        apply: aisTargetEnrichment.auto_apply_count,
+        review: aisTargetEnrichment.review_count,
+        reject: aisTargetEnrichment.rejected_count,
+        match_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.ais_info_matches / aisTargetEnrichment.targets_checked) * 1000) / 10
           : 0,
-        top_blockers: []
+        apply_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.auto_apply_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+          : 0,
+        review_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.review_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+          : 0,
+        coverage_label: aisTargetEnrichment.coverage_label,
+        top_blockers: aisTargetEnrichment.coverage_label === "SMOKE_LEVEL" ? [{ reason: "smoke_level_coverage", count: 1 }] : []
       },
       mof_ais_dynamic: {
-        rows: aisTargetEnrichment.target_vessels_checked,
+        rows: aisTargetEnrichment.targets_checked,
         matched: aisTargetEnrichment.ais_dynamic_matches,
-        apply: 0,
-        review: aisTargetEnrichment.ais_dynamic_matches,
-        reject: 0,
-        match_rate: aisTargetEnrichment.target_vessels_checked
-          ? Math.round((aisTargetEnrichment.ais_dynamic_matches / aisTargetEnrichment.target_vessels_checked) * 1000) / 10
+        apply: aisTargetEnrichment.auto_apply_count,
+        review: aisTargetEnrichment.review_count,
+        reject: aisTargetEnrichment.rejected_count,
+        match_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.ais_dynamic_matches / aisTargetEnrichment.targets_checked) * 1000) / 10
           : 0,
-        top_blockers: []
+        apply_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.auto_apply_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+          : 0,
+        review_rate: aisTargetEnrichment.targets_checked
+          ? Math.round((aisTargetEnrichment.review_count / aisTargetEnrichment.targets_checked) * 1000) / 10
+          : 0,
+        coverage_label: aisTargetEnrichment.coverage_label,
+        top_blockers: aisTargetEnrichment.coverage_label === "SMOKE_LEVEL" ? [{ reason: "smoke_level_coverage", count: 1 }] : []
       }
     },
     patch_hints_created: patchHints.patch_hints_created,
-    review_queue_size: pilotageMatchResults.review_count + berthMatchResults.review_count
+    review_queue_size: pilotageMatchResults.review_count + berthMatchResults.review_count + aisTargetEnrichment.review_count
   };
   return {
     pilotageMatchResults,
     berthMatchResults,
     vesselSpecParserDiagnostic,
+    aisTargetQueue: aisPayloads.aisTargetQueue,
+    aisCursor: aisPayloads.aisCursor,
+    aisCache: aisPayloads.aisCache,
     aisTargetEnrichment,
     patchHints,
     metrics
@@ -997,11 +1482,16 @@ export function attachAuxEvidenceMetricsToSourceQualityScore(payload = {}, metri
           match_rate: sourceMetric.match_rate,
           apply_rate: sourceMetric.apply_rate,
           review_rate: sourceMetric.review_rate,
+          coverage_label: sourceMetric.coverage_label || item.coverage_label,
           matching_booster_available: metrics.matching_booster_available === true,
           top_blockers: sourceMetric.top_blockers || [],
           blocker_reason: rowsMatched > 0 ? "" : item.blocker_reason,
           match_blockers: rowsMatched > 0 ? [] : item.match_blockers,
-          recommended_fix: rowsMatched > 0 ? "No action required." : item.recommended_fix
+          recommended_fix: rowsMatched > 0
+            ? (sourceMetric.coverage_label && sourceMetric.coverage_label !== "BROAD"
+              ? "AIS enrichment is active in target batches; continue rotating the queue for broader coverage."
+              : "No action required.")
+            : item.recommended_fix
         };
       })
       : payload.items
@@ -1033,6 +1523,7 @@ export function attachAuxEvidenceMetricsToEnrichmentUtilization(payload = {}, me
           match_rate: sourceMetric.match_rate,
           apply_rate: sourceMetric.apply_rate,
           review_rate: sourceMetric.review_rate,
+          coverage_label: sourceMetric.coverage_label || item.coverage_label,
           top_blockers: sourceMetric.top_blockers || [],
           blocker_reason: number(sourceMetric.matched) > 0 ? "" : item.blocker_reason
         };

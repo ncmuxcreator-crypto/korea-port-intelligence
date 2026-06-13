@@ -1,71 +1,30 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
-  "record_count": 46,
+  "record_count": 45,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/020/vessels.json",
-  "total_count": 46,
+  "total_count": 45,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 46,
+    "0_49": 45,
     "50_69": 0,
     "70_84": 0,
     "85_100": 0,
     "unknown": 0
   },
   "priority_counts": {
-    "LOW": 46
+    "LOW": 45
   },
   "actionability_counts": {
-    "MONITOR": 43,
+    "MONITOR": 42,
     "VERIFY_CONTACT": 3
   },
   "items": [
     {
       "rank": 1,
-      "vessel_name": "ENSENADA",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "D5EM2",
-      "operator_display": "씨엠에이씨지엠코리아(주)",
-      "current_port": "부산",
-      "current_port_korean": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "부산",
-          "QINGDAO",
-          "부산항"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "opportunity_score": 38,
-      "risk_score": 45,
-      "confidence_score": 66,
-      "missing_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "씨엠에이씨지엠코리아(주)",
-      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
-      "recommended_action": "운영선사 확인",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "display_name": "부산"
-    },
-    {
-      "rank": 2,
       "vessel_name": "XIN TIAN JIN",
       "imo": "",
       "mmsi": "",
@@ -88,7 +47,7 @@
       "priority_label": "LOW",
       "actionability_category": "MONITOR",
       "actionability_label": "모니터링",
-      "opportunity_score": 38,
+      "opportunity_score": 37,
       "risk_score": 45,
       "confidence_score": 66,
       "missing_fields": [
@@ -106,7 +65,7 @@
       "display_name": "부산"
     },
     {
-      "rank": 3,
+      "rank": 2,
       "vessel_name": "팬콘 석세스호",
       "imo": "",
       "mmsi": "",
@@ -141,6 +100,46 @@
       "known_company": "범주해운(주)",
       "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
       "recommended_action": "운영선사 확인",
+      "port_code": "020",
+      "port_name": "부산",
+      "port_display_name": "부산",
+      "display_name": "부산"
+    },
+    {
+      "rank": 3,
+      "vessel_name": "KMTC SHIMIZU",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "D5YE8",
+      "operator_display": "KMTC",
+      "current_port": "부산",
+      "current_port_korean": "부산",
+      "normalized_port": {
+        "port_code": "020",
+        "port_name": "부산",
+        "display_name": "부산",
+        "raw_port": "Busan",
+        "raw_aliases": [
+          "Busan",
+          "부산",
+          "HONG KONG",
+          "부산항"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 36,
+      "risk_score": 45,
+      "confidence_score": 66,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "KMTC",
+      "reason_summary": "작업/입항 신호는 있으나 즉시 연락에 필요한 강도 또는 연락 정보가 부족합니다.",
+      "recommended_action": "선박 스케줄 확인",
       "port_code": "020",
       "port_name": "부산",
       "port_display_name": "부산",
@@ -231,7 +230,7 @@
     {
       "severity": "INFO",
       "feature": "감만·신감만 선박",
-      "message": "상세 46건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 45건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/020/vessels.json lazy load 사용"
     }
   ]

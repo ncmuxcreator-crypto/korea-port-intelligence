@@ -1,49 +1,49 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 9,
+  "record_count": 10,
   "source_table": "port_summary_current,port_snapshot_daily,port_congestion_snapshots,commercial_opportunity_daily,opportunity_master",
   "items": [
     {
       "rank": 1,
       "port_name": "부산",
-      "demand_score": 67,
-      "high_risk_vessels": 6,
-      "vessel_count": 370,
+      "demand_score": 65,
+      "high_risk_vessels": 5,
+      "vessel_count": 361,
       "service_opportunity_counts": {
-        "Hull Cleaning": 66,
-        "UWI": 66,
-        "Bunker": 278,
-        "Crew Change": 232,
-        "Waste Disposal": 370,
+        "Hull Cleaning": 64,
+        "UWI": 67,
+        "Bunker": 269,
+        "Crew Change": 230,
+        "Waste Disposal": 361,
         "Repair": 14,
-        "Diving": 370
+        "Diving": 361
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 370
+          "count": 361
         },
         {
           "service_name": "Diving",
-          "count": 370
+          "count": 361
         },
         {
           "service_name": "Bunker",
-          "count": 278
+          "count": 269
         },
         {
           "service_name": "Crew Change",
-          "count": 232
-        },
-        {
-          "service_name": "Hull Cleaning",
-          "count": 66
+          "count": 230
         },
         {
           "service_name": "UWI",
-          "count": 66
+          "count": 67
+        },
+        {
+          "service_name": "Hull Cleaning",
+          "count": 64
         },
         {
           "service_name": "Repair",
@@ -51,27 +51,27 @@
         }
       ],
       "growth_trend": {
-        "current_value": 370,
-        "previous_value": 371,
+        "current_value": 361,
+        "previous_value": 362,
         "delta": -1,
         "delta_percent": -0.3,
         "direction": "down"
       },
-      "estimated_revenue": 90000,
-      "estimated_monthly_revenue_usd": 90000,
+      "estimated_revenue": 75000,
+      "estimated_monthly_revenue_usd": 75000,
       "default_cleaning_revenue_usd": 15000,
-      "average_opportunity_score": 33,
-      "average_cleaning_opportunity_score": 40,
+      "average_opportunity_score": 32,
+      "average_cleaning_opportunity_score": 39,
       "average_risk_score": 46,
       "average_congestion_score": 2,
-      "opportunity_score": 67,
+      "opportunity_score": 65,
       "top_factors": [
-        "Waste Disposal 370",
-        "Diving 370",
-        "Bunker 278",
+        "Waste Disposal 361",
+        "Diving 361",
+        "Bunker 269",
         "추세 ↓ -0.3%"
       ],
-      "reason_summary": "부산: 선박 370척, 서비스 신호 1396건, HOT 0척",
+      "reason_summary": "부산: 선박 361척, 서비스 신호 1366건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "020",
@@ -167,7 +167,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 67,
+        "opportunity_score": 65,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -206,9 +206,9 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 370",
-          "Diving 370",
-          "Bunker 278",
+          "Waste Disposal 361",
+          "Diving 361",
+          "Bunker 269",
           "추세 ↓ -0.3%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
@@ -233,7 +233,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -253,7 +254,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -266,6 +270,8 @@
           "port": "부산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "020",
@@ -283,7 +289,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "부산: 선박 370척, 서비스 신호 1396건, HOT 0척",
+        "reason_summary": "부산: 선박 361척, 서비스 신호 1366건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -387,7 +393,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 67,
+            "confidence": 65,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -429,42 +435,42 @@
     {
       "rank": 2,
       "port_name": "울산",
-      "demand_score": 45,
-      "high_risk_vessels": 1,
-      "vessel_count": 176,
+      "demand_score": 44,
+      "high_risk_vessels": 2,
+      "vessel_count": 177,
       "service_opportunity_counts": {
-        "Hull Cleaning": 22,
-        "UWI": 21,
-        "Bunker": 112,
-        "Crew Change": 71,
-        "Waste Disposal": 176,
+        "Hull Cleaning": 20,
+        "UWI": 19,
+        "Bunker": 114,
+        "Crew Change": 72,
+        "Waste Disposal": 177,
         "Repair": 0,
-        "Diving": 176
+        "Diving": 177
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 176
+          "count": 177
         },
         {
           "service_name": "Diving",
-          "count": 176
+          "count": 177
         },
         {
           "service_name": "Bunker",
-          "count": 112
+          "count": 114
         },
         {
           "service_name": "Crew Change",
-          "count": 71
+          "count": 72
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 22
+          "count": 20
         },
         {
           "service_name": "UWI",
-          "count": 21
+          "count": 19
         },
         {
           "service_name": "Repair",
@@ -472,27 +478,27 @@
         }
       ],
       "growth_trend": {
-        "current_value": 176,
+        "current_value": 177,
         "previous_value": 176,
-        "delta": 0,
-        "delta_percent": 0,
-        "direction": "flat"
+        "delta": 1,
+        "delta_percent": 0.6,
+        "direction": "up"
       },
-      "estimated_revenue": 15000,
-      "estimated_monthly_revenue_usd": 15000,
+      "estimated_revenue": 30000,
+      "estimated_monthly_revenue_usd": 30000,
       "default_cleaning_revenue_usd": 15000,
       "average_opportunity_score": 34,
-      "average_cleaning_opportunity_score": 32,
+      "average_cleaning_opportunity_score": 31,
       "average_risk_score": 46,
-      "average_congestion_score": 3,
-      "opportunity_score": 45,
+      "average_congestion_score": 2,
+      "opportunity_score": 44,
       "top_factors": [
-        "Waste Disposal 176",
-        "Diving 176",
-        "Bunker 112",
-        "추세 → 0%"
+        "Waste Disposal 177",
+        "Diving 177",
+        "Bunker 114",
+        "추세 ↑ +0.6%"
       ],
-      "reason_summary": "울산: 선박 176척, 서비스 신호 578건, HOT 0척",
+      "reason_summary": "울산: 선박 177척, 서비스 신호 579건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "820",
@@ -588,7 +594,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 45,
+        "opportunity_score": 44,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -627,10 +633,10 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 176",
-          "Diving 176",
-          "Bunker 112",
-          "추세 → 0%"
+          "Waste Disposal 177",
+          "Diving 177",
+          "Bunker 114",
+          "추세 ↑ +0.6%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "confidence": "LOW",
@@ -654,7 +660,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -674,7 +681,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -687,6 +697,8 @@
           "port": "울산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "820",
@@ -704,7 +716,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "울산: 선박 176척, 서비스 신호 578건, HOT 0척",
+        "reason_summary": "울산: 선박 177척, 서비스 신호 579건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -808,7 +820,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 45,
+            "confidence": 44,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -852,40 +864,40 @@
       "port_name": "인천",
       "demand_score": 35,
       "high_risk_vessels": 0,
-      "vessel_count": 93,
+      "vessel_count": 97,
       "service_opportunity_counts": {
-        "Hull Cleaning": 12,
-        "UWI": 12,
-        "Bunker": 64,
-        "Crew Change": 47,
-        "Waste Disposal": 93,
+        "Hull Cleaning": 13,
+        "UWI": 13,
+        "Bunker": 69,
+        "Crew Change": 49,
+        "Waste Disposal": 97,
         "Repair": 0,
-        "Diving": 93
+        "Diving": 97
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 93
+          "count": 97
         },
         {
           "service_name": "Diving",
-          "count": 93
+          "count": 97
         },
         {
           "service_name": "Bunker",
-          "count": 64
+          "count": 69
         },
         {
           "service_name": "Crew Change",
-          "count": 47
+          "count": 49
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 12
+          "count": 13
         },
         {
           "service_name": "UWI",
-          "count": 12
+          "count": 13
         },
         {
           "service_name": "Repair",
@@ -893,8 +905,8 @@
         }
       ],
       "growth_trend": {
-        "current_value": 93,
-        "previous_value": 93,
+        "current_value": 97,
+        "previous_value": 97,
         "delta": 0,
         "delta_percent": 0,
         "direction": "flat"
@@ -908,12 +920,12 @@
       "average_congestion_score": 3,
       "opportunity_score": 35,
       "top_factors": [
-        "Waste Disposal 93",
-        "Diving 93",
-        "Bunker 64",
+        "Waste Disposal 97",
+        "Diving 97",
+        "Bunker 69",
         "추세 → 0%"
       ],
-      "reason_summary": "인천: 선박 93척, 서비스 신호 321건, HOT 1척",
+      "reason_summary": "인천: 선박 97척, 서비스 신호 338건, HOT 1척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "030",
@@ -1048,9 +1060,9 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 93",
-          "Diving 93",
-          "Bunker 64",
+          "Waste Disposal 97",
+          "Diving 97",
+          "Bunker 69",
           "추세 → 0%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
@@ -1075,7 +1087,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1095,7 +1108,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1108,6 +1124,8 @@
           "port": "인천",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "030",
@@ -1125,7 +1143,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "인천: 선박 93척, 서비스 신호 321건, HOT 1척",
+        "reason_summary": "인천: 선박 97척, 서비스 신호 338건, HOT 1척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -1273,36 +1291,36 @@
       "port_name": "대산",
       "demand_score": 35,
       "high_risk_vessels": 0,
-      "vessel_count": 86,
+      "vessel_count": 88,
       "service_opportunity_counts": {
-        "Hull Cleaning": 23,
+        "Hull Cleaning": 24,
         "UWI": 15,
-        "Bunker": 66,
-        "Crew Change": 54,
-        "Waste Disposal": 86,
+        "Bunker": 65,
+        "Crew Change": 53,
+        "Waste Disposal": 88,
         "Repair": 0,
-        "Diving": 86
+        "Diving": 88
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 86
+          "count": 88
         },
         {
           "service_name": "Diving",
-          "count": 86
+          "count": 88
         },
         {
           "service_name": "Bunker",
-          "count": 66
+          "count": 65
         },
         {
           "service_name": "Crew Change",
-          "count": 54
+          "count": 53
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 23
+          "count": 24
         },
         {
           "service_name": "UWI",
@@ -1314,8 +1332,8 @@
         }
       ],
       "growth_trend": {
-        "current_value": 86,
-        "previous_value": 86,
+        "current_value": 88,
+        "previous_value": 88,
         "delta": 0,
         "delta_percent": 0,
         "direction": "flat"
@@ -1329,12 +1347,12 @@
       "average_congestion_score": 3,
       "opportunity_score": 35,
       "top_factors": [
-        "Waste Disposal 86",
-        "Diving 86",
-        "Bunker 66",
+        "Waste Disposal 88",
+        "Diving 88",
+        "Bunker 65",
         "추세 → 0%"
       ],
-      "reason_summary": "대산: 선박 86척, 서비스 신호 330건, HOT 0척",
+      "reason_summary": "대산: 선박 88척, 서비스 신호 333건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "621",
@@ -1469,9 +1487,9 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 86",
-          "Diving 86",
-          "Bunker 66",
+          "Waste Disposal 88",
+          "Diving 88",
+          "Bunker 65",
           "추세 → 0%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
@@ -1496,7 +1514,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1516,7 +1535,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1529,6 +1551,8 @@
           "port": "대산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "621",
@@ -1546,7 +1570,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "대산: 선박 86척, 서비스 신호 330건, HOT 0척",
+        "reason_summary": "대산: 선박 88척, 서비스 신호 333건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -1694,40 +1718,40 @@
       "port_name": "미확인 항만",
       "demand_score": 32,
       "high_risk_vessels": 0,
-      "vessel_count": 87,
+      "vessel_count": 98,
       "service_opportunity_counts": {
-        "Hull Cleaning": 13,
-        "UWI": 12,
-        "Bunker": 60,
-        "Crew Change": 45,
-        "Waste Disposal": 87,
+        "Hull Cleaning": 12,
+        "UWI": 11,
+        "Bunker": 67,
+        "Crew Change": 46,
+        "Waste Disposal": 98,
         "Repair": 0,
-        "Diving": 87
+        "Diving": 98
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 87
+          "count": 98
         },
         {
           "service_name": "Diving",
-          "count": 87
+          "count": 98
         },
         {
           "service_name": "Bunker",
-          "count": 60
+          "count": 67
         },
         {
           "service_name": "Crew Change",
-          "count": 45
+          "count": 46
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 13
+          "count": 12
         },
         {
           "service_name": "UWI",
-          "count": 12
+          "count": 11
         },
         {
           "service_name": "Repair",
@@ -1735,8 +1759,8 @@
         }
       ],
       "growth_trend": {
-        "current_value": 87,
-        "previous_value": 87,
+        "current_value": 98,
+        "previous_value": 98,
         "delta": 0,
         "delta_percent": 0,
         "direction": "flat"
@@ -1744,18 +1768,18 @@
       "estimated_revenue": 0,
       "estimated_monthly_revenue_usd": 0,
       "default_cleaning_revenue_usd": 15000,
-      "average_opportunity_score": 32,
-      "average_cleaning_opportunity_score": 38,
-      "average_risk_score": 45,
+      "average_opportunity_score": 30,
+      "average_cleaning_opportunity_score": 35,
+      "average_risk_score": 41,
       "average_congestion_score": 2,
       "opportunity_score": 32,
       "top_factors": [
-        "Waste Disposal 87",
-        "Diving 87",
-        "Bunker 60",
+        "Waste Disposal 98",
+        "Diving 98",
+        "Bunker 67",
         "추세 → 0%"
       ],
-      "reason_summary": "미확인 항만: 선박 87척, 서비스 신호 304건, HOT 0척",
+      "reason_summary": "미확인 항만: 선박 98척, 서비스 신호 332건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -1890,9 +1914,9 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 87",
-          "Diving 87",
-          "Bunker 60",
+          "Waste Disposal 98",
+          "Diving 98",
+          "Bunker 67",
           "추세 → 0%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
@@ -1917,7 +1941,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1937,7 +1962,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1950,6 +1978,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -1967,7 +1997,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 항만: 선박 87척, 서비스 신호 304건, HOT 0척",
+        "reason_summary": "미확인 항만: 선박 98척, 서비스 신호 332건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -2112,83 +2142,83 @@
     },
     {
       "rank": 6,
-      "port_name": "여수",
-      "demand_score": 32,
+      "port_name": "광양",
+      "demand_score": 29,
       "high_risk_vessels": 1,
-      "vessel_count": 78,
+      "vessel_count": 72,
       "service_opportunity_counts": {
-        "Hull Cleaning": 12,
-        "UWI": 7,
-        "Bunker": 65,
-        "Crew Change": 52,
-        "Waste Disposal": 78,
-        "Repair": 3,
-        "Diving": 78
+        "Hull Cleaning": 11,
+        "UWI": 6,
+        "Bunker": 58,
+        "Crew Change": 43,
+        "Waste Disposal": 72,
+        "Repair": 2,
+        "Diving": 72
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 78
+          "count": 72
         },
         {
           "service_name": "Diving",
-          "count": 78
+          "count": 72
         },
         {
           "service_name": "Bunker",
-          "count": 65
+          "count": 58
         },
         {
           "service_name": "Crew Change",
-          "count": 52
+          "count": 43
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 12
+          "count": 11
         },
         {
           "service_name": "UWI",
-          "count": 7
+          "count": 6
         },
         {
           "service_name": "Repair",
-          "count": 3
+          "count": 2
         }
       ],
       "growth_trend": {
-        "current_value": 78,
-        "previous_value": 78,
-        "delta": 0,
-        "delta_percent": 0,
-        "direction": "flat"
+        "current_value": 72,
+        "previous_value": 73,
+        "delta": -1,
+        "delta_percent": -1.4,
+        "direction": "down"
       },
       "estimated_revenue": 15000,
       "estimated_monthly_revenue_usd": 15000,
       "default_cleaning_revenue_usd": 15000,
-      "average_opportunity_score": 35,
+      "average_opportunity_score": 34,
       "average_cleaning_opportunity_score": 39,
       "average_risk_score": 47,
-      "average_congestion_score": 2,
-      "opportunity_score": 32,
+      "average_congestion_score": 1,
+      "opportunity_score": 29,
       "top_factors": [
-        "Waste Disposal 78",
-        "Diving 78",
-        "Bunker 65",
-        "추세 → 0%"
+        "Waste Disposal 72",
+        "Diving 72",
+        "Bunker 58",
+        "추세 ↓ -1.4%"
       ],
-      "reason_summary": "여수: 선박 78척, 서비스 신호 295건, HOT 0척",
+      "reason_summary": "광양: 선박 72척, 서비스 신호 264건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "여수",
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "광양",
         "raw_aliases": [
-          "여수"
+          "광양"
         ]
       },
-      "port_code": "620-YEOSU",
-      "port_display_name": "여수",
+      "port_code": "620-GWANGYANG",
+      "port_display_name": "광양",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -2221,19 +2251,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
+        "current_port": "광양",
+        "raw_current_port": "광양",
+        "current_port_korean": "광양",
         "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "display_name": "광양",
+          "raw_port": "광양",
           "raw_aliases": [
-            "여수"
+            "광양"
           ]
         },
-        "port_display_name": "여수",
+        "port_display_name": "광양",
         "terminal": "-",
         "berth": "-",
         "anchorage": "-",
@@ -2272,7 +2302,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 32,
+        "opportunity_score": 29,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -2311,10 +2341,10 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 78",
-          "Diving 78",
-          "Bunker 65",
-          "추세 → 0%"
+          "Waste Disposal 72",
+          "Diving 72",
+          "Bunker 58",
+          "추세 ↓ -1.4%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "confidence": "LOW",
@@ -2332,33 +2362,37 @@
           "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
-          "port": "여수",
-          "pilotage_port": "여수",
+          "port": "광양",
+          "pilotage_port": "광양",
           "source": null,
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -2368,27 +2402,29 @@
           "atb": null,
           "operation_start": null,
           "operation_end": null,
-          "port": "여수",
+          "port": "광양",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "여수: 선박 78척, 서비스 신호 295건, HOT 0척",
+        "reason_summary": "광양: 선박 72척, 서비스 신호 264건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -2492,7 +2528,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 32,
+            "confidence": 29,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -2513,9 +2549,9 @@
         },
         "data_sources": [],
         "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양"
       },
       "commercial_data_confidence": 10,
       "confidence_label": "LOW",
@@ -2529,47 +2565,47 @@
         "현재 항만"
       ],
       "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-      "display_name": "여수"
+      "display_name": "광양"
     },
     {
       "rank": 7,
       "port_name": "평택·당진",
-      "demand_score": 31,
+      "demand_score": 29,
       "high_risk_vessels": 0,
-      "vessel_count": 70,
+      "vessel_count": 64,
       "service_opportunity_counts": {
-        "Hull Cleaning": 12,
-        "UWI": 12,
-        "Bunker": 44,
-        "Crew Change": 29,
-        "Waste Disposal": 70,
+        "Hull Cleaning": 11,
+        "UWI": 11,
+        "Bunker": 40,
+        "Crew Change": 26,
+        "Waste Disposal": 64,
         "Repair": 0,
-        "Diving": 70
+        "Diving": 64
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 70
+          "count": 64
         },
         {
           "service_name": "Diving",
-          "count": 70
+          "count": 64
         },
         {
           "service_name": "Bunker",
-          "count": 44
+          "count": 40
         },
         {
           "service_name": "Crew Change",
-          "count": 29
+          "count": 26
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 12
+          "count": 11
         },
         {
           "service_name": "UWI",
-          "count": 12
+          "count": 11
         },
         {
           "service_name": "Repair",
@@ -2577,11 +2613,11 @@
         }
       ],
       "growth_trend": {
-        "current_value": 70,
-        "previous_value": 71,
-        "delta": -1,
-        "delta_percent": -1.4,
-        "direction": "down"
+        "current_value": 64,
+        "previous_value": 64,
+        "delta": 0,
+        "delta_percent": 0,
+        "direction": "flat"
       },
       "estimated_revenue": 0,
       "estimated_monthly_revenue_usd": 0,
@@ -2589,15 +2625,15 @@
       "average_opportunity_score": 32,
       "average_cleaning_opportunity_score": 29,
       "average_risk_score": 45,
-      "average_congestion_score": 5,
-      "opportunity_score": 31,
+      "average_congestion_score": 4,
+      "opportunity_score": 29,
       "top_factors": [
-        "Waste Disposal 70",
-        "Diving 70",
-        "Bunker 44",
-        "추세 ↓ -1.4%"
+        "Waste Disposal 64",
+        "Diving 64",
+        "Bunker 40",
+        "추세 → 0%"
       ],
-      "reason_summary": "평택·당진: 선박 70척, 서비스 신호 237건, HOT 1척",
+      "reason_summary": "평택·당진: 선박 64척, 서비스 신호 216건, HOT 1척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "031",
@@ -2693,7 +2729,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 31,
+        "opportunity_score": 29,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -2732,10 +2768,10 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 70",
-          "Diving 70",
-          "Bunker 44",
-          "추세 ↓ -1.4%"
+          "Waste Disposal 64",
+          "Diving 64",
+          "Bunker 40",
+          "추세 → 0%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "confidence": "LOW",
@@ -2759,7 +2795,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -2779,7 +2816,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -2792,6 +2832,8 @@
           "port": "평택·당진",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "031",
@@ -2809,7 +2851,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "평택·당진: 선박 70척, 서비스 신호 237건, HOT 1척",
+        "reason_summary": "평택·당진: 선박 64척, 서비스 신호 216건, HOT 1척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -2913,7 +2955,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 31,
+            "confidence": 29,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -2955,42 +2997,42 @@
     {
       "rank": 8,
       "port_name": "포항",
-      "demand_score": 16,
+      "demand_score": 18,
       "high_risk_vessels": 0,
-      "vessel_count": 36,
+      "vessel_count": 35,
       "service_opportunity_counts": {
-        "Hull Cleaning": 1,
-        "UWI": 1,
-        "Bunker": 22,
-        "Crew Change": 15,
-        "Waste Disposal": 36,
+        "Hull Cleaning": 5,
+        "UWI": 5,
+        "Bunker": 21,
+        "Crew Change": 18,
+        "Waste Disposal": 35,
         "Repair": 0,
-        "Diving": 36
+        "Diving": 35
       },
       "services": [
         {
           "service_name": "Waste Disposal",
-          "count": 36
+          "count": 35
         },
         {
           "service_name": "Diving",
-          "count": 36
+          "count": 35
         },
         {
           "service_name": "Bunker",
-          "count": 22
+          "count": 21
         },
         {
           "service_name": "Crew Change",
-          "count": 15
+          "count": 18
         },
         {
           "service_name": "Hull Cleaning",
-          "count": 1
+          "count": 5
         },
         {
           "service_name": "UWI",
-          "count": 1
+          "count": 5
         },
         {
           "service_name": "Repair",
@@ -2998,8 +3040,8 @@
         }
       ],
       "growth_trend": {
-        "current_value": 36,
-        "previous_value": 36,
+        "current_value": 35,
+        "previous_value": 35,
         "delta": 0,
         "delta_percent": 0,
         "direction": "flat"
@@ -3007,18 +3049,18 @@
       "estimated_revenue": 0,
       "estimated_monthly_revenue_usd": 0,
       "default_cleaning_revenue_usd": 15000,
-      "average_opportunity_score": 28,
-      "average_cleaning_opportunity_score": 27,
+      "average_opportunity_score": 29,
+      "average_cleaning_opportunity_score": 30,
       "average_risk_score": 45,
-      "average_congestion_score": 0,
-      "opportunity_score": 16,
+      "average_congestion_score": 1,
+      "opportunity_score": 18,
       "top_factors": [
-        "Waste Disposal 36",
-        "Diving 36",
-        "Bunker 22",
+        "Waste Disposal 35",
+        "Diving 35",
+        "Bunker 21",
         "추세 → 0%"
       ],
-      "reason_summary": "포항: 선박 36척, 서비스 신호 111건, HOT 0척",
+      "reason_summary": "포항: 선박 35척, 서비스 신호 119건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "810",
@@ -3114,7 +3156,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 16,
+        "opportunity_score": 18,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -3153,9 +3195,9 @@
         "tropicalExposureDays": null,
         "slowSteamingHours": null,
         "riskReasons": [
-          "Waste Disposal 36",
-          "Diving 36",
-          "Bunker 22",
+          "Waste Disposal 35",
+          "Diving 35",
+          "Bunker 21",
           "추세 → 0%"
         ],
         "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
@@ -3180,7 +3222,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -3200,7 +3243,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -3213,6 +3259,8 @@
           "port": "포항",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "810",
@@ -3230,7 +3278,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "포항: 선박 36척, 서비스 신호 111건, HOT 0척",
+        "reason_summary": "포항: 선박 35척, 서비스 신호 119건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -3334,7 +3382,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 16,
+            "confidence": 18,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -3376,9 +3424,9 @@
     {
       "rank": 9,
       "port_name": "마산/창원",
-      "demand_score": 10,
+      "demand_score": 11,
       "high_risk_vessels": 0,
-      "vessel_count": 87,
+      "vessel_count": 88,
       "service_opportunity_counts": {
         "Hull Cleaning": 0,
         "UWI": 0,
@@ -3419,8 +3467,8 @@
         }
       ],
       "growth_trend": {
-        "current_value": 87,
-        "previous_value": 87,
+        "current_value": 88,
+        "previous_value": 88,
         "delta": 0,
         "delta_percent": 0,
         "direction": "flat"
@@ -3432,14 +3480,14 @@
       "average_cleaning_opportunity_score": 0,
       "average_risk_score": 0,
       "average_congestion_score": 0,
-      "opportunity_score": 10,
+      "opportunity_score": 11,
       "top_factors": [
         "Hull Cleaning 0",
         "UWI 0",
         "Bunker 0",
         "추세 → 0%"
       ],
-      "reason_summary": "마산/창원: 선박 87척, 서비스 신호 0건, HOT 0척",
+      "reason_summary": "마산/창원: 선박 88척, 서비스 신호 0건, HOT 0척",
       "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
       "normalized_port": {
         "port_code": "622",
@@ -3535,7 +3583,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 10,
+        "opportunity_score": 11,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -3601,7 +3649,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -3621,7 +3670,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -3634,6 +3686,8 @@
           "port": "마산/창원",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "622",
@@ -3651,7 +3705,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "마산/창원: 선박 87척, 서비스 신호 0건, HOT 0척",
+        "reason_summary": "마산/창원: 선박 88척, 서비스 신호 0건, HOT 0척",
         "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
         "data_lineage": {
           "vessel_name": {
@@ -3755,7 +3809,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 10,
+            "confidence": 11,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -3793,8 +3847,435 @@
       ],
       "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
       "display_name": "마산/창원"
+    },
+    {
+      "rank": 10,
+      "port_name": "여수",
+      "demand_score": 8,
+      "high_risk_vessels": 0,
+      "vessel_count": 72,
+      "service_opportunity_counts": {
+        "Hull Cleaning": 0,
+        "UWI": 0,
+        "Bunker": 0,
+        "Crew Change": 0,
+        "Waste Disposal": 0,
+        "Repair": 0,
+        "Diving": 0
+      },
+      "services": [
+        {
+          "service_name": "Hull Cleaning",
+          "count": 0
+        },
+        {
+          "service_name": "UWI",
+          "count": 0
+        },
+        {
+          "service_name": "Bunker",
+          "count": 0
+        },
+        {
+          "service_name": "Crew Change",
+          "count": 0
+        },
+        {
+          "service_name": "Waste Disposal",
+          "count": 0
+        },
+        {
+          "service_name": "Repair",
+          "count": 0
+        },
+        {
+          "service_name": "Diving",
+          "count": 0
+        }
+      ],
+      "growth_trend": {
+        "current_value": 72,
+        "previous_value": 73,
+        "delta": -1,
+        "delta_percent": -1.4,
+        "direction": "down"
+      },
+      "estimated_revenue": 0,
+      "estimated_monthly_revenue_usd": 0,
+      "default_cleaning_revenue_usd": 15000,
+      "average_opportunity_score": 0,
+      "average_cleaning_opportunity_score": 0,
+      "average_risk_score": 0,
+      "average_congestion_score": 0,
+      "opportunity_score": 8,
+      "top_factors": [
+        "Hull Cleaning 0",
+        "UWI 0",
+        "Bunker 0",
+        "추세 ↓ -1.4%"
+      ],
+      "reason_summary": "여수: 선박 72척, 서비스 신호 0건, HOT 0척",
+      "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "port_code": "620-YEOSU",
+      "port_display_name": "여수",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "여수",
+        "raw_current_port": "여수",
+        "current_port_korean": "여수",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_display_name": "여수",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "commercial_data_confidence": 18,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI",
+          "운영사/회사"
+        ],
+        "available_strong_fields": [
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+        "opportunity_score": 8,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [
+          "Hull Cleaning 0",
+          "UWI 0",
+          "Bunker 0",
+          "추세 ↓ -1.4%"
+        ],
+        "recommendedAction": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
+        "confidence": "LOW",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "여수",
+          "pilotage_port": "여수",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "none",
+          "placeholder": true,
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "여수",
+          "match_type": "none",
+          "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "여수: 선박 72척, 서비스 신호 0건, HOT 0척",
+        "recommended_action": "수요 점수가 높은 항만부터 대리점/운영사 접촉 가능성과 작업 자원 배치를 확인",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 8,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [],
+        "enrichment_sources": [],
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수"
+      },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+      "display_name": "여수"
     }
   ],
   "summary": {},
-  "item_count": 9
+  "item_count": 10
 }

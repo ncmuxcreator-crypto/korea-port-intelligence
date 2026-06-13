@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
   "record_count": 200,
   "item_count": 5,
@@ -9,8 +9,8 @@
   "total_count": 200,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 185,
-    "50_69": 15,
+    "0_49": 180,
+    "50_69": 20,
     "70_84": 0,
     "85_100": 0,
     "unknown": 0
@@ -21,9 +21,9 @@
     "WARM": 10
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 56,
-    "MONITOR": 138,
-    "CONTACT_NOW": 6
+    "VERIFY_CONTACT": 61,
+    "MONITOR": 132,
+    "CONTACT_NOW": 7
   },
   "items": [
     {
@@ -50,7 +50,7 @@
       "priority_label": "LOW",
       "actionability_category": "VERIFY_CONTACT",
       "actionability_label": "연락처 확인 필요",
-      "opportunity_score": 46,
+      "opportunity_score": 44,
       "risk_score": 49,
       "confidence_score": 42,
       "missing_fields": [
@@ -69,6 +69,46 @@
     },
     {
       "rank": 2,
+      "vessel_name": "MSC MIRJAM",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "D5MF8",
+      "operator_display": "MSC",
+      "current_port": "여수",
+      "current_port_korean": "여수",
+      "normalized_port": {
+        "port_code": "620",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "Gwangyang",
+        "raw_aliases": [
+          "Gwangyang",
+          "QINGDAO",
+          "여수·광양항",
+          "여수"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": "MONITOR",
+      "actionability_label": "모니터링",
+      "opportunity_score": 50,
+      "risk_score": 45,
+      "confidence_score": 32,
+      "missing_fields": [
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "MSC",
+      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
+      "recommended_action": "선박 스케줄 확인",
+      "port_code": "620",
+      "port_name": "여수",
+      "port_display_name": "여수",
+      "display_name": "여수"
+    },
+    {
+      "rank": 3,
       "vessel_name": "MINERAL HOPE",
       "imo": "",
       "mmsi": "",
@@ -109,7 +149,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 3,
+      "rank": 4,
       "vessel_name": "FIONAN",
       "imo": "",
       "mmsi": "",
@@ -150,7 +190,7 @@
       "display_name": "인천"
     },
     {
-      "rank": 4,
+      "rank": 5,
       "vessel_name": "CMA CGM PLATINUM",
       "imo": "",
       "mmsi": "",
@@ -173,7 +213,7 @@
       "priority_label": "LOW",
       "actionability_category": "MONITOR",
       "actionability_label": "모니터링",
-      "opportunity_score": 43,
+      "opportunity_score": 40,
       "risk_score": 45,
       "confidence_score": 32,
       "missing_fields": [
@@ -182,46 +222,6 @@
         "mmsi"
       ],
       "known_company": "CMA CGM",
-      "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
-      "recommended_action": "선박 스케줄 확인",
-      "port_code": "020",
-      "port_name": "부산",
-      "port_display_name": "부산",
-      "display_name": "부산"
-    },
-    {
-      "rank": 5,
-      "vessel_name": "EVER FORWARD",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "9V7977",
-      "operator_display": "EVERGREEN",
-      "current_port": "부산",
-      "current_port_korean": "부산",
-      "normalized_port": {
-        "port_code": "020",
-        "port_name": "부산",
-        "display_name": "부산",
-        "raw_port": "Busan",
-        "raw_aliases": [
-          "Busan",
-          "NINGBO",
-          "부산항",
-          "부산"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": "MONITOR",
-      "actionability_label": "모니터링",
-      "opportunity_score": 38,
-      "risk_score": 45,
-      "confidence_score": 32,
-      "missing_fields": [
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "EVERGREEN",
       "reason_summary": "ETA/ETB 또는 입항 예정 시간이 확인되었습니다.",
       "recommended_action": "선박 스케줄 확인",
       "port_code": "020",

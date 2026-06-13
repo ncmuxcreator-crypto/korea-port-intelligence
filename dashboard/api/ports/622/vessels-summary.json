@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
-  "record_count": 87,
+  "record_count": 88,
   "item_count": 5,
   "source_table": "port_vessels",
   "detail_endpoint": "dashboard/api/ports/622/vessels.json",
-  "total_count": 87,
+  "total_count": 88,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 87,
+    "0_49": 88,
     "50_69": 0,
     "70_84": 0,
     "85_100": 0,
@@ -17,11 +17,11 @@
   },
   "priority_counts": {
     "WARM": 2,
-    "LOW": 85
+    "LOW": 86
   },
   "actionability_counts": {
     "VERIFY_CONTACT": 12,
-    "MONITOR": 73,
+    "MONITOR": 74,
     "HOLD": 2
   },
   "items": [
@@ -38,9 +38,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "OCEAN DISTRICT",
           "하동항"
@@ -79,9 +79,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "포항신항",
           "하동항"
@@ -120,9 +120,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "하동항"
         ]
@@ -130,7 +130,7 @@
       "priority_label": "LOW",
       "actionability_category": "VERIFY_CONTACT",
       "actionability_label": "연락처 확인 필요",
-      "opportunity_score": 50,
+      "opportunity_score": 51,
       "risk_score": 45,
       "confidence_score": 78,
       "missing_fields": [
@@ -160,9 +160,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "하동항"
         ]
@@ -199,9 +199,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "OCEAN DISTRICT",
           "하동항"
@@ -232,7 +232,7 @@
     {
       "severity": "INFO",
       "feature": "하동항 선박",
-      "message": "상세 87건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 88건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/ports/622/vessels.json lazy load 사용"
     }
   ]

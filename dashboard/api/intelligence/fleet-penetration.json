@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -8,18 +8,34 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "targeted_vessels": 31,
+      "targeted_vessels": 29,
       "won_vessels": 0,
       "captured_vessels": 0,
       "penetration_rate": 0,
-      "opportunity_gap": 31,
-      "estimated_remaining_revenue": 89280,
-      "fleet_size_korea": 31,
+      "opportunity_gap": 29,
+      "estimated_remaining_revenue": 83520,
+      "fleet_size_korea": 29,
       "average_opportunity_score": 59,
       "top_ports": [
         {
+          "port_name": "광양",
+          "count": 6,
+          "normalized_port": {
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
+            "raw_aliases": [
+              "광양"
+            ]
+          },
+          "port_code": "620-GWANGYANG",
+          "port_display_name": "광양",
+          "display_name": "광양"
+        },
+        {
           "port_name": "부산",
-          "count": 8,
+          "count": 6,
           "normalized_port": {
             "port_code": "020",
             "port_name": "부산",
@@ -34,24 +50,8 @@
           "display_name": "부산"
         },
         {
-          "port_name": "여수",
-          "count": 7,
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        {
           "port_name": "울산",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "820",
             "port_name": "울산",
@@ -66,20 +66,20 @@
           "display_name": "울산"
         },
         {
-          "port_name": "평택·당진",
-          "count": 3,
+          "port_name": "대산",
+          "count": 4,
           "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
             "raw_aliases": [
-              "평택·당진"
+              "대산"
             ]
           },
-          "port_code": "031",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
+          "port_code": "621",
+          "port_display_name": "대산",
+          "display_name": "대산"
         },
         {
           "port_name": "인천",
@@ -142,22 +142,22 @@
         {
           "vessel_name": "VITUS BERING",
           "imo": "",
-          "port": "여수",
+          "port": "광양",
           "opportunity_score": 67,
-          "priority_label": "LOW",
+          "priority_label": "WARM",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         {
           "vessel_name": "BERGE DOI INTHANON",
@@ -201,7 +201,7 @@
         }
       ],
       "opportunity_score": 100,
-      "reason_summary": "미확인 운영사: 한국 확인 선대 31척 중 영업대상 31척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+      "reason_summary": "미확인 운영사: 한국 확인 선대 29척 중 영업대상 29척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
       "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "recommended_next_action": "운영사 확인 후 선대 단위 커버리지 산정",
       "data_sources": [
@@ -373,7 +373,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -393,7 +394,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -406,6 +410,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -423,7 +429,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 운영사: 한국 확인 선대 31척 중 영업대상 31척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
+        "reason_summary": "미확인 운영사: 한국 확인 선대 29척 중 영업대상 29척, 접촉 0척, 견적 0척, 수주 0척, 실주 0척",
         "recommended_action": "운영사 확인 후 선대 단위 커버리지 산정",
         "data_lineage": {
           "vessel_name": {
@@ -577,7 +583,7 @@
       ],
       "confidence_reason": "현재 항만, 복수 데이터 출처 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 10개",
       "display_name": "미확인 항만",
-      "observed_vessels": 31,
+      "observed_vessels": 29,
       "contacted_vessels": 0,
       "quoted_vessels": 0,
       "lost_vessels": 0,
@@ -629,22 +635,22 @@
         {
           "vessel_name": "VITUS BERING",
           "imo": "",
-          "port": "여수",
+          "port": "광양",
           "opportunity_score": 67,
-          "priority_label": "LOW",
+          "priority_label": "WARM",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         {
           "vessel_name": "BERGE DOI INTHANON",
@@ -912,7 +918,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -932,7 +939,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -945,6 +955,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -1371,7 +1383,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1391,7 +1404,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1404,6 +1420,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",

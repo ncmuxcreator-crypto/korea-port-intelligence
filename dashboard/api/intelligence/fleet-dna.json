@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -8,12 +8,28 @@
     {
       "rank": 1,
       "operator_name": "미확인 운영사",
-      "average_stay_days": 10,
+      "average_stay_days": 9.8,
       "fleet_profile": "HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 고위험 선박 포함, 장기체류형",
       "preferred_ports": [
         {
+          "port_name": "광양",
+          "count": 6,
+          "normalized_port": {
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
+            "raw_aliases": [
+              "광양"
+            ]
+          },
+          "port_code": "620-GWANGYANG",
+          "port_display_name": "광양",
+          "display_name": "광양"
+        },
+        {
           "port_name": "부산",
-          "count": 8,
+          "count": 6,
           "normalized_port": {
             "port_code": "020",
             "port_name": "부산",
@@ -28,24 +44,8 @@
           "display_name": "부산"
         },
         {
-          "port_name": "여수",
-          "count": 7,
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        {
           "port_name": "울산",
-          "count": 4,
+          "count": 5,
           "normalized_port": {
             "port_code": "820",
             "port_name": "울산",
@@ -60,20 +60,20 @@
           "display_name": "울산"
         },
         {
-          "port_name": "평택·당진",
-          "count": 3,
+          "port_name": "대산",
+          "count": 4,
           "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
+            "port_code": "621",
+            "port_name": "대산",
+            "display_name": "대산",
+            "raw_port": "대산",
             "raw_aliases": [
-              "평택·당진"
+              "대산"
             ]
           },
-          "port_code": "031",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
+          "port_code": "621",
+          "port_display_name": "대산",
+          "display_name": "대산"
         },
         {
           "port_name": "인천",
@@ -92,15 +92,15 @@
           "display_name": "인천"
         }
       ],
-      "repeat_visit_frequency": 1.3,
+      "repeat_visit_frequency": 1.6,
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
-          "count": 14
+          "count": 11
         },
         {
           "vessel_type": "tanker",
-          "count": 7
+          "count": 8
         },
         {
           "vessel_type": "crude_tanker",
@@ -114,10 +114,10 @@
       "compliance_exposure_tags": [
         "Australia"
       ],
-      "congestion_exposure": 28,
+      "congestion_exposure": 26,
       "commercial_tendency": "HOT 후보 집중",
       "recommended_sales_strategy": "선대별 상위 후보와 항만 패턴을 묶어 관계 구축",
-      "opportunity_score": 82,
+      "opportunity_score": 80,
       "reason_summary": "미확인 운영사: HOT 후보 집중, WARM 후보 풀, 반복입항형, Compliance 노출형, 고위험 선박 포함, 장기체류형",
       "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
       "normalized_port": {
@@ -215,7 +215,7 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 82,
+        "opportunity_score": 80,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -276,7 +276,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -296,7 +297,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -309,6 +313,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -430,7 +436,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 82,
+            "confidence": 80,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -492,7 +498,7 @@
           "display_name": "인천"
         }
       ],
-      "repeat_visit_frequency": 1,
+      "repeat_visit_frequency": 2,
       "common_vessel_types": [
         {
           "vessel_type": "bulk_carrier",
@@ -503,7 +509,7 @@
       "congestion_exposure": 30,
       "commercial_tendency": "장기체류형",
       "recommended_sales_strategy": "체류/작업 가능 시간 중심으로 항만 대리점 접촉",
-      "opportunity_score": 24,
+      "opportunity_score": 25,
       "reason_summary": "PAN OCEAN: 장기체류형",
       "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
       "normalized_port": {
@@ -601,7 +607,7 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 24,
+        "opportunity_score": 25,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -662,7 +668,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -682,7 +689,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -695,6 +705,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -816,7 +828,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 24,
+            "confidence": 25,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -878,7 +890,7 @@
           "display_name": "부산"
         }
       ],
-      "repeat_visit_frequency": 1,
+      "repeat_visit_frequency": 2,
       "common_vessel_types": [
         {
           "vessel_type": "container",
@@ -891,7 +903,7 @@
       "congestion_exposure": 0,
       "commercial_tendency": "Compliance 노출형",
       "recommended_sales_strategy": "Biofouling compliance 각도로 선제 확인",
-      "opportunity_score": 20,
+      "opportunity_score": 21,
       "reason_summary": "HMM: Compliance 노출형, 장기체류형",
       "recommended_action": "선대 DNA에 맞춰 메시지 각도와 접촉 우선순위를 조정",
       "normalized_port": {
@@ -989,7 +1001,7 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 20,
+        "opportunity_score": 21,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -1050,7 +1062,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1070,7 +1083,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1083,6 +1099,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -1204,7 +1222,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 20,
+            "confidence": 21,
             "updated_at": null,
             "match_type": null,
             "verified": false

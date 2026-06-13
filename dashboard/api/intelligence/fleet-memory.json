@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 2,
@@ -15,7 +15,7 @@
       "ports_used": [
         "인천"
       ],
-      "last_seen": "2026-06-12T20:27:29.240Z",
+      "last_seen": "2026-06-13T03:33:59.508Z",
       "opportunity_score": 47,
       "reason_summary": "PAN OCEAN 관계 신호: 선박 1척, 반복입항 1척, 사용 항만 1곳",
       "recommended_action": "운영사 담당자와 항만별 접점을 먼저 확인",
@@ -176,7 +176,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -196,7 +197,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -209,6 +213,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -379,7 +385,7 @@
       "ports_used": [
         "부산"
       ],
-      "last_seen": "2026-06-12T20:27:29.240Z",
+      "last_seen": "2026-06-13T03:33:59.508Z",
       "opportunity_score": 41,
       "reason_summary": "HMM 관계 신호: 선박 1척, 반복입항 1척, 사용 항만 1곳",
       "recommended_action": "운영사 담당자와 항만별 접점을 먼저 확인",
@@ -540,7 +546,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -560,7 +567,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -573,6 +583,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",

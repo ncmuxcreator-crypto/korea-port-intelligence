@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:31:36.976Z",
+  "generated_at": "2026-06-13T03:38:54.655Z",
   "record_count": 3,
   "item_count": 3,
   "items": [
@@ -48,7 +48,7 @@
       "beam": 0,
       "flag": "",
       "terminal_name": "",
-      "berth_key": "원료부두4선석",
+      "berth_key": "원료부두 4선석_원료부두 4선석",
       "berth_status": "",
       "terminal_activity": "",
       "cargo_workload_proxy": 0,
@@ -72,7 +72,7 @@
       "course": 0,
       "heading": 0,
       "risk_score": 45,
-      "source": "merged_port_operation",
+      "source": "port_operation_south_gyeongsang_o",
       "source_label": "Merged Port Operation port call",
       "source_profile": "schedule_or_berth",
       "detail_rows_flattened": true,
@@ -129,11 +129,11 @@
       "prt_ag_cd": "622",
       "etrypt_year": "2026",
       "etrypt_co": "001",
-      "de_gb": "I",
-      "raw_row_identity": "622|2026|001|V7A3508|I|1|2026-06-18 09:00:00",
+      "de_gb": "O",
+      "raw_row_identity": "622|2026|001|V7A3508|O|1|2026-06-18 09:00:00",
       "port_call_identity": "622|2026|001|V7A3508",
       "vessel_identity": "CALL-V7A3508",
-      "updated_at": "2026-06-12T20:27:29.240Z",
+      "updated_at": "2026-06-13T03:33:59.508Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -145,18 +145,15 @@
       "match_score": 0,
       "match_confidence": "unmatched",
       "match_reasons": [],
-      "raw_row_count": 4,
+      "raw_row_count": 2,
       "de_gb_values": [
-        "I",
         "O"
       ],
       "raw_source_references": [
-        "622|2026|001|V7A3508|I|1|2026-06-18 09:00:00",
-        "622|2026|001|V7A3508|I|2|2026-06-15 03:00:00+09:00",
         "622|2026|001|V7A3508|O|1|2026-06-18 09:00:00",
         "622|2026|001|V7A3508|O|2|2026-06-15 03:00:00+09:00"
       ],
-      "detail_rows_flattened_count": 4,
+      "detail_rows_flattened_count": 2,
       "source_children": [],
       "enrichment_sources": [],
       "berth_occupancy_proxy": 0,
@@ -211,9 +208,9 @@
       "identity_recovery_notes": "reference sources lack IMO/MMSI values",
       "identity_conflict": null,
       "calls_last_3m": 1,
-      "calls_last_6m": 1,
-      "calls_last_12m": 1,
-      "repeat_call_count": 1,
+      "calls_last_6m": 2,
+      "calls_last_12m": 2,
+      "repeat_call_count": 2,
       "repeat_operator_count": 0,
       "operator_call_count": 0,
       "operator_vessel_count": 0,
@@ -244,7 +241,7 @@
       "cumulative_stay_days": 5.9,
       "berth_hours": 142,
       "anchorage_hours": null,
-      "work_window_hours": 123.5,
+      "work_window_hours": 116.4,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -322,14 +319,14 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 60,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 117.5,
+      "predicted_arrival_window_hours": 110.4,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 48,
       "congestion_forecast_band": "MEDIUM",
       "anchorage_probability": 53,
-      "predicted_work_window_hours": 123.5,
+      "predicted_work_window_hours": 116.4,
       "work_window_confidence": 50,
-      "repeat_caller_score": 49,
+      "repeat_caller_score": 69,
       "repeat_operator_score": 10,
       "low_speed_exposure": 35,
       "idle_exposure": 55,
@@ -457,7 +454,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 53,
+      "operational_risk_score": 52,
       "commercial_signal_flags": [
         "GT_30000_PLUS",
         "GT_80000_PLUS",
@@ -492,7 +489,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 124시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "SOUTH GYEONGSANG 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 116시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "대형 상선 · 연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -500,8 +497,8 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "선양해운 주식회사 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n스키야토스 관련하여 South Gyeongsang 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSouth Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 124시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 선양해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
-      "recommended_followup_date": "2026-06-13",
+      "recommended_email_draft": "안녕하세요.\n\n스키야토스 관련하여 SOUTH GYEONGSANG 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSOUTH GYEONGSANG 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 116시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 선양해운 주식회사 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_followup_date": "2026-06-14",
       "lead_timeline": [
         {
           "label": "ETD",
@@ -515,7 +512,7 @@
         },
         {
           "label": "작업창",
-          "value": "124시간",
+          "value": "116시간",
           "source": "closed"
         }
       ],
@@ -530,9 +527,9 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612202729227_62b5c664",
-      "generated_at": "2026-06-12T20:30:43.799Z",
-      "data_source_used": "merged_port_operation",
+      "run_id": "run_20260613033359476_4972d654",
+      "generated_at": "2026-06-13T03:37:02.622Z",
+      "data_source_used": "port_operation_south_gyeongsang_o",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-V7A3508-622-622-2026-001-V7A3508",
       "candidate_band": "sales_target",
       "is_monitor": false,
@@ -555,8 +552,8 @@
       "long_stay_reason": "체류 시간이 142시간으로 길게 확인됩니다.",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 80,
-      "global_rank": 5,
-      "global_percentile": 12.5,
+      "global_rank": 4,
+      "global_percentile": 10,
       "port_rank": 1,
       "port_percentile": 0,
       "priority_label": "WARM",
@@ -599,9 +596,9 @@
           "port_code": "622",
           "port_name": "마산/창원",
           "display_name": "마산/창원",
-          "raw_port": "South Gyeongsang",
+          "raw_port": "SOUTH GYEONGSANG",
           "raw_aliases": [
-            "South Gyeongsang",
+            "SOUTH GYEONGSANG",
             "OCEAN DISTRICT",
             "하동항",
             "마산/창원"
@@ -626,7 +623,7 @@
         "port_stay_hours": 142,
         "congestion_score": 36,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T20:27:29.240Z",
+        "last_seen_at": "2026-06-13T03:33:59.508Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -650,7 +647,7 @@
           "복수 데이터 출처",
           "데이터 최신성"
         ],
-        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 6개",
+        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 5개",
         "opportunity_score": 65,
         "risk_score": 45,
         "biofouling_score": 50,
@@ -723,7 +720,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -742,8 +740,11 @@
           "display_name": "마산/창원"
         },
         "berth_signal": {
-          "has_berth_info": true,
-          "source": "berth_sources",
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": "port_operation",
+          "signal_strength": "BASELINE",
+          "placeholder": false,
           "terminal": null,
           "berth": "원료부두 4선석",
           "berth_direction": null,
@@ -754,10 +755,11 @@
           "operation_start": null,
           "operation_end": null,
           "port": "마산/창원",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다.",
-          "has_berth": true,
+          "match_type": "CORE_FIELD",
+          "confidence": 0,
+          "reason_code": "baseline_core_field_only",
+          "baseline_reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
+          "reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
           "normalized_port": {
             "port_code": "622",
             "port_name": "마산/창원",
@@ -774,62 +776,62 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "South Gyeongsang 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 124시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "SOUTH GYEONGSANG 원료부두 4선석에서 체류 5.9일째인 GT 109,299 벌크선으로, 출항 전 약 116시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -843,14 +845,14 @@
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -859,27 +861,27 @@
             "source": "berth_sources",
             "confidence": 100,
             "updated_at": "2026-06-12T14:19:59.488Z",
-            "match_type": null,
+            "match_type": "CORE_FIELD",
             "verified": true
           },
           "berth_signal": {
             "source": "berth_sources",
             "confidence": 100,
             "updated_at": "2026-06-12T14:19:59.488Z",
-            "match_type": null,
+            "match_type": "CORE_FIELD",
             "verified": true
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 65,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -899,11 +901,10 @@
         },
         "data_sources": [
           "Merged Port Operation port call",
-          "merged_port_operation",
+          "port_operation_south_gyeongsang_o",
           "real_public_api_snapshot",
           "port_operation",
-          "gt",
-          "berth_sources"
+          "gt"
         ],
         "enrichment_sources": [],
         "port_code": "622",
@@ -911,10 +912,10 @@
         "display_name": "마산/창원"
       },
       "first_seen_at": "2026-06-10T07:23:28.931Z",
-      "last_seen_at": "2026-06-12T20:27:29.240Z",
+      "last_seen_at": "2026-06-13T03:33:59.508Z",
       "previous_candidate_score": 65,
       "candidate_score_delta": 0,
-      "observation_count": 104,
+      "observation_count": 106,
       "snapshot_key": "PORTCALL|622|2026|001|V7A3508",
       "biofoulingRiskScore": 50,
       "hullGrowthIndex": 42,
@@ -1096,13 +1097,33 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "OCEAN DISTRICT",
           "하동항",
           "마산/창원"
         ]
+      },
+      "raw_port": "South Gyeongsang",
+      "raw_terminal_name": "",
+      "raw_berth_name": "",
+      "time_parse_statuses": {
+        "eta": "missing",
+        "etb": "missing",
+        "ata": "parsed",
+        "atb": "missing",
+        "etd": "parsed",
+        "atd": "missing",
+        "next_port_eta": "missing",
+        "pilot_time": "missing"
+      },
+      "match_keys": {
+        "call_sign": "V7A3508",
+        "call_sign_port": "V7A3508|SOUTH_GYEONGSANG",
+        "vessel_name": "스키야토스",
+        "vessel_name_port": "스키야토스|SOUTH_GYEONGSANG",
+        "vessel_name_gt_type": "스키야토스|109299|산물선 벌크선"
       },
       "port_display_name": "마산/창원",
       "display_name": "마산/창원"
@@ -1151,7 +1172,7 @@
       "beam": 0,
       "flag": "",
       "terminal_name": "",
-      "berth_key": "D1정박지",
+      "berth_key": "D 1정박지_D 1정박지",
       "berth_status": "",
       "terminal_activity": "",
       "cargo_workload_proxy": 0,
@@ -1245,7 +1266,7 @@
       "raw_row_identity": "622|2026|004|5LYO4|I|1|2026-06-17 08:00:00",
       "port_call_identity": "622|2026|004|5LYO4",
       "vessel_identity": "CALL-5LYO4",
-      "updated_at": "2026-06-12T20:27:29.240Z",
+      "updated_at": "2026-06-13T03:33:59.508Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -1287,9 +1308,9 @@
       "identity_recovery_notes": "reference sources lack IMO/MMSI values",
       "identity_conflict": null,
       "calls_last_3m": 1,
-      "calls_last_6m": 1,
-      "calls_last_12m": 1,
-      "repeat_call_count": 1,
+      "calls_last_6m": 2,
+      "calls_last_12m": 2,
+      "repeat_call_count": 2,
       "repeat_operator_count": 0,
       "operator_call_count": 0,
       "operator_vessel_count": 0,
@@ -1336,7 +1357,7 @@
       "cumulative_stay_days": 4,
       "berth_hours": 97,
       "anchorage_hours": 97,
-      "work_window_hours": 98.5,
+      "work_window_hours": 91.4,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -1413,14 +1434,14 @@
       "arrival_prediction_confidence": 22,
       "arrival_opportunity_score": 72,
       "arrival_prediction_source": "route_pattern",
-      "predicted_arrival_window_hours": 123.5,
+      "predicted_arrival_window_hours": 116.4,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 91,
       "congestion_forecast_band": "CRITICAL",
       "anchorage_probability": 95,
-      "predicted_work_window_hours": 98.5,
+      "predicted_work_window_hours": 91.4,
       "work_window_confidence": 65,
-      "repeat_caller_score": 49,
+      "repeat_caller_score": 69,
       "repeat_operator_score": 10,
       "low_speed_exposure": 52,
       "idle_exposure": 94,
@@ -1628,7 +1649,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 65,
+      "operational_risk_score": 63,
       "commercial_signal_flags": [
         "GT_30000_PLUS",
         "GT_80000_PLUS",
@@ -1674,7 +1695,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "South Gyeongsang D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 99시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "SOUTH GYEONGSANG D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 91시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "대형 상선 · 묘박/대기 신호 · 연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -1682,8 +1703,8 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "에이치라인해운(주) 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\nHL PORT HEDLAND 관련하여 South Gyeongsang 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSouth Gyeongsang D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 99시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 에이치라인해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
-      "recommended_followup_date": "2026-06-13",
+      "recommended_email_draft": "안녕하세요.\n\nHL PORT HEDLAND 관련하여 SOUTH GYEONGSANG 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSOUTH GYEONGSANG D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 91시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: 에이치라인해운(주) 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_followup_date": "2026-06-14",
       "lead_timeline": [
         {
           "label": "ETD",
@@ -1697,7 +1718,7 @@
         },
         {
           "label": "작업창",
-          "value": "99시간",
+          "value": "91시간",
           "source": "closed"
         }
       ],
@@ -1712,8 +1733,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612202729227_62b5c664",
-      "generated_at": "2026-06-12T20:30:43.799Z",
+      "run_id": "run_20260613033359476_4972d654",
+      "generated_at": "2026-06-13T03:37:02.622Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-5LYO4-622-622-2026-004-5LYO4",
       "candidate_band": "sales_target",
@@ -1739,8 +1760,8 @@
       "long_stay_reason": "체류 시간이 97시간으로 길게 확인됩니다.",
       "stay_duration_source": "stay_hours",
       "long_stay_confidence": 80,
-      "global_rank": 9,
-      "global_percentile": 25,
+      "global_rank": 8,
+      "global_percentile": 23.3,
       "port_rank": 2,
       "port_percentile": 50,
       "priority_label": "WARM",
@@ -1803,9 +1824,9 @@
           "port_code": "622",
           "port_name": "마산/창원",
           "display_name": "마산/창원",
-          "raw_port": "South Gyeongsang",
+          "raw_port": "SOUTH GYEONGSANG",
           "raw_aliases": [
-            "South Gyeongsang",
+            "SOUTH GYEONGSANG",
             "포항신항",
             "하동항",
             "마산/창원"
@@ -1830,7 +1851,7 @@
         "port_stay_hours": 97,
         "congestion_score": 18,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T20:27:29.240Z",
+        "last_seen_at": "2026-06-13T03:33:59.508Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -1854,7 +1875,7 @@
           "복수 데이터 출처",
           "데이터 최신성"
         ],
-        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 6개",
+        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 5개",
         "opportunity_score": 65,
         "risk_score": 45,
         "biofouling_score": 75,
@@ -1927,7 +1948,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1946,8 +1968,11 @@
           "display_name": "마산/창원"
         },
         "berth_signal": {
-          "has_berth_info": true,
-          "source": "berth_sources",
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": "port_operation",
+          "signal_strength": "BASELINE",
+          "placeholder": false,
           "terminal": null,
           "berth": "D-1정박지",
           "berth_direction": null,
@@ -1958,10 +1983,11 @@
           "operation_start": null,
           "operation_end": null,
           "port": "마산/창원",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다.",
-          "has_berth": true,
+          "match_type": "CORE_FIELD",
+          "confidence": 0,
+          "reason_code": "baseline_core_field_only",
+          "baseline_reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
+          "reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
           "normalized_port": {
             "port_code": "622",
             "port_name": "마산/창원",
@@ -1978,62 +2004,62 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "South Gyeongsang D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 99시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "SOUTH GYEONGSANG D-1정박지에서 묘박/대기 4일째인 GT 93,461 벌크선으로, 출항 전 약 91시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -2047,14 +2073,14 @@
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -2063,27 +2089,27 @@
             "source": "berth_sources",
             "confidence": 100,
             "updated_at": "2026-06-12T14:19:59.488Z",
-            "match_type": null,
+            "match_type": "CORE_FIELD",
             "verified": true
           },
           "berth_signal": {
             "source": "berth_sources",
             "confidence": 100,
             "updated_at": "2026-06-12T14:19:59.488Z",
-            "match_type": null,
+            "match_type": "CORE_FIELD",
             "verified": true
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 65,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -2106,8 +2132,7 @@
           "merged_port_operation",
           "real_public_api_snapshot",
           "port_operation",
-          "gt",
-          "berth_sources"
+          "gt"
         ],
         "enrichment_sources": [],
         "port_code": "622",
@@ -2115,10 +2140,10 @@
         "display_name": "마산/창원"
       },
       "first_seen_at": "2026-06-12T14:19:59.488Z",
-      "last_seen_at": "2026-06-12T20:27:29.240Z",
+      "last_seen_at": "2026-06-13T03:33:59.508Z",
       "previous_candidate_score": 65,
       "candidate_score_delta": 0,
-      "observation_count": 31,
+      "observation_count": 33,
       "snapshot_key": "PORTCALL|622|2026|004|5LYO4",
       "detail_eligible": true,
       "detail_inclusion_exception": false,
@@ -2247,13 +2272,33 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "포항신항",
           "하동항",
           "마산/창원"
         ]
+      },
+      "raw_port": "South Gyeongsang",
+      "raw_terminal_name": "",
+      "raw_berth_name": "",
+      "time_parse_statuses": {
+        "eta": "missing",
+        "etb": "missing",
+        "ata": "parsed",
+        "atb": "missing",
+        "etd": "parsed",
+        "atd": "missing",
+        "next_port_eta": "missing",
+        "pilot_time": "missing"
+      },
+      "match_keys": {
+        "call_sign": "5LYO4",
+        "call_sign_port": "5LYO4|SOUTH_GYEONGSANG",
+        "vessel_name": "HL PORT HEDLAND",
+        "vessel_name_port": "HL PORT HEDLAND|SOUTH_GYEONGSANG",
+        "vessel_name_gt_type": "HL PORT HEDLAND|93461|산물선 벌크선"
       },
       "port_display_name": "마산/창원",
       "display_name": "마산/창원"
@@ -2302,7 +2347,7 @@
       "beam": 0,
       "flag": "",
       "terminal_name": "",
-      "berth_key": "2정박지",
+      "berth_key": "2정박지_2정박지",
       "berth_status": "",
       "terminal_activity": "",
       "cargo_workload_proxy": 0,
@@ -2396,7 +2441,7 @@
       "raw_row_identity": "622|2026|006|206808|I|1|2026-06-15 20:00:00",
       "port_call_identity": "622|2026|006|206808",
       "vessel_identity": "CALL-206808",
-      "updated_at": "2026-06-12T20:27:29.240Z",
+      "updated_at": "2026-06-13T03:33:59.508Z",
       "actionable_source_row": true,
       "sales_ready_input": true,
       "secondary_enrichment_matched": false,
@@ -2487,8 +2532,8 @@
       "identity_conflict": null,
       "calls_last_3m": 4,
       "calls_last_6m": 7,
-      "calls_last_12m": 9,
-      "repeat_call_count": 9,
+      "calls_last_12m": 10,
+      "repeat_call_count": 10,
       "repeat_operator_count": 0,
       "operator_call_count": 0,
       "operator_vessel_count": 0,
@@ -2528,7 +2573,7 @@
       "cumulative_stay_days": 4.5,
       "berth_hours": 108,
       "anchorage_hours": 108,
-      "work_window_hours": 62.5,
+      "work_window_hours": 55.4,
       "work_window_status": "closed",
       "eta_candidate": null,
       "etb_candidate": null,
@@ -2605,12 +2650,12 @@
       "arrival_prediction_confidence": 42,
       "arrival_opportunity_score": 63,
       "arrival_prediction_source": "schedule_or_pilot",
-      "predicted_arrival_window_hours": 70.5,
+      "predicted_arrival_window_hours": 63.4,
       "predicted_arrival_pipeline": true,
       "predicted_congestion_score": 91,
       "congestion_forecast_band": "CRITICAL",
       "anchorage_probability": 83,
-      "predicted_work_window_hours": 62.5,
+      "predicted_work_window_hours": 55.4,
       "work_window_confidence": 65,
       "repeat_caller_score": 100,
       "repeat_operator_score": 10,
@@ -2779,7 +2824,7 @@
         "uwc_window_available"
       ],
       "work_feasibility": "workable_window",
-      "operational_risk_score": 59,
+      "operational_risk_score": 57,
       "commercial_signal_flags": [
         "TANKER_TARGET",
         "ANCHORAGE_WAITING_CLASSIFIED",
@@ -2822,7 +2867,7 @@
       "lead_status": "monitor",
       "auto_lead_created": false,
       "lead_created_reason": "",
-      "why_now": "South Gyeongsang 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+      "why_now": "SOUTH GYEONGSANG 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 55시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
       "candidate_summary_ko": "묘박/대기 신호 · 연락 경로 확인 기반 영업 후보입니다.",
       "sales_angle": "출항 전 작업 가능성",
       "recommended_next_action": "운영선사 확인",
@@ -2830,8 +2875,8 @@
       "action_priority": "MEDIUM",
       "recommended_contact_path": "(주)우진해운 대리점/신고업체",
       "recommended_department": "Technical / Fleet Management",
-      "recommended_email_draft": "안녕하세요.\n\n한남 관련하여 South Gyeongsang 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSouth Gyeongsang 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)우진해운 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
-      "recommended_followup_date": "2026-06-13",
+      "recommended_email_draft": "안녕하세요.\n\n한남 관련하여 SOUTH GYEONGSANG 기항 중 수중 선체관리 가능성을 검토하고 있습니다.\nSOUTH GYEONGSANG 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 55시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.\n\n권장 다음 단계: 운영선사 확인\n연락 경로: (주)우진해운 대리점/신고업체\n\n가능하시면 현재 작업/출항 일정과 선체관리 검토 가능 여부를 확인 부탁드립니다.",
+      "recommended_followup_date": "2026-06-14",
       "lead_timeline": [
         {
           "label": "ETD",
@@ -2845,7 +2890,7 @@
         },
         {
           "label": "작업창",
-          "value": "63시간",
+          "value": "55시간",
           "source": "closed"
         }
       ],
@@ -2860,8 +2905,8 @@
       "operator_display": "",
       "identity_source": "",
       "identity_match_type": "call_sign_exact",
-      "run_id": "run_20260612202729227_62b5c664",
-      "generated_at": "2026-06-12T20:30:43.799Z",
+      "run_id": "run_20260613033359476_4972d654",
+      "generated_at": "2026-06-13T03:37:02.622Z",
       "data_source_used": "merged_port_operation",
       "port_call_id": "MASTER-PORTCALL-MASTER-CALLSIGN-206808-622-622-2026-006-206808",
       "candidate_band": "sales_target",
@@ -2929,9 +2974,9 @@
           "port_code": "622",
           "port_name": "마산/창원",
           "display_name": "마산/창원",
-          "raw_port": "South Gyeongsang",
+          "raw_port": "SOUTH GYEONGSANG",
           "raw_aliases": [
-            "South Gyeongsang",
+            "SOUTH GYEONGSANG",
             "부산",
             "하동항",
             "마산/창원"
@@ -2956,7 +3001,7 @@
         "port_stay_hours": 108,
         "congestion_score": 8,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T20:27:29.240Z",
+        "last_seen_at": "2026-06-13T03:33:59.508Z",
         "data_source": "Merged Port Operation port call",
         "identity_source": "-",
         "identity_confidence": 94,
@@ -2980,7 +3025,7 @@
           "복수 데이터 출처",
           "데이터 최신성"
         ],
-        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 6개",
+        "confidence_reason": "선명, 콜사인, GT, 선종, 운영사/회사 확인; IMO/MMSI 보강 필요; 최신성 0.1시간; 출처 5개",
         "opportunity_score": 43,
         "risk_score": 45,
         "biofouling_score": 75,
@@ -3053,7 +3098,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -3072,8 +3118,11 @@
           "display_name": "마산/창원"
         },
         "berth_signal": {
-          "has_berth_info": true,
-          "source": "berth_sources",
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": "port_operation",
+          "signal_strength": "BASELINE",
+          "placeholder": false,
           "terminal": null,
           "berth": "2정박지",
           "berth_direction": null,
@@ -3084,10 +3133,11 @@
           "operation_start": null,
           "operation_end": null,
           "port": "마산/창원",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "선석 또는 터미널 정보가 확인되어 작업 가능 위치 신호가 있습니다.",
-          "has_berth": true,
+          "match_type": "CORE_FIELD",
+          "confidence": 0,
+          "reason_code": "baseline_core_field_only",
+          "baseline_reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
+          "reason": "Berth or terminal exists in core data, but no matched auxiliary berth/PNC signal confirmed it.",
           "normalized_port": {
             "port_code": "622",
             "port_name": "마산/창원",
@@ -3104,112 +3154,112 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "South Gyeongsang 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 63시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
+        "reason_summary": "SOUTH GYEONGSANG 2정박지에서 묘박/대기 4.5일째인 탱커으로, 출항 전 약 55시간의 작업 가능 시간이 보입니다 · 출항도선 신호가 강하지 않습니다 · 연락 경로 단서가 있습니다.",
         "recommended_action": "운영선사 확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": 94,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": 0,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "current_port": "미확인 항만",
           "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
-            "match_type": null,
+            "source": "port_operation",
+            "confidence": 0,
+            "updated_at": "2026-06-13T03:33:59.508Z",
+            "match_type": "CORE_FIELD",
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
-            "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
-            "match_type": null,
+            "confidence": 0,
+            "updated_at": "2026-06-13T03:33:59.508Z",
+            "match_type": "CORE_FIELD",
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
             "confidence": 43,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -3232,16 +3282,15 @@
           "merged_port_operation",
           "real_public_api_snapshot",
           "port_operation",
-          "gt",
-          "berth_sources"
+          "gt"
         ],
         "enrichment_sources": [],
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원"
       },
-      "global_rank": 26,
-      "global_percentile": 78.1,
+      "global_rank": 23,
+      "global_percentile": 73.3,
       "port_rank": 3,
       "port_percentile": 100,
       "priority_label": "LOW",
@@ -3269,10 +3318,10 @@
         "missing_mmsi"
       ],
       "first_seen_at": "2026-06-12T18:56:04.157Z",
-      "last_seen_at": "2026-06-12T20:27:29.240Z",
+      "last_seen_at": "2026-06-13T03:33:59.508Z",
       "previous_candidate_score": 43,
       "candidate_score_delta": 0,
-      "observation_count": 10,
+      "observation_count": 12,
       "snapshot_key": "PORTCALL|622|2026|006|206808",
       "detail_eligible": true,
       "detail_inclusion_exception": true,
@@ -3332,13 +3381,33 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "부산",
           "하동항",
           "마산/창원"
         ]
+      },
+      "raw_port": "South Gyeongsang",
+      "raw_terminal_name": "",
+      "raw_berth_name": "",
+      "time_parse_statuses": {
+        "eta": "missing",
+        "etb": "missing",
+        "ata": "parsed",
+        "atb": "missing",
+        "etd": "parsed",
+        "atd": "missing",
+        "next_port_eta": "missing",
+        "pilot_time": "missing"
+      },
+      "match_keys": {
+        "call_sign": "206808",
+        "call_sign_port": "206808|SOUTH_GYEONGSANG",
+        "vessel_name": "한남",
+        "vessel_name_port": "한남|SOUTH_GYEONGSANG",
+        "vessel_name_gt_type": "한남|1097|석유제품 운반선"
       },
       "port_display_name": "마산/창원",
       "display_name": "마산/창원"

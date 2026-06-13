@@ -3602,8 +3602,8 @@ function writeApiJson(filePath, payload, report = {}) {
     rowCountFromPayload(preparedPayload) > 0 &&
     String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
   const shouldRefreshZeroCountTierContract = existingPayload &&
-    /^dashboard\/api\/(?:aux\/latest\/(?:patch-hints|pilotage-match-results|berth-match-results|vessel-spec-parser-diagnostic|ais-target-enrichment)|enrichment\/vessel-identity-graph)\.json$/i.test(normalized) &&
-    contractDataMode(existingPayload.data_mode) !== "live" &&
+    /^dashboard\/api\/(?:aux\/latest\/(?:patch-hints|pilotage-match-results|berth-match-results|vessel-spec-parser-diagnostic|ais-target-enrichment|ais-target-queue|ais-cursor|ais-cache)|enrichment\/vessel-identity-graph)\.json$/i.test(normalized) &&
+    !IS_CORE_UPDATE &&
     contractDataMode(preparedPayload?.data_mode, report) !== "live" &&
     String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
   const shouldBackfillDiagnosticOwnership = target !== normalized &&
@@ -4928,6 +4928,9 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.latestBerthMatchResults", "dashboard/api/aux/latest/berth-match-results.json"],
   ["aux.latestVesselSpecParserDiagnostic", "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json"],
   ["aux.latestAisTargetEnrichment", "dashboard/api/aux/latest/ais-target-enrichment.json"],
+  ["aux.latestAisTargetQueue", "dashboard/api/aux/latest/ais-target-queue.json"],
+  ["aux.latestAisCursor", "dashboard/api/aux/latest/ais-cursor.json"],
+  ["aux.latestAisCache", "dashboard/api/aux/latest/ais-cache.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
@@ -5016,6 +5019,9 @@ const WORKER_PUBLIC_ENDPOINTS = new Set([
   "dashboard/api/aux/latest/berth-match-results.json",
   "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json",
   "dashboard/api/aux/latest/ais-target-enrichment.json",
+  "dashboard/api/aux/latest/ais-target-queue.json",
+  "dashboard/api/aux/latest/ais-cursor.json",
+  "dashboard/api/aux/latest/ais-cache.json",
   "dashboard/api/aux/source-csv-summary.json",
   "dashboard/api/aux/pilotage-summary.json",
   "dashboard/api/aux/berth-summary.json",
@@ -19729,30 +19735,12 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
   };
   for (const item of items) {
     const signalType = String(item.signal_type || "").trim();
-    const field = signalType === "pilotage_signal" || signalType === "berth_signal" ? signalType : "";
-    if (!field) {
-      skip("identity_or_unknown_hint_not_auto_applied");
-      continue;
-    }
     const applyPolicy = String(item.apply_policy || "APPLY").toUpperCase();
     if (applyPolicy !== "APPLY") {
       skip(`apply_policy_${applyPolicy.toLowerCase()}`);
       continue;
     }
     const confidence = Number(item.confidence || item.match_confidence || 0);
-    const fields = item.fields && typeof item.fields === "object" ? item.fields : {};
-    const patch = fields[field] && typeof fields[field] === "object"
-      ? fields[field]
-      : item.field_patch && typeof item.field_patch === "object" ? item.field_patch : {};
-    const clearOperationalSignal = field === "pilotage_signal"
-      ? patch.has_pilotage === true
-      : patch.has_berth_info === true || patch.has_berth === true;
-    const applyThreshold = field === "berth_signal" ? 80 : 85;
-    if ((confidence < applyThreshold) || !clearOperationalSignal) {
-      skip("low_confidence");
-      continue;
-    }
-    patchesEligible += 1;
     const key = String(item.vessel_key || item.target_vessel_key || "").trim().toUpperCase();
     if (!key) {
       skip("missing_vessel_key");
@@ -19763,6 +19751,80 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
       skip("record_not_found");
       continue;
     }
+    const fields = item.fields && typeof item.fields === "object" ? item.fields : {};
+    if (signalType === "ais_identity_hint") {
+      if (confidence < 90) {
+        skip("low_confidence");
+        continue;
+      }
+      const safeIdentityFields = ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt"];
+      let identityFieldsApplied = 0;
+      patchesEligible += 1;
+      for (const field of safeIdentityFields) {
+        const candidateValue = fields[field];
+        if (!cachedPatchHasCandidateValue(candidateValue)) continue;
+        const currentValue = record[field] ?? record.vessel_display?.[field];
+        const currentTrusted = record[`${field}_verified`] === true ||
+          record[`${field}_manual`] === true ||
+          record.manual === true ||
+          record.verified === true ||
+          record.data_lineage?.[field]?.verified === true ||
+          record.vessel_display?.data_lineage?.[field]?.verified === true;
+        if (currentTrusted) {
+          skip("current_value_verified");
+          continue;
+        }
+        if (cachedPatchCurrentValueProtected(field, currentValue)) {
+          skip("current_value_present");
+          continue;
+        }
+        record[field] = candidateValue;
+        if (!record.vessel_display || typeof record.vessel_display !== "object") record.vessel_display = {};
+        record.vessel_display[field] = candidateValue;
+        record.data_lineage = record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {};
+        record.data_lineage[field] = {
+          source: item.source_key || "mof_ais_info",
+          confidence: confidence || null,
+          updated_at: item.source_generated_at || payload.generated_at || generatedAt,
+          aux_patch_hint: true
+        };
+        record.vessel_display.data_lineage = record.vessel_display.data_lineage && typeof record.vessel_display.data_lineage === "object"
+          ? record.vessel_display.data_lineage
+          : {};
+        record.vessel_display.data_lineage[field] = record.data_lineage[field];
+        fieldsAppliedByName[field] = (fieldsAppliedByName[field] || 0) + 1;
+        identityFieldsApplied += 1;
+        applied += 1;
+      }
+      if (identityFieldsApplied > 0) {
+        record.aux_patch_hint_applied = true;
+        record.vessel_display.aux_patch_hint_applied = true;
+        recordsUpdated.add(key);
+        displayRecordsUpdated.add(key);
+      } else {
+        skip("no_empty_identity_fields");
+      }
+      continue;
+    }
+    const field = signalType === "pilotage_signal" || signalType === "berth_signal" || signalType === "ais_dynamic_signal" ? signalType : "";
+    if (!field) {
+      skip("identity_or_unknown_hint_not_auto_applied");
+      continue;
+    }
+    const patch = fields[field] && typeof fields[field] === "object"
+      ? fields[field]
+      : item.field_patch && typeof item.field_patch === "object" ? item.field_patch : {};
+    const clearOperationalSignal = field === "pilotage_signal"
+      ? patch.has_pilotage === true
+      : field === "berth_signal"
+        ? patch.has_berth_info === true || patch.has_berth === true
+        : patch.has_ais_position === true;
+    const applyThreshold = field === "berth_signal" ? 80 : field === "ais_dynamic_signal" ? 90 : 85;
+    if ((confidence < applyThreshold) || !clearOperationalSignal) {
+      skip("low_confidence");
+      continue;
+    }
+    patchesEligible += 1;
     const currentValue = record[field] ?? record.vessel_display?.[field];
     const candidateValue = normalizeCachedSignalValue(field, patch, {
       source_key: item.source_key || "aux_patch_hints",
@@ -20965,6 +21027,9 @@ try {
   const previousBerthMatchResultsPayload = readJsonSafe("dashboard/api/aux/latest/berth-match-results.json", null) || {};
   const previousVesselSpecParserDiagnosticPayload = readJsonSafe("dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json", null) || {};
   const previousAisTargetEnrichmentPayload = readJsonSafe("dashboard/api/aux/latest/ais-target-enrichment.json", null) || {};
+  const previousAisTargetQueuePayload = readJsonSafe("dashboard/api/aux/latest/ais-target-queue.json", null) || {};
+  const previousAisCursorPayload = readJsonSafe("dashboard/api/aux/latest/ais-cursor.json", null) || {};
+  const previousAisCachePayload = readJsonSafe("dashboard/api/aux/latest/ais-cache.json", null) || {};
   const previousAuxPatchHintsPayload = readJsonSafe("dashboard/api/aux/latest/patch-hints.json", null) || {};
   let vesselIdentityGraphPayload = Object.keys(previousVesselIdentityGraphPayload).length
     ? previousVesselIdentityGraphPayload
@@ -20985,6 +21050,15 @@ try {
   let aisTargetEnrichmentPayload = Object.keys(previousAisTargetEnrichmentPayload).length
     ? previousAisTargetEnrichmentPayload
     : emptyFastAuxCachePayload("mof_ais", { coverage_label: "UNKNOWN" });
+  let aisTargetQueuePayload = Object.keys(previousAisTargetQueuePayload).length
+    ? previousAisTargetQueuePayload
+    : emptyFastAuxCachePayload("mof_ais_target_queue");
+  let aisCursorPayload = Object.keys(previousAisCursorPayload).length
+    ? previousAisCursorPayload
+    : emptyFastAuxCachePayload("mof_ais_cursor", { cursor_position: 0, next_cursor: 0, queue_size: 0, batch_size: 0 });
+  let aisCachePayload = Object.keys(previousAisCachePayload).length
+    ? previousAisCachePayload
+    : emptyFastAuxCachePayload("mof_ais_cache");
   let evidencePatchHintsPayload = Object.keys(previousAuxPatchHintsPayload).length
     ? previousAuxPatchHintsPayload
     : emptyFastAuxCachePayload("aux_patch_hints", { patch_hints_created: 0 });
@@ -21008,13 +21082,28 @@ try {
         ...hotVessels,
         ...targetVessels
       ],
+      targetGroups: {
+        sales_candidates_current: salesCandidates,
+        sales_actions: salesCandidates,
+        contact_now: contactReadyVessels,
+        top_opportunity_vessels: [...candidateList, ...hotVessels],
+        targets_current: targetVessels,
+        detail_eligible_top_100: allCollectedVessels.filter(record => record.detail_eligible).slice(0, 100)
+      },
+      universeRecords: allCollectedVessels,
       generatedAt: completedAt,
       report,
-      previousAisTarget: previousAisTargetEnrichmentPayload
+      previousAisTarget: previousAisTargetEnrichmentPayload,
+      previousAisQueue: previousAisTargetQueuePayload,
+      previousAisCursor: previousAisCursorPayload,
+      previousAisCache: previousAisCachePayload
     });
     pilotageMatchResultsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.pilotageMatchResults, finalRunOrigin);
     berthMatchResultsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.berthMatchResults, finalRunOrigin);
     vesselSpecParserDiagnosticPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.vesselSpecParserDiagnostic, finalRunOrigin);
+    aisTargetQueuePayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.aisTargetQueue, finalRunOrigin);
+    aisCursorPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.aisCursor, finalRunOrigin);
+    aisCachePayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.aisCache, finalRunOrigin);
     aisTargetEnrichmentPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.aisTargetEnrichment, finalRunOrigin);
     evidencePatchHintsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.patchHints, finalRunOrigin);
     auxEvidenceMetrics = auxEvidenceMatchingPayloadsRaw.metrics || {};
@@ -22048,7 +22137,10 @@ try {
     "pilotage-match-results.json",
     "berth-match-results.json",
     "vessel-spec-parser-diagnostic.json",
-    "ais-target-enrichment.json"
+    "ais-target-enrichment.json",
+    "ais-target-queue.json",
+    "ais-cursor.json",
+    "ais-cache.json"
   ];
   const auxLatestPayloads = {
     "dashboard/api/aux/latest/pilotage-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
@@ -22061,7 +22153,10 @@ try {
     "dashboard/api/aux/latest/pilotage-match-results.json": pilotageMatchResultsPayload,
     "dashboard/api/aux/latest/berth-match-results.json": berthMatchResultsPayload,
     "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json": vesselSpecParserDiagnosticPayload,
-    "dashboard/api/aux/latest/ais-target-enrichment.json": aisTargetEnrichmentPayload
+    "dashboard/api/aux/latest/ais-target-enrichment.json": aisTargetEnrichmentPayload,
+    "dashboard/api/aux/latest/ais-target-queue.json": aisTargetQueuePayload,
+    "dashboard/api/aux/latest/ais-cursor.json": aisCursorPayload,
+    "dashboard/api/aux/latest/ais-cache.json": aisCachePayload
   };
   let auxLatestIndexPayload = withRunOrigin(buildAuxLatestIndex({
     generatedAt: completedAt,

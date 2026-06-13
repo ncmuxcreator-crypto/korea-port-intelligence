@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
   "record_count": 1,
   "source_table": "AIS_vessel_tracks,Port-MIS_pilot_events,VTS_operations,NOAA_SST,opportunity_master",
   "items": [
     {
-      "rank": 4,
+      "rank": 3,
       "vessel_name": "ETHANE CORAL",
       "tonnage_summary": {
         "gt": 60199,
@@ -20,22 +20,22 @@
       "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
       "port": "대산",
       "biofouling_risk_score": 45,
-      "hull_cleaning_opportunity_score": 45,
+      "hull_cleaning_opportunity_score": 47,
       "departure_prediction_eta": "2026-06-18T06:00:00.000Z",
       "departure_prediction_confidence": 72,
       "departure_prediction_source": "ETD",
       "port_congestion_index": 0,
-      "hot_prospect_rank": 4,
+      "hot_prospect_rank": 3,
       "loitering_detected": true,
-      "loitering_hours": 45.5,
+      "loitering_hours": 52.6,
       "loitering_reason": "<2kn 저속 상태가 6시간 이상 지속된 신호",
-      "hourly_ais_bucket": "2026-06-12T20:00:00.000Z",
+      "hourly_ais_bucket": "2026-06-13T03:00:00.000Z",
       "hourly_ais_duplicate_count": 0,
-      "sst_anomaly_z_score": -1.45,
+      "sst_anomaly_z_score": -1.44,
       "pilot_event_suppressed": false,
       "alert_dedupe_window_hours": 72,
       "sst_anomaly": 0.6,
-      "ais_dwell_hours": 45.5,
+      "ais_dwell_hours": 52.6,
       "model_version": "hull_cleaning_engine_v1",
       "formula": "Existing commercial opportunity + biofouling + loitering + congestion + vessel profile - outbound pilot suppression",
       "commercial_size_qualified": true,
@@ -55,17 +55,17 @@
         "confidence": 0,
         "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
       },
-      "opportunity_score": 45,
+      "opportunity_score": 47,
       "risk_score": 45,
       "priority_label": "LOW",
       "top_factors": [
-        "Hull 45",
+        "Hull 47",
         "Biofouling 45",
         "Congestion 0",
-        "Loitering 45.5h",
-        "SST z -1.45"
+        "Loitering 52.6h",
+        "SST z -1.44"
       ],
-      "reason_summary": "loitering 45.5h · 출항 예측 2026-06-18T06:00",
+      "reason_summary": "loitering 52.6h · 출항 예측 2026-06-18T06:00",
       "recommended_action": "다음 AIS/입항 업데이트에서 기회 신호를 재확인",
       "data_sources": [
         "PORT-MIS VsslEtrynd5 Daesan I",
@@ -79,14 +79,14 @@
         "VTS operations",
         "NOAA SST"
       ],
-      "last_seen_at": "2026-06-12T20:27:29.240Z",
+      "last_seen_at": "2026-06-13T03:33:59.508Z",
       "normalized_port": {
         "port_code": "621",
         "port_name": "대산",
         "display_name": "대산",
-        "raw_port": "Daesan",
+        "raw_port": "DAESAN",
         "raw_aliases": [
-          "Daesan",
+          "DAESAN",
           "대산"
         ]
       },
@@ -132,9 +132,9 @@
           "port_code": "621",
           "port_name": "대산",
           "display_name": "대산",
-          "raw_port": "Daesan",
+          "raw_port": "DAESAN",
           "raw_aliases": [
-            "Daesan",
+            "DAESAN",
             "대산"
           ]
         },
@@ -157,7 +157,7 @@
         "port_stay_hours": null,
         "congestion_score": 0,
         "waiting_score": null,
-        "last_seen_at": "2026-06-12T20:27:29.240Z",
+        "last_seen_at": "2026-06-13T03:33:59.508Z",
         "data_source": "-",
         "identity_source": "-",
         "identity_confidence": null,
@@ -180,7 +180,7 @@
           "데이터 최신성"
         ],
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 최신성 0시간; 출처 10개",
-        "opportunity_score": 45,
+        "opportunity_score": 47,
         "risk_score": 45,
         "biofouling_score": 45,
         "compliance_score": null,
@@ -203,7 +203,7 @@
         },
         "biofoulingRiskScore": 45,
         "hullGrowthIndex": null,
-        "cleaningOpportunityScore": 45,
+        "cleaningOpportunityScore": 47,
         "anchorageHours": null,
         "portStayHours": null,
         "sstCelsius": null,
@@ -217,13 +217,13 @@
         "ocean_source": "-",
         "ocean_updated_at": "-",
         "tropicalExposureDays": null,
-        "slowSteamingHours": 45.5,
+        "slowSteamingHours": 52.6,
         "riskReasons": [
-          "Hull 45",
+          "Hull 47",
           "Biofouling 45",
           "Congestion 0",
-          "Loitering 45.5h",
-          "SST z -1.45"
+          "Loitering 52.6h",
+          "SST z -1.44"
         ],
         "recommendedAction": "다음 AIS/입항 업데이트에서 기회 신호를 재확인",
         "confidence": "LOW",
@@ -247,7 +247,8 @@
           "pilotage_source": "Port-MIS pilot events",
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -267,7 +268,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -280,6 +284,8 @@
           "port": "대산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "621",
@@ -297,83 +303,83 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "loitering 45.5h · 출항 예측 2026-06-18T06:00",
+        "reason_summary": "loitering 52.6h · 출항 예측 2026-06-18T06:00",
         "recommended_action": "다음 AIS/입항 업데이트에서 기회 신호를 재확인",
         "data_lineage": {
           "vessel_name": {
             "source": "port_operation",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "imo": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "mmsi": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "call_sign": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "gt": {
             "source": "port_operation",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "dwt": {
             "source": "unknown",
             "confidence": 90,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "flag": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "vessel_type": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "operator_display": {
             "source": "unknown",
             "confidence": 70,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "owner": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "manager": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -381,28 +387,28 @@
           "berth": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "berth_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "pilotage_signal": {
             "source": "unknown",
             "confidence": null,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 45,
-            "updated_at": "2026-06-12T20:27:29.240Z",
+            "confidence": 47,
+            "updated_at": "2026-06-13T03:33:59.508Z",
             "match_type": null,
             "verified": false
           },
@@ -463,7 +469,7 @@
     "hot_prospect_count": 0,
     "loitering_count": 1,
     "pilot_suppressed_count": 0,
-    "average_hull_cleaning_opportunity_score": 45,
+    "average_hull_cleaning_opportunity_score": 47,
     "average_biofouling_risk_score": 45,
     "port_congestion_index": 0,
     "reason_summary": "대산: Hull Cleaning 후보 0척, loitering 1척",

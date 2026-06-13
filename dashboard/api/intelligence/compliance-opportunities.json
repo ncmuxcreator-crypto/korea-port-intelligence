@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 6,
+  "record_count": 5,
   "source_table": "risk_history,biofouling,opportunity_master,route_snapshot_daily,vessel_visits,explainability_snapshots",
   "items": [
     {
@@ -224,7 +224,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -244,7 +245,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -257,6 +261,8 @@
           "port": "평택·당진",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "031",
@@ -644,7 +650,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -664,7 +671,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -677,6 +687,8 @@
           "port": "인천",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "030",
@@ -860,7 +872,7 @@
       "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
       "port": "부산",
       "risk_level": "MEDIUM",
-      "compliance_score": 88,
+      "compliance_score": 93,
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -1001,7 +1013,7 @@
         "opportunity_score": 48,
         "risk_score": 45,
         "biofouling_score": 45,
-        "compliance_score": 88,
+        "compliance_score": 93,
         "commercial_size_qualified": true,
         "biofouling_compliance_exposure": {
           "exposed": true,
@@ -1065,7 +1077,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1085,7 +1098,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1098,6 +1114,8 @@
           "port": "부산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "020",
@@ -1280,9 +1298,9 @@
       },
       "target_size_qualified": true,
       "target_size_reason": "LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "port": "여수",
+      "port": "광양",
       "risk_level": "MEDIUM",
-      "compliance_score": 79,
+      "compliance_score": 85,
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -1302,7 +1320,7 @@
       },
       "destination_country": "Australia",
       "opportunity_score": 54,
-      "risk_score": 52,
+      "risk_score": 53,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -1321,18 +1339,18 @@
         "gt"
       ],
       "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "Yeosu",
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "Gwangyang",
         "raw_aliases": [
-          "Yeosu",
-          "여수"
+          "Gwangyang",
+          "광양"
         ]
       },
-      "port_code": "620-YEOSU",
-      "port_name": "여수",
-      "port_display_name": "여수",
+      "port_code": "620-GWANGYANG",
+      "port_name": "광양",
+      "port_display_name": "광양",
       "vessel_display": {
         "vessel_name": "SAKURA CRESCENT",
         "imo": "-",
@@ -1365,20 +1383,20 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
+        "current_port": "광양",
+        "raw_current_port": "광양",
+        "current_port_korean": "광양",
         "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "Yeosu",
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "display_name": "광양",
+          "raw_port": "Gwangyang",
           "raw_aliases": [
-            "Yeosu",
-            "여수"
+            "Gwangyang",
+            "광양"
           ]
         },
-        "port_display_name": "여수",
+        "port_display_name": "광양",
         "terminal": "-",
         "berth": "-",
         "anchorage": "-",
@@ -1420,9 +1438,9 @@
         ],
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
         "opportunity_score": 54,
-        "risk_score": 52,
-        "biofouling_score": 52,
-        "compliance_score": 79,
+        "risk_score": 53,
+        "biofouling_score": 53,
+        "compliance_score": 85,
         "commercial_size_qualified": true,
         "biofouling_compliance_exposure": {
           "exposed": true,
@@ -1440,7 +1458,7 @@
           "confidence": 0.72,
           "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
         },
-        "biofoulingRiskScore": 52,
+        "biofoulingRiskScore": 53,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -1480,33 +1498,37 @@
           "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
-          "port": "여수",
-          "pilotage_port": "여수",
+          "port": "광양",
+          "pilotage_port": "광양",
           "source": null,
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1516,23 +1538,25 @@
           "atb": null,
           "operation_start": null,
           "operation_end": null,
-          "port": "여수",
+          "port": "광양",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "category_label": "",
         "korean_label": "",
@@ -1667,9 +1691,9 @@
           "gt"
         ],
         "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양"
       },
       "commercial_data_confidence": 32,
       "confidence_label": "LOW",
@@ -1685,430 +1709,10 @@
         "복수 데이터 출처"
       ],
       "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
-      "display_name": "여수"
+      "display_name": "광양"
     },
     {
       "rank": 5,
-      "vessel_name": "GENCO STARS AND STRIPES",
-      "tonnage_summary": {
-        "gt": 107879,
-        "dwt": null,
-        "size_class": "VERY_LARGE_COMMERCIAL",
-        "gt_source": "gt",
-        "dwt_source": "missing",
-        "tonnage_confidence": 90
-      },
-      "target_size_qualified": true,
-      "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "port": "여수",
-      "risk_level": "MEDIUM",
-      "compliance_score": 76,
-      "commercial_size_qualified": true,
-      "biofouling_compliance_exposure": {
-        "exposed": true,
-        "jurisdiction": "Australia",
-        "basis": "destination",
-        "threshold_type": "commercial_vessels",
-        "confidence": 0.86,
-        "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
-      },
-      "compliance_exposure": {
-        "exposed": true,
-        "jurisdiction": "Australia",
-        "basis": "destination",
-        "threshold_type": "commercial_vessels",
-        "confidence": 0.86,
-        "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
-      },
-      "destination_country": "Australia",
-      "opportunity_score": 52,
-      "risk_score": 46,
-      "top_factors": [
-        "MASTER_DB_MATCH_FOUND",
-        "LOW_SPEED_CONGESTION_PATTERN",
-        "HIGH_GT_VESSEL",
-        "HIGH_VALUE_GT_30000_PLUS",
-        "BULK_OR_TANKER"
-      ],
-      "reason_summary": "Australia 목적지/항로 신호와 체류/리스크 기반 compliance opportunity",
-      "recommended_action": "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
-      "urgency": "HIGH",
-      "data_sources": [
-        "Merged Port Operation port call",
-        "merged_port_operation",
-        "real_public_api_snapshot",
-        "port_operation",
-        "gt"
-      ],
-      "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "Yeosu",
-        "raw_aliases": [
-          "Yeosu",
-          "여수"
-        ]
-      },
-      "port_code": "620-YEOSU",
-      "port_name": "여수",
-      "port_display_name": "여수",
-      "vessel_display": {
-        "vessel_name": "GENCO STARS AND STRIPES",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": 107879,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": 107879,
-          "dwt": null,
-          "size_class": "VERY_LARGE_COMMERCIAL",
-          "gt_source": "gt",
-          "dwt_source": "missing",
-          "tonnage_confidence": 90
-        },
-        "target_size_qualified": true,
-        "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "Yeosu",
-          "raw_aliases": [
-            "Yeosu",
-            "여수"
-          ]
-        },
-        "port_display_name": "여수",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "commercial_data_confidence": 40,
-        "confidence_label": "LOW",
-        "missing_critical_fields": [
-          "콜사인",
-          "IMO/MMSI",
-          "운영사/회사"
-        ],
-        "available_strong_fields": [
-          "선명",
-          "GT",
-          "현재 항만",
-          "선석 신호",
-          "복수 데이터 출처"
-        ],
-        "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
-        "opportunity_score": 52,
-        "risk_score": 46,
-        "biofouling_score": 46,
-        "compliance_score": 76,
-        "commercial_size_qualified": true,
-        "biofouling_compliance_exposure": {
-          "exposed": true,
-          "jurisdiction": "Australia",
-          "basis": "destination",
-          "threshold_type": "commercial_vessels",
-          "confidence": 0.86,
-          "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
-        },
-        "compliance_exposure": {
-          "exposed": true,
-          "jurisdiction": "Australia",
-          "basis": "destination",
-          "threshold_type": "commercial_vessels",
-          "confidence": 0.86,
-          "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
-        },
-        "biofoulingRiskScore": 46,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "보통",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [
-          "MASTER_DB_MATCH_FOUND",
-          "LOW_SPEED_CONGESTION_PATTERN",
-          "HIGH_GT_VESSEL",
-          "HIGH_VALUE_GT_30000_PLUS",
-          "BULK_OR_TANKER"
-        ],
-        "recommendedAction": "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
-        "confidence": "LOW",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "여수",
-          "pilotage_port": "여수",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "여수",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "Australia 목적지/항로 신호와 체류/리스크 기반 compliance opportunity",
-        "recommended_action": "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "port_operation",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "port_operation",
-            "confidence": 90,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 90,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "unknown",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 52,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [
-          "Merged Port Operation port call",
-          "merged_port_operation",
-          "real_public_api_snapshot",
-          "port_operation",
-          "gt"
-        ],
-        "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
-      },
-      "commercial_data_confidence": 32,
-      "confidence_label": "LOW",
-      "missing_critical_fields": [
-        "콜사인",
-        "IMO/MMSI",
-        "운영사/회사"
-      ],
-      "available_strong_fields": [
-        "선명",
-        "GT",
-        "현재 항만",
-        "복수 데이터 출처"
-      ],
-      "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
-      "display_name": "여수"
-    },
-    {
-      "rank": 6,
       "vessel_name": "PRISM COURAGE",
       "tonnage_summary": {
         "gt": 122166,
@@ -2120,9 +1724,9 @@
       },
       "target_size_qualified": true,
       "target_size_reason": "VERY_LARGE_COMMERCIAL 기준으로 5000GT 이상 상업 규모 선박입니다.",
-      "port": "여수",
+      "port": "광양",
       "risk_level": "MEDIUM",
-      "compliance_score": 74,
+      "compliance_score": 79,
       "commercial_size_qualified": true,
       "biofouling_compliance_exposure": {
         "exposed": true,
@@ -2142,7 +1746,7 @@
       },
       "destination_country": "Australia",
       "opportunity_score": 50,
-      "risk_score": 45,
+      "risk_score": 46,
       "top_factors": [
         "MASTER_DB_MATCH_FOUND",
         "LOW_SPEED_CONGESTION_PATTERN",
@@ -2152,7 +1756,7 @@
       ],
       "reason_summary": "Australia 목적지/항로 신호와 체류/리스크 기반 compliance opportunity",
       "recommended_action": "목적지와 선저 상태 확인 필요 여부를 출항 전 점검",
-      "urgency": "MEDIUM",
+      "urgency": "HIGH",
       "data_sources": [
         "Merged Port Operation port call",
         "merged_port_operation",
@@ -2161,18 +1765,18 @@
         "gt"
       ],
       "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "Yeosu",
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "Gwangyang",
         "raw_aliases": [
-          "Yeosu",
-          "여수"
+          "Gwangyang",
+          "광양"
         ]
       },
-      "port_code": "620-YEOSU",
-      "port_name": "여수",
-      "port_display_name": "여수",
+      "port_code": "620-GWANGYANG",
+      "port_name": "광양",
+      "port_display_name": "광양",
       "vessel_display": {
         "vessel_name": "PRISM COURAGE",
         "imo": "-",
@@ -2205,20 +1809,20 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
+        "current_port": "광양",
+        "raw_current_port": "광양",
+        "current_port_korean": "광양",
         "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "Yeosu",
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "display_name": "광양",
+          "raw_port": "Gwangyang",
           "raw_aliases": [
-            "Yeosu",
-            "여수"
+            "Gwangyang",
+            "광양"
           ]
         },
-        "port_display_name": "여수",
+        "port_display_name": "광양",
         "terminal": "-",
         "berth": "-",
         "anchorage": "-",
@@ -2260,9 +1864,9 @@
         ],
         "confidence_reason": "선명, GT, 현재 항만, 선석 신호, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
         "opportunity_score": 50,
-        "risk_score": 45,
-        "biofouling_score": 45,
-        "compliance_score": 74,
+        "risk_score": 46,
+        "biofouling_score": 46,
+        "compliance_score": 79,
         "commercial_size_qualified": true,
         "biofouling_compliance_exposure": {
           "exposed": true,
@@ -2280,7 +1884,7 @@
           "confidence": 0.72,
           "notes": "Australia biosecurity control 대상 상업 선박 목적지/항로 신호입니다."
         },
-        "biofoulingRiskScore": 45,
+        "biofoulingRiskScore": 46,
         "hullGrowthIndex": null,
         "cleaningOpportunityScore": null,
         "anchorageHours": null,
@@ -2320,33 +1924,37 @@
           "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
-          "port": "여수",
-          "pilotage_port": "여수",
+          "port": "광양",
+          "pilotage_port": "광양",
           "source": null,
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -2356,23 +1964,25 @@
           "atb": null,
           "operation_start": null,
           "operation_end": null,
-          "port": "여수",
+          "port": "광양",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "여수"
+              "광양"
             ]
           },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "category_label": "",
         "korean_label": "",
@@ -2507,9 +2117,9 @@
           "gt"
         ],
         "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양"
       },
       "commercial_data_confidence": 32,
       "confidence_label": "LOW",
@@ -2525,9 +2135,9 @@
         "복수 데이터 출처"
       ],
       "confidence_reason": "선명, GT, 현재 항만, 복수 데이터 출처 확인; 콜사인, IMO/MMSI, 운영사/회사 보강 필요; 출처 5개",
-      "display_name": "여수"
+      "display_name": "광양"
     }
   ],
   "summary": {},
-  "item_count": 6
+  "item_count": 5
 }

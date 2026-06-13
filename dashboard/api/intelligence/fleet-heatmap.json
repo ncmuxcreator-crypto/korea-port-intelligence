@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 3,
@@ -9,12 +9,12 @@
       "rank": 1,
       "operator_name": "미확인 운영사",
       "repeat_caller_score": 100,
-      "compliance_score": 75,
+      "compliance_score": 60,
       "relationship_score": 100,
       "revenue_score": 100,
       "heatmap_score": 100,
-      "opportunity_score": 82,
-      "reason_summary": "미확인 운영사: 기회 82, 매출 100, 반복 31, compliance 5",
+      "opportunity_score": 80,
+      "reason_summary": "미확인 운영사: 기회 80, 매출 100, 반복 29, compliance 4",
       "recommended_action": "선대 단위 핵심 영업 대상으로 우선 접촉",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -111,10 +111,10 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 82,
+        "opportunity_score": 80,
         "risk_score": null,
         "biofouling_score": null,
-        "compliance_score": 75,
+        "compliance_score": 60,
         "commercial_size_qualified": false,
         "biofouling_compliance_exposure": {
           "exposed": false,
@@ -172,7 +172,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -192,7 +193,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -205,6 +209,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -222,7 +228,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 운영사: 기회 82, 매출 100, 반복 31, compliance 5",
+        "reason_summary": "미확인 운영사: 기회 80, 매출 100, 반복 29, compliance 4",
         "recommended_action": "선대 단위 핵심 영업 대상으로 우선 접촉",
         "data_lineage": {
           "vessel_name": {
@@ -326,7 +332,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 82,
+            "confidence": 80,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -373,8 +379,8 @@
       "relationship_score": 16,
       "revenue_score": 26,
       "heatmap_score": 22,
-      "opportunity_score": 24,
-      "reason_summary": "PAN OCEAN: 기회 24, 매출 26, 반복 1, compliance 0",
+      "opportunity_score": 25,
+      "reason_summary": "PAN OCEAN: 기회 25, 매출 26, 반복 1, compliance 0",
       "recommended_action": "선대 기회 신호를 모니터링하며 상위 선박부터 접촉",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -471,7 +477,7 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 24,
+        "opportunity_score": 25,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": 0,
@@ -532,7 +538,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -552,7 +559,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -565,6 +575,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -582,7 +594,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "PAN OCEAN: 기회 24, 매출 26, 반복 1, compliance 0",
+        "reason_summary": "PAN OCEAN: 기회 25, 매출 26, 반복 1, compliance 0",
         "recommended_action": "선대 기회 신호를 모니터링하며 상위 선박부터 접촉",
         "data_lineage": {
           "vessel_name": {
@@ -686,7 +698,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 24,
+            "confidence": 25,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -732,9 +744,9 @@
       "compliance_score": 15,
       "relationship_score": 16,
       "revenue_score": 0,
-      "heatmap_score": 20,
-      "opportunity_score": 20,
-      "reason_summary": "HMM: 기회 20, 매출 0, 반복 1, compliance 1",
+      "heatmap_score": 21,
+      "opportunity_score": 21,
+      "reason_summary": "HMM: 기회 21, 매출 0, 반복 1, compliance 1",
       "recommended_action": "선대 기회 신호를 모니터링하며 상위 선박부터 접촉",
       "normalized_port": {
         "port_code": "UNKNOWN",
@@ -831,7 +843,7 @@
           "선석 신호"
         ],
         "confidence_reason": "운영사/회사, 현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI 보강 필요",
-        "opportunity_score": 20,
+        "opportunity_score": 21,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": 15,
@@ -892,7 +904,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -912,7 +925,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -925,6 +941,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -942,7 +960,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "HMM: 기회 20, 매출 0, 반복 1, compliance 1",
+        "reason_summary": "HMM: 기회 21, 매출 0, 반복 1, compliance 1",
         "recommended_action": "선대 기회 신호를 모니터링하며 상위 선박부터 접촉",
         "data_lineage": {
           "vessel_name": {
@@ -1046,7 +1064,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 20,
+            "confidence": 21,
             "updated_at": null,
             "match_type": null,
             "verified": false

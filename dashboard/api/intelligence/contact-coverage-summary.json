@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
   "record_count": 100,
   "item_count": 5,
@@ -10,11 +10,11 @@
   "portfolio_metrics": {
     "imo_coverage_pct": 0,
     "mmsi_coverage_pct": 0,
-    "call_sign_coverage_pct": 100,
-    "operator_display_coverage_pct": 100,
+    "call_sign_coverage_pct": 97,
+    "operator_display_coverage_pct": 97,
     "owner_coverage_pct": 0,
     "manager_coverage_pct": 0,
-    "agent_coverage_pct": 100,
+    "agent_coverage_pct": 97,
     "contact_person_coverage_pct": 0,
     "quote_ready_pct": 0
   },
@@ -45,17 +45,17 @@
     },
     {
       "field": "콜사인",
-      "count": 0
+      "count": 3
     },
     {
       "field": "운영사/회사",
-      "count": 0
+      "count": 3
     }
   ],
   "target_count": 100,
   "high_count": 0,
-  "medium_count": 100,
-  "low_count": 0,
+  "medium_count": 97,
+  "low_count": 3,
   "verification_queue_count": 110,
   "score_distribution": {
     "0_49": 100,
@@ -125,11 +125,11 @@
     },
     {
       "rank": 3,
-      "vessel_name": "ERSOZ WEST",
+      "vessel_name": "에이치엘 오셔닉",
       "imo": "",
       "mmsi": "",
-      "call_sign": "V7KU4",
-      "operator_display": "팬오션 주식회사",
+      "call_sign": "V7A4617",
+      "operator_display": "에이치라인해운(주)",
       "current_port": "평택·당진",
       "current_port_korean": "평택·당진",
       "normalized_port": {
@@ -145,69 +145,69 @@
       "actionability_category": null,
       "actionability_label": null,
       "opportunity_score": 65,
-      "risk_score": 100,
+      "risk_score": 45,
       "confidence_score": 35,
       "missing_fields": [],
-      "known_company": "팬오션 주식회사",
+      "known_company": "에이치라인해운(주)",
       "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
       "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
     },
     {
       "rank": 4,
-      "vessel_name": "FIONAN",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "3E6928",
-      "operator_display": "대한해운(주)",
-      "current_port": "인천",
-      "current_port_korean": "인천",
-      "normalized_port": {
-        "port_code": "030",
-        "port_name": "인천",
-        "display_name": "인천",
-        "raw_port": "인천",
-        "raw_aliases": [
-          "인천"
-        ]
-      },
-      "priority_label": "LOW",
-      "actionability_category": null,
-      "actionability_label": null,
-      "opportunity_score": 75,
-      "risk_score": 100,
-      "confidence_score": 66,
-      "missing_fields": [],
-      "known_company": "대한해운(주)",
-      "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
-      "recommended_action": "모니터링하면서 부족한 연락 정보를 보강하세요."
-    },
-    {
-      "rank": 5,
       "vessel_name": "VITUS BERING",
       "imo": "",
       "mmsi": "",
-      "call_sign": "8PSO2",
-      "operator_display": "(주)토탈마린",
-      "current_port": "여수",
-      "current_port_korean": "여수",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "광양",
+      "current_port_korean": "광양",
       "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "여수",
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "광양",
         "raw_aliases": [
-          "여수"
+          "광양"
         ]
       },
-      "priority_label": "LOW",
+      "priority_label": "WARM",
       "actionability_category": null,
       "actionability_label": null,
       "opportunity_score": 67,
       "risk_score": 100,
       "confidence_score": 35,
       "missing_fields": [],
-      "known_company": "(주)토탈마린",
-      "reason_summary": "IMO, MMSI, 선주 정보가 부족합니다.",
+      "known_company": "",
+      "reason_summary": "IMO, MMSI, 콜사인 정보가 부족합니다.",
+      "recommended_action": "영업 후보는 유지하고, 선사/에이전트 연락 정보를 먼저 확인하세요."
+    },
+    {
+      "rank": 5,
+      "vessel_name": "SAKURA CRESCENT",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "",
+      "operator_display": "",
+      "current_port": "광양",
+      "current_port_korean": "광양",
+      "normalized_port": {
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "광양",
+        "raw_aliases": [
+          "광양"
+        ]
+      },
+      "priority_label": "LOW",
+      "actionability_category": null,
+      "actionability_label": null,
+      "opportunity_score": 58,
+      "risk_score": 53,
+      "confidence_score": 78,
+      "missing_fields": [],
+      "known_company": "",
+      "reason_summary": "IMO, MMSI, 콜사인 정보가 부족합니다.",
       "recommended_action": "모니터링하면서 부족한 연락 정보를 보강하세요."
     }
   ],

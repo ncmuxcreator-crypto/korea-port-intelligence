@@ -1,27 +1,27 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
-  "record_count": 33,
+  "record_count": 31,
   "item_count": 5,
   "source_table": "candidates",
   "detail_endpoint": "dashboard/api/candidates.json",
-  "total_count": 33,
+  "total_count": 31,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 13,
-    "50_69": 20,
+    "0_49": 14,
+    "50_69": 17,
     "70_84": 0,
     "85_100": 0,
     "unknown": 0
   },
   "priority_counts": {
     "HOT": 3,
-    "WARM": 9,
-    "LOW": 21
+    "WARM": 8,
+    "LOW": 20
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 31,
+    "VERIFY_CONTACT": 29,
     "CONTACT_NOW": 2
   },
   "items": [
@@ -108,47 +108,6 @@
     },
     {
       "rank": 3,
-      "vessel_name": "ERSOZ WEST",
-      "imo": "",
-      "mmsi": "",
-      "call_sign": "V7KU4",
-      "operator_display": "팬오션 주식회사",
-      "current_port": "평택·당진",
-      "current_port_korean": "평택·당진",
-      "normalized_port": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "raw_port": "Pyeongtaek-Dangjin",
-        "raw_aliases": [
-          "Pyeongtaek-Dangjin",
-          "평택·당진",
-          "포항",
-          "평택·당진항"
-        ]
-      },
-      "priority_label": "HOT",
-      "actionability_category": "VERIFY_CONTACT",
-      "actionability_label": "연락처 확인 필요",
-      "opportunity_score": 65,
-      "risk_score": 45,
-      "confidence_score": 66,
-      "missing_fields": [
-        "operator_display",
-        "contact_person",
-        "imo",
-        "mmsi"
-      ],
-      "known_company": "팬오션 주식회사",
-      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
-      "recommended_action": "운영선사 확인",
-      "port_code": "031",
-      "port_name": "평택·당진",
-      "port_display_name": "평택·당진",
-      "display_name": "평택·당진"
-    },
-    {
-      "rank": 4,
       "vessel_name": "에이치엘 오셔닉",
       "imo": "",
       "mmsi": "",
@@ -168,7 +127,7 @@
           "평택·당진항"
         ]
       },
-      "priority_label": "WARM",
+      "priority_label": "HOT",
       "actionability_category": "VERIFY_CONTACT",
       "actionability_label": "연락처 확인 필요",
       "opportunity_score": 65,
@@ -189,7 +148,7 @@
       "display_name": "평택·당진"
     },
     {
-      "rank": 5,
+      "rank": 4,
       "vessel_name": "스키야토스",
       "imo": "",
       "mmsi": "",
@@ -201,9 +160,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "마산/창원",
           "OCEAN DISTRICT",
           "하동항"
@@ -228,13 +187,54 @@
       "port_name": "마산/창원",
       "port_display_name": "마산/창원",
       "display_name": "마산/창원"
+    },
+    {
+      "rank": 5,
+      "vessel_name": "BERGE DOI INTHANON",
+      "imo": "",
+      "mmsi": "",
+      "call_sign": "HOYL",
+      "operator_display": "(주)협성상운",
+      "current_port": "울산",
+      "current_port_korean": "울산",
+      "normalized_port": {
+        "port_code": "820",
+        "port_name": "울산",
+        "display_name": "울산",
+        "raw_port": "Ulsan",
+        "raw_aliases": [
+          "Ulsan",
+          "울산",
+          "LONGVIEW",
+          "울산항"
+        ]
+      },
+      "priority_label": "WARM",
+      "actionability_category": "VERIFY_CONTACT",
+      "actionability_label": "연락처 확인 필요",
+      "opportunity_score": 65,
+      "risk_score": 61,
+      "confidence_score": 78,
+      "missing_fields": [
+        "operator_display",
+        "contact_person",
+        "imo",
+        "mmsi"
+      ],
+      "known_company": "(주)협성상운",
+      "reason_summary": "운영사/회사, 담당자, IMO, MMSI 확인 후 연락 가능한 후보입니다.",
+      "recommended_action": "운영선사 확인",
+      "port_code": "820",
+      "port_name": "울산",
+      "port_display_name": "울산",
+      "display_name": "울산"
     }
   ],
   "warning_summary": [
     {
       "severity": "INFO",
       "feature": "후보 선박",
-      "message": "상세 33건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 31건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/candidates.json lazy load 사용"
     }
   ]

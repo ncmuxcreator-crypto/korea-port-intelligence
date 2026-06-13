@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
-  "record_count": 9,
+  "record_count": 10,
   "source_table": "port_summary_current,port_snapshot_daily,port_congestion_snapshots,opportunity_master,commercial_opportunity_daily",
   "items": [
     {
       "rank": 1,
       "port_name": "부산",
-      "repeat_caller_count": 9,
-      "vessel_count": 370,
+      "repeat_caller_count": 7,
+      "vessel_count": 361,
       "hot_count": 0,
-      "sales_target_count": 38,
+      "sales_target_count": 37,
       "average_opportunity_score": 1,
-      "average_risk_score": 2,
-      "opportunity_index": 85,
-      "opportunity_score": 85,
-      "reason_summary": "부산 영업대상 38척, HOT 0척",
+      "average_risk_score": 1,
+      "opportunity_index": 77,
+      "opportunity_score": 77,
+      "reason_summary": "부산 영업대상 37척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
         "port_code": "020",
@@ -112,7 +112,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 85,
+        "opportunity_score": 77,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -154,8 +154,8 @@
         "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "confidence": "LOW",
         "contact_readiness_score": null,
-        "priority_label": "HOT",
-        "priority_label_ko": "우선 연락",
+        "priority_label": "WARM",
+        "priority_label_ko": "검토",
         "target_categories": [],
         "pilotage_signal": {
           "has_pilotage": false,
@@ -173,7 +173,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -193,7 +194,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -206,6 +210,8 @@
           "port": "부산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "020",
@@ -223,7 +229,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "부산 영업대상 38척, HOT 0척",
+        "reason_summary": "부산 영업대상 37척, HOT 0척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -327,7 +333,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 85,
+            "confidence": 77,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -368,28 +374,28 @@
     },
     {
       "rank": 2,
-      "port_name": "미확인 항만",
-      "repeat_caller_count": 3,
-      "vessel_count": 3,
+      "port_name": "광양",
+      "repeat_caller_count": 6,
+      "vessel_count": 6,
       "hot_count": 0,
       "sales_target_count": 3,
-      "average_opportunity_score": 56,
-      "average_risk_score": 45,
-      "opportunity_index": 48,
-      "opportunity_score": 48,
-      "reason_summary": "미확인 항만 영업대상 3척, HOT 0척",
+      "average_opportunity_score": 53,
+      "average_risk_score": 60,
+      "opportunity_index": 58,
+      "opportunity_score": 58,
+      "reason_summary": "광양 영업대상 3척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
-        "port_code": "UNKNOWN",
-        "port_name": "미확인 항만",
-        "display_name": "미확인 항만",
-        "raw_port": "미확인 항만",
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양",
+        "raw_port": "광양",
         "raw_aliases": [
-          "미확인 항만"
+          "광양"
         ]
       },
-      "port_code": "UNKNOWN",
-      "port_display_name": "미확인 항만",
+      "port_code": "620-GWANGYANG",
+      "port_display_name": "광양",
       "vessel_display": {
         "vessel_name": "선명 확인 필요",
         "imo": "-",
@@ -422,19 +428,19 @@
         "manager": "-",
         "technical_manager": "-",
         "agent": "-",
-        "current_port": "미확인 항만",
-        "raw_current_port": "미확인 항만",
-        "current_port_korean": "미확인 항만",
+        "current_port": "광양",
+        "raw_current_port": "광양",
+        "current_port_korean": "광양",
         "normalized_port": {
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "display_name": "미확인 항만",
-          "raw_port": "미확인 항만",
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "display_name": "광양",
+          "raw_port": "광양",
           "raw_aliases": [
-            "미확인 항만"
+            "광양"
           ]
         },
-        "port_display_name": "미확인 항만",
+        "port_display_name": "광양",
         "terminal": "-",
         "berth": "-",
         "anchorage": "-",
@@ -473,7 +479,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 48,
+        "opportunity_score": 58,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -528,33 +534,37 @@
           "pilotage_direction": "UNKNOWN",
           "pilot_station": null,
           "berth_name": null,
-          "port": "미확인 항만",
-          "pilotage_port": "미확인 항만",
+          "port": "광양",
+          "pilotage_port": "광양",
           "source": null,
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "미확인 항만",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "미확인 항만"
+              "광양"
             ]
           },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -564,27 +574,29 @@
           "atb": null,
           "operation_start": null,
           "operation_end": null,
-          "port": "미확인 항만",
+          "port": "광양",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "미확인 항만",
+            "port_code": "620-GWANGYANG",
+            "port_name": "광양",
+            "display_name": "광양",
+            "raw_port": "광양",
             "raw_aliases": [
-              "미확인 항만"
+              "광양"
             ]
           },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
+          "port_code": "620-GWANGYANG",
+          "port_name": "광양",
+          "port_display_name": "광양",
+          "display_name": "광양"
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 항만 영업대상 3척, HOT 0척",
+        "reason_summary": "광양 영업대상 3척, HOT 0척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -688,7 +700,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 48,
+            "confidence": 58,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -709,9 +721,9 @@
         },
         "data_sources": [],
         "enrichment_sources": [],
-        "port_code": "UNKNOWN",
-        "port_name": "미확인 항만",
-        "display_name": "미확인 항만"
+        "port_code": "620-GWANGYANG",
+        "port_name": "광양",
+        "display_name": "광양"
       },
       "commercial_data_confidence": 10,
       "confidence_label": "LOW",
@@ -725,20 +737,20 @@
         "현재 항만"
       ],
       "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-      "display_name": "미확인 항만"
+      "display_name": "광양"
     },
     {
       "rank": 3,
       "port_name": "울산",
-      "repeat_caller_count": 4,
-      "vessel_count": 176,
+      "repeat_caller_count": 5,
+      "vessel_count": 177,
       "hot_count": 0,
-      "sales_target_count": 19,
-      "average_opportunity_score": 1,
-      "average_risk_score": 1,
-      "opportunity_index": 41,
-      "opportunity_score": 41,
-      "reason_summary": "울산 영업대상 19척, HOT 0척",
+      "sales_target_count": 17,
+      "average_opportunity_score": 2,
+      "average_risk_score": 2,
+      "opportunity_index": 42,
+      "opportunity_score": 42,
+      "reason_summary": "울산 영업대상 17척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
         "port_code": "820",
@@ -834,7 +846,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 41,
+        "opportunity_score": 42,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -895,7 +907,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -915,7 +928,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -928,6 +944,8 @@
           "port": "울산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "820",
@@ -945,7 +963,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "울산 영업대상 19척, HOT 0척",
+        "reason_summary": "울산 영업대상 17척, HOT 0척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -1049,7 +1067,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 41,
+            "confidence": 42,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -1090,377 +1108,16 @@
     },
     {
       "rank": 4,
-      "port_name": "평택·당진",
-      "repeat_caller_count": 3,
-      "vessel_count": 70,
-      "hot_count": 1,
-      "sales_target_count": 11,
-      "average_opportunity_score": 3,
-      "average_risk_score": 2,
-      "opportunity_index": 35,
-      "opportunity_score": 35,
-      "reason_summary": "평택·당진 영업대상 11척, HOT 1척",
-      "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-      "normalized_port": {
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진",
-        "raw_port": "평택·당진",
-        "raw_aliases": [
-          "평택·당진"
-        ]
-      },
-      "port_code": "031",
-      "port_display_name": "평택·당진",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "평택·당진",
-        "raw_current_port": "평택·당진",
-        "current_port_korean": "평택·당진",
-        "normalized_port": {
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "display_name": "평택·당진",
-          "raw_port": "평택·당진",
-          "raw_aliases": [
-            "평택·당진"
-          ]
-        },
-        "port_display_name": "평택·당진",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "commercial_data_confidence": 18,
-        "confidence_label": "LOW",
-        "missing_critical_fields": [
-          "선명",
-          "콜사인",
-          "IMO/MMSI",
-          "운영사/회사"
-        ],
-        "available_strong_fields": [
-          "현재 항만",
-          "선석 신호"
-        ],
-        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 35,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [],
-        "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-        "confidence": "LOW",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "평택·당진",
-          "pilotage_port": "평택·당진",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
-            "raw_aliases": [
-              "평택·당진"
-            ]
-          },
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "평택·당진",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "031",
-            "port_name": "평택·당진",
-            "display_name": "평택·당진",
-            "raw_port": "평택·당진",
-            "raw_aliases": [
-              "평택·당진"
-            ]
-          },
-          "port_code": "031",
-          "port_name": "평택·당진",
-          "port_display_name": "평택·당진",
-          "display_name": "평택·당진"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "평택·당진 영업대상 11척, HOT 1척",
-        "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "unknown",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 35,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [],
-        "enrichment_sources": [],
-        "port_code": "031",
-        "port_name": "평택·당진",
-        "display_name": "평택·당진"
-      },
-      "commercial_data_confidence": 10,
-      "confidence_label": "LOW",
-      "missing_critical_fields": [
-        "선명",
-        "콜사인",
-        "IMO/MMSI",
-        "운영사/회사"
-      ],
-      "available_strong_fields": [
-        "현재 항만"
-      ],
-      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-      "display_name": "평택·당진"
-    },
-    {
-      "rank": 5,
       "port_name": "인천",
       "repeat_caller_count": 4,
-      "vessel_count": 93,
+      "vessel_count": 97,
       "hot_count": 1,
-      "sales_target_count": 7,
+      "sales_target_count": 8,
       "average_opportunity_score": 3,
       "average_risk_score": 2,
-      "opportunity_index": 32,
-      "opportunity_score": 32,
-      "reason_summary": "인천 영업대상 7척, HOT 1척",
+      "opportunity_index": 34,
+      "opportunity_score": 34,
+      "reason_summary": "인천 영업대상 8척, HOT 1척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
         "port_code": "030",
@@ -1556,7 +1213,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 32,
+        "opportunity_score": 34,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -1617,7 +1274,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -1637,7 +1295,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -1650,6 +1311,8 @@
           "port": "인천",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "030",
@@ -1667,7 +1330,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "인천 영업대상 7척, HOT 1척",
+        "reason_summary": "인천 영업대상 8척, HOT 1척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -1771,7 +1434,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 32,
+            "confidence": 34,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -1811,377 +1474,16 @@
       "display_name": "인천"
     },
     {
-      "rank": 6,
-      "port_name": "여수",
-      "repeat_caller_count": 7,
-      "vessel_count": 78,
-      "hot_count": 0,
-      "sales_target_count": 5,
-      "average_opportunity_score": 5,
-      "average_risk_score": 5,
-      "opportunity_index": 32,
-      "opportunity_score": 32,
-      "reason_summary": "여수 영업대상 5척, HOT 0척",
-      "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-      "normalized_port": {
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수",
-        "raw_port": "여수",
-        "raw_aliases": [
-          "여수"
-        ]
-      },
-      "port_code": "620-YEOSU",
-      "port_display_name": "여수",
-      "vessel_display": {
-        "vessel_name": "선명 확인 필요",
-        "imo": "-",
-        "mmsi": "-",
-        "call_sign": "-",
-        "flag": "-",
-        "vessel_type": "-",
-        "gt": null,
-        "dwt": null,
-        "tonnage_summary": {
-          "gt": null,
-          "dwt": null,
-          "size_class": "UNKNOWN",
-          "gt_source": "missing",
-          "dwt_source": "missing",
-          "tonnage_confidence": 25
-        },
-        "target_size_qualified": null,
-        "target_size_reason": "",
-        "detail_eligible": null,
-        "detail_inclusion_exception": false,
-        "detail_inclusion_reason": "",
-        "detail_exclusion_reason": "",
-        "operator": "-",
-        "operator_display": "-",
-        "operator_source": "-",
-        "operator_confidence": null,
-        "company": "-",
-        "owner": "-",
-        "manager": "-",
-        "technical_manager": "-",
-        "agent": "-",
-        "current_port": "여수",
-        "raw_current_port": "여수",
-        "current_port_korean": "여수",
-        "normalized_port": {
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "display_name": "여수",
-          "raw_port": "여수",
-          "raw_aliases": [
-            "여수"
-          ]
-        },
-        "port_display_name": "여수",
-        "terminal": "-",
-        "berth": "-",
-        "anchorage": "-",
-        "eta": "-",
-        "etb": "-",
-        "ata": "-",
-        "atb": "-",
-        "etd": "-",
-        "atd": "-",
-        "berth_source": "-",
-        "arrival_window": null,
-        "arrival_window_source": "-",
-        "stay_days": null,
-        "stay_hours": null,
-        "waiting_hours": null,
-        "port_stay_hours": null,
-        "congestion_score": null,
-        "waiting_score": null,
-        "last_seen_at": "-",
-        "data_source": "-",
-        "identity_source": "-",
-        "identity_confidence": null,
-        "identity_match_type": "-",
-        "identity_conflict": null,
-        "confidence_score": null,
-        "commercial_data_confidence": 18,
-        "confidence_label": "LOW",
-        "missing_critical_fields": [
-          "선명",
-          "콜사인",
-          "IMO/MMSI",
-          "운영사/회사"
-        ],
-        "available_strong_fields": [
-          "현재 항만",
-          "선석 신호"
-        ],
-        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 32,
-        "risk_score": null,
-        "biofouling_score": null,
-        "compliance_score": null,
-        "commercial_size_qualified": false,
-        "biofouling_compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "compliance_exposure": {
-          "exposed": false,
-          "jurisdiction": "",
-          "basis": "",
-          "threshold_type": "",
-          "confidence": 0,
-          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
-        },
-        "biofoulingRiskScore": null,
-        "hullGrowthIndex": null,
-        "cleaningOpportunityScore": null,
-        "anchorageHours": null,
-        "portStayHours": null,
-        "sstCelsius": null,
-        "sstAnomalyCelsius": null,
-        "salinityPsu": null,
-        "ocean_risk_score": null,
-        "ocean_risk_label_ko": "낮음",
-        "marine_heatwave_level": "-",
-        "marine_heatwave_label_ko": "정상",
-        "fouling_accelerator_pct": null,
-        "ocean_source": "-",
-        "ocean_updated_at": "-",
-        "tropicalExposureDays": null,
-        "slowSteamingHours": null,
-        "riskReasons": [],
-        "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-        "confidence": "LOW",
-        "contact_readiness_score": null,
-        "priority_label": "LOW",
-        "priority_label_ko": "모니터링",
-        "target_categories": [],
-        "pilotage_signal": {
-          "has_pilotage": false,
-          "status": "UNKNOWN",
-          "pilotage_status": "UNKNOWN",
-          "pilotage_time": null,
-          "pilotage_time_text": null,
-          "direction": "UNKNOWN",
-          "pilotage_direction": "UNKNOWN",
-          "pilot_station": null,
-          "berth_name": null,
-          "port": "여수",
-          "pilotage_port": "여수",
-          "source": null,
-          "pilotage_source": null,
-          "confidence": null,
-          "pilotage_confidence": null,
-          "match_type": "",
-          "arrival_window": null,
-          "reason_ko": "",
-          "reason": "",
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        "berth_signal": {
-          "has_berth_info": false,
-          "source": null,
-          "terminal": null,
-          "berth": null,
-          "berth_direction": null,
-          "eta": null,
-          "etb": null,
-          "ata": null,
-          "atb": null,
-          "operation_start": null,
-          "operation_end": null,
-          "port": "여수",
-          "match_type": "none",
-          "confidence": null,
-          "reason": "",
-          "normalized_port": {
-            "port_code": "620-YEOSU",
-            "port_name": "여수",
-            "display_name": "여수",
-            "raw_port": "여수",
-            "raw_aliases": [
-              "여수"
-            ]
-          },
-          "port_code": "620-YEOSU",
-          "port_name": "여수",
-          "port_display_name": "여수",
-          "display_name": "여수"
-        },
-        "category_label": "",
-        "korean_label": "",
-        "reason_summary": "여수 영업대상 5척, HOT 0척",
-        "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
-        "data_lineage": {
-          "vessel_name": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "imo": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "mmsi": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "call_sign": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "gt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "dwt": {
-            "source": "unknown",
-            "confidence": 25,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "flag": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "vessel_type": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "operator_display": {
-            "source": "unknown",
-            "confidence": 70,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "owner": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "manager": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "current_port": "미확인 항만",
-          "berth": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "berth_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "pilotage_signal": {
-            "source": "unknown",
-            "confidence": null,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "opportunity_score": {
-            "source": "opportunity_engine",
-            "confidence": 32,
-            "updated_at": null,
-            "match_type": null,
-            "verified": false
-          },
-          "normalized_port": {
-            "port_code": "UNKNOWN",
-            "port_name": "미확인 항만",
-            "display_name": "미확인 항만",
-            "raw_port": "[object Object]",
-            "raw_aliases": [
-              "[object Object]"
-            ]
-          },
-          "port_code": "UNKNOWN",
-          "port_name": "미확인 항만",
-          "port_display_name": "미확인 항만",
-          "display_name": "미확인 항만"
-        },
-        "data_sources": [],
-        "enrichment_sources": [],
-        "port_code": "620-YEOSU",
-        "port_name": "여수",
-        "display_name": "여수"
-      },
-      "commercial_data_confidence": 10,
-      "confidence_label": "LOW",
-      "missing_critical_fields": [
-        "선명",
-        "콜사인",
-        "IMO/MMSI",
-        "운영사/회사"
-      ],
-      "available_strong_fields": [
-        "현재 항만"
-      ],
-      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-      "display_name": "여수"
-    },
-    {
-      "rank": 7,
+      "rank": 5,
       "port_name": "대산",
-      "repeat_caller_count": 3,
-      "vessel_count": 86,
+      "repeat_caller_count": 4,
+      "vessel_count": 88,
       "hot_count": 0,
       "sales_target_count": 12,
-      "average_opportunity_score": 2,
+      "average_opportunity_score": 3,
       "average_risk_score": 2,
-      "opportunity_index": 28,
-      "opportunity_score": 28,
+      "opportunity_index": 32,
+      "opportunity_score": 32,
       "reason_summary": "대산 영업대상 12척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
@@ -2278,7 +1580,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 28,
+        "opportunity_score": 32,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -2339,7 +1641,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -2359,7 +1662,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -2372,6 +1678,8 @@
           "port": "대산",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "621",
@@ -2493,7 +1801,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 28,
+            "confidence": 32,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -2533,17 +1841,751 @@
       "display_name": "대산"
     },
     {
+      "rank": 6,
+      "port_name": "평택·당진",
+      "repeat_caller_count": 2,
+      "vessel_count": 64,
+      "hot_count": 1,
+      "sales_target_count": 9,
+      "average_opportunity_score": 2,
+      "average_risk_score": 2,
+      "opportunity_index": 29,
+      "opportunity_score": 29,
+      "reason_summary": "평택·당진 영업대상 9척, HOT 1척",
+      "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+      "normalized_port": {
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진",
+        "raw_port": "평택·당진",
+        "raw_aliases": [
+          "평택·당진"
+        ]
+      },
+      "port_code": "031",
+      "port_display_name": "평택·당진",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "평택·당진",
+        "raw_current_port": "평택·당진",
+        "current_port_korean": "평택·당진",
+        "normalized_port": {
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "display_name": "평택·당진",
+          "raw_port": "평택·당진",
+          "raw_aliases": [
+            "평택·당진"
+          ]
+        },
+        "port_display_name": "평택·당진",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "commercial_data_confidence": 18,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI",
+          "운영사/회사"
+        ],
+        "available_strong_fields": [
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+        "opportunity_score": 29,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [],
+        "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "confidence": "LOW",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "평택·당진",
+          "pilotage_port": "평택·당진",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "none",
+          "placeholder": true,
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "평택·당진",
+          "match_type": "none",
+          "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "031",
+            "port_name": "평택·당진",
+            "display_name": "평택·당진",
+            "raw_port": "평택·당진",
+            "raw_aliases": [
+              "평택·당진"
+            ]
+          },
+          "port_code": "031",
+          "port_name": "평택·당진",
+          "port_display_name": "평택·당진",
+          "display_name": "평택·당진"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "평택·당진 영업대상 9척, HOT 1척",
+        "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 29,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [],
+        "enrichment_sources": [],
+        "port_code": "031",
+        "port_name": "평택·당진",
+        "display_name": "평택·당진"
+      },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+      "display_name": "평택·당진"
+    },
+    {
+      "rank": 7,
+      "port_name": "미확인 항만",
+      "repeat_caller_count": 3,
+      "vessel_count": 10,
+      "hot_count": 0,
+      "sales_target_count": 3,
+      "average_opportunity_score": 17,
+      "average_risk_score": 14,
+      "opportunity_index": 24,
+      "opportunity_score": 24,
+      "reason_summary": "미확인 항만 영업대상 3척, HOT 0척",
+      "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+      "normalized_port": {
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만",
+        "raw_port": "미확인 항만",
+        "raw_aliases": [
+          "미확인 항만"
+        ]
+      },
+      "port_code": "UNKNOWN",
+      "port_display_name": "미확인 항만",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "미확인 항만",
+        "raw_current_port": "미확인 항만",
+        "current_port_korean": "미확인 항만",
+        "normalized_port": {
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "display_name": "미확인 항만",
+          "raw_port": "미확인 항만",
+          "raw_aliases": [
+            "미확인 항만"
+          ]
+        },
+        "port_display_name": "미확인 항만",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "commercial_data_confidence": 18,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI",
+          "운영사/회사"
+        ],
+        "available_strong_fields": [
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+        "opportunity_score": 24,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [],
+        "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "confidence": "LOW",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "미확인 항만",
+          "pilotage_port": "미확인 항만",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "none",
+          "placeholder": true,
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "미확인 항만",
+          "match_type": "none",
+          "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "미확인 항만",
+            "raw_aliases": [
+              "미확인 항만"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "미확인 항만 영업대상 3척, HOT 0척",
+        "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 24,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [],
+        "enrichment_sources": [],
+        "port_code": "UNKNOWN",
+        "port_name": "미확인 항만",
+        "display_name": "미확인 항만"
+      },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+      "display_name": "미확인 항만"
+    },
+    {
       "rank": 8,
       "port_name": "마산/창원",
       "repeat_caller_count": 0,
-      "vessel_count": 87,
+      "vessel_count": 88,
       "hot_count": 0,
-      "sales_target_count": 10,
+      "sales_target_count": 11,
       "average_opportunity_score": 0,
       "average_risk_score": 0,
-      "opportunity_index": 15,
-      "opportunity_score": 15,
-      "reason_summary": "마산/창원 영업대상 10척, HOT 0척",
+      "opportunity_index": 17,
+      "opportunity_score": 17,
+      "reason_summary": "마산/창원 영업대상 11척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
         "port_code": "622",
@@ -2639,7 +2681,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 15,
+        "opportunity_score": 17,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -2700,7 +2742,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -2720,7 +2763,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -2733,6 +2779,8 @@
           "port": "마산/창원",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "622",
@@ -2750,7 +2798,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "마산/창원 영업대상 10척, HOT 0척",
+        "reason_summary": "마산/창원 영업대상 11척, HOT 0척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -2854,7 +2902,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 15,
+            "confidence": 17,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -2895,16 +2943,383 @@
     },
     {
       "rank": 9,
-      "port_name": "포항",
+      "port_name": "여수",
       "repeat_caller_count": 0,
-      "vessel_count": 36,
+      "vessel_count": 72,
       "hot_count": 0,
-      "sales_target_count": 0,
+      "sales_target_count": 5,
       "average_opportunity_score": 0,
       "average_risk_score": 0,
-      "opportunity_index": 0,
-      "opportunity_score": 0,
-      "reason_summary": "포항 영업대상 0척, HOT 0척",
+      "opportunity_index": 8,
+      "opportunity_score": 8,
+      "reason_summary": "여수 영업대상 5척, HOT 0척",
+      "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+      "normalized_port": {
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수",
+        "raw_port": "여수",
+        "raw_aliases": [
+          "여수"
+        ]
+      },
+      "port_code": "620-YEOSU",
+      "port_display_name": "여수",
+      "vessel_display": {
+        "vessel_name": "선명 확인 필요",
+        "imo": "-",
+        "mmsi": "-",
+        "call_sign": "-",
+        "flag": "-",
+        "vessel_type": "-",
+        "gt": null,
+        "dwt": null,
+        "tonnage_summary": {
+          "gt": null,
+          "dwt": null,
+          "size_class": "UNKNOWN",
+          "gt_source": "missing",
+          "dwt_source": "missing",
+          "tonnage_confidence": 25
+        },
+        "target_size_qualified": null,
+        "target_size_reason": "",
+        "detail_eligible": null,
+        "detail_inclusion_exception": false,
+        "detail_inclusion_reason": "",
+        "detail_exclusion_reason": "",
+        "operator": "-",
+        "operator_display": "-",
+        "operator_source": "-",
+        "operator_confidence": null,
+        "company": "-",
+        "owner": "-",
+        "manager": "-",
+        "technical_manager": "-",
+        "agent": "-",
+        "current_port": "여수",
+        "raw_current_port": "여수",
+        "current_port_korean": "여수",
+        "normalized_port": {
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "display_name": "여수",
+          "raw_port": "여수",
+          "raw_aliases": [
+            "여수"
+          ]
+        },
+        "port_display_name": "여수",
+        "terminal": "-",
+        "berth": "-",
+        "anchorage": "-",
+        "eta": "-",
+        "etb": "-",
+        "ata": "-",
+        "atb": "-",
+        "etd": "-",
+        "atd": "-",
+        "berth_source": "-",
+        "arrival_window": null,
+        "arrival_window_source": "-",
+        "stay_days": null,
+        "stay_hours": null,
+        "waiting_hours": null,
+        "port_stay_hours": null,
+        "congestion_score": null,
+        "waiting_score": null,
+        "last_seen_at": "-",
+        "data_source": "-",
+        "identity_source": "-",
+        "identity_confidence": null,
+        "identity_match_type": "-",
+        "identity_conflict": null,
+        "confidence_score": null,
+        "commercial_data_confidence": 18,
+        "confidence_label": "LOW",
+        "missing_critical_fields": [
+          "선명",
+          "콜사인",
+          "IMO/MMSI",
+          "운영사/회사"
+        ],
+        "available_strong_fields": [
+          "현재 항만",
+          "선석 신호"
+        ],
+        "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+        "opportunity_score": 8,
+        "risk_score": null,
+        "biofouling_score": null,
+        "compliance_score": null,
+        "commercial_size_qualified": false,
+        "biofouling_compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "compliance_exposure": {
+          "exposed": false,
+          "jurisdiction": "",
+          "basis": "",
+          "threshold_type": "",
+          "confidence": 0,
+          "notes": "관할 목적지/항로 신호가 확인되지 않았습니다."
+        },
+        "biofoulingRiskScore": null,
+        "hullGrowthIndex": null,
+        "cleaningOpportunityScore": null,
+        "anchorageHours": null,
+        "portStayHours": null,
+        "sstCelsius": null,
+        "sstAnomalyCelsius": null,
+        "salinityPsu": null,
+        "ocean_risk_score": null,
+        "ocean_risk_label_ko": "낮음",
+        "marine_heatwave_level": "-",
+        "marine_heatwave_label_ko": "정상",
+        "fouling_accelerator_pct": null,
+        "ocean_source": "-",
+        "ocean_updated_at": "-",
+        "tropicalExposureDays": null,
+        "slowSteamingHours": null,
+        "riskReasons": [],
+        "recommendedAction": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "confidence": "LOW",
+        "contact_readiness_score": null,
+        "priority_label": "LOW",
+        "priority_label_ko": "모니터링",
+        "target_categories": [],
+        "pilotage_signal": {
+          "has_pilotage": false,
+          "status": "UNKNOWN",
+          "pilotage_status": "UNKNOWN",
+          "pilotage_time": null,
+          "pilotage_time_text": null,
+          "direction": "UNKNOWN",
+          "pilotage_direction": "UNKNOWN",
+          "pilot_station": null,
+          "berth_name": null,
+          "port": "여수",
+          "pilotage_port": "여수",
+          "source": null,
+          "pilotage_source": null,
+          "confidence": null,
+          "pilotage_confidence": null,
+          "match_type": "none",
+          "placeholder": true,
+          "arrival_window": null,
+          "reason_ko": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
+        },
+        "berth_signal": {
+          "has_berth_info": false,
+          "has_berth": false,
+          "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
+          "terminal": null,
+          "berth": null,
+          "berth_direction": null,
+          "eta": null,
+          "etb": null,
+          "ata": null,
+          "atb": null,
+          "operation_start": null,
+          "operation_end": null,
+          "port": "여수",
+          "match_type": "none",
+          "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
+          "reason": "",
+          "normalized_port": {
+            "port_code": "620-YEOSU",
+            "port_name": "여수",
+            "display_name": "여수",
+            "raw_port": "여수",
+            "raw_aliases": [
+              "여수"
+            ]
+          },
+          "port_code": "620-YEOSU",
+          "port_name": "여수",
+          "port_display_name": "여수",
+          "display_name": "여수"
+        },
+        "category_label": "",
+        "korean_label": "",
+        "reason_summary": "여수 영업대상 5척, HOT 0척",
+        "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
+        "data_lineage": {
+          "vessel_name": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "imo": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "mmsi": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "call_sign": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "gt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "dwt": {
+            "source": "unknown",
+            "confidence": 25,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "flag": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "vessel_type": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "operator_display": {
+            "source": "unknown",
+            "confidence": 70,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "owner": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "manager": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "current_port": "미확인 항만",
+          "berth": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "berth_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "pilotage_signal": {
+            "source": "unknown",
+            "confidence": null,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "opportunity_score": {
+            "source": "opportunity_engine",
+            "confidence": 8,
+            "updated_at": null,
+            "match_type": null,
+            "verified": false
+          },
+          "normalized_port": {
+            "port_code": "UNKNOWN",
+            "port_name": "미확인 항만",
+            "display_name": "미확인 항만",
+            "raw_port": "[object Object]",
+            "raw_aliases": [
+              "[object Object]"
+            ]
+          },
+          "port_code": "UNKNOWN",
+          "port_name": "미확인 항만",
+          "port_display_name": "미확인 항만",
+          "display_name": "미확인 항만"
+        },
+        "data_sources": [],
+        "enrichment_sources": [],
+        "port_code": "620-YEOSU",
+        "port_name": "여수",
+        "display_name": "여수"
+      },
+      "commercial_data_confidence": 10,
+      "confidence_label": "LOW",
+      "missing_critical_fields": [
+        "선명",
+        "콜사인",
+        "IMO/MMSI",
+        "운영사/회사"
+      ],
+      "available_strong_fields": [
+        "현재 항만"
+      ],
+      "confidence_reason": "현재 항만 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
+      "display_name": "여수"
+    },
+    {
+      "rank": 10,
+      "port_name": "포항",
+      "repeat_caller_count": 0,
+      "vessel_count": 35,
+      "hot_count": 0,
+      "sales_target_count": 2,
+      "average_opportunity_score": 0,
+      "average_risk_score": 0,
+      "opportunity_index": 3,
+      "opportunity_score": 3,
+      "reason_summary": "포항 영업대상 2척, HOT 0척",
       "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
       "normalized_port": {
         "port_code": "810",
@@ -3000,7 +3415,7 @@
           "선석 신호"
         ],
         "confidence_reason": "현재 항만, 선석 신호 확인; 선명, 콜사인, IMO/MMSI, 운영사/회사 보강 필요",
-        "opportunity_score": 0,
+        "opportunity_score": 3,
         "risk_score": null,
         "biofouling_score": null,
         "compliance_score": null,
@@ -3061,7 +3476,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -3081,7 +3497,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -3094,6 +3513,8 @@
           "port": "포항",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "810",
@@ -3111,7 +3532,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "포항 영업대상 0척, HOT 0척",
+        "reason_summary": "포항 영업대상 2척, HOT 0척",
         "recommended_action": "항만별 상위 후보와 대리점 연락 가능 시간을 확인",
         "data_lineage": {
           "vessel_name": {
@@ -3215,7 +3636,7 @@
           },
           "opportunity_score": {
             "source": "opportunity_engine",
-            "confidence": 0,
+            "confidence": 3,
             "updated_at": null,
             "match_type": null,
             "verified": false
@@ -3256,5 +3677,5 @@
     }
   ],
   "summary": {},
-  "item_count": 9
+  "item_count": 10
 }

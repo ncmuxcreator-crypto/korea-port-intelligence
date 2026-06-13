@@ -1,29 +1,29 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "data_mode": "live",
-  "record_count": 318,
+  "record_count": 312,
   "item_count": 5,
   "source_table": "vessel_snapshots",
   "detail_endpoint": "dashboard/api/anchorage-waiting.json",
-  "total_count": 318,
+  "total_count": 312,
   "returned_count": 5,
   "score_distribution": {
-    "0_49": 253,
-    "50_69": 25,
-    "70_84": 7,
-    "85_100": 33,
+    "0_49": 243,
+    "50_69": 26,
+    "70_84": 11,
+    "85_100": 32,
     "unknown": 0
   },
   "priority_counts": {
-    "WARM": 12,
-    "LOW": 306
+    "WARM": 11,
+    "LOW": 301
   },
   "actionability_counts": {
-    "VERIFY_CONTACT": 65,
-    "MONITOR": 228,
+    "VERIFY_CONTACT": 67,
+    "MONITOR": 219,
     "CONTACT_NOW": 3,
-    "HOLD": 22
+    "HOLD": 23
   },
   "items": [
     {
@@ -80,9 +80,9 @@
         "port_code": "621",
         "port_name": "대산",
         "display_name": "대산",
-        "raw_port": "Daesan",
+        "raw_port": "DAESAN",
         "raw_aliases": [
-          "Daesan",
+          "DAESAN",
           "VALDEZ",
           "대산항",
           "대산"
@@ -121,9 +121,9 @@
         "port_code": "621",
         "port_name": "대산",
         "display_name": "대산",
-        "raw_port": "Daesan",
+        "raw_port": "DAESAN",
         "raw_aliases": [
-          "Daesan",
+          "DAESAN",
           "SINGAPORE",
           "대산항",
           "대산"
@@ -162,9 +162,9 @@
         "port_code": "622",
         "port_name": "마산/창원",
         "display_name": "마산/창원",
-        "raw_port": "South Gyeongsang",
+        "raw_port": "SOUTH GYEONGSANG",
         "raw_aliases": [
-          "South Gyeongsang",
+          "SOUTH GYEONGSANG",
           "포항신항",
           "하동항",
           "마산/창원"
@@ -203,9 +203,9 @@
         "port_code": "621",
         "port_name": "대산",
         "display_name": "대산",
-        "raw_port": "Daesan",
+        "raw_port": "DAESAN",
         "raw_aliases": [
-          "Daesan",
+          "DAESAN",
           "OCEAN DISTRICT",
           "대산항",
           "대산"
@@ -236,7 +236,7 @@
     {
       "severity": "INFO",
       "feature": "묘박/대기 선박",
-      "message": "상세 318건 중 상위 5건만 요약 파일에 포함",
+      "message": "상세 312건 중 상위 5건만 요약 파일에 포함",
       "recommended_fix": "dashboard/api/anchorage-waiting.json lazy load 사용"
     }
   ]

@@ -8,7 +8,7 @@
   "GITHUB_WORKFLOW": null,
   "run_id": "run_20260612160015353_e7b1a2b2",
   "generated_at": "2026-06-12T16:07:40.250Z",
-  "aux_run_id": "run_20260612202729227_62b5c664",
+  "aux_run_id": "run_20260613033359476_4972d654",
   "owner_tier": "fast_aux",
   "core_may_update": false,
   "data_mode": "live",
@@ -92,7 +92,59 @@
   "parser_blockers": [],
   "utilization_note": "",
   "utilization_status": "NO_ROWS",
+  "parser_blocker": "",
   "parser_blocker_classification": "",
+  "response_shape": "empty_or_not_attempted",
+  "expected_aliases_missing": [
+    "imo",
+    "mmsi",
+    "call_sign",
+    "vessel_name",
+    "vessel_type",
+    "gt",
+    "dwt",
+    "flag"
+  ],
+  "recommended_alias_map": {
+    "imo": [
+      "imo",
+      "imo_no",
+      "imoNo"
+    ],
+    "mmsi": [
+      "mmsi",
+      "mmsi_no",
+      "mmsiNo"
+    ],
+    "call_sign": [
+      "call_sign",
+      "callsign",
+      "clsgn"
+    ],
+    "vessel_name": [
+      "vessel_name",
+      "ship_name",
+      "vsslNm"
+    ],
+    "vessel_type": [
+      "vessel_type",
+      "ship_type",
+      "vsslKndNm"
+    ],
+    "gt": [
+      "gt",
+      "grt",
+      "gross_tonnage"
+    ],
+    "dwt": [
+      "dwt",
+      "deadweight"
+    ],
+    "flag": [
+      "flag",
+      "nationality"
+    ]
+  },
   "detail_endpoint": "dashboard/api/source-collection-status.json",
   "recommendation": "Detailed source diagnostics are available in source-collection-status and should be loaded only on demand.",
   "record_count": 0,
@@ -104,9 +156,9 @@
   "stale_reason": "",
   "placeholder": false,
   "reused_from_cache": true,
-  "cache_reused_at": "2026-06-12T20:30:45.359Z",
+  "cache_reused_at": "2026-06-13T03:37:05.562Z",
   "preservation_reason": "Auxiliary source quality preserved from previous GitHub Actions run because local core mode cannot access secrets.",
-  "core_run_id": "run_20260612202729227_62b5c664",
-  "core_generated_at": "2026-06-12T20:30:45.359Z",
+  "core_run_id": "run_20260613033359476_4972d654",
+  "core_generated_at": "2026-06-13T03:37:05.562Z",
   "core_generated_by": "local"
 }

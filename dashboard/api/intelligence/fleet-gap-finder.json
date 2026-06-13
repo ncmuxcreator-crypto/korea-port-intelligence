@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T20:30:45.359Z",
+  "generated_at": "2026-06-13T03:37:05.562Z",
   "schema_version": "1.0",
   "data_mode": "live",
   "record_count": 2,
@@ -9,10 +9,10 @@
       "rank": 1,
       "operator_name": "미확인 운영사",
       "targeted_vessels": 10,
-      "opportunity_gap": 21,
-      "known_korea_vessels": 31,
+      "opportunity_gap": 19,
+      "known_korea_vessels": 29,
       "opportunity_score": 74,
-      "reason_summary": "미확인 운영사: 한국 관측 선대 31척 중 미타겟 기회 21척",
+      "reason_summary": "미확인 운영사: 한국 관측 선대 29척 중 미타겟 기회 19척",
       "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "recommended_next_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
       "data_sources": [
@@ -182,7 +182,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -202,7 +203,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -215,6 +219,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -232,7 +238,7 @@
         },
         "category_label": "",
         "korean_label": "",
-        "reason_summary": "미확인 운영사: 한국 관측 선대 31척 중 미타겟 기회 21척",
+        "reason_summary": "미확인 운영사: 한국 관측 선대 29척 중 미타겟 기회 19척",
         "recommended_action": "미확인 운영사 선박을 연락처 확인 큐와 함께 검토",
         "data_lineage": {
           "vessel_name": {
@@ -562,7 +568,8 @@
           "pilotage_source": null,
           "confidence": null,
           "pilotage_confidence": null,
-          "match_type": "",
+          "match_type": "none",
+          "placeholder": true,
           "arrival_window": null,
           "reason_ko": "",
           "reason": "",
@@ -582,7 +589,10 @@
         },
         "berth_signal": {
           "has_berth_info": false,
+          "has_berth": false,
           "source": null,
+          "signal_strength": "NONE",
+          "placeholder": true,
           "terminal": null,
           "berth": null,
           "berth_direction": null,
@@ -595,6 +605,8 @@
           "port": "미확인 항만",
           "match_type": "none",
           "confidence": null,
+          "reason_code": "no_berth_signal",
+          "baseline_reason": "",
           "reason": "",
           "normalized_port": {
             "port_code": "UNKNOWN",
@@ -768,8 +780,8 @@
   ],
   "summary": {
     "operator_count": 2,
-    "total_gap_vessels": 22,
-    "unknown_operator_gap": 21,
+    "total_gap_vessels": 20,
+    "unknown_operator_gap": 19,
     "assumptions": {
       "currency": "USD",
       "average_cleaning_price": 18000,
