@@ -1,3 +1,5 @@
+import { SOURCE_CSV_URL_RECOMMENDED_FIX, diagnoseSourceCsvUrl } from "./source-csv-url.js";
+
 const ULSAN_AUXILIARY_SOURCE_KEYS = new Set([
   "ulsan_core",
   "ulsan_berth_detail",
@@ -176,6 +178,7 @@ function matchesSource(spec, source = {}) {
 
 function classifyError(source = {}) {
   const text = String(source.error_message || source.error || source.raw_skip_reason || source.skip_reason || source.reason || "").toLowerCase();
+  if (source.status === "WRONG_SOURCE_CSV_URL" || source.failure_reason === "wrong_source_csv_url" || text.includes("wrong_source_csv_url")) return "WRONG_SOURCE_CSV_URL";
   if (/api_response_too_large|response too large|source_too_large/.test(text) || source.failure_reason === "api_response_too_large") return "SOURCE_TOO_LARGE";
   if (/parse|json|xml|csv|decode/.test(text)) return "PARSE_FAILED";
   if (/http|timeout|fetch|network|abort|econn|enotfound|status/.test(text) || source.http_status) return "FETCH_FAILED";
@@ -235,14 +238,15 @@ export function applySourcePriority(item = {}) {
   const isSourceCsv = sourceKey === "source_csv";
   const isAuxiliary = AUXILIARY_SOURCE_KEYS.has(sourceKey);
   const sourceCsvTooLarge = isSourceCsvTooLarge(item);
+  const sourceCsvWrongUrl = isSourceCsv && String(item.status || "") === "WRONG_SOURCE_CSV_URL";
   const rowsCollected = Number(item.rows_collected || 0);
   const rowsNormalized = Number(item.rows_normalized || 0);
-  const status = sourceCsvTooLarge ? "SOURCE_TOO_LARGE" : item.status;
+  const status = sourceCsvWrongUrl ? "WRONG_SOURCE_CSV_URL" : sourceCsvTooLarge ? "SOURCE_TOO_LARGE" : item.status;
   const isFailed = ["FETCH_FAILED", "PARSE_FAILED"].includes(String(status || ""));
   const deferred = isUlsanAuxiliary && isFailed && isHttp404Failure(item);
   const sourceLayer = isAuxiliary ? "auxiliary" : (item.source_layer || "core");
   const coreBlocking = isAuxiliary ? false : item.core_blocking !== false;
-  const severity = deferred || sourceCsvTooLarge
+  const severity = deferred || sourceCsvTooLarge || sourceCsvWrongUrl
     ? "WARNING"
     : item.severity || (isFailed || status === "PARTIAL" ? "WARNING" : "INFO");
   return {
@@ -256,7 +260,10 @@ export function applySourcePriority(item = {}) {
     utilization_status: item.utilization_status || (rowsCollected > 0 && rowsNormalized === 0 ? "FETCHED_NOT_NORMALIZED" : rowsNormalized > 0 ? "NORMALIZED" : "NO_ROWS"),
     fix_status: deferred ? "deferred" : (item.fix_status || (status === "ACTIVE" ? "active" : "needs_action")),
     source_too_large: sourceCsvTooLarge || Boolean(item.source_too_large),
-    ...(sourceCsvTooLarge ? {
+    ...(sourceCsvWrongUrl ? {
+      exact_fix_instruction: SOURCE_CSV_URL_RECOMMENDED_FIX,
+      fix_hint: SOURCE_CSV_URL_RECOMMENDED_FIX
+    } : sourceCsvTooLarge ? {
       exact_fix_instruction: "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV.",
       fix_hint: "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
     } : deferred ? {
@@ -361,6 +368,29 @@ function statusForSpec({ spec, env, sources }) {
   const rowsCollected = matched.reduce((sum, source) => sum + Number(source.rows_collected || source.row_count || 0), 0);
   const attempted = matched.some(source => source.attempted);
   const skipped = matched.some(source => source.skipped);
+  const matchedUrlSource = spec.key === "source_csv"
+    ? matched.find(source => source.source_csv_url_status || source.configured_url_sanitized || source.expected_raw_url)
+    : null;
+  const sourceCsvUrlDiagnostic = spec.key === "source_csv"
+    ? (matchedUrlSource ? {
+      status: matchedUrlSource.source_csv_url_status || null,
+      expected_raw_url: matchedUrlSource.expected_raw_url || null,
+      configured_url_sanitized: matchedUrlSource.configured_url_sanitized || null,
+      configured_repository: matchedUrlSource.configured_repository || null,
+      configured_file_path: matchedUrlSource.configured_file_path || null,
+      local_reference_path: matchedUrlSource.local_reference_path || null,
+      local_reference_exists: matchedUrlSource.local_reference_exists === true,
+      points_to_old_repo: matchedUrlSource.points_to_old_repo === true,
+      points_to_different_repo: matchedUrlSource.points_to_different_repo === true,
+      points_to_old_source_arrivals_csv: matchedUrlSource.points_to_old_source_arrivals_csv === true,
+      points_to_lightweight_verified_reference_csv: matchedUrlSource.points_to_lightweight_verified_reference_csv === true,
+      points_to_expected_url: matchedUrlSource.points_to_expected_url === true
+    } : diagnoseSourceCsvUrl({ sourceCsvUrl: env.SOURCE_CSV_URL, env }))
+    : null;
+  const wrongSourceCsvUrl = spec.key === "source_csv" && (
+    sourceCsvUrlDiagnostic?.status === "WRONG_SOURCE_CSV_URL" ||
+    matched.some(source => String(source.status || "") === "WRONG_SOURCE_CSV_URL" || source.failure_reason === "wrong_source_csv_url")
+  );
   const failed = matched.filter(source => source.status === "failed" || source.error || source.error_message);
   let status = "NOT_CONFIGURED";
   let skipReason = null;
@@ -378,15 +408,19 @@ function statusForSpec({ spec, env, sources }) {
     status = "SKIPPED";
     skipReason = String(env.SOURCE_CSV_MODE || "").toLowerCase() === "off" ? "source_csv_mode_off" : "cache_only_mode";
   }
-  if (matched.length && skipped && rowsCollected === 0) {
+  if (wrongSourceCsvUrl && !["cache_only", "off"].includes(String(env.SOURCE_CSV_MODE || "").toLowerCase())) {
+    status = "WRONG_SOURCE_CSV_URL";
+    skipReason = SOURCE_CSV_URL_RECOMMENDED_FIX;
+  }
+  if (matched.length && skipped && rowsCollected === 0 && status !== "WRONG_SOURCE_CSV_URL") {
     status = missing.length ? status : "SKIPPED";
     skipReason = skipReason || matched.find(source => source.skipped)?.skip_reason || matched.find(source => source.skipped)?.reason || "skipped";
   }
-  if (failed.length) {
+  if (failed.length && status !== "WRONG_SOURCE_CSV_URL") {
     status = classifyError(failed[0]);
     skipReason = failed[0].error_message || failed[0].error || failed[0].skip_reason || "fetch_failed";
   }
-  if (attempted && !failed.length && rowsCollected === 0) {
+  if (attempted && !failed.length && rowsCollected === 0 && status !== "WRONG_SOURCE_CSV_URL") {
     status = "NO_ROWS";
     skipReason = skipReason || "no_rows";
   }
@@ -414,8 +448,15 @@ function statusForSpec({ spec, env, sources }) {
     collector_enabled: (missing.length === 0 && activationEnabled(spec, env)) || rowsCollected > 0,
     collector_attempted: attempted,
     skip_reason: skipReason,
-    exact_fix_instruction: fixInstruction,
-    fix_hint: fixInstruction,
+    exact_fix_instruction: status === "WRONG_SOURCE_CSV_URL" ? SOURCE_CSV_URL_RECOMMENDED_FIX : fixInstruction,
+    fix_hint: status === "WRONG_SOURCE_CSV_URL" ? SOURCE_CSV_URL_RECOMMENDED_FIX : fixInstruction,
+    source_csv_url_status: sourceCsvUrlDiagnostic?.status || undefined,
+    expected_raw_url: sourceCsvUrlDiagnostic?.expected_raw_url || undefined,
+    configured_url_sanitized: sourceCsvUrlDiagnostic?.configured_url_sanitized || undefined,
+    points_to_old_repo: sourceCsvUrlDiagnostic?.points_to_old_repo || undefined,
+    points_to_different_repo: sourceCsvUrlDiagnostic?.points_to_different_repo || undefined,
+    points_to_old_source_arrivals_csv: sourceCsvUrlDiagnostic?.points_to_old_source_arrivals_csv || undefined,
+    points_to_lightweight_verified_reference_csv: sourceCsvUrlDiagnostic?.points_to_lightweight_verified_reference_csv || undefined,
     source_layer: spec.sourceLayer || "core",
     core_blocking: spec.coreBlocking === false ? false : true,
     rows_collected: rowsCollected,
@@ -438,6 +479,18 @@ function statusForSpec({ spec, env, sources }) {
       response_content_type: source.response_content_type || null,
       content_type: source.content_type || source.response_content_type || null,
       file_name_hint: source.file_name_hint || null,
+      source_csv_url_status: source.source_csv_url_status || undefined,
+      expected_raw_url: source.expected_raw_url || undefined,
+      configured_url_sanitized: source.configured_url_sanitized || undefined,
+      configured_repository: source.configured_repository || undefined,
+      configured_file_path: source.configured_file_path || undefined,
+      local_reference_path: source.local_reference_path || undefined,
+      local_reference_exists: source.local_reference_exists === true ? true : undefined,
+      points_to_old_repo: source.points_to_old_repo === true ? true : undefined,
+      points_to_different_repo: source.points_to_different_repo === true ? true : undefined,
+      points_to_old_source_arrivals_csv: source.points_to_old_source_arrivals_csv === true ? true : undefined,
+      points_to_lightweight_verified_reference_csv: source.points_to_lightweight_verified_reference_csv === true ? true : undefined,
+      points_to_expected_url: source.points_to_expected_url === true ? true : undefined,
       header_row_fields: Array.isArray(source.header_row_fields) ? source.header_row_fields : undefined,
       row_count_estimate: Number(source.row_count_estimate || 0) || undefined,
       raw_sample_keys: Array.isArray(source.raw_sample_keys) ? source.raw_sample_keys : undefined,

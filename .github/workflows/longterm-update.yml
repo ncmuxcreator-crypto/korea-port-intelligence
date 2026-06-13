@@ -88,7 +88,7 @@ jobs:
       EVENT_PREVIOUS_SNAPSHOT_LIMIT: 1500
       SUPABASE_BATCH_SIZE: 200
       ARCHIVE_TO_DRIVE: "true"
-      SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
+      SOURCE_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

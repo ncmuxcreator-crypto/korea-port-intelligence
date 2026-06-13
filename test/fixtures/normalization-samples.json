@@ -1,0 +1,52 @@
+{
+  "vessel_names": [
+    { "input": "M/V PAN PEGASUS", "expected": "PAN PEGASUS" },
+    { "input": "MV  PAN-PEGASUS", "expected": "PAN PEGASUS" },
+    { "input": "Pan Pegasus", "expected": "PAN PEGASUS" },
+    { "input": "M.T. ACE-1", "expected": "ACE 1" }
+  ],
+  "call_signs": [
+    { "input": " 3EAB-4 ", "expected": "3EAB4" },
+    { "input": "dsme  ", "expected": "DSME" },
+    { "input": "N/A", "expected": "" },
+    { "input": "-", "expected": "" }
+  ],
+  "ports": [
+    { "input": "Busan New Port", "expected_normalized_port": "BUSAN" },
+    { "input": "PUSAN", "expected_normalized_port": "BUSAN" },
+    { "input": "KRKAN", "expected_normalized_port": "GWANGYANG" },
+    { "input": "PYEONGTAEK-DANGJIN", "expected_normalized_port": "PYEONGTAEK_DANGJIN" },
+    { "input": "UNKNOWN HARBOR", "expected_normalized_port": "UNKNOWN_HARBOR" }
+  ],
+  "date_times": [
+    { "input": "202606130930", "expected_parse_status": "parsed" },
+    { "input": "2026-06-13 09:30", "expected_parse_status": "parsed" },
+    { "input": "06/13 09:30", "context": { "year": 2026 }, "expected_parse_status": "parsed" },
+    { "input": "09:30", "expected_parse_status": "time_only", "expected_time_only_missing_date": true },
+    { "input": "not-a-date", "expected_parse_status": "invalid" }
+  ],
+  "berths": [
+    { "input": "PNC 2B", "expected_terminal": "PNC", "expected_berth": "2B", "expected_normalized_berth": "PNC_2B" },
+    { "input": "BNCT Berth 4", "expected_terminal": "BNCT", "expected_berth": "4", "expected_normalized_berth": "BNCT_4" }
+  ],
+  "vessel_spec_alias_rows": [
+    {
+      "input": {
+        "vesselNm": "M/V PAN PEGASUS",
+        "callSign": " 3EAB-4 ",
+        "port_name": "Busan",
+        "grossTonnage": "12,345",
+        "vesselType": "Container Ship",
+        "nationality": "kr"
+      },
+      "expected": {
+        "call_sign": "3EAB4",
+        "vessel_name": "PAN PEGASUS",
+        "gt": 12345,
+        "vessel_type": "CONTAINER SHIP",
+        "flag": "KR",
+        "match_key_call_sign_port": "3EAB4|BUSAN"
+      }
+    }
+  ]
+}

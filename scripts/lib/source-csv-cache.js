@@ -1,6 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
-import { normalizeCallSign, normalizeVesselName } from "./matching.js";
+import {
+  buildVesselMatchKeys,
+  normalizeCallSign,
+  normalizeFlag,
+  normalizeNumeric,
+  normalizeVesselName,
+  normalizeVesselType
+} from "./normalize.js";
+import { SOURCE_CSV_URL_RECOMMENDED_FIX, diagnoseSourceCsvUrl } from "./source-csv-url.js";
 
 export const SOURCE_CSV_REFERENCE_CACHE_PATH = "data/cache/source-csv-reference-cache.json";
 export const SOURCE_CSV_PUBLIC_REFERENCE_PATH = "dashboard/api/cache/source-csv-reference.json";
@@ -59,9 +67,12 @@ function firstValue(row = {}, field) {
 }
 
 function numberOrNull(value) {
-  if (!hasText(value)) return null;
-  const parsed = Number(String(value).replace(/,/g, ""));
-  return Number.isFinite(parsed) ? parsed : null;
+  return normalizeNumeric(value);
+}
+
+function positiveNumberOrNull(value) {
+  const parsed = normalizeNumeric(value);
+  return parsed !== null && parsed > 0 ? parsed : null;
 }
 
 function normalizedBool(value) {
@@ -73,11 +84,12 @@ function normalizedBool(value) {
 export function normalizeSourceCsvReferenceRow(row = {}) {
   const vesselName = firstValue(row, "vessel_name");
   const callSign = normalizeCallSign(firstValue(row, "call_sign"));
-  const normalizedName = firstValue(row, "normalized_vessel_name") || normalizeVesselName(vesselName);
-  const gt = numberOrNull(firstValue(row, "gt"));
-  const dwt = numberOrNull(firstValue(row, "dwt"));
-  const loa = numberOrNull(firstValue(row, "loa"));
-  const beam = numberOrNull(firstValue(row, "beam"));
+  const normalizedName = normalizeVesselName(vesselName || firstValue(row, "normalized_vessel_name"));
+  const gt = positiveNumberOrNull(firstValue(row, "gt"));
+  const dwt = positiveNumberOrNull(firstValue(row, "dwt"));
+  const loa = positiveNumberOrNull(firstValue(row, "loa"));
+  const beam = positiveNumberOrNull(firstValue(row, "beam"));
+  const vesselType = normalizeVesselType(firstValue(row, "vessel_type"));
   const reference = {
     vessel_name: vesselName,
     normalized_vessel_name: normalizedName,
@@ -87,10 +99,10 @@ export function normalizeSourceCsvReferenceRow(row = {}) {
     operator: firstValue(row, "operator"),
     owner: firstValue(row, "owner"),
     manager: firstValue(row, "manager"),
-    vessel_type: firstValue(row, "vessel_type"),
+    vessel_type: vesselType,
     gt,
     dwt,
-    flag: firstValue(row, "flag"),
+    flag: normalizeFlag(firstValue(row, "flag")),
     loa,
     beam,
     verified: normalizedBool(firstValue(row, "verified")) || Boolean(firstValue(row, "imo") || firstValue(row, "mmsi") || callSign),
@@ -98,6 +110,7 @@ export function normalizeSourceCsvReferenceRow(row = {}) {
     updated_at: firstValue(row, "updated_at"),
     reference_source: "source_csv_cache"
   };
+  reference.match_keys = buildVesselMatchKeys(reference);
   const hasIdentifier = hasText(reference.imo) || hasText(reference.mmsi) || hasText(reference.call_sign);
   const hasCommercialField = hasText(reference.operator) || hasText(reference.owner) || hasText(reference.manager) || hasText(reference.vessel_type) || reference.gt !== null || reference.dwt !== null || reference.loa !== null || reference.beam !== null;
   if (!reference.vessel_name && !reference.normalized_vessel_name && !hasIdentifier) return null;
@@ -131,6 +144,9 @@ export function summarizeSourceCsvReferenceRows(rows = []) {
     rows_with_mmsi: rows.filter(row => hasText(row.mmsi)).length,
     rows_with_call_sign: rows.filter(row => hasText(row.call_sign)).length,
     rows_with_operator: rows.filter(row => hasText(row.operator)).length,
+    rows_with_gt: rows.filter(row => row.gt !== null && row.gt !== undefined && Number(row.gt) > 0).length,
+    rows_with_flag: rows.filter(row => hasText(row.flag)).length,
+    rows_with_vessel_type: rows.filter(row => hasText(row.vessel_type)).length,
     fields_available: fieldsAvailable,
     schema_issues: schema.schema_issues,
     duplicate_issues: schema.duplicate_issues
@@ -204,15 +220,17 @@ function mergedDisplay(record = {}) {
 
 function recordIdentity(record = {}) {
   const data = mergedDisplay(record);
-  return {
+  const identity = {
     imo: String(data.imo || "").trim(),
     mmsi: String(data.mmsi || "").trim(),
     call_sign: normalizeCallSign(data.call_sign || data.callsign || ""),
-    normalized_vessel_name: normalizeVesselName(data.normalized_vessel_name || data.vessel_name || data.name || ""),
+    normalized_vessel_name: normalizeVesselName(data.vessel_name || data.name || data.normalized_vessel_name || ""),
     gt: numberOrNull(data.gt ?? data.tonnage_summary?.gt),
-    vessel_type: String(data.vessel_type || "").trim(),
+    vessel_type: normalizeVesselType(data.vessel_type || ""),
     vessel_key: String(data.vessel_key || data.vessel_id || data.imo || data.mmsi || data.call_sign || data.vessel_name || "").trim()
   };
+  identity.match_keys = buildVesselMatchKeys({ ...data, ...identity });
+  return identity;
 }
 
 function findSourceCsvMatch(record = {}, indexes = {}) {
@@ -342,6 +360,7 @@ export function buildSourceCsvEnrichmentDryRun({ records = [], cache = null, gen
   const applied = [];
   const review = [];
   const rejected = [];
+  const sampleLimit = 100;
   const matchedVessels = new Set();
   for (const record of records) {
     if (!record || typeof record !== "object") continue;
@@ -434,10 +453,11 @@ export function buildSourceCsvEnrichmentDryRun({ records = [], cache = null, gen
     applied_fields: applied.length,
     review_items: review.length,
     rejected_items: rejected.length,
-    items: applied.slice(0, 100),
-    applied,
-    review,
-    rejected
+    sample_limit: sampleLimit,
+    items: applied.slice(0, sampleLimit),
+    applied: applied.slice(0, sampleLimit),
+    review: review.slice(0, sampleLimit),
+    rejected: rejected.slice(0, sampleLimit)
   };
 }
 
@@ -556,6 +576,10 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const maxAllowedBytes = Number(process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || DEFAULT_MAX_SOURCE_CSV_BYTES);
   const responseSizeBytes = Number(diag.response_size_bytes || 0)
     || responseSizeFromText(item.skip_reason, item.error_message, item.diagnostics, diagnostic);
+  const urlDiagnostic = diagnoseSourceCsvUrl({
+    sourceCsvUrl: diag.configured_url_sanitized || process.env.SOURCE_CSV_URL,
+    cwd: process.cwd()
+  });
   const sourceTooLarge = item.status === "SOURCE_TOO_LARGE"
     || diag.failure_reason === "api_response_too_large"
     || Boolean(item.source_too_large)
@@ -567,7 +591,10 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
   const headerFields = Array.isArray(diag.header_row_fields) ? diag.header_row_fields : Array.isArray(diag.sample_keys) ? diag.sample_keys : [];
   const isProbablyRaw = likelyRawCsv({ responseSizeBytes, headerFields, sourceTooLarge });
   const isProbablyLightweight = likelyLightweightCsv({ headerFields, rows });
-  const status = offMode
+  const wrongSourceCsvUrl = urlDiagnostic.status === "WRONG_SOURCE_CSV_URL" || item.status === "WRONG_SOURCE_CSV_URL" || diag.source_csv_url_status === "WRONG_SOURCE_CSV_URL";
+  const status = wrongSourceCsvUrl && !cacheOnlyMode && !offMode
+    ? "WRONG_SOURCE_CSV_URL"
+    : offMode
     ? (previousCacheAvailable ? "OFF_PREVIOUS_CACHE" : "OFF_NO_CACHE")
     : cacheOnlyMode
       ? (previousCacheAvailable ? "CACHE_ONLY_PREVIOUS_CACHE" : "CACHE_ONLY_NO_CACHE")
@@ -584,6 +611,8 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     ? (previousCacheAvailable
       ? "Core update is using the previous lightweight source_csv cache. Run heavy enrichment with SOURCE_CSV_MODE=refresh to refresh it."
       : "Core update is cache-only and no source_csv cache exists. Create a smaller verified vessel reference CSV, then run heavy enrichment with SOURCE_CSV_MODE=refresh.")
+    : wrongSourceCsvUrl
+    ? SOURCE_CSV_URL_RECOMMENDED_FIX
     : sourceTooLarge
     ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
     : previousCacheAvailable
@@ -595,10 +624,22 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     owner_tier: "reference_enrichment",
     core_may_update: false,
     status,
+    source_csv_url_status: urlDiagnostic.status,
+    expected_raw_url: urlDiagnostic.expected_raw_url,
+    configured_url_sanitized: urlDiagnostic.configured_url_sanitized || diag.configured_url_sanitized || null,
+    configured_repository: urlDiagnostic.configured_repository || diag.configured_repository || null,
+    configured_file_path: urlDiagnostic.configured_file_path || diag.configured_file_path || null,
+    local_reference_path: urlDiagnostic.local_reference_path,
+    local_reference_exists: urlDiagnostic.local_reference_exists,
+    points_to_old_repo: urlDiagnostic.points_to_old_repo,
+    points_to_different_repo: urlDiagnostic.points_to_different_repo,
+    points_to_old_source_arrivals_csv: urlDiagnostic.points_to_old_source_arrivals_csv,
+    points_to_lightweight_verified_reference_csv: urlDiagnostic.points_to_lightweight_verified_reference_csv,
+    points_to_expected_url: urlDiagnostic.points_to_expected_url,
     source_csv_mode: sourceCsvMode || "refresh",
     source_layer: item.source_layer || "auxiliary",
     core_blocking: false,
-    configured: (item.present_env || []).includes("SOURCE_CSV_URL"),
+    configured: (item.present_env || []).includes("SOURCE_CSV_URL") || Boolean(urlDiagnostic.configured_url_sanitized || diag.configured_url_sanitized),
     collector_enabled: Boolean(item.collector_enabled),
     collector_attempted: Boolean(item.collector_attempted),
     source_too_large: sourceTooLarge,
@@ -621,6 +662,9 @@ export function buildSourceCsvSummary({ sourceCollectionStatus = {}, collectorDi
     rows_with_mmsi: summary.rows_with_mmsi,
     rows_with_call_sign: summary.rows_with_call_sign,
     rows_with_operator: summary.rows_with_operator,
+    rows_with_gt: summary.rows_with_gt,
+    rows_with_flag: summary.rows_with_flag,
+    rows_with_vessel_type: summary.rows_with_vessel_type,
     cache_status: currentCache.status,
     last_success_at: currentCache.last_success_at || null,
     cache_age_hours: cacheAgeHours === null || !Number.isFinite(cacheAgeHours) ? null : Number(cacheAgeHours.toFixed(2)),

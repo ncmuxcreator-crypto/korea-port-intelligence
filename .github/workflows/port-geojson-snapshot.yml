@@ -30,7 +30,7 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
       MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
-      SOURCE_CSV_URL: ${{ secrets.SOURCE_CSV_URL }}
+      SOURCE_CSV_URL: ${{ format('https://raw.githubusercontent.com/{0}/main/data/reference/verified_vessel_reference.csv', github.repository) }}
       MOF_AIS_DYNAMIC_API_URL: ${{ secrets.MOF_AIS_DYNAMIC_API_URL }}
       MOF_AIS_DYNAMIC_SERVICE_KEY: ${{ secrets.MOF_AIS_DYNAMIC_SERVICE_KEY }}
       MOF_AIS_INFO_API_URL: ${{ secrets.MOF_AIS_INFO_API_URL }}

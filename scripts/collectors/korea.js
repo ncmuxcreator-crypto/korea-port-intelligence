@@ -8,8 +8,19 @@ import {
   scoreMatch,
   matchConfidenceBand as sharedMatchConfidenceBand
 } from "../lib/matching.js";
+import {
+  buildVesselMatchKeys,
+  normalizeBerth as normalizeBerthIdentity,
+  normalizeDateTime,
+  normalizeFlag,
+  normalizeNumeric,
+  normalizePort as normalizePortIdentity,
+  normalizeTerminal as normalizeTerminalIdentity,
+  normalizeVesselType
+} from "../lib/normalize.js";
 import { DEFAULT_PORT_OPERATION_API_URL } from "../lib/runtime-config-audit.js";
 import { SOURCE_SCHEDULE_PATH, sourceScheduleDecisionForKey } from "../lib/source-schedule.js";
+import { VERIFIED_SOURCE_CSV_PATH, diagnoseSourceCsvUrl, expectedSourceCsvRawUrl } from "../lib/source-csv-url.js";
 
 const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
@@ -105,6 +116,13 @@ function loadSourceSchedule() {
 }
 
 function sourceScheduleSkipDecision(source = {}) {
+  if (
+    String(source.key || "") === "source_csv" &&
+    String(process.env.SOURCE_CSV_MODE || "").toLowerCase() === "refresh" &&
+    REFERENCE_ENRICHMENT_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)
+  ) {
+    return null;
+  }
   const schedule = loadSourceSchedule();
   if (!schedule?.items) return null;
   const decision = sourceScheduleDecisionForKey(source.key, schedule);
@@ -357,6 +375,10 @@ function sourceCsvEnabled() {
   return String(process.env.ENABLE_SOURCE_CSV || "").toLowerCase() === "true";
 }
 
+function sourceCsvUrl() {
+  return env("SOURCE_CSV_URL") || expectedSourceCsvRawUrl({ cwd: process.cwd() });
+}
+
 function debugVerboseEnabled() {
   return String(process.env.COLLECTOR_DEBUG_VERBOSE || "").toLowerCase() === "true";
 }
@@ -550,6 +572,29 @@ function serviceKeyVariants(value) {
   return variants;
 }
 
+function parseCsvLine(line = "") {
+  const out = [];
+  let current = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      i += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      out.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  out.push(current.trim());
+  return out;
+}
+
 function resultMeta(text) {
   const trimmed = String(text || "").trim();
   const meta = {};
@@ -572,7 +617,7 @@ function resultMeta(text) {
   } else {
     const firstLine = trimmed.split(/\r?\n/, 1)[0] || "";
     if (firstLine.includes(",")) {
-      meta.header_fields = parseLine(firstLine).map(field => String(field || "").trim()).filter(Boolean).slice(0, 80);
+      meta.header_fields = parseCsvLine(firstLine).map(field => String(field || "").trim()).filter(Boolean).slice(0, 80);
       meta.row_count_estimate = Math.max(0, trimmed.split(/\r?\n/).filter(Boolean).length - 1);
     }
   }
@@ -688,9 +733,9 @@ function vesselSpecAliasDiagnostics(rawRows = [], normalizedRows = []) {
 }
 
 function normalizeDate(value) {
-  if (!value) return "";
-  const text = String(value).trim();
-  if (!text) return "";
+  const text = String(value || "").trim();
+  const normalized = normalizeDateTime(value);
+  if (!normalized.timestamp) return "";
   if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)} 00:00`;
   if (/^\d{12}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)} ${text.slice(8, 10)}:${text.slice(10, 12)}`;
   if (/^\d{14}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)} ${text.slice(8, 10)}:${text.slice(10, 12)}`;
@@ -727,8 +772,9 @@ function normalizePilotTime(value, dateValue = "") {
     parse_status: raw ? "invalid_date_time" : "missing"
   };
   if (!raw) return fallback;
+  const dateTime = normalizeDateTime(raw);
   const normalized = normalizeDate(raw);
-  const localTime = isPilotTimeOnly(normalized) ? normalized : "";
+  const localTime = dateTime.time_only_missing_date ? dateTime.time_text : (isPilotTimeOnly(normalized) ? normalized : "");
   if (localTime) {
     const datePart = pilotDatePart(rawDate);
     if (datePart) {
@@ -765,8 +811,7 @@ function normalizePilotTime(value, dateValue = "") {
 }
 
 function toNumber(value) {
-  const n = Number(String(value ?? "").replace(/,/g, ""));
-  return Number.isFinite(n) ? n : 0;
+  return normalizeNumeric(value) ?? 0;
 }
 
 function sourceType(source = {}) {
@@ -921,7 +966,7 @@ function allSourceConfigs() {
     .filter(Boolean);
 
   return [
-    { key: "source_csv", label: "Core external snapshot CSV", url: sourceCsvEnabled() ? env("SOURCE_CSV_URL") : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
+    { key: "source_csv", label: "Lightweight verified vessel reference CSV", url: sourceCsvEnabled() ? sourceCsvUrl() : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
     { key: "vessel_spec", label: "MOF vessel specification", url: env("VESSEL_SPEC_API_URL"), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
     ...portOperationSources,
     ...pilotSources,
@@ -1073,6 +1118,42 @@ async function fetchTextOnce(source, extraParams = {}) {
     const url = buildUrl(source, extraParams);
     const started = Date.now();
     const maxResponseBytes = source?.key === "source_csv" ? MAX_SOURCE_CSV_BYTES : MAX_API_RESPONSE_BYTES;
+    if (source?.key === "source_csv") {
+      const urlDiagnostic = diagnoseSourceCsvUrl({ sourceCsvUrl: String(url), cwd: process.cwd() });
+      if (
+        urlDiagnostic.points_to_lightweight_verified_reference_csv &&
+        urlDiagnostic.local_reference_exists &&
+        !urlDiagnostic.points_to_old_repo &&
+        !urlDiagnostic.points_to_old_source_arrivals_csv
+      ) {
+        const localPath = path.join(process.cwd(), VERIFIED_SOURCE_CSV_PATH);
+        const text = fs.readFileSync(localPath, "utf8");
+        const responseSizeBytes = Buffer.byteLength(text, "utf8");
+        if (maxResponseBytes > 0 && responseSizeBytes > maxResponseBytes) {
+          const error = new Error(`API response too large: ${responseSizeBytes} bytes`);
+          error.failure_reason = "api_response_too_large";
+          error.response_size_bytes = responseSizeBytes;
+          error.max_allowed_bytes = maxResponseBytes;
+          error.response_content_type = "text/csv; source=local-checkout";
+          error.file_name_hint = path.basename(VERIFIED_SOURCE_CSV_PATH);
+          throw error;
+        }
+        return {
+          text,
+          url,
+          http_status: 200,
+          response_content_type: "text/csv; source=local-checkout",
+          file_name_hint: path.basename(VERIFIED_SOURCE_CSV_PATH),
+          response_size_bytes: responseSizeBytes,
+          max_allowed_bytes: maxResponseBytes,
+          head_checked: false,
+          head_http_status: null,
+          head_latency_ms: null,
+          latency_ms: Date.now() - started,
+          result_meta: resultMeta(text)
+        };
+      }
+    }
     const head = await fetchHeadMetadata(url, source);
     if (head.checked && maxResponseBytes > 0 && head.content_length > maxResponseBytes) {
       const error = new Error(`API response too large: ${head.content_length} bytes`);
@@ -1507,6 +1588,8 @@ function normalizePort(value, fallback = "") {
   const text = String(value || fallback || "").trim();
   const registryName = portNameForCode(text);
   if (registryName) return registryName;
+  const identity = normalizePortIdentity(text);
+  if (identity.is_known && identity.display_name) return identity.display_name;
   if (text === "020" || /busan/i.test(text)) return "Busan";
   if (text === "030" || /incheon/i.test(text)) return "Incheon";
   if (text === "620" || /yeosu_gwangyang/i.test(text)) return "Yeosu/Gwangyang";
@@ -2048,8 +2131,10 @@ function normalizeRow(row, source, now) {
   const vesselName = String(firstValue(adapted, FIELD_ALIASES.vessel_name) || (pncSource ? pncValue(adapted, "vessel_name") : "")).trim();
   const imo = String(firstValue(adapted, FIELD_ALIASES.imo)).trim();
   const mmsi = String(firstValue(adapted, FIELD_ALIASES.mmsi)).trim();
-  const callSign = String(firstValue(adapted, FIELD_ALIASES.call_sign) || (pncSource ? pncValue(adapted, "call_sign") : "")).trim();
-  const port = normalizePort(firstValue(adapted, FIELD_ALIASES.port) || (pncSource ? pncValue(adapted, "port") : ""), source.portCode);
+  const callSign = normalizeCallSign(firstValue(adapted, FIELD_ALIASES.call_sign) || (pncSource ? pncValue(adapted, "call_sign") : ""));
+  const rawPortValue = firstValue(adapted, FIELD_ALIASES.port) || (pncSource ? pncValue(adapted, "port") : "") || source.portName || source.portCode || source.prtAgCd || "";
+  const portIdentity = normalizePortIdentity(rawPortValue || source.portCode);
+  const port = portIdentity.display_name || normalizePort(rawPortValue, source.portCode);
   const pncBerth = pncSource ? String(pncValue(adapted, "berth")).trim() : "";
   const pncTerminal = pncSource ? String(pncValue(adapted, "terminal")).trim() : "";
   const pncEta = pncSource ? normalizeDate(pncValue(adapted, "eta")) : "";
@@ -2067,6 +2152,28 @@ function normalizeRow(row, source, now) {
 
   const vsslKndCd = rawValue(adapted, ["vsslKndCd", "VSSL_KND_CD", "shipKindCode", "vesselKindCode", "선박종류코드"]);
   const vsslKndNm = rawValue(adapted, ["vsslKndNm", "VSSL_KND_NM", "shipKindName", "vesselKindName", "선박종류명"]);
+  const rawBerthValue = String(firstValue(adapted, FIELD_ALIASES.berth) || pncBerth).trim();
+  const rawTerminalValue = String(rawValue(adapted, TERMINAL_ALIASES) || pncTerminal).trim();
+  const berthIdentity = normalizeBerthIdentity([rawTerminalValue, rawBerthValue].filter(Boolean).join(" "));
+  const normalizedTerminal = normalizeTerminalIdentity(rawTerminalValue || rawBerthValue) || berthIdentity.terminal || rawTerminalValue;
+  const vesselType = normalizeVesselType(vsslKndNm || firstValue(adapted, FIELD_ALIASES.vessel_type) || vsslKndCd || "Unknown");
+  const rawEta = firstValue(adapted, FIELD_ALIASES.eta) || (pncSource ? pncValue(adapted, "eta") : "");
+  const rawEtb = firstValue(adapted, FIELD_ALIASES.etb) || (pncSource ? pncValue(adapted, "etb") : "");
+  const rawAta = firstValue(adapted, FIELD_ALIASES.ata) || (pncSource ? pncValue(adapted, "ata") : "");
+  const rawAtb = firstValue(adapted, FIELD_ALIASES.atb) || (pncSource ? pncValue(adapted, "atb") : "");
+  const rawEtd = firstValue(adapted, FIELD_ALIASES.etd);
+  const rawAtd = firstValue(adapted, FIELD_ALIASES.atd);
+  const rawNextPortEta = firstValue(adapted, FIELD_ALIASES.next_port_eta);
+  const timeParseStatuses = {
+    eta: normalizeDateTime(rawEta).parse_status,
+    etb: normalizeDateTime(rawEtb).parse_status,
+    ata: normalizeDateTime(rawAta).parse_status,
+    atb: normalizeDateTime(rawAtb).parse_status,
+    etd: normalizeDateTime(rawEtd).parse_status,
+    atd: normalizeDateTime(rawAtd).parse_status,
+    next_port_eta: normalizeDateTime(rawNextPortEta).parse_status,
+    pilot_time: pilotTimeInfo.parse_status
+  };
   const record = {
     vessel_id: imo ? `IMO-${imo}` : mmsi ? `MMSI-${mmsi}` : callSign ? `CALL-${callSign}` : vesselName ? `${vesselName}-${port}` : `PNC-${port}-${pncTerminal || pncBerth || source.key}`,
     vessel_name: vesselName || imo || mmsi || callSign,
@@ -2075,7 +2182,9 @@ function normalizeRow(row, source, now) {
     mmsi,
     call_sign: callSign,
     port,
-    port_code: source.prtAgCd || rawValue(adapted, ["prtAgCd", "portCode", "prtCd"]) || portCodeFromName(port),
+    normalized_port: portIdentity.normalized_port,
+    raw_port: portIdentity.raw_port || rawPortValue,
+    port_code: source.prtAgCd || rawValue(adapted, ["prtAgCd", "portCode", "prtCd"]) || portIdentity.port_code || portCodeFromName(port),
     port_name: port,
     port_name_ko: source.portNameKo || port,
     port_group: source.portGroup || port,
@@ -2084,8 +2193,8 @@ function normalizeRow(row, source, now) {
     commercial_focus: source.commercialFocus || "",
     commercial_priority: source.commercialPriority || "",
     anchorage_relevance: source.anchorageRelevance || "",
-    berth: String(firstValue(adapted, FIELD_ALIASES.berth) || pncBerth).trim(),
-    berth_name: String(firstValue(adapted, FIELD_ALIASES.berth) || pncBerth).trim(),
+    berth: berthIdentity.berth || rawBerthValue,
+    berth_name: berthIdentity.berth || rawBerthValue,
     anchorage_zone: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
     anchorage_name: String(firstValue(adapted, FIELD_ALIASES.anchorage_zone)).trim(),
     laidupFcltyNm: String(rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"])).trim(),
@@ -2100,7 +2209,7 @@ function normalizeRow(row, source, now) {
     destination: String(firstValue(adapted, FIELD_ALIASES.destination)).trim(),
     previous_port: String(firstValue(adapted, FIELD_ALIASES.previous_port)).trim(),
     next_port: String(firstValue(adapted, FIELD_ALIASES.next_port)).trim(),
-    vessel_type: vsslKndNm || String(firstValue(adapted, FIELD_ALIASES.vessel_type)).trim() || vsslKndCd || "Unknown",
+    vessel_type: vesselType || "UNKNOWN",
     vsslKndCd,
     vsslKndNm,
     gt: toNumber(firstValue(adapted, FIELD_ALIASES.gt)),
@@ -2109,9 +2218,11 @@ function normalizeRow(row, source, now) {
     dwt: toNumber(firstValue(adapted, FIELD_ALIASES.dwt)),
     loa: toNumber(firstValue(adapted, FIELD_ALIASES.loa)),
     beam: toNumber(firstValue(adapted, FIELD_ALIASES.beam)),
-    flag: String(firstValue(adapted, FIELD_ALIASES.flag)).trim(),
-    terminal_name: rawValue(adapted, TERMINAL_ALIASES) || pncTerminal,
-    berth_key: normalizeBerthTerminalAlias([
+    flag: normalizeFlag(firstValue(adapted, FIELD_ALIASES.flag)),
+    terminal_name: normalizedTerminal,
+    raw_terminal_name: rawTerminalValue,
+    raw_berth_name: rawBerthValue,
+    berth_key: berthIdentity.normalized_berth || normalizeBerthTerminalAlias([
       firstValue(adapted, FIELD_ALIASES.berth),
       rawValue(adapted, ["laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "계선시설명", "계선장명", "시설명", "fcltyNm", "facilityNm"]),
       rawValue(adapted, TERMINAL_ALIASES),
@@ -2132,17 +2243,18 @@ function normalizeRow(row, source, now) {
     movement_type: pilotDirection(firstValue(adapted, ALL_PILOT_DIRECTION_ALIASES)),
     pilot_station: rawValue(adapted, ALL_PILOT_STATION_ALIASES),
     pilot_source_url: source.url || "",
-    eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.eta)) || pncEta,
-    etb: normalizeDate(firstValue(adapted, FIELD_ALIASES.etb)) || pncEtb,
-    ata: normalizeDate(firstValue(adapted, FIELD_ALIASES.ata)) || pncAta,
-    atb: normalizeDate(firstValue(adapted, FIELD_ALIASES.atb)) || pncAtb,
-    etd: normalizeDate(firstValue(adapted, FIELD_ALIASES.etd)),
-    atd: normalizeDate(firstValue(adapted, FIELD_ALIASES.atd)),
+    eta: normalizeDate(rawEta) || pncEta,
+    etb: normalizeDate(rawEtb) || pncEtb,
+    ata: normalizeDate(rawAta) || pncAta,
+    atb: normalizeDate(rawAtb) || pncAtb,
+    etd: normalizeDate(rawEtd),
+    atd: normalizeDate(rawAtd),
+    time_parse_statuses: timeParseStatuses,
     operation_start: pncOperationStart,
     operation_end: pncOperationEnd,
     operation_type: pncOperation,
-    next_port_eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.next_port_eta)),
-    destination_eta: normalizeDate(firstValue(adapted, FIELD_ALIASES.next_port_eta)),
+    next_port_eta: normalizeDate(rawNextPortEta),
+    destination_eta: normalizeDate(rawNextPortEta),
     speed: toNumber(firstValue(adapted, FIELD_ALIASES.speed)),
     lat: toNumber(firstValue(adapted, FIELD_ALIASES.lat)),
     lon: toNumber(firstValue(adapted, FIELD_ALIASES.lon)),
@@ -2198,6 +2310,7 @@ function normalizeRow(row, source, now) {
         ? `CALL-${record.call_sign}`
         : [record.vessel_name, record.gt || record.grtg || record.intrlGrtg || "", record.vessel_type || ""].map(value => String(value || "").trim().toUpperCase()).join("|");
   record.gt = record.gt || record.grtg || record.intrlGrtg || 0;
+  record.match_keys = buildVesselMatchKeys(record);
   if (sourceProfile === "pilot_schedule") {
     record.source_origin = "pilot_schedule";
     record.ledger_status = "pilot_schedule_pending_match";
@@ -2281,6 +2394,7 @@ function mergePortCallRecord(existing, incoming) {
   merged.terminal_activity = existing.terminal_activity || incoming.terminal_activity || "";
   merged.berth_status = existing.berth_status || incoming.berth_status || "";
   merged.terminal_name = existing.terminal_name || incoming.terminal_name || "";
+  merged.match_keys = buildVesselMatchKeys(merged);
   return merged;
 }
 
@@ -2336,7 +2450,7 @@ function cargoHarborUseParams(row = {}, record = {}) {
 function mergeCargoHarborUse(record, rows = []) {
   const detail = rows.find(row => row && typeof row === "object") || {};
   if (!Object.keys(detail).length) return record;
-  return {
+  const enriched = {
     ...record,
     berth: record.berth || String(firstValue(detail, FIELD_ALIASES.berth)).trim(),
     status: record.status === "Observed" ? normalizeStatus(firstValue(detail, FIELD_ALIASES.status)) : record.status,
@@ -2355,13 +2469,15 @@ function mergeCargoHarborUse(record, rows = []) {
     dwt: record.dwt || toNumber(firstValue(detail, FIELD_ALIASES.dwt)),
     loa: record.loa || toNumber(firstValue(detail, FIELD_ALIASES.loa)),
     beam: record.beam || toNumber(firstValue(detail, FIELD_ALIASES.beam)),
-    flag: record.flag || String(firstValue(detail, FIELD_ALIASES.flag)).trim(),
+    flag: record.flag || normalizeFlag(firstValue(detail, FIELD_ALIASES.flag)),
     destination: record.destination || String(firstValue(detail, FIELD_ALIASES.destination)).trim(),
     source_children: [...(record.source_children || []), "carg_harbor_use"],
     cargo_harbor_use_count: rows.length,
     cargo_harbor_use_enriched: true,
     raw_cargo_harbor_use_keys: Object.keys(detail).slice(0, 80)
   };
+  enriched.match_keys = buildVesselMatchKeys(enriched);
+  return enriched;
 }
 
 async function enrichWithCargoHarborUse(rawRow, record, now) {
@@ -2615,6 +2731,33 @@ async function collectRealRows() {
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
+    if (source.key === "source_csv") {
+      const urlDiagnostic = diagnoseSourceCsvUrl({ sourceCsvUrl: source.url, cwd: process.cwd() });
+      diag.source_csv_url_status = urlDiagnostic.status;
+      diag.expected_raw_url = urlDiagnostic.expected_raw_url;
+      diag.configured_url_sanitized = urlDiagnostic.configured_url_sanitized;
+      diag.configured_repository = urlDiagnostic.configured_repository;
+      diag.configured_file_path = urlDiagnostic.configured_file_path;
+      diag.local_reference_path = urlDiagnostic.local_reference_path;
+      diag.local_reference_exists = urlDiagnostic.local_reference_exists;
+      diag.points_to_old_repo = urlDiagnostic.points_to_old_repo;
+      diag.points_to_different_repo = urlDiagnostic.points_to_different_repo;
+      diag.points_to_old_source_arrivals_csv = urlDiagnostic.points_to_old_source_arrivals_csv;
+      diag.points_to_lightweight_verified_reference_csv = urlDiagnostic.points_to_lightweight_verified_reference_csv;
+      diag.points_to_expected_url = urlDiagnostic.points_to_expected_url;
+      diag.recommended_fix = urlDiagnostic.recommended_fix;
+      if (urlDiagnostic.status === "WRONG_SOURCE_CSV_URL") {
+        diag.skipped = true;
+        diag.reason = "wrong_source_csv_url";
+        diag.skip_reason = "WRONG_SOURCE_CSV_URL";
+        diag.raw_skip_reason = urlDiagnostic.reasons.join("; ") || "wrong_source_csv_url";
+        diag.failure_reason = "wrong_source_csv_url";
+        diag.error_message = urlDiagnostic.recommended_fix;
+        diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag("WRONG_SOURCE_CSV_URL"));
+        continue;
+      }
+    }
     if (!canAttempt(source)) {
       diag.skipped = true;
       diag.reason = collectorSkipReason("missing_service_key_or_embedded_key");
@@ -2692,6 +2835,36 @@ async function collectRealRows() {
       const sourceRecords = records.filter(record => record.source === source.key);
       diag.normalized_count = sourceRecords.length;
       diag.rows_normalized = sourceRecords.length;
+      diag.rows_with_vessel_name = sourceRecords.filter(record => String(record.vessel_name || "").trim()).length;
+      diag.rows_with_normalized_vessel_name = sourceRecords.filter(record => String(record.normalized_vessel_name || "").trim()).length;
+      diag.rows_with_call_sign = sourceRecords.filter(record => String(record.call_sign || "").trim()).length;
+      diag.rows_with_normalized_port = sourceRecords.filter(record => String(record.normalized_port || "").trim()).length;
+      diag.rows_with_match_keys = sourceRecords.filter(record => Object.keys(record.match_keys || {}).length > 0).length;
+      diag.rows_time_only = sourceRecords.filter(record =>
+        record.pilot_time_parse_status === "time_only_missing_date" ||
+        Object.values(record.time_parse_statuses || {}).includes("time_only")
+      ).length;
+      diag.rows_invalid_time = sourceRecords.filter(record =>
+        record.pilot_time_parse_status === "invalid_date_time" ||
+        Object.values(record.time_parse_statuses || {}).includes("invalid")
+      ).length;
+      diag.sample_before_after = sourceRecords.slice(0, 5).map(record => ({
+        before: {
+          raw_source_keys: record.raw_source_keys || [],
+          raw_port: record.raw_port || "",
+          raw_berth_name: record.raw_berth_name || "",
+          raw_terminal_name: record.raw_terminal_name || ""
+        },
+        after: {
+          vessel_name: record.vessel_name || "",
+          normalized_vessel_name: record.normalized_vessel_name || "",
+          call_sign: record.call_sign || "",
+          normalized_port: record.normalized_port || "",
+          berth_key: record.berth_key || "",
+          terminal_name: record.terminal_name || "",
+          match_keys: record.match_keys || {}
+        }
+      }));
       if (isPncSourceConfig(source)) {
         Object.assign(diag, pncAliasDiagnostics(rows, sourceRecords));
       }

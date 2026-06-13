@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
-import { normalizeCallSign, normalizeVesselName } from "./lib/matching.js";
+import { normalizeCallSign, normalizeFlag, normalizeNumeric, normalizeVesselName, normalizeVesselType } from "./lib/normalize.js";
 
 const EXPECTED_FIELDS = [
   "vessel_name",
@@ -125,17 +125,17 @@ async function main() {
     const vesselName = value(cells, headerIndex, "vessel_name");
     const row = {
       vessel_name: vesselName,
-      normalized_vessel_name: value(cells, headerIndex, "normalized_vessel_name") || normalizeVesselName(vesselName),
+      normalized_vessel_name: normalizeVesselName(vesselName || value(cells, headerIndex, "normalized_vessel_name")),
       imo: value(cells, headerIndex, "imo"),
       mmsi: value(cells, headerIndex, "mmsi"),
       call_sign: normalizeCallSign(value(cells, headerIndex, "call_sign")),
       operator: value(cells, headerIndex, "operator"),
       owner: value(cells, headerIndex, "owner"),
       manager: value(cells, headerIndex, "manager"),
-      vessel_type: value(cells, headerIndex, "vessel_type"),
-      gt: value(cells, headerIndex, "gt").replace(/,/g, ""),
-      dwt: value(cells, headerIndex, "dwt").replace(/,/g, ""),
-      flag: value(cells, headerIndex, "flag"),
+      vessel_type: normalizeVesselType(value(cells, headerIndex, "vessel_type")),
+      gt: normalizeNumeric(value(cells, headerIndex, "gt")) ?? "",
+      dwt: normalizeNumeric(value(cells, headerIndex, "dwt")) ?? "",
+      flag: normalizeFlag(value(cells, headerIndex, "flag")),
       verified: value(cells, headerIndex, "verified") || "true",
       notes: value(cells, headerIndex, "notes"),
       updated_at: value(cells, headerIndex, "updated_at")

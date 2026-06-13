@@ -45,9 +45,12 @@ const summary = summaryFile && !summaryFile.__parse_error
   });
 const maxAllowedBytes = Number(summary.max_allowed_bytes || process.env.MAX_SOURCE_CSV_BYTES || process.env.MAX_API_RESPONSE_BYTES || 5000000);
 const sourceTooLarge = Boolean(summary.source_too_large || summary.status === "SOURCE_TOO_LARGE" || Number(summary.response_size_bytes || 0) > maxAllowedBytes);
+const wrongSourceCsvUrl = summary.status === "WRONG_SOURCE_CSV_URL" || summary.source_csv_url_status === "WRONG_SOURCE_CSV_URL";
 const probablyLargeRawCsv = Boolean(summary.is_probably_large_raw_csv || sourceTooLarge);
 const probablyLightweightCsv = Boolean(summary.is_probably_lightweight_reference_csv || Number(summary.usable_reference_rows || 0) > 0);
-const recommendedFix = sourceTooLarge
+const recommendedFix = wrongSourceCsvUrl
+  ? "Update SOURCE_CSV_URL to the current repo lightweight verified_vessel_reference.csv raw URL."
+  : sourceTooLarge
   ? "SOURCE_CSV_URL still points to the large raw CSV. Point it to the lightweight verified vessel reference CSV."
   : summary.recommended_fix || summary.recommendation || "Create a smaller verified vessel reference CSV and set SOURCE_CSV_URL to that file.";
 
@@ -57,6 +60,11 @@ console.log(`configured=${summary.configured ? "yes" : "no"}`);
 console.log(`collector_enabled=${summary.collector_enabled ? "yes" : "no"}`);
 console.log(`collector_attempted=${summary.collector_attempted ? "yes" : "no"}`);
 console.log(`status=${summary.status || "unknown"}`);
+console.log(`source_csv_url_status=${summary.source_csv_url_status || "-"}`);
+console.log(`expected_raw_url=${summary.expected_raw_url || "-"}`);
+console.log(`configured_url=${summary.configured_url_sanitized || "-"}`);
+console.log(`points_to_old_repo=${summary.points_to_old_repo ? "yes" : "no"}`);
+console.log(`points_to_old_source_arrivals_csv=${summary.points_to_old_source_arrivals_csv ? "yes" : "no"}`);
 console.log(`source_layer=${summary.source_layer || "auxiliary"}`);
 console.log(`core_blocking=${summary.core_blocking === false ? "false" : "true"}`);
 console.log(`response_size_bytes=${Number(summary.response_size_bytes || 0)}`);
@@ -77,6 +85,9 @@ console.log(`rows_with_imo=${Number(summary.rows_with_imo || 0)}`);
 console.log(`rows_with_mmsi=${Number(summary.rows_with_mmsi || 0)}`);
 console.log(`rows_with_call_sign=${Number(summary.rows_with_call_sign || 0)}`);
 console.log(`rows_with_operator=${Number(summary.rows_with_operator || 0)}`);
+console.log(`rows_with_gt=${Number(summary.rows_with_gt || 0)}`);
+console.log(`rows_with_flag=${Number(summary.rows_with_flag || 0)}`);
+console.log(`rows_with_vessel_type=${Number(summary.rows_with_vessel_type || 0)}`);
 console.log(`cache_status=${summary.cache_status || cache.status || "unknown"}`);
 console.log(`cache_age_hours=${summary.cache_age_hours ?? "-"}`);
 console.log(`last_success_at=${summary.last_success_at || "-"}`);
@@ -92,6 +103,9 @@ console.log(`recommended_next_action=${recommendedFix}`);
 
 if (sourceTooLarge) {
   console.log("WARN: SOURCE_CSV_URL response exceeds MAX_API_RESPONSE_BYTES; using previous lightweight cache if available.");
+}
+if (wrongSourceCsvUrl) {
+  console.log("WARN: SOURCE_CSV_URL points to a stale repo or old source_arrivals.csv file.");
 }
 if (summary.configured && summary.source_too_large && Number(summary.usable_reference_rows || 0) === 0) {
   console.log("WARN: source_csv is configured but no usable lightweight cache is available.");
