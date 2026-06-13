@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-13T07:43:25.841Z",
+  "generated_at": "2026-06-13T08:55:32.403Z",
   "record_count": 3,
   "item_count": 3,
   "core_blocking_count": 0,
@@ -8,7 +8,7 @@
   "items": [
     {
       "source_key": "vessel_spec",
-      "summary_endpoint": "dashboard/api/aux/vessel-spec-summary.json",
+      "summary_endpoint": "dashboard/api/aux/latest/vessel-spec-summary.json",
       "status": "SKIPPED",
       "configured": true,
       "attempted": false,
@@ -19,10 +19,13 @@
       "core_blocking": false,
       "owner_tier": "fast_aux",
       "core_may_update": false,
+      "fields_contributed": [],
+      "parser_alias_coverage": {},
+      "raw_sample_keys": [],
       "cache_status": "EMPTY",
       "using_previous_cache": false,
-      "blocker_reason": "waiting_until_next_window:2026-06-13T08:35:08.970Z",
-      "recommended_fix": "Set VESSEL_SPEC_SERVICE_KEY and VESSEL_SPEC_API_URL."
+      "blocker_reason": "HTTP 200 returned rows, but no rows matched vessel specification aliases. Check raw_sample_keys and parser_blockers after the next collector run.",
+      "recommended_fix": "Add/adjust vessel_spec parser aliases using sanitized raw sample keys."
     },
     {
       "source_key": "ulsan_vessel_operation",
@@ -37,6 +40,9 @@
       "core_blocking": false,
       "owner_tier": "fast_aux",
       "core_may_update": false,
+      "fields_contributed": [],
+      "parser_alias_coverage": {},
+      "raw_sample_keys": [],
       "cache_status": "NOT_CONFIGURED",
       "using_previous_cache": false,
       "blocker_reason": "missing_api_url",
@@ -44,7 +50,7 @@
     },
     {
       "source_key": "port_facility",
-      "summary_endpoint": "dashboard/api/aux/port-facility-summary.json",
+      "summary_endpoint": "dashboard/api/aux/latest/port-facility-summary.json",
       "status": "NOT_CONFIGURED",
       "configured": false,
       "attempted": false,
@@ -55,10 +61,13 @@
       "core_blocking": false,
       "owner_tier": "fast_aux",
       "core_may_update": false,
+      "fields_contributed": [],
+      "parser_alias_coverage": {},
+      "raw_sample_keys": [],
       "cache_status": "NOT_CONFIGURED",
       "using_previous_cache": false,
-      "blocker_reason": "",
-      "recommended_fix": ""
+      "blocker_reason": "missing_env:unknown",
+      "recommended_fix": "missing_env:unknown"
     }
   ]
 }

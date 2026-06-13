@@ -11,6 +11,7 @@ const ULSAN_AUXILIARY_SOURCE_KEYS = new Set([
 const AUXILIARY_SOURCE_KEYS = new Set([
   "source_csv",
   "vessel_spec",
+  "port_facility",
   ...ULSAN_AUXILIARY_SOURCE_KEYS
 ]);
 
@@ -61,7 +62,7 @@ const SOURCE_SPECS = [
   {
     key: "port_facility",
     label: "Port facility child enrichment",
-    collectorKeys: [],
+    collectorKeys: ["port_facility_child_enrichment"],
     childEnrichment: true,
     expectedEnvNames: ["PORT_FACILITY_API_URL", "PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY"],
     requiredAny: ["PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY"],

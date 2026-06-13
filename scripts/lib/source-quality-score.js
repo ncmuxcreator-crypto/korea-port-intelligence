@@ -141,6 +141,10 @@ function diagnosticCount(item = {}, key = "") {
 }
 
 function buildPortFacilitySyntheticItem(items = []) {
+  const directItem = (items || []).find(item => String(item.source_key || "") === "port_facility");
+  if (directItem && (Number(directItem.rows_collected || 0) > 0 || Number(directItem.rows_normalized || 0) > 0 || directItem.collector_attempted)) {
+    return directItem;
+  }
   const portOperationItems = (items || []).filter(item => String(item.source_key || "").startsWith("port_operation_"));
   const childDiagnostics = portOperationItems.flatMap(item =>
     (item.diagnostics || []).map(diagnostic => diagnostic?.child_enrichment).filter(Boolean)

@@ -4588,21 +4588,27 @@ function buildAuxSummaryEnhancements({
     const success = child.reduce((sum, item) => sum + Number(item.success || 0), 0);
     const childRows = child.reduce((sum, item) => sum + Number(item.rows || 0), 0);
     const childNormalized = child.reduce((sum, item) => sum + Number(item.normalized || 0), 0);
+    const directFacilityHints = diagnostics.reduce((sum, item) => sum + Number(item.rows_with_facility_hint || 0), 0);
+    const directOperatorHints = diagnostics.reduce((sum, item) => sum + Number(item.rows_with_operator_candidate || 0), 0);
+    const directCargoHints = diagnostics.reduce((sum, item) => sum + Number(item.rows_with_cargo_hint || 0), 0);
     return {
       ...base,
       raw_rows: childRows || rowsCollected,
       normalized_rows: childNormalized || rowsNormalized,
-      child_enrichment_attempted: attempted,
-      child_enrichment_success: success,
-      matched_vessels: childNormalized || 0,
-      berth_signal_count: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0),
-      rows_with_facility_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0),
-      rows_with_operator_candidate: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_operator_candidate || 0), 0),
-      rows_with_cargo_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_cargo_hint || 0), 0),
+      child_enrichment_attempted: attempted || Number(rowsCollected || 0),
+      child_enrichment_success: success || (rowsNormalized > 0 ? 1 : 0),
+      matched_vessels: childNormalized || rowsNormalized || 0,
+      berth_signal_count: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0) || directFacilityHints,
+      rows_with_facility_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_facility_hint || 0), 0) || directFacilityHints,
+      rows_with_operator_candidate: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_operator_candidate || 0), 0) || directOperatorHints,
+      rows_with_cargo_hint: diagnostics.reduce((sum, item) => sum + Number(item.child_enrichment?.rows_with_cargo_hint || 0), 0) || directCargoHints,
       statuses: child.reduce((acc, item) => {
         for (const [key, value] of Object.entries(item.statuses || {})) acc[key] = (acc[key] || 0) + Number(value || 0);
         return acc;
-      }, {}),
+      }, diagnostics.reduce((acc, item) => {
+        for (const [key, value] of Object.entries(item.statuses || {})) acc[key] = (acc[key] || 0) + Number(value || 0);
+        return acc;
+      }, {})),
       patch_hint_fields: ["port_facility_berth_signal", "facility_name", "operator_or_agent_candidate", "cargo_operation_hint"],
       integration_rule: "CargHarborUse2 is called only as a child enrichment of PORT-MIS VsslEtrynd5 using prtAgCd + etryptYear + etryptCo + clsgn."
     };
@@ -4892,8 +4898,13 @@ function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toIS
     ];
     const portFacilityFields = {
       facility_name: record.facility_name || display.facility_name || null,
+      berth: record.berth || record.berth_name || display.berth || null,
+      berth_place_code: record.berth_place_code || display.berth_place_code || null,
+      berth_place_sub_code: record.berth_place_sub_code || display.berth_place_sub_code || null,
+      facility_use_time: record.facility_use_time || display.facility_use_time || null,
       operator_or_agent_candidate: record.operator_or_agent_candidate || display.operator_or_agent_candidate || record.port_facility_operator_candidate || null,
       cargo_operation_hint: record.cargo_operation_hint || display.cargo_operation_hint || null,
+      charge_type: record.charge_type || display.charge_type || null,
       berth_signal: display.berth_signal || record.berth_signal || null
     };
     if (record.port_facility_berth_signal || portFacilityFields.facility_name || portFacilityFields.operator_or_agent_candidate || portFacilityFields.cargo_operation_hint) {
@@ -4910,6 +4921,45 @@ function buildAuxPatchHintsPayload({ records = [], generatedAt = new Date().toIS
           match_type: record.berth_match_method || "port_facility_child_enrichment",
           evidence: ["port_facility_child_enrichment", "manual_verified_conflicts_not_overwritten_by_core"],
           apply_policy: Number(record.berth_match_confidence || record.enrichment_confidence || 85) >= 85 ? "APPLY" : "REVIEW",
+          source_generated_at: generatedAt
+        });
+      }
+    }
+    if (record.vessel_spec_hint || record.vessel_spec_enriched || record.source === "vessel_spec") {
+      const confidence = Number(record.vessel_spec_confidence || record.enrichment_confidence || 92);
+      const vesselSpecFields = {
+        imo: record.imo || display.imo || null,
+        gt: record.gt || record.grtg || display.gt || null,
+        international_gt: record.international_gt || record.intrlGrtg || display.international_gt || null,
+        net_tonnage: record.net_tonnage || display.net_tonnage || null,
+        vessel_type: record.vessel_type || display.vessel_type || null,
+        flag: record.flag || display.flag || null,
+        loa: record.loa || display.loa || null,
+        beam: record.beam || display.beam || null,
+        draft: record.draft || display.draft || null,
+        length: record.length || display.length || null,
+        depth: record.depth || display.depth || null,
+        built_date: record.built_date || display.built_date || null,
+        previous_call_sign: record.previous_call_sign || display.previous_call_sign || null
+      };
+      const id = `${vesselKey}:vessel_spec_hint`;
+      if (!seen.has(id)) {
+        seen.add(id);
+        items.push({
+          vessel_key: vesselKey,
+          candidate_vessel_key: vesselKey,
+          signal_type: "vessel_spec_hint",
+          source_key: "vessel_spec",
+          fields: Object.fromEntries(Object.entries(vesselSpecFields).filter(([, value]) => value !== null && value !== undefined && value !== "" && value !== 0)),
+          confidence,
+          match_type: record.vessel_spec_match_type || "CANONICAL_CALL_SIGN",
+          lineage: {
+            source: "vessel_spec",
+            match_type: record.vessel_spec_match_type || "CANONICAL_CALL_SIGN",
+            confidence
+          },
+          evidence: ["canonical_call_sign", "manual_verified_conflicts_not_overwritten_by_core"],
+          apply_policy: confidence >= 90 ? "APPLY" : confidence >= 85 ? "REVIEW" : "REJECT",
           source_generated_at: generatedAt
         });
       }
@@ -5803,7 +5853,7 @@ function withRunOrigin(payload = {}, origin = {}) {
     status_run_id: statusRunId || null,
     active_run_id: activeRunId || null,
     latest_successful_run_id: latestSuccessfulRunId,
-    stale_diagnostic: payload.stale_diagnostic ?? staleDiagnostic,
+    stale_diagnostic: payload.stale_diagnostic === true || staleDiagnostic,
     stale_reason: payload.stale_reason ?? staleReason,
     placeholder: payload.placeholder === true,
     validation_mode: payload.validation_mode || origin.validation_mode,
@@ -5823,7 +5873,8 @@ function writeRuntimeDiagnosticJson(filePath, payload, origin = {}) {
   if (normalized.startsWith("dashboard/api/")) {
     const debugPath = `${DEBUG_API_DIR}/${normalized.slice("dashboard/api/".length)}`;
     if (target !== debugPath) writeDashboardJson(debugPath, body);
-    if (target !== normalized && !fs.existsSync(normalized)) {
+    const mustMirrorRuntimeFinal = /^dashboard\/api\/(?:snapshot-guard|readiness-gate|readiness-gate-runtime|collector-plan-runtime|backend-ops)\.json$/i.test(normalized);
+    if (target !== normalized && (mustMirrorRuntimeFinal || !fs.existsSync(normalized))) {
       writeDashboardJson(normalized, body);
     }
   }
@@ -19877,7 +19928,7 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
         skip("low_confidence");
         continue;
       }
-      const safeIdentityFields = ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt", "international_gt", "loa", "beam", "draft"];
+      const safeIdentityFields = ["imo", "mmsi", "call_sign", "vessel_type", "flag", "gt", "international_gt", "net_tonnage", "loa", "beam", "draft", "length", "depth", "built_date", "previous_call_sign"];
       let identityFieldsApplied = 0;
       patchesEligible += 1;
       for (const field of safeIdentityFields) {
@@ -19927,7 +19978,7 @@ function applyAuxPatchHints(records = [], { generatedAt = new Date().toISOString
       continue;
     }
     if (signalType === "port_facility_berth_signal") {
-      const safeFacilityFields = ["facility_name", "operator_or_agent_candidate", "cargo_operation_hint", "berth_signal"];
+      const safeFacilityFields = ["berth", "facility_name", "berth_place_code", "berth_place_sub_code", "facility_use_time", "operator_or_agent_candidate", "cargo_operation_hint", "charge_type", "berth_signal"];
       patchesEligible += 1;
       let facilityFieldsApplied = 0;
       for (const field of safeFacilityFields) {
@@ -21520,7 +21571,7 @@ try {
     "dashboard/api/aux/port-facility-summary.json": buildAuxSourceSummaryPayload({
       ...auxSummaryOptions,
       sourceKeys: sourceCollectionStatusForAuxDiagnostics.items
-        ?.filter(item => String(item.source_key || "").startsWith("port_operation_"))
+        ?.filter(item => String(item.source_key || "").startsWith("port_operation_") || item.source_key === "port_facility")
         .map(item => item.source_key) || [],
       summaryKey: "port_facility",
       title: "항만시설 보조소스 요약"

@@ -30,7 +30,9 @@ function firstPresent(diagnostics = [], key) {
 const status = readJson("dashboard/api/status.json", {});
 const sourceCollectionStatus = readJson("dashboard/api/source-collection-status.json", null);
 const localSourceCollectionStatus = readJson("dashboard/api/debug/source-collection-status-local.json", null);
-const summary = readJson("dashboard/api/aux/vessel-spec-summary.json", null);
+const summary = readJson("dashboard/api/aux/latest/vessel-spec-summary.json", readJson("dashboard/api/aux/vessel-spec-summary.json", null));
+const patchHints = readJson("dashboard/api/aux/latest/patch-hints.json", { items: [] });
+const vesselSpecHints = (patchHints.items || []).filter(item => item.source_key === "vessel_spec" || item.signal_type === "vessel_spec_hint");
 const selectedSourceStatus = sourceCollectionStatus?.items
   ? sourceCollectionStatus
   : localSourceCollectionStatus;
@@ -57,6 +59,7 @@ const rowsWithCallSign = number(summary?.rows_with_call_sign) || sumDiagnostics(
 const rowsWithGt = number(summary?.rows_with_gt) || sumDiagnostics(diagnostics, "rows_with_gt");
 const rowsWithLoa = number(summary?.rows_with_loa) || sumDiagnostics(diagnostics, "rows_with_loa");
 const rowsWithBeam = number(summary?.rows_with_beam) || sumDiagnostics(diagnostics, "rows_with_beam");
+const rowsWithDraft = number(summary?.rows_with_draft) || sumDiagnostics(diagnostics, "rows_with_draft");
 const skipReason = item.skip_reason || summary?.skip_reasons?.[0] || "";
 const recommendedFix = String(skipReason).startsWith("waiting_until_next_window")
   ? "No setting change required; vessel_spec is scheduled for the next auxiliary window."
@@ -69,16 +72,39 @@ const report = {
   attempted,
   http_status: firstPresent(diagnostics, "http_status") ?? null,
   status: item.status || summary?.status || "unknown",
+  owner_tier: summary?.owner_tier || "fast_aux",
+  core_may_update: summary?.core_may_update === false,
   rows_collected: number(item.rows_collected || summary?.rows_collected),
   rows_normalized: number(item.rows_normalized || summary?.rows_normalized),
   rows_matched_to_vessels: number(summary?.rows_matched_to_vessels),
+  matched_by_call_sign: number(summary?.matched_by_call_sign || summary?.rows_matched_to_vessels),
+  patch_hints_created: vesselSpecHints.length || number(summary?.patch_hints_created),
   rows_with_imo: rowsWithImo,
   rows_with_call_sign: rowsWithCallSign,
   rows_with_gt: rowsWithGt,
   rows_with_flag: rowsWithFlag,
   rows_with_loa: rowsWithLoa,
   rows_with_beam: rowsWithBeam,
+  rows_with_draft: rowsWithDraft,
+  rows_with_dwt: 0,
+  dwt_note: "SicsVsslManp3/Info3 does not provide DWT; do not expect DWT from vessel_spec.",
   parser_alias_coverage: summary?.parser_alias_coverage || summary?.diagnostic_summary?.sample_sources?.[0]?.expected_field_aliases_matched || {},
+  raw_sample_keys: summary?.raw_sample_keys || [],
+  normalized_sample: summary?.normalized_sample || summary?.sanitized_raw_samples?.[0] || null,
+  documented_aliases: {
+    imo: "imoNo",
+    call_sign: "clsgn",
+    vessel_name: "vsslKorNm/vsslEngNm",
+    vessel_type: "vsslKnd",
+    flag: "vsslNlty",
+    gt: "grtg",
+    international_gt: "intrlGrtg",
+    net_tonnage: "ntng",
+    loa: "vsslTotLt",
+    beam: "shdth",
+    draft: "vsslDrft",
+    built_date: "vsslCnstrDt"
+  },
   parser_errors: parserErrors,
   blocker_reason: summary?.blocker_reason || summary?.parser_blocker || skipReason || "",
   recommended_fix: recommendedFix
@@ -101,6 +127,9 @@ console.log(`rows_with_gt=${rowsWithGt}`);
 console.log(`rows_with_flag=${rowsWithFlag}`);
 console.log(`rows_with_loa=${rowsWithLoa}`);
 console.log(`rows_with_beam=${rowsWithBeam}`);
+console.log(`rows_with_draft=${rowsWithDraft}`);
+console.log(`matched_by_call_sign=${report.matched_by_call_sign}`);
+console.log(`patch_hints_created=${report.patch_hints_created}`);
 console.log(`parser_errors=${parserErrors.join("; ") || "-"}`);
 console.log(`skip_reason=${skipReason || "-"}`);
 console.log(`missing_env=${(item.missing_env || []).join(",") || "-"}`);

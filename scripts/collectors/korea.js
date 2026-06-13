@@ -13,6 +13,7 @@ import {
   normalizeBerth as normalizeBerthIdentity,
   normalizeDateTime,
   normalizeFlag,
+  normalizeImo,
   normalizeNumeric,
   normalizePort as normalizePortIdentity,
   normalizeTerminal as normalizeTerminalIdentity,
@@ -26,7 +27,8 @@ const SOURCE_TIMEOUT_MS = Number(process.env.SOURCE_TIMEOUT_MS || 25000);
 const MAX_OUTPUT_ROWS = Number(process.env.MAX_OUTPUT_ROWS || 10000);
 const MAX_SOURCE_ROWS = Number(process.env.MAX_SOURCE_ROWS || 5000);
 const MAX_PORTS_PER_RUN = Number(process.env.MAX_PORTS_PER_RUN || 50);
-const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.MAX_CHILD_ENRICHMENT_ROWS || 100);
+const MAX_CHILD_ENRICHMENT_ROWS = Number(process.env.PORT_FACILITY_MAX_REQUESTS || process.env.MAX_CHILD_ENRICHMENT_ROWS || 150);
+const VESSEL_SPEC_MAX_REQUESTS = Number(process.env.VESSEL_SPEC_MAX_REQUESTS || 150);
 const MAX_API_RESPONSE_BYTES = Number(process.env.MAX_API_RESPONSE_BYTES || 25000000);
 const MAX_SOURCE_CSV_BYTES = Number(process.env.MAX_SOURCE_CSV_BYTES || 5000000);
 const COLLECTOR_RUNTIME_BUDGET_MS = Number(process.env.COLLECTOR_RUNTIME_BUDGET_MS || 300000);
@@ -118,6 +120,12 @@ function loadSourceSchedule() {
 }
 
 function sourceScheduleSkipDecision(source = {}) {
+  if (
+    FAST_AUX_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE) &&
+    ["vessel_spec", "port_facility_child_enrichment"].includes(String(source.key || ""))
+  ) {
+    return null;
+  }
   if (
     String(source.key || "") === "source_csv" &&
     String(process.env.SOURCE_CSV_MODE || "").toLowerCase() === "refresh" &&
@@ -233,7 +241,7 @@ function addFieldAliases(field, aliases = []) {
 addFieldAliases("vessel_name", ["vsslKorNm", "vsslEngNm"]);
 addFieldAliases("imo", ["imoNo"]);
 addFieldAliases("call_sign", ["clsgn", "befClsgn"]);
-addFieldAliases("vessel_type", ["vsslKnd"]);
+addFieldAliases("vessel_type", ["vsslKnd", "vsslKndNm", "vsslKndCd"]);
 addFieldAliases("flag", ["vsslNlty"]);
 addFieldAliases("gt", ["intrlGrtg", "grtg", "international_gt"]);
 addFieldAliases("grtg", ["grtg"]);
@@ -1022,6 +1030,14 @@ function allSourceConfigs() {
   return [
     { key: "source_csv", label: "Lightweight verified vessel reference CSV", url: sourceCsvEnabled() ? sourceCsvUrl() : "", serviceKey: null, noKeyRequired: true, disabledReason: "disabled_by_default_enable_source_csv_true", maxRows: MAX_SOURCE_ROWS },
     { key: "vessel_spec", label: "MOF vessel specification SicsVsslManp3 Info3", url: vesselSpecUrl(), serviceKey: env("VESSEL_SPEC_SERVICE_KEY"), maxRows: Math.min(Number(env("VESSEL_SPEC_PER_PAGE") || 50), 50) },
+    {
+      key: "port_facility_child_enrichment",
+      label: "CargHarborUse2 child enrichment",
+      url: env("PORT_FACILITY_API_URL") || DEFAULT_CARGO_HARBOR_USE_API_URL,
+      serviceKey: envAny("PORT_FACILITY_SERVICE_KEY", "PORT_FACILITY_API_KEY", "PORT_OPERATION_SERVICE_KEY", "PORT_OPERATION_API_KEY", "DATA_GO_KR_API_KEY", "SERVICE_KEY", "SERVICEKEY"),
+      noTypeParam: true,
+      maxRows: 50
+    },
     ...portOperationSources,
     ...pilotSources,
     { key: "ulsan_vessel_operation", label: "Ulsan vessel operation", url: ulsanVesselOperationUrl(), serviceKey: env("ULSAN_API_KEY"), defaultParams: { numOfRows: env("ULSAN_NUM_OF_ROWS") || "100" }, maxRows: Math.min(Number(env("ULSAN_MAX_ROWS") || MAX_SOURCE_ROWS), MAX_SOURCE_ROWS) },
@@ -1354,6 +1370,94 @@ function parseXmlRows(text) {
     if (rows.length) return rows;
   }
   return rows;
+}
+
+function readJsonSafe(relativePath, fallback = null) {
+  try {
+    const filePath = path.join(process.cwd(), relativePath);
+    return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function payloadItems(payload = {}) {
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.vessels)) return payload.vessels;
+  if (Array.isArray(payload?.records)) return payload.records;
+  if (Array.isArray(payload?.top_candidates)) return payload.top_candidates;
+  return [];
+}
+
+function loadAuxCandidateRecords() {
+  const paths = [
+    "dashboard/api/target-vessels.json",
+    "dashboard/api/candidates.json",
+    "dashboard/api/candidates/top.json",
+    "dashboard/api/sales/actions.json",
+    "dashboard/api/all-collected-vessels.json",
+    "dashboard/api/vessels/page-1.json"
+  ];
+  const seen = new Set();
+  const records = [];
+  for (const relativePath of paths) {
+    for (const item of payloadItems(readJsonSafe(relativePath, {}))) {
+      const display = item?.vessel_display && typeof item.vessel_display === "object" ? item.vessel_display : {};
+      const row = { ...display, ...item };
+      const callSign = normalizeCallSign(row.canonical_call_sign || row.call_sign || row.callsign || row.clsgn || display.call_sign);
+      const name = sharedNormalizeVesselName(row.vessel_name || row.name || display.vessel_name || "");
+      const key = [
+        row.imo || display.imo || "",
+        row.mmsi || display.mmsi || "",
+        callSign,
+        row.port_call_identity || row.port_call_id || "",
+        name
+      ].join("|").toUpperCase();
+      if (!key.replace(/\|/g, "") || seen.has(key)) continue;
+      seen.add(key);
+      records.push({
+        ...row,
+        canonical_call_sign: callSign,
+        call_sign: callSign || row.call_sign || display.call_sign || "",
+        normalized_vessel_name: name,
+        source_snapshot_path: relativePath
+      });
+    }
+  }
+  return records;
+}
+
+function auxCandidatePriority(record = {}) {
+  let score = 0;
+  const label = String(record.priority_label || record.priority_label_ko || record.actionability_category || "").toUpperCase();
+  if (/HOT|즉시|CONTACT_NOW/.test(label)) score += 100;
+  if (/WARM|VERIFY_CONTACT|연락처/.test(label)) score += 70;
+  if (record.is_sales_target || record.sales_target || record.qualified_sales_target) score += 60;
+  if (record.vessel_spec_enrichment_priority || !record.imo || !record.gt || !record.vessel_type || !record.flag) score += 25;
+  score += Math.min(50, Number(record.opportunity_score || record.vessel_display?.opportunity_score || 0));
+  return score;
+}
+
+function portFacilityParamsFromRecord(record = {}) {
+  const identity = String(record.port_call_identity || record.port_call_id || "").trim();
+  const pipe = identity.match(/^([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)$/);
+  const dashed = identity.match(/-(\d{3})-(\d{3})-(\d{4})-([A-Z0-9]+)-([A-Z0-9]+)$/i);
+  const prtAgCd = String(record.prtAgCd || record.prt_ag_cd || record.port_authority_code || (pipe ? pipe[1] : "") || (dashed ? dashed[2] : "") || "").trim();
+  const etryptYear = String(record.etryptYear || record.etrypt_year || record.entry_year || (pipe ? pipe[2] : "") || (dashed ? dashed[3] : "") || "").trim();
+  const etryptCo = String(record.etryptCo || record.etrypt_co || record.entry_count || (pipe ? pipe[3] : "") || (dashed ? dashed[4] : "") || "").trim();
+  const clsgn = normalizeCallSign(record.canonical_call_sign || record.call_sign || record.clsgn || (pipe ? pipe[4] : "") || (dashed ? dashed[5] : ""));
+  const missing = [];
+  if (!prtAgCd) missing.push("missing_prtAgCd");
+  if (!etryptYear) missing.push("missing_etryptYear");
+  if (!etryptCo) missing.push("missing_etryptCo");
+  if (!clsgn) missing.push("missing_clsgn");
+  return { params: missing.length ? null : { prtAgCd, etryptYear, etryptCo, clsgn }, missing };
+}
+
+function vesselSpecParamsFromRecord(record = {}) {
+  const clsgn = normalizeCallSign(record.canonical_call_sign || record.call_sign || record.clsgn || record.vessel_display?.call_sign);
+  const vsslNm = String(record.vessel_name || record.vessel_display?.vessel_name || "").trim();
+  return clsgn ? { clsgn, ...(vsslNm ? { vsslNm } : {}) } : null;
 }
 
 function parseCsvRows(text, limit = MAX_SOURCE_ROWS) {
@@ -2541,7 +2645,7 @@ function cargoHarborUseParams(row = {}, record = {}) {
   const prtAgCd = rawValue(row, ["prtAgCd", "prt_ag_cd", "PRT_AG_CD"]) || record.prt_ag_cd;
   const etryptYear = rawValue(row, ["etryptYear", "etrypt_year", "ETRYPT_YEAR"]) || record.etrypt_year;
   const etryptCo = rawValue(row, ["etryptCo", "etrypt_co", "ETRYPT_CO"]) || record.etrypt_co;
-  const clsgn = rawValue(row, ["clsgn", "callSign", "call_sign", "CALL_SIGN"]) || record.call_sign;
+  const clsgn = normalizeCallSign(rawValue(row, ["clsgn", "callSign", "call_sign", "CALL_SIGN"]) || record.canonical_call_sign || record.call_sign);
   if (!prtAgCd || !etryptYear || !etryptCo || !clsgn) return null;
   return { prtAgCd, etryptYear, etryptCo, clsgn };
 }
@@ -2549,10 +2653,29 @@ function cargoHarborUseParams(row = {}, record = {}) {
 function mergeCargoHarborUse(record, rows = []) {
   const detail = rows.find(row => row && typeof row === "object") || {};
   if (!Object.keys(detail).length) return record;
+  const facilityUseTime = normalizeDate(rawValue(detail, ["facility_use_time", "etryndDt", "ETRYND_DT"]));
+  const declarationTime = normalizeDate(rawValue(detail, ["declaration_time", "satmntDt", "SATMNT_DT"]));
+  const paymentDueTime = normalizeDate(rawValue(detail, ["payment_due_time", "dedtDt", "DEDT_DT"]));
+  const nextPortArrivalTime = normalizeDate(rawValue(detail, ["next_port_arrival_time", "aprtfEtryptDt", "APRTF_ETRYPT_DT"]));
+  const facilityName = String(rawValue(detail, ["facility_name", "laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "fcltyNm", "facilityNm"])).trim();
+  const operatorCandidate = String(rawValue(detail, ["operator_or_agent_candidate", "entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim();
+  const cargoHint = String(rawValue(detail, ["cargo_operation_hint", "lnlNm", "LNL_NM", "cargoNm", "cargoName", "cargoType", "operation_type"])).trim();
   const enriched = {
     ...record,
     berth: record.berth || String(firstValue(detail, FIELD_ALIASES.berth)).trim(),
-    facility_name: record.facility_name || String(rawValue(detail, ["facility_name", "laidupFcltyNm", "laidup_fclty_nm", "LAYDUP_FCLTY_NM", "fcltyNm", "facilityNm"])).trim(),
+    facility_name: record.facility_name || facilityName,
+    berth_place_code: record.berth_place_code || String(rawValue(detail, ["berth_place_code", "laidupPlaceCd", "LAIDUP_PLACE_CD"])).trim(),
+    berth_place_sub_code: record.berth_place_sub_code || String(rawValue(detail, ["berth_place_sub_code", "laidupPlaceSubCd", "LAIDUP_PLACE_SUB_CD"])).trim(),
+    facility_use_time: record.facility_use_time || facilityUseTime,
+    declaration_time: record.declaration_time || declarationTime,
+    payment_due_time: record.payment_due_time || paymentDueTime,
+    next_port_arrival_time: record.next_port_arrival_time || nextPortArrivalTime,
+    charge_type: record.charge_type || String(rawValue(detail, ["charge_type", "chrgeKndNm", "CHRGE_KND_NM"])).trim(),
+    use_code: record.use_code || String(rawValue(detail, ["use_code", "useSe", "USE_SE"])).trim(),
+    use_type: record.use_type || String(rawValue(detail, ["use_type", "useSeNm", "USE_SE_NM"])).trim(),
+    total_fee: record.total_fee || toNumber(rawValue(detail, ["total_fee", "totRntfee", "TOT_RNTFEE"])),
+    freight_ton: record.freight_ton || toNumber(rawValue(detail, ["freight_ton", "cychgTon", "CYCHG_TON"])),
+    base_charge: record.base_charge || toNumber(rawValue(detail, ["base_charge", "bassChrge", "BASS_CHRGE"])),
     status: record.status === "Observed" ? normalizeStatus(firstValue(detail, FIELD_ALIASES.status)) : record.status,
     eta: record.eta || normalizeDate(firstValue(detail, FIELD_ALIASES.eta)),
     etb: record.etb || normalizeDate(firstValue(detail, FIELD_ALIASES.etb)),
@@ -2561,7 +2684,7 @@ function mergeCargoHarborUse(record, rows = []) {
     etd: record.etd || normalizeDate(firstValue(detail, FIELD_ALIASES.etd)),
     atd: record.atd || normalizeDate(firstValue(detail, FIELD_ALIASES.atd)),
     operator: record.operator || String(firstValue(detail, FIELD_ALIASES.operator)).trim(),
-    operator_or_agent_candidate: record.operator_or_agent_candidate || String(rawValue(detail, ["operator_or_agent_candidate", "entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim(),
+    operator_or_agent_candidate: record.operator_or_agent_candidate || operatorCandidate,
     agent: record.agent || String(firstValue(detail, FIELD_ALIASES.agent)).trim(),
     agent_name: record.agent_name || record.agent || String(firstValue(detail, FIELD_ALIASES.agent)).trim(),
     agent_source: record.agent_source || (firstValue(detail, FIELD_ALIASES.agent) ? "port_facility" : ""),
@@ -2572,9 +2695,30 @@ function mergeCargoHarborUse(record, rows = []) {
     beam: record.beam || toNumber(firstValue(detail, FIELD_ALIASES.beam)),
     flag: record.flag || normalizeFlag(firstValue(detail, FIELD_ALIASES.flag)),
     destination: record.destination || String(firstValue(detail, FIELD_ALIASES.destination)).trim(),
-    cargo_operation_hint: record.cargo_operation_hint || String(rawValue(detail, ["cargo_operation_hint", "lnlNm", "LNL_NM", "cargoNm", "cargoName", "cargoType", "operation_type"])).trim(),
+    cargo_operation_hint: record.cargo_operation_hint || cargoHint,
     port_facility_berth_signal: Boolean(String(firstValue(detail, FIELD_ALIASES.berth) || rawValue(detail, ["laidupFcltyNm", "fcltyNm", "facilityNm"])).trim()),
-    port_facility_operator_candidate: record.operator_or_agent_candidate || String(rawValue(detail, ["entrpsCdNm", "ENTRPS_CD_NM", "satmntEntrpsNm", "SATMNT_ENTRPS_NM"])).trim(),
+    port_facility_operator_candidate: record.operator_or_agent_candidate || operatorCandidate,
+    berth_signal: {
+      ...(record.berth_signal && typeof record.berth_signal === "object" ? record.berth_signal : {}),
+      has_berth_info: Boolean(facilityName || record.berth || record.berth_name),
+      source: "port_facility",
+      signal_strength: "AUX_CONFIRMED",
+      match_type: "CANONICAL_CALL_SIGN_ENTRY_COUNT",
+      confidence: Number(record.berth_match_confidence || 92),
+      berth: facilityName || record.berth || record.berth_name || null,
+      facility_name: facilityName || null,
+      facility_use_time: facilityUseTime || null,
+      berth_place_code: String(rawValue(detail, ["laidupPlaceCd", "LAIDUP_PLACE_CD"])).trim() || null,
+      berth_place_sub_code: String(rawValue(detail, ["laidupPlaceSubCd", "LAIDUP_PLACE_SUB_CD"])).trim() || null
+    },
+    data_lineage: {
+      ...(record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {}),
+      port_facility: {
+        source: "port_facility",
+        match_type: "CANONICAL_CALL_SIGN_ENTRY_COUNT",
+        confidence: Number(record.berth_match_confidence || 92)
+      }
+    },
     source_children: [...(record.source_children || []), "carg_harbor_use"],
     cargo_harbor_use_count: rows.length,
     cargo_harbor_use_enriched: true,
@@ -2614,6 +2758,258 @@ async function enrichWithCargoHarborUse(rawRow, record, now) {
   } catch (error) {
     return { record, status: `failed:${error?.message || String(error)}`, row_count: 0, normalized_count: 0, http_status: error?.http_status || null };
   }
+}
+
+function vesselSpecFieldsFromNormalized(normalized = {}) {
+  return {
+    imo: normalizeImo(normalized.imo || normalized.imo_no || normalized.imoNo),
+    gt: toNumber(normalized.gt || normalized.grtg),
+    international_gt: toNumber(normalized.international_gt || normalized.intrlGrtg),
+    net_tonnage: toNumber(normalized.net_tonnage),
+    vessel_type: normalizeVesselType(normalized.vessel_type || normalized.vsslKndNm || normalized.vsslKnd || ""),
+    flag: normalizeFlag(normalized.flag || normalized.vsslNlty || ""),
+    loa: toNumber(normalized.loa),
+    beam: toNumber(normalized.beam),
+    draft: toNumber(normalized.draft),
+    length: toNumber(normalized.length),
+    depth: toNumber(normalized.depth),
+    built_date: normalized.built_date || "",
+    previous_call_sign: normalizeCallSign(normalized.previous_call_sign || "")
+  };
+}
+
+function mergeVesselSpecHint(record = {}, normalized = {}, rows = []) {
+  const fields = vesselSpecFieldsFromNormalized(normalized);
+  const enriched = {
+    ...record,
+    vessel_spec_hint: true,
+    vessel_spec_enriched: true,
+    vessel_spec_rows: rows.length,
+    vessel_spec_match_type: "CANONICAL_CALL_SIGN",
+    vessel_spec_confidence: 92,
+    enrichment_confidence: Math.max(Number(record.enrichment_confidence || 0), 92),
+    data_lineage: {
+      ...(record.data_lineage && typeof record.data_lineage === "object" ? record.data_lineage : {}),
+      vessel_spec: {
+        source: "vessel_spec",
+        match_type: "CANONICAL_CALL_SIGN",
+        confidence: 92
+      }
+    },
+    source_children: [...new Set([...(record.source_children || []), "vessel_spec"])]
+  };
+  for (const [field, value] of Object.entries(fields)) {
+    if (value === null || value === undefined || String(value).trim?.() === "") continue;
+    if (field === "imo" && !value) continue;
+    if (field === "gt" && !Number(value)) continue;
+    if (enriched[field] === undefined || enriched[field] === null || String(enriched[field]).trim() === "" || Number(enriched[field]) === 0) {
+      enriched[field] = value;
+    }
+  }
+  enriched.match_keys = buildVesselMatchKeys(enriched);
+  return enriched;
+}
+
+async function collectPortFacilityChildEnrichment(source, now, deadline) {
+  const queue = loadAuxCandidateRecords()
+    .map(record => ({ record, ...portFacilityParamsFromRecord(record), priority: auxCandidatePriority(record) }))
+    .sort((a, b) => b.priority - a.priority);
+  const unique = new Map();
+  for (const item of queue) {
+    const key = item.params
+      ? [item.params.prtAgCd, item.params.etryptYear, item.params.etryptCo, item.params.clsgn].join("|")
+      : `missing:${item.missing.join(",")}:${item.record.vessel_name || item.record.call_sign || unique.size}`;
+    if (!unique.has(key)) unique.set(key, item);
+  }
+  const selected = [...unique.values()].slice(0, Math.max(1, MAX_CHILD_ENRICHMENT_ROWS));
+  const records = [];
+  const statuses = new Map();
+  let attempted = 0;
+  let success = 0;
+  let rowsCollected = 0;
+  let rowsNormalized = 0;
+  let skippedByLimit = Math.max(0, unique.size - selected.length);
+  let httpStatus = null;
+  const rawSampleKeys = new Set();
+  const sanitizedRawSamples = [];
+  for (const item of selected) {
+    if (Date.now() + Math.min(SOURCE_TIMEOUT_MS, 10000) > deadline) {
+      statuses.set("skipped:runtime_budget_exceeded", (statuses.get("skipped:runtime_budget_exceeded") || 0) + 1);
+      break;
+    }
+    if (!item.params) {
+      const reason = item.missing[0] || "missing_parent_keys";
+      statuses.set(reason, (statuses.get(reason) || 0) + 1);
+      continue;
+    }
+    attempted += 1;
+    try {
+      const { text, http_status, url } = await fetchText(source, item.params);
+      httpStatus = http_status || httpStatus;
+      const rows = parseRows(text, 50);
+      rowsCollected += rows.length;
+      for (const row of rows.slice(0, 3)) {
+        Object.keys(row || {}).forEach(key => rawSampleKeys.add(key));
+        if (sanitizedRawSamples.length < 3) sanitizedRawSamples.push(sanitizeSourceSample(row));
+      }
+      const enriched = mergeCargoHarborUse(item.record, rows);
+      enriched.source = source.key;
+      enriched.source_label = source.label;
+      enriched.berth_match_confidence = rows.length ? 92 : 0;
+      enriched.berth_match_method = rows.length ? "CANONICAL_CALL_SIGN_ENTRY_COUNT" : "";
+      enriched.requested_url_without_service_key = maskServiceKey(url);
+      if (rows.length) {
+        success += 1;
+        rowsNormalized += 1;
+      }
+      records.push(enriched);
+      statuses.set(rows.length ? "success" : "no_rows", (statuses.get(rows.length ? "success" : "no_rows") || 0) + 1);
+    } catch (error) {
+      httpStatus = error?.http_status || httpStatus;
+      statuses.set(`failed:${error?.message || "request_failed"}`, (statuses.get(`failed:${error?.message || "request_failed"}`) || 0) + 1);
+    }
+  }
+  return {
+    records,
+    diagnostic: {
+      key: source.key,
+      label: source.label,
+      source_name: source.key,
+      source_profile: "port_facility_child_enrichment",
+      status: attempted ? "success" : "skipped",
+      attempted: attempted > 0,
+      skipped: attempted === 0,
+      success: success > 0,
+      row_count: rowsCollected,
+      normalized_count: rowsNormalized,
+      rows_collected: rowsCollected,
+      rows_normalized: rowsNormalized,
+      rows_matched: rowsNormalized,
+      actionable_count: rowsNormalized,
+      http_status: httpStatus,
+      owner_tier: "fast_aux",
+      core_may_update: false,
+      raw_sample_keys: [...rawSampleKeys].slice(0, 80),
+      sanitized_raw_samples: sanitizedRawSamples,
+      child_enrichment: {
+        key: "port_facility_enrichment",
+        rule: "CargHarborUse2 is called only with parent prtAgCd + etryptYear + etryptCo + clsgn from VsslEtrynd5.",
+        attempted,
+        success,
+        rows: rowsCollected,
+        normalized: rowsNormalized,
+        skipped_by_limit: skippedByLimit,
+        max_total_attempts: MAX_CHILD_ENRICHMENT_ROWS,
+        rows_with_facility_hint: records.filter(record => record.facility_name || record.port_facility_berth_signal).length,
+        rows_with_operator_candidate: records.filter(record => record.operator_or_agent_candidate || record.port_facility_operator_candidate).length,
+        rows_with_cargo_hint: records.filter(record => record.cargo_operation_hint).length,
+        statuses: Object.fromEntries(statuses)
+      }
+    }
+  };
+}
+
+async function collectVesselSpecByCallSign(source, now, deadline) {
+  const queue = loadAuxCandidateRecords()
+    .filter(record => vesselSpecParamsFromRecord(record))
+    .sort((a, b) => Number(Boolean(b.vessel_spec_enrichment_priority)) - Number(Boolean(a.vessel_spec_enrichment_priority)) || auxCandidatePriority(b) - auxCandidatePriority(a));
+  const unique = new Map();
+  for (const record of queue) {
+    const params = vesselSpecParamsFromRecord(record);
+    if (params?.clsgn && !unique.has(params.clsgn)) unique.set(params.clsgn, { record, params });
+  }
+  const selected = [...unique.values()].slice(0, Math.max(1, VESSEL_SPEC_MAX_REQUESTS));
+  const records = [];
+  const statuses = new Map();
+  let attempted = 0;
+  let success = 0;
+  let rowsCollected = 0;
+  let rowsNormalized = 0;
+  let matched = 0;
+  let conflictCount = 0;
+  let httpStatus = null;
+  const rawRows = [];
+  for (const item of selected) {
+    if (Date.now() + Math.min(SOURCE_TIMEOUT_MS, 10000) > deadline) {
+      statuses.set("skipped:runtime_budget_exceeded", (statuses.get("skipped:runtime_budget_exceeded") || 0) + 1);
+      break;
+    }
+    attempted += 1;
+    try {
+      const { text, http_status } = await fetchText(source, item.params);
+      httpStatus = http_status || httpStatus;
+      const rows = parseRows(text, 50);
+      rawRows.push(...rows.slice(0, 5));
+      rowsCollected += rows.length;
+      const normalizedRows = rows.map(row => normalizeRow(row, source, now)).filter(Boolean);
+      rowsNormalized += normalizedRows.length;
+      const exact = normalizedRows.filter(row => normalizeCallSign(row.call_sign || row.canonical_call_sign) === item.params.clsgn);
+      const imoValues = [...new Set(exact.map(row => normalizeImo(row.imo)).filter(Boolean))];
+      if (imoValues.length > 1) {
+        conflictCount += 1;
+        statuses.set("needs_review:conflicting_imo", (statuses.get("needs_review:conflicting_imo") || 0) + 1);
+        continue;
+      }
+      const matchedRow = exact[0];
+      if (!matchedRow) {
+        statuses.set("no_exact_call_sign_match", (statuses.get("no_exact_call_sign_match") || 0) + 1);
+        continue;
+      }
+      const currentName = sharedNormalizeVesselName(item.record.vessel_name || "");
+      const responseName = sharedNormalizeVesselName(matchedRow.vessel_name || "");
+      if (currentName && responseName && currentName !== responseName && !currentName.includes(responseName) && !responseName.includes(currentName)) {
+        statuses.set("needs_review:vessel_name_conflict", (statuses.get("needs_review:vessel_name_conflict") || 0) + 1);
+        continue;
+      }
+      matched += 1;
+      success += 1;
+      records.push(mergeVesselSpecHint(item.record, matchedRow, rows));
+      statuses.set("success", (statuses.get("success") || 0) + 1);
+    } catch (error) {
+      httpStatus = error?.http_status || httpStatus;
+      statuses.set(`failed:${error?.message || "request_failed"}`, (statuses.get(`failed:${error?.message || "request_failed"}`) || 0) + 1);
+    }
+  }
+  const normalizedSampleRows = records.slice(0, 5);
+  return {
+    records,
+    diagnostic: {
+      key: source.key,
+      label: source.label,
+      source_name: source.key,
+      source_profile: "vessel_spec",
+      status: attempted ? "success" : "skipped",
+      attempted: attempted > 0,
+      skipped: attempted === 0,
+      success: success > 0,
+      row_count: rowsCollected,
+      normalized_count: rowsNormalized,
+      rows_collected: rowsCollected,
+      rows_normalized: rowsNormalized,
+      rows_matched: matched,
+      actionable_count: matched,
+      http_status: httpStatus,
+      owner_tier: "fast_aux",
+      core_may_update: false,
+      query_strategy: "canonical_call_sign_clsgn",
+      max_requests: VESSEL_SPEC_MAX_REQUESTS,
+      requests_attempted: attempted,
+      rows_matched_to_vessels: matched,
+      matched_by_call_sign: matched,
+      conflict_count: conflictCount,
+      ...vesselSpecAliasDiagnostics(rawRows, normalizedSampleRows),
+      rows_with_imo: records.filter(record => String(record.imo || "").trim()).length,
+      rows_with_call_sign: records.filter(record => String(record.call_sign || "").trim()).length,
+      rows_with_flag: records.filter(record => String(record.flag || "").trim()).length,
+      rows_with_gt: records.filter(record => Number(record.gt || record.grtg || record.intrlGrtg || 0) > 0).length,
+      rows_with_international_gt: records.filter(record => Number(record.international_gt || record.intrlGrtg || 0) > 0).length,
+      rows_with_loa: records.filter(record => Number(record.loa || record.length || 0) > 0).length,
+      rows_with_beam: records.filter(record => Number(record.beam || 0) > 0).length,
+      rows_with_draft: records.filter(record => Number(record.draft || 0) > 0).length,
+      rows_with_vessel_type: records.filter(record => String(record.vessel_type || "").trim()).length,
+      statuses: Object.fromEntries(statuses)
+    }
+  };
 }
 
 async function collectRealRows() {
@@ -2871,6 +3267,44 @@ async function collectRealRows() {
       diagnostics.sources.push(finishDiag("skipped"));
       continue;
     }
+    if (source.key === "port_facility_child_enrichment") {
+      diag.attempted = true;
+      diagnostics.attempted_count += 1;
+      try {
+        const child = await collectPortFacilityChildEnrichment(source, now, deadline);
+        records.push(...child.records);
+        Object.assign(diag, child.diagnostic);
+        diag.success = Number(diag.rows_normalized || 0) > 0;
+        if (diag.success) diagnostics.success_count += 1;
+        else diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag(diag.success ? "success" : "skipped"));
+      } catch (error) {
+        diag.error = error?.message || String(error);
+        diag.error_message = diag.error;
+        diagnostics.failed_count += 1;
+        diagnostics.sources.push(finishDiag("failed"));
+      }
+      continue;
+    }
+    if (source.key === "vessel_spec") {
+      diag.attempted = true;
+      diagnostics.attempted_count += 1;
+      try {
+        const spec = await collectVesselSpecByCallSign(source, now, deadline);
+        records.push(...spec.records);
+        Object.assign(diag, spec.diagnostic);
+        diag.success = Number(diag.rows_normalized || 0) > 0;
+        if (diag.success) diagnostics.success_count += 1;
+        else diagnostics.skipped_count += 1;
+        diagnostics.sources.push(finishDiag(diag.success ? "success" : "skipped"));
+      } catch (error) {
+        diag.error = error?.message || String(error);
+        diag.error_message = diag.error;
+        diagnostics.failed_count += 1;
+        diagnostics.sources.push(finishDiag("failed"));
+      }
+      continue;
+    }
     diag.attempted = true;
     diagnostics.attempted_count += 1;
     try {
@@ -2918,7 +3352,7 @@ async function collectRealRows() {
       const childStatuses = new Map();
       for (const row of rows) {
         let normalized = normalizeRow(row, source, now);
-        if (normalized && String(source.key || "").startsWith("port_operation_")) {
+        if (normalized && String(source.key || "").startsWith("port_operation_") && !CORE_COLLECTOR_MODES.has(COLLECTOR_UPDATE_MODE)) {
           if (totalChildEnrichmentAttempts >= MAX_CHILD_ENRICHMENT_ROWS) {
             childSkippedByLimit += 1;
             childStatuses.set("skipped:enrichment_limit", (childStatuses.get("skipped:enrichment_limit") || 0) + 1);

@@ -3,9 +3,9 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const SOURCES = [
-  ["vessel_spec", "dashboard/api/aux/vessel-spec-summary.json"],
+  ["vessel_spec", "dashboard/api/aux/latest/vessel-spec-summary.json"],
   ["ulsan_vessel_operation", "dashboard/api/aux/ulsan-summary.json"],
-  ["port_facility", "dashboard/api/aux/port-facility-summary.json"]
+  ["port_facility", "dashboard/api/aux/latest/port-facility-summary.json"]
 ];
 
 function readJson(relativePath, fallback = {}) {
@@ -29,7 +29,7 @@ function number(value) {
 }
 
 const sourceQuality = readJson("dashboard/api/source-quality-score.json", { items: [] });
-const cacheStatus = readJson("dashboard/api/aux/cache-status.json", { items: [] });
+const cacheStatus = readJson("dashboard/api/aux/latest/cache-status.json", readJson("dashboard/api/aux/cache-status.json", { items: [] }));
 const patchHints = readJson("dashboard/api/aux/latest/patch-hints.json", { items: [] });
 const qualityByKey = new Map((sourceQuality.items || []).map(item => [item.source_key, item]));
 const cacheByKey = new Map((cacheStatus.items || []).map(item => [item.source_key, item]));
@@ -54,8 +54,11 @@ const items = SOURCES.map(([sourceKey, summaryPath]) => {
     rows_matched_to_vessels: number(summary.rows_matched_to_vessels || summary.matched_vessels || quality.rows_matched_to_vessels),
     patch_hints: number(patchCounts[sourceKey]),
     core_blocking: false,
-    owner_tier: "fast_aux",
+    owner_tier: summary.owner_tier || "fast_aux",
     core_may_update: false,
+    fields_contributed: summary.fields_contributed || quality.fields_contributed || [],
+    parser_alias_coverage: summary.parser_alias_coverage || {},
+    raw_sample_keys: summary.raw_sample_keys || [],
     cache_status: cache.cache_status || summary.cache_status || "UNKNOWN",
     using_previous_cache: Boolean(cache.using_previous_cache || summary.using_previous_cache),
     blocker_reason: summary.blocker_reason || quality.blocker_reason || "",
