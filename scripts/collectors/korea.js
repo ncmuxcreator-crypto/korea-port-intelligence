@@ -1067,7 +1067,8 @@ async function fetchHeadMetadata(url, source = {}) {
 
 async function fetchTextOnce(source, extraParams = {}) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS);
+  const timeoutMs = Math.max(1000, Number(source?.timeoutMs || SOURCE_TIMEOUT_MS));
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const url = buildUrl(source, extraParams);
     const started = Date.now();
@@ -1374,6 +1375,10 @@ function smokeFailureReason(error = {}) {
   return message ? `smoke_${message.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").toLowerCase()}` : "smoke_unknown_error";
 }
 
+function shouldSkipFullPortOperationAfterSmokeFailure(reason = "") {
+  return Boolean(String(reason || "").trim());
+}
+
 async function runPortOperationSmokeTest(sources = []) {
   const source = sources.find(candidate =>
     String(candidate.key || "").startsWith("port_operation_") &&
@@ -1389,7 +1394,8 @@ async function runPortOperationSmokeTest(sources = []) {
     };
   }
   try {
-    const response = await fetchText(source, { pageNo: "1", numOfRows: "1" });
+    const smokeTimeoutMs = Math.min(SOURCE_TIMEOUT_MS, Math.max(1000, Number(env("PORT_OPERATION_SMOKE_TIMEOUT_MS") || 8000)));
+    const response = await fetchText({ ...source, timeoutMs: smokeTimeoutMs }, { pageNo: "1", numOfRows: "1" });
     let rows = [];
     let parseErrorMessage = null;
     try {
@@ -2506,6 +2512,36 @@ async function collectRealRows() {
       }
     ];
     diagnostics.coverage.port_operation_smoke_test_warning = smokeTest.smoke_test_failure_reason;
+    if (shouldSkipFullPortOperationAfterSmokeFailure(smokeTest.smoke_test_failure_reason)) {
+      const skippedSources = preflight.planned_port_operation_sources.map(source => ({
+        ...source,
+        started_at: now,
+        finished_at: now,
+        duration_ms: 0,
+        status: "skipped",
+        success: false,
+        row_count: 0,
+        normalized_count: 0,
+        rows_collected: 0,
+        rows_normalized: 0,
+        rows_matched: 0,
+        actionable_count: 0,
+        retry_count: 0,
+        skip_reason: "unknown_error",
+        reason: "unknown_error",
+        raw_skip_reason: smokeTest.smoke_test_failure_reason
+      }));
+      diagnostics.skipped_count += skippedSources.length;
+      diagnostics.sources.push(...skippedSources);
+      diagnostics.coverage.port_operation_skip_reason_breakdown = {
+        unknown_error: skippedSources.length
+      };
+      diagnostics.real_row_count = 0;
+      diagnostics.actionable_row_count = 0;
+      diagnostics.partial_failure = false;
+      diagnostics.partial_failure_policy = "full Port Operation collection skipped after global smoke-test failure";
+      return [];
+    }
   }
 
   for (const source of configuredSources.filter(source => !debugOnly || source.key === debugOnly)) {

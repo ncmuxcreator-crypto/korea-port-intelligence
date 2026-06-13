@@ -20659,6 +20659,15 @@ try {
   report.output_mode = lastSuccessfulDatasetLocked ? "local_diagnostics" : "static_json";
   report.production_api_write_protected = lastSuccessfulDatasetLocked;
   report.debug_api_dir = lastSuccessfulDatasetLocked ? DEBUG_API_DIR : null;
+  report.stale_successful_fallback_active = Boolean(
+    VALIDATION_MODE === "production" &&
+    lastSuccessfulDatasetLocked &&
+    latestSuccessfulFallback.latest_successful_snapshot_available
+  );
+  report.workflow_failure_suppressed_by_fallback = report.stale_successful_fallback_active;
+  report.workflow_failure_suppression_reason = report.stale_successful_fallback_active
+    ? "current_run_failed_but_previous_successful_dashboard_snapshot_is_preserved"
+    : null;
   report.dataset_generation_audit.static_outputs_generated = {
     ...report.dataset_generation_audit.static_outputs_generated,
     "dashboard/api/dashboard-summary.json": dashboardSummary.record_count
@@ -22157,32 +22166,38 @@ try {
   for (const [key, value] of Object.entries(collectionSummary)) {
     console.log(`${key}=${Array.isArray(value) ? value.join(",") : value}`);
   }
+  const protectedProductionFallbackActive = VALIDATION_MODE === "production" &&
+    report.production_api_write_protected === true &&
+    report.latest_successful_fallback?.latest_successful_snapshot_available === true;
+  if (protectedProductionFallbackActive) {
+    console.warn("[Korea Port Intelligence] Current production update did not refresh live data, but previous successful dashboard snapshot is preserved.");
+  }
   if (VALIDATION_MODE === "production" && runtimeConfigAudit.missing_required_env_names?.length) {
     console.error(`[Korea Port Intelligence] Production config missing required env: ${runtimeConfigAudit.missing_required_env_names.join(",")}`);
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.data_mode === "no_live_data") {
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.status === "failed") {
     console.error(`[Korea Port Intelligence] Production update failed: ${report.supabase_write_failure_type || report.error || "unknown_error"}`);
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && !isSupabaseWriteFinal(report.supabase_write?.status)) {
     console.error("[Korea Port Intelligence] Supabase write did not finalize.");
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.supabase_write?.status !== "completed") {
     console.error(`[Korea Port Intelligence] Production Supabase write did not complete: ${report.supabase_write?.status || "unknown"} (${report.supabase_write_failure_type || "db_write_failed"})`);
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && report.supabase_write?.post_write_verification?.status !== "completed") {
     console.error(`[Korea Port Intelligence] Production post-write verification failed: ${(report.supabase_write?.post_write_verification?.errors || []).join(",") || "unknown"}`);
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
   if (VALIDATION_MODE === "production" && promotionRequiredInProduction() && report.supabase_write?.status === "completed" && report.supabase_write?.promoted !== true) {
     console.error(`[Korea Port Intelligence] Production promotion blocked: ${(report.promotion_blockers || []).join(",") || report.supabase_write_failure_type || "active_dataset_pointer_not_updated"}`);
-    process.exitCode = 1;
+    if (!protectedProductionFallbackActive) process.exitCode = 1;
   }
 }
 

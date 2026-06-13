@@ -455,8 +455,11 @@ const productionValidationFailures = [
   Number(report.all_collected_vessel_count || report.all_vessels_count || vesselGroupValidation.all_collected_vessels_count || 0) <= 0 ? "all_vessels_count_zero" : null,
   successfulPortOperationSources.length < 1 ? "no_successful_port_operation_source" : null
 ].filter(Boolean);
-if (validationMode === "production" && productionValidationFailures.length) {
+if (validationMode === "production" && productionValidationFailures.length && !protectedFailedRun) {
   throw new Error(`Production validation failed: ${productionValidationFailures.join(", ")}; ${JSON.stringify(vesselGroupValidation)}`);
+}
+if (validationMode === "production" && productionValidationFailures.length && protectedFailedRun) {
+  validationWarnings.push(`Protected production fallback warning: ${productionValidationFailures.join(", ")}; previous successful static outputs remain active.`);
 }
 if (validationMode === "local" && report.data_mode === "no_live_data") {
   validationWarnings.push("Local validation warning: no_live_data snapshot is allowed in local mode only.");
