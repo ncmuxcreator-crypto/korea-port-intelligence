@@ -145,6 +145,13 @@ function utilItem(payload = {}, sourceKey = "") {
   return asArray(payload.items).find(item => item.source_key === sourceKey) || {};
 }
 
+function mergeMaps(...values) {
+  return values.reduce((acc, value) => {
+    if (value && typeof value === "object" && !Array.isArray(value)) Object.assign(acc, value);
+    return acc;
+  }, {});
+}
+
 function collectOutputScan() {
   const endpoints = [...DISPLAY_ENDPOINTS, ...listVesselPages()];
   const result = {
@@ -241,6 +248,13 @@ Status: ${report.status}
 - baseline berth: ${report.output_scan_counts.baseline_berth_count}
 - berth placeholders: ${report.output_scan_counts.berth_placeholders}
 
+## Matching Engine
+
+- matching booster available: ${report.matching_booster_available}
+- identity graph records: ${report.identity_graph_stats?.record_count ?? "-"}
+- patch hints applied: ${report.patch_hints_applied ?? 0}
+- patches applied: ${report.patches_applied ?? 0}
+
 ## Source Quality
 
 ${markdownTable(["source", "collected", "normalized", "matched", "blocker"], sourceRows)}
@@ -265,6 +279,7 @@ export function scanLiveConsistency({ writeReport = false } = {}) {
   const updateTiers = readDiagnosticJson("dashboard/api/runtime/update-tiers.json", {});
   const sourceQuality = readDiagnosticJson("dashboard/api/source-quality-score.json", { items: [] });
   const utilization = readDiagnosticJson("dashboard/api/enrichment-utilization.json", { items: [] });
+  const identityGraph = readDiagnosticJson("dashboard/api/enrichment/vessel-identity-graph.json", {});
   const bootstrap = readJson("dashboard/api/bootstrap.json", {});
   const outputScan = collectOutputScan();
 
@@ -278,6 +293,13 @@ export function scanLiveConsistency({ writeReport = false } = {}) {
   const contradictions = sampleContradictions(utilization);
   const critical = [];
   const warnings = [];
+  const matchRateBySource = mergeMaps(sourceQuality.match_rate_by_source, utilization.match_rate_by_source);
+  const applyRateBySource = mergeMaps(sourceQuality.apply_rate_by_source, utilization.apply_rate_by_source);
+  const reviewRateBySource = mergeMaps(sourceQuality.review_rate_by_source, utilization.review_rate_by_source);
+  const topBlockers = mergeMaps(sourceQuality.top_blockers, utilization.top_blockers);
+  const identityGraphStats = Object.keys(identityGraph.identity_graph_stats || {}).length
+    ? identityGraph.identity_graph_stats
+    : mergeMaps(sourceQuality.identity_graph_stats, utilization.identity_graph_stats);
 
   if (productionStatusExists && statusRunId && updateCoreRunId && statusRunId !== updateCoreRunId) {
     critical.push(`production status-summary run_id ${statusRunId} differs from update-tiers core_run_id ${updateCoreRunId}`);
@@ -361,6 +383,16 @@ export function scanLiveConsistency({ writeReport = false } = {}) {
       baseline_berth_count: bootstrapBaselineBerth,
       berth_info_detected_count: bootstrapBerthTotal
     },
+    match_rate_by_source: matchRateBySource,
+    apply_rate_by_source: applyRateBySource,
+    review_rate_by_source: reviewRateBySource,
+    top_blockers: topBlockers,
+    matching_booster_available: sourceQuality.matching_booster_available === true ||
+      utilization.matching_booster_available === true ||
+      identityGraph.matching_booster_available === true,
+    identity_graph_stats: identityGraphStats,
+    patch_hints_applied: number(utilization.patch_hints_applied || utilization.count_reconciliation?.patch_hints_applied),
+    patches_applied: number(utilization.patches_applied_to_vessel_display || utilization.count_reconciliation?.patches_applied_to_vessel_display),
     berth_signal_semantics_breakdown: {
       aux_confirmed: outputScan.aux_confirmed_berth_count,
       baseline_core_field: outputScan.baseline_berth_count,

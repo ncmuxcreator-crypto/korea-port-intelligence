@@ -36,6 +36,14 @@ function unique(values = []) {
   return [...new Set(values.filter(value => value !== undefined && value !== null && String(value).trim() !== "").map(value => String(value).trim()))];
 }
 
+function firstDefined(...values) {
+  return values.find(value => value !== undefined && value !== null);
+}
+
+function objectWithKeys(...values) {
+  return values.find(value => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length) || {};
+}
+
 function sourceKeys(sourceQualityScore = {}, enrichmentUtilization = {}) {
   return unique([
     ...DEFAULT_ENRICHMENT_SOURCE_KEYS,
@@ -174,6 +182,22 @@ export function buildSourceBottleneckReport({
   statusSummary = {},
   generatedAt = new Date().toISOString()
 } = {}) {
+  const matchRateBySource = {
+    ...(sourceQualityScore.match_rate_by_source || {}),
+    ...(enrichmentUtilization.match_rate_by_source || {})
+  };
+  const applyRateBySource = {
+    ...(sourceQualityScore.apply_rate_by_source || {}),
+    ...(enrichmentUtilization.apply_rate_by_source || {})
+  };
+  const reviewRateBySource = {
+    ...(sourceQualityScore.review_rate_by_source || {}),
+    ...(enrichmentUtilization.review_rate_by_source || {})
+  };
+  const topBlockersBySource = {
+    ...(sourceQualityScore.top_blockers || {}),
+    ...(enrichmentUtilization.top_blockers || {})
+  };
   const totalVessels = number(
     enrichmentUtilization.total_vessels ??
     bootstrap.kpis?.total_vessels ??
@@ -193,6 +217,10 @@ export function buildSourceBottleneckReport({
       bottleneck_stage: safeStage,
       evidence: evidenceFor({ sourceKey, rows, quality, utilization, totalVessels, stage: safeStage }),
       ...rows,
+      match_rate: number(firstDefined(quality.match_rate, utilization.match_rate, matchRateBySource[sourceKey])),
+      apply_rate: number(firstDefined(quality.apply_rate, utilization.apply_rate, applyRateBySource[sourceKey])),
+      review_rate: number(firstDefined(quality.review_rate, utilization.review_rate, reviewRateBySource[sourceKey])),
+      top_blockers: Array.isArray(topBlockersBySource[sourceKey]) ? topBlockersBySource[sourceKey] : [],
       blocker_reason: blockerReason,
       recommended_next_action: recommendedNextAction(sourceKey, safeStage)
     };
@@ -209,6 +237,12 @@ export function buildSourceBottleneckReport({
     enrichment_utilization_run_id: enrichmentUtilization.run_id || enrichmentUtilization.source_run_id || null,
     status_summary_run_id: statusSummary.active_run_id || statusSummary.run_id || statusSummary.status_run_id || null,
     total_vessels: totalVessels,
+    match_rate_by_source: matchRateBySource,
+    apply_rate_by_source: applyRateBySource,
+    review_rate_by_source: reviewRateBySource,
+    top_blockers: topBlockersBySource,
+    matching_booster_available: sourceQualityScore.matching_booster_available === true || enrichmentUtilization.matching_booster_available === true,
+    identity_graph_stats: objectWithKeys(sourceQualityScore.identity_graph_stats, enrichmentUtilization.identity_graph_stats),
     source_count: items.length,
     record_count: items.length,
     item_count: items.length,
@@ -283,6 +317,9 @@ export function buildSourceBottleneckMarkdown(report = {}) {
     matched: item.rows_matched_to_vessels,
     patches: item.patches_created,
     display: item.vessel_display_records_updated,
+    match_rate: item.match_rate,
+    apply_rate: item.apply_rate,
+    review_rate: item.review_rate,
     next_action: item.recommended_next_action
   }));
   return `# Source Enrichment Bottleneck Report
@@ -299,6 +336,6 @@ Total vessels: ${report.total_vessels ?? "-"}
 
 Stage counts: ${JSON.stringify(report.stage_counts || {})}
 
-${markdownTable(["source_key", "bottleneck_stage", "collected", "normalized", "matched", "patches", "display", "next_action"], rows)}
+${markdownTable(["source_key", "bottleneck_stage", "collected", "normalized", "matched", "patches", "display", "match_rate", "apply_rate", "review_rate", "next_action"], rows)}
 `;
 }

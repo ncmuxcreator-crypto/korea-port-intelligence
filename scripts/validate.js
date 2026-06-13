@@ -215,6 +215,7 @@ for (const feature of oceanRiskGeoJson.features) {
 
 function listDashboardApiJson(dir = "dashboard/api") {
   if (!fs.existsSync(dir)) return [];
+  if (String(dir || "").replace(/\\/g, "/").startsWith("dashboard/api/debug")) return [];
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const fullPath = `${dir}/${entry.name}`;
@@ -323,6 +324,8 @@ for (const file of listDashboardApiJson()) {
       throw new Error(`endpoint-manifest.json reports broken critical endpoints: ${brokenCritical.map(entry => entry.path).join(", ")}`);
     }
     for (const entry of payload.endpoints) {
+      const entryPath = String(entry?.path || "").replace(/\\/g, "/");
+      if (entryPath.startsWith(`${DEBUG_API_DIR}/`)) continue;
       if (!entry?.path || !fs.existsSync(entry.path)) continue;
       let actualPayload;
       const actualText = fs.readFileSync(entry.path, "utf8");

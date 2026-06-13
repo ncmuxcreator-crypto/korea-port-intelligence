@@ -12,7 +12,11 @@ const REQUIRED_CACHE_FILES = [
   "dashboard/api/aux/latest/ais-dynamic-summary.json",
   "dashboard/api/aux/latest/ais-stat-summary.json",
   "dashboard/api/aux/latest/vessel-spec-summary.json",
-  "dashboard/api/aux/latest/patch-hints.json"
+  "dashboard/api/aux/latest/patch-hints.json",
+  "dashboard/api/aux/latest/pilotage-match-results.json",
+  "dashboard/api/aux/latest/berth-match-results.json",
+  "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json",
+  "dashboard/api/aux/latest/ais-target-enrichment.json"
 ];
 
 const LEGACY_CACHE_FILES = [
