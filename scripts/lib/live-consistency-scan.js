@@ -33,8 +33,23 @@ function readDiagnosticJson(relativePath, fallback = {}) {
   const debug = debugPath === relativePath ? null : readJson(debugPath, null);
   if (!debug || debug.__missing || debug.__parse_error) return main;
   if (main.__missing || main.__parse_error) return debug;
-  const debugGenerated = Date.parse(debug.generated_at || debug.tier_index_generated_at || "");
-  const mainGenerated = Date.parse(main.generated_at || main.tier_index_generated_at || "");
+  if (debug.generated_by === "local" && (
+    main.generated_by === "github_actions" ||
+    main.reused_from_cache === true ||
+    debug.reused_from_cache === false ||
+    debug.local_preview === true ||
+    debug.local_core_not_promoted === true
+  )) {
+    return main;
+  }
+  const debugGenerated = Math.max(
+    Date.parse(debug.tier_index_generated_at || ""),
+    Date.parse(debug.generated_at || "")
+  );
+  const mainGenerated = Math.max(
+    Date.parse(main.tier_index_generated_at || ""),
+    Date.parse(main.generated_at || "")
+  );
   if (Number.isFinite(debugGenerated) && (!Number.isFinite(mainGenerated) || debugGenerated >= mainGenerated)) return debug;
   return main;
 }
@@ -88,6 +103,36 @@ function hasText(value) {
   if (value === undefined || value === null) return false;
   const text = String(value).trim();
   return Boolean(text) && !["-", "unknown", "null", "undefined", "none"].includes(text.toLowerCase());
+}
+
+function identityToken(value) {
+  if (!hasText(value)) return "";
+  return String(value).normalize("NFKC").trim().toUpperCase().replace(/\s+/g, " ");
+}
+
+function displayIdentityKey(item = {}, d = {}) {
+  const candidates = [
+    ["vessel_key", d.vessel_key || item.vessel_key],
+    ["imo", d.imo || item.imo],
+    ["mmsi", d.mmsi || item.mmsi],
+    ["call_sign", d.call_sign || item.call_sign],
+    ["name_port", [
+      d.vessel_name || item.vessel_name,
+      d.current_port || item.current_port || d.port || item.port || d.port_name || item.port_name
+    ].filter(hasText).join("|")]
+  ];
+  for (const [label, value] of candidates) {
+    const token = identityToken(value);
+    if (token) return `${label}:${token}`;
+  }
+  return "";
+}
+
+function addUniqueSignal(seen, item, d, signalType) {
+  const key = displayIdentityKey(item, d) || `${signalType}:${seen.size}`;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
 }
 
 function runId(payload = {}) {
@@ -154,6 +199,13 @@ function mergeMaps(...values) {
 
 function collectOutputScan() {
   const endpoints = [...DISPLAY_ENDPOINTS, ...listVesselPages()];
+  const seen = {
+    pilotage_confirmed: new Set(),
+    pilotage_placeholders: new Set(),
+    aux_berth_confirmed: new Set(),
+    baseline_berth: new Set(),
+    berth_placeholders: new Set()
+  };
   const result = {
     files_checked: endpoints.length,
     records_scanned: 0,
@@ -174,19 +226,19 @@ function collectOutputScan() {
     for (const item of rows(payload)) {
       const d = display(item);
       result.records_scanned += 1;
-      if (isPilotageConfirmed(d.pilotage_signal)) {
+      if (isPilotageConfirmed(d.pilotage_signal) && addUniqueSignal(seen.pilotage_confirmed, item, d, "pilotage_confirmed")) {
         result.pilotage_signal_display_count += 1;
         if (result.samples.pilotage_confirmed.length < 5) result.samples.pilotage_confirmed.push({ endpoint, vessel_name: d.vessel_name || "-", signal: d.pilotage_signal });
-      } else if (isPilotagePlaceholder(d.pilotage_signal)) {
+      } else if (isPilotagePlaceholder(d.pilotage_signal) && addUniqueSignal(seen.pilotage_placeholders, item, d, "pilotage_placeholder")) {
         result.pilotage_placeholders += 1;
       }
-      if (isAuxBerthConfirmed(d.berth_signal)) {
+      if (isAuxBerthConfirmed(d.berth_signal) && addUniqueSignal(seen.aux_berth_confirmed, item, d, "aux_berth_confirmed")) {
         result.aux_confirmed_berth_count += 1;
         if (result.samples.aux_berth_confirmed.length < 5) result.samples.aux_berth_confirmed.push({ endpoint, vessel_name: d.vessel_name || "-", signal: d.berth_signal });
-      } else if (isBerthBaseline(item)) {
+      } else if (isBerthBaseline(item) && addUniqueSignal(seen.baseline_berth, item, d, "baseline_berth")) {
         result.baseline_berth_count += 1;
         if (result.samples.baseline_berth.length < 5) result.samples.baseline_berth.push({ endpoint, vessel_name: d.vessel_name || "-", berth: d.berth || null, terminal: d.terminal || null, signal: d.berth_signal || null });
-      } else if (isBerthPlaceholder(d.berth_signal)) {
+      } else if (isBerthPlaceholder(d.berth_signal) && addUniqueSignal(seen.berth_placeholders, item, d, "berth_placeholder")) {
         result.berth_placeholders += 1;
       }
     }
