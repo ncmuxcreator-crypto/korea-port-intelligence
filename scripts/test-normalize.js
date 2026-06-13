@@ -11,6 +11,7 @@ import {
   normalizeFlag,
   normalizeNumeric,
   normalizePort,
+  normalizeTime,
   normalizeVesselName,
   normalizeVesselType,
   pickAlias
@@ -37,6 +38,8 @@ for (const item of fixtures.date_times || []) {
   if (item.expected_time_only_missing_date !== undefined) {
     assert.equal(normalized.time_only_missing_date, item.expected_time_only_missing_date, `time_only ${item.input}`);
   }
+  const normalizedTime = normalizeTime(item.input, item.context || {});
+  assert.equal(normalizedTime.parse_status, item.expected_parse_status, `normalizeTime ${item.input}`);
 }
 
 for (const item of fixtures.berths || []) {

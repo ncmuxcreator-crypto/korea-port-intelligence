@@ -36,6 +36,13 @@ import { buildSourceQualityScorePayload } from "./lib/source-quality-score.js";
 import { buildNormalizationDiagnosticsPayload } from "./lib/normalization-diagnostics.js";
 import { buildSourceEnrichmentMatrixPayload } from "./lib/source-enrichment-matrix.js";
 import { buildSourceSchedulePayload } from "./lib/source-schedule.js";
+import {
+  attachAuxEvidenceMetricsToEnrichmentUtilization,
+  attachAuxEvidenceMetricsToSourceQualityScore,
+  buildAuxEvidenceMatchingPayloads,
+  buildVesselIdentityGraphPayload,
+  mergeAuxPatchHintsPayloads
+} from "./lib/evidence-matching-engine.js";
 import { buildPortStatistics, normalizePort, normalizeRecordPort } from "./lib/port-statistics.js";
 import { PIPELINE_STAGES, sourceOfTruthTables } from "./pipeline/index.js";
 import { buildHullCleaningScores } from "../src/lib/scoring.js";
@@ -3330,6 +3337,8 @@ function dashboardRootObjectPayload(payload) {
 
 function listDashboardApiJsonFiles(dir = "dashboard/api") {
   if (!fs.existsSync(dir)) return [];
+  const normalizedDir = String(dir || "").replace(/\\/g, "/");
+  if (normalizedDir === DEBUG_API_DIR || normalizedDir.startsWith(`${DEBUG_API_DIR}/`)) return [];
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const fullPath = `${dir}/${entry.name}`.replace(/\\/g, "/");
@@ -3592,6 +3601,11 @@ function writeApiJson(filePath, payload, report = {}) {
     contractDataMode(preparedPayload?.data_mode, report) !== "live" &&
     rowCountFromPayload(preparedPayload) > 0 &&
     String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
+  const shouldRefreshZeroCountTierContract = existingPayload &&
+    /^dashboard\/api\/(?:aux\/latest\/(?:patch-hints|pilotage-match-results|berth-match-results|vessel-spec-parser-diagnostic|ais-target-enrichment)|enrichment\/vessel-identity-graph)\.json$/i.test(normalized) &&
+    contractDataMode(existingPayload.data_mode) !== "live" &&
+    contractDataMode(preparedPayload?.data_mode, report) !== "live" &&
+    String(preparedPayload?.generated_at || "") > String(existingPayload?.generated_at || "");
   const shouldBackfillDiagnosticOwnership = target !== normalized &&
     normalized === "dashboard/api/storage-efficiency-report.json" &&
     existingPayload &&
@@ -3606,7 +3620,7 @@ function writeApiJson(filePath, payload, report = {}) {
     String(existingPayload.run_id || existingPayload.active_run_id || existingPayload.source_run_id || "") ===
       String(preparedPayload.run_id || preparedPayload.active_run_id || preparedPayload.source_run_id || "") &&
     String(existingPayload.generated_at || "") === String(preparedPayload.generated_at || "");
-  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic || shouldBackfillDiagnosticOwnership)) {
+  if (target !== normalized && normalized.startsWith("dashboard/api/") && (!fs.existsSync(normalized) || shouldBackfillEmptyStatic || shouldRefreshNonLiveStatic || shouldRefreshZeroCountTierContract || shouldBackfillDiagnosticOwnership)) {
     writeDashboardJson(normalized, preparedPayload);
   }
   return target;
@@ -3653,6 +3667,9 @@ function tierOwnershipForPath(filePath = "") {
     return { owner_tier: "fast_aux", core_may_update: false };
   }
   if (/dashboard\/api\/aux\/latest\//i.test(normalized)) {
+    return { owner_tier: "fast_aux", core_may_update: false };
+  }
+  if (/dashboard\/api\/enrichment\/vessel-identity-graph\.json$/i.test(normalized)) {
     return { owner_tier: "fast_aux", core_may_update: false };
   }
   if (/dashboard\/api\/(?:discovery\/|storage-efficiency-report\.json$)/i.test(normalized)) {
@@ -4907,11 +4924,16 @@ const ENDPOINT_MANIFEST_ENDPOINTS = [
   ["aux.latestVesselSpec", "dashboard/api/aux/latest/vessel-spec-summary.json"],
   ["aux.latestCacheStatus", "dashboard/api/aux/latest/cache-status.json"],
   ["aux.latestPatchHints", "dashboard/api/aux/latest/patch-hints.json"],
+  ["aux.latestPilotageMatchResults", "dashboard/api/aux/latest/pilotage-match-results.json"],
+  ["aux.latestBerthMatchResults", "dashboard/api/aux/latest/berth-match-results.json"],
+  ["aux.latestVesselSpecParserDiagnostic", "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json"],
+  ["aux.latestAisTargetEnrichment", "dashboard/api/aux/latest/ais-target-enrichment.json"],
   ["source.healthRuntime", "dashboard/api/source-health-runtime.json"],
   ["source.collectionStatus", "dashboard/api/source-collection-status.json"],
   ["source.qualityScore", "dashboard/api/source-quality-score.json"],
   ["enrichment.utilization", "dashboard/api/enrichment-utilization.json"],
   ["enrichment.sourceBottleneckReport", "dashboard/api/enrichment/source-bottleneck-report.json"],
+  ["enrichment.vesselIdentityGraph", "dashboard/api/enrichment/vessel-identity-graph.json"],
   ["enrichment.normalizationDiagnostics", "dashboard/api/enrichment/normalization-diagnostics.json"],
   ["enrichment.latestIndex", "dashboard/api/enrichment/latest/index.json"],
   ["enrichment.latestSummary", "dashboard/api/enrichment/latest/summary.json"],
@@ -4990,12 +5012,17 @@ const WORKER_PUBLIC_ENDPOINTS = new Set([
   "dashboard/api/aux/latest/vessel-spec-summary.json",
   "dashboard/api/aux/latest/cache-status.json",
   "dashboard/api/aux/latest/patch-hints.json",
+  "dashboard/api/aux/latest/pilotage-match-results.json",
+  "dashboard/api/aux/latest/berth-match-results.json",
+  "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json",
+  "dashboard/api/aux/latest/ais-target-enrichment.json",
   "dashboard/api/aux/source-csv-summary.json",
   "dashboard/api/aux/pilotage-summary.json",
   "dashboard/api/aux/berth-summary.json",
   "dashboard/api/aux/ais-info-summary.json",
   "dashboard/api/aux/ais-dynamic-summary.json",
   "dashboard/api/aux/vessel-spec-summary.json",
+  "dashboard/api/enrichment/vessel-identity-graph.json",
   "dashboard/api/enrichment/latest/index.json",
   "dashboard/api/enrichment/latest/summary.json",
   "dashboard/api/enrichment/latest/patches.json",
@@ -20920,6 +20947,78 @@ try {
     startup_safe: false,
     core_blocking: false
   }, finalRunOrigin);
+  const emptyFastAuxCachePayload = (sourceKey, extra = {}) => ({
+    schema_version: PUBLIC_API_SCHEMA_VERSION,
+    generated_at: completedAt,
+    owner_tier: "fast_aux",
+    core_may_update: false,
+    cache_status: "missing",
+    status: "MISSING_CACHE",
+    source_key: sourceKey,
+    record_count: 0,
+    item_count: 0,
+    items: [],
+    ...extra
+  });
+  const previousVesselIdentityGraphPayload = readJsonSafe("dashboard/api/enrichment/vessel-identity-graph.json", null) || {};
+  const previousPilotageMatchResultsPayload = readJsonSafe("dashboard/api/aux/latest/pilotage-match-results.json", null) || {};
+  const previousBerthMatchResultsPayload = readJsonSafe("dashboard/api/aux/latest/berth-match-results.json", null) || {};
+  const previousVesselSpecParserDiagnosticPayload = readJsonSafe("dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json", null) || {};
+  const previousAisTargetEnrichmentPayload = readJsonSafe("dashboard/api/aux/latest/ais-target-enrichment.json", null) || {};
+  const previousAuxPatchHintsPayload = readJsonSafe("dashboard/api/aux/latest/patch-hints.json", null) || {};
+  let vesselIdentityGraphPayload = Object.keys(previousVesselIdentityGraphPayload).length
+    ? previousVesselIdentityGraphPayload
+    : emptyFastAuxCachePayload("vessel_identity_graph", {
+      indexes: {},
+      matching_booster_available: false,
+      identity_graph_stats: { record_count: 0, current_vessel_count: 0, index_count: 0 }
+    });
+  let pilotageMatchResultsPayload = Object.keys(previousPilotageMatchResultsPayload).length
+    ? previousPilotageMatchResultsPayload
+    : emptyFastAuxCachePayload("pilot_sources");
+  let berthMatchResultsPayload = Object.keys(previousBerthMatchResultsPayload).length
+    ? previousBerthMatchResultsPayload
+    : emptyFastAuxCachePayload("berth_sources");
+  let vesselSpecParserDiagnosticPayload = Object.keys(previousVesselSpecParserDiagnosticPayload).length
+    ? previousVesselSpecParserDiagnosticPayload
+    : emptyFastAuxCachePayload("vessel_spec", { parser_blocker: "missing_cache" });
+  let aisTargetEnrichmentPayload = Object.keys(previousAisTargetEnrichmentPayload).length
+    ? previousAisTargetEnrichmentPayload
+    : emptyFastAuxCachePayload("mof_ais", { coverage_label: "UNKNOWN" });
+  let evidencePatchHintsPayload = Object.keys(previousAuxPatchHintsPayload).length
+    ? previousAuxPatchHintsPayload
+    : emptyFastAuxCachePayload("aux_patch_hints", { patch_hints_created: 0 });
+  let auxEvidenceMetrics = {};
+  if (!IS_CORE_UPDATE) {
+    vesselIdentityGraphPayload = withRunOrigin(buildVesselIdentityGraphPayload({
+      records: sourceCsvTargetRecords,
+      sourceRows: collectedRows,
+      sourceCsvReferenceCache,
+      generatedAt: completedAt
+    }), finalRunOrigin);
+    const auxEvidenceMatchingPayloadsRaw = buildAuxEvidenceMatchingPayloads({
+      sourceRows: collectedRows,
+      graphPayload: vesselIdentityGraphPayload,
+      sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
+      sourceCsvReferenceCache,
+      targetRecords: [
+        ...salesCandidates,
+        ...immediateTargets,
+        ...candidateList,
+        ...hotVessels,
+        ...targetVessels
+      ],
+      generatedAt: completedAt,
+      report,
+      previousAisTarget: previousAisTargetEnrichmentPayload
+    });
+    pilotageMatchResultsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.pilotageMatchResults, finalRunOrigin);
+    berthMatchResultsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.berthMatchResults, finalRunOrigin);
+    vesselSpecParserDiagnosticPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.vesselSpecParserDiagnostic, finalRunOrigin);
+    aisTargetEnrichmentPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.aisTargetEnrichment, finalRunOrigin);
+    evidencePatchHintsPayload = withRunOrigin(auxEvidenceMatchingPayloadsRaw.patchHints, finalRunOrigin);
+    auxEvidenceMetrics = auxEvidenceMatchingPayloadsRaw.metrics || {};
+  }
   sourceCsvSummaryPayload = protectAuxDiagnosticPayloadForCore({
     payload: sourceCsvSummaryPayload,
     sourceCollectionStatus: sourceCollectionStatusForAuxDiagnostics,
@@ -20968,6 +21067,7 @@ try {
     sourceCsvQualityItem.coverage_label = sourceCsvQualityItem.quality_label;
     sourceCsvQualityItem.recommended_fix = Number(sourceCsvDryRunPayload.matched_vessels || 0) > 0 ? "No action required." : "Lightweight source_csv cache exists; improve match keys to apply enrichment.";
   }
+  sourceQualityScorePayload = attachAuxEvidenceMetricsToSourceQualityScore(sourceQualityScorePayload, auxEvidenceMetrics);
   sourceQualityScorePayload = protectSourceQualityScoreForCore({
     payload: sourceQualityScorePayload,
     previous: previousSourceQualityScore,
@@ -21093,6 +21193,7 @@ try {
     generatedAt: completedAt,
     dataMode: report.data_mode || dashboardSummary.data_mode || "static_snapshot"
   }), finalRunOrigin);
+  enrichmentUtilizationPayload = attachAuxEvidenceMetricsToEnrichmentUtilization(enrichmentUtilizationPayload, auxEvidenceMetrics);
   enrichmentUtilizationPayload = protectEnrichmentUtilizationForCore({
     payload: enrichmentUtilizationPayload,
     previous: previousEnrichmentUtilization,
@@ -21909,6 +22010,16 @@ try {
   writeApiJson("dashboard/api/enrichment/source-capability-matrix.json", sourceEnrichmentMatrixPayload, report);
   writeApiJson("dashboard/api/enrichment-utilization.json", enrichmentUtilizationPayload, report);
   writeApiJson("dashboard/api/enrichment/source-bottleneck-report.json", sourceBottleneckReportPayload, report);
+  writeApiJson("dashboard/api/enrichment/vessel-identity-graph.json", protectCachedTierPayloadForCore({
+    payload: vesselIdentityGraphPayload,
+    previous: readJsonSafe("dashboard/api/enrichment/vessel-identity-graph.json", null) || {},
+    ownerTier: "fast_aux",
+    runIdField: "aux_run_id",
+    runIdValue: vesselIdentityGraphPayload.aux_run_id || report.run_id || null,
+    generatedAt: completedAt,
+    origin: finalRunOrigin,
+    preservationReason: AUXILIARY_QUALITY_PRESERVATION_NOTE
+  }), report);
   writeApiJson("dashboard/api/enrichment/normalization-diagnostics.json", normalizationDiagnosticsPayload, report);
   writeTextFile(SOURCE_BOTTLENECK_REPORT_MD, buildSourceBottleneckMarkdown(sourceBottleneckReportPayload));
   writeApiJson("dashboard/api/enrichment/candidates.json", sourceDataEnrichmentPayloads.candidatesPayload, report);
@@ -21933,7 +22044,11 @@ try {
     "ais-stat-summary.json",
     "vessel-spec-summary.json",
     "cache-status.json",
-    "patch-hints.json"
+    "patch-hints.json",
+    "pilotage-match-results.json",
+    "berth-match-results.json",
+    "vessel-spec-parser-diagnostic.json",
+    "ais-target-enrichment.json"
   ];
   const auxLatestPayloads = {
     "dashboard/api/aux/latest/pilotage-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/pilotage-summary.json"],
@@ -21942,7 +22057,11 @@ try {
     "dashboard/api/aux/latest/ais-dynamic-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-dynamic-summary.json"],
     "dashboard/api/aux/latest/ais-stat-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/ais-stat-summary.json"],
     "dashboard/api/aux/latest/vessel-spec-summary.json": auxSourceSummaryPayloads["dashboard/api/aux/vessel-spec-summary.json"],
-    "dashboard/api/aux/latest/cache-status.json": auxiliarySourceCacheStatusPayload
+    "dashboard/api/aux/latest/cache-status.json": auxiliarySourceCacheStatusPayload,
+    "dashboard/api/aux/latest/pilotage-match-results.json": pilotageMatchResultsPayload,
+    "dashboard/api/aux/latest/berth-match-results.json": berthMatchResultsPayload,
+    "dashboard/api/aux/latest/vessel-spec-parser-diagnostic.json": vesselSpecParserDiagnosticPayload,
+    "dashboard/api/aux/latest/ais-target-enrichment.json": aisTargetEnrichmentPayload
   };
   let auxLatestIndexPayload = withRunOrigin(buildAuxLatestIndex({
     generatedAt: completedAt,
@@ -21958,13 +22077,25 @@ try {
     generatedAt: completedAt,
     origin: finalRunOrigin
   });
-  auxLatestPayloads["dashboard/api/aux/latest/patch-hints.json"] = protectCachedTierPayloadForCore({
-    payload: buildAuxPatchHintsPayload({
-      records: allCollectedVessels,
+  const legacyAuxPatchHintsPayload = IS_CORE_UPDATE ? null : buildAuxPatchHintsPayload({
+    records: allCollectedVessels,
+    generatedAt: completedAt,
+    auxIndex: auxLatestIndexPayload,
+    report
+  });
+  const mergedAuxPatchHintsPayload = IS_CORE_UPDATE
+    ? (Object.keys(previousAuxPatchHintsPayload).length
+      ? previousAuxPatchHintsPayload
+      : emptyFastAuxCachePayload("aux_patch_hints", { patch_hints_created: 0 }))
+    : mergeAuxPatchHintsPayloads({
       generatedAt: completedAt,
       auxIndex: auxLatestIndexPayload,
-      report
-    }),
+      report,
+      payloads: [legacyAuxPatchHintsPayload, evidencePatchHintsPayload],
+      metrics: auxEvidenceMetrics
+    });
+  auxLatestPayloads["dashboard/api/aux/latest/patch-hints.json"] = protectCachedTierPayloadForCore({
+    payload: mergedAuxPatchHintsPayload,
     previous: readJsonSafe("dashboard/api/aux/latest/patch-hints.json", null) || {},
     ownerTier: "fast_aux",
     runIdField: "aux_run_id",

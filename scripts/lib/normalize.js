@@ -338,6 +338,10 @@ export function normalizeDateTime(value = "", context = {}) {
   };
 }
 
+export function normalizeTime(value = "", context = {}) {
+  return normalizeDateTime(value, context);
+}
+
 export function normalizeNumeric(value = "") {
   if (value === null || value === undefined || isNullishText(value)) return null;
   const cleaned = String(value).normalize("NFKC").replace(/,/g, "").replace(/[^\d.+-]/g, "");
